@@ -1,0 +1,6 @@
+---
+- hosts: dns
+  remote_user: root
+  roles:
+    - facts
+    - dns

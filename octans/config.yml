@@ -1,0 +1,6 @@
+---
+mysql: mysql://root:@127.0.0.1/octans?charset=utf8
+pool_size: 50
+pool_recycle: 3600
+get_key_url: http://127.0.0.1:8888/v1/instance/sshkey/
+# get_key_url is jupiter ip address:port

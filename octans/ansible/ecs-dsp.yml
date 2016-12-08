@@ -1,0 +1,5 @@
+---
+- hosts: dsp
+  remote_user: root
+  roles:
+    - dsp

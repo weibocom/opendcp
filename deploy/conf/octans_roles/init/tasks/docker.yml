@@ -1,0 +1,12 @@
+---
+- name: install docker
+  yum: name=docker state=present
+- name: config docker
+  copy: src=roles/init/files/docker dest=/etc/sysconfig/docker owner=root group=root mode=0644
+  register: config_result
+
+- file: path=/data0/docker state=directory
+- name: restart docker
+  service: name=docker state=stopped
+  when: "{{ config_result.changed }}"
+- service: name=docker state=started
