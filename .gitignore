@@ -1,0 +1,32 @@
+.git
+data/mysql-data/
+data/project/
+deploy/data/mysql-data/
+deploy/data/project/
+hubble/Application/Runtime
+orion/orion
+jupiter/conf/jupiter.json
+
+
+# eclipse ignore
+.settings/
+.project
+.classpath
+
+# idea ignore
+.idea/
+*.ipr
+*.iml
+*.iws
+
+# temp ignore
+*.log
+*.cache
+*.diff
+*.patch
+*.tmp
+
+# system ignore
+.DS_Store
+Thumbs.db
+logs/
