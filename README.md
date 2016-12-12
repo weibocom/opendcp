@@ -1,12 +1,13 @@
-#OpenDCP
+# OpenDCP
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/weibocom/opendcp/LICENSE)
 
-##概览
+## 概览
 
-OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、多云支持、服务编排、服务发现等功能与一身，支持服务池的扩缩容，其体系技术源于微博用于支持节假日及热点事件期间高峰访问请求的DCP系统。OpenDCP允许您在不够买一台服务器的情况下，利用公有云服务器搭建起适应互联网应用的IT基础设置，并且将运维的工作量降到最低。
+OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、多云支持、服务编排、服务发现等功能与一身，支持服务池的扩缩容，其体系技术源于微博用于支持节假日及热点事件期间高峰访问请求的DCP系统。OpenDCP允许您在不够买一台服务器的情况下，利用公有云服务器搭建起适
+应互联网应用的IT基础设置，并且将运维的工作量降到最低。
 
-##特性
+## 特性
 
 -   基于Docker容器技术进行封装，不要求使用者掌握Docker。
 
@@ -16,20 +17,21 @@ OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、�
 
 -   涵盖虚拟机创建、镜像打包、镜像部署、服务发现各个环节，简单易用，易于组织内推广
 
-##文档
+## 文档
 [安装手册](document/install.md)  
 [快速开始](document/quick_start.md)  
 [用户手册](document/usermanual.md)
 
-##作者
--   Fu Wen
--   Fu Yuhui
+## 作者
+-   Fu Wen([@itfuwen](https://github.com/itfuwen))
+-   Fu Yuhui([@hacpai](https://github.com/hacpai))
 -   Ke Yinan
 -   Liu Peng
--   Ma Sihua
+-   Ma Sihua([@masihua](https://github.com/masihua))
+-   He jigui([@hexuan1922](https://github.com/hexuan1922))
 -   Sun Mingchao
 -   Wang Guansheng
--   Wang Xiao
+-   Wang Xiao([@sean-w2011](https://github.com/sean-w2011))
 -   Yao Junxian
 -   Zhang Yingeng
 -   Zhuang Wenhui
