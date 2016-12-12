@@ -11,7 +11,7 @@ OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、�
 
 -   基于Docker容器技术进行封装，不要求使用者掌握Docker。
 
--   支持阿里云、AWS等多个公有云平台，可根据需要随时申请和释放服务器，显著降低运营成本
+-   支持阿里云公有云平台，可根据需要随时申请和释放服务器，显著降低运营成本
 
 -   分部门记录使用时长，资源用量一目了然
 
@@ -23,6 +23,7 @@ OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、�
 [用户手册](document/usermanual.md)
 
 ## 作者
+-   Liu daoru([@liudaoru](https://github.com/liudaoru))
 -   Fu Wen([@itfuwen](https://github.com/itfuwen))
 -   Fu Yuhui([@hacpai](https://github.com/hacpai))
 -   Ke Yinan
