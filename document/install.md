@@ -13,6 +13,8 @@ OPENDCP主要由以下几个模块构成:
 
 
 ## 安装步骤
+以下介绍了系统快速部署方法，系统的详细使用请参照使用手册。
+
 1.  安装 **Docker-1.10.0**和**Docker-Compose-1.6.0**以上版本, 详细请查看 [Docker
     Compose Install](https://docs.docker.com/compose/install/).  
     并确保docker-daemon已正常启动.
@@ -44,5 +46,4 @@ OPENDCP主要由以下几个模块构成:
 
 6.  在`opendcp/deploy`目录下，运行 ./run.sh & 启动 OpenDCP, 访问网址
      [http://localhost:8888](http://localhost:8888/) 可以看到管理控制台界面。
-
 7.  在`opendcp/deploy`目录下，运行 ./stop.sh 停止 OpenDCP。
