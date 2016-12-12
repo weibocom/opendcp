@@ -17,32 +17,21 @@ OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、�
 -   涵盖虚拟机创建、镜像打包、镜像部署、服务发现各个环节，简单易用，易于组织内推广
 
 ##文档
-[快速开始](document/quick_start.md)  
 [安装手册](document/install.md)  
+[快速开始](document/quick_start.md)  
 [用户手册](document/usermanual.md)
 
 ##作者
-
 -   Fu Wen
-
 -   Fu Yuhui
-
 -   Ke Yinan
-
 -   Liu Peng
-
 -   Ma Sihua
-
 -   Sun Mingchao
-
 -   Wang Guansheng
-
 -   Wang Xiao
-
 -   Yao Junxian
-
 -   Zhang Yingeng
-
 -   Zhuang Wenhui
 
 ##授权
