@@ -420,7 +420,7 @@ jupiter.conf
 
 单击创建按钮,弹出Dockerfile配置页面,默认为直接编辑Dockerfile。
 
-![](media/D055F53A-C089-4014-BD70-81EE7ED7FB37.png)
+![](media/47597CB6-16C8-448E-A3DC-C00A3C04D6FBN.png)
 
 ##### 4.1.2.1 部署介质参数说明
 
@@ -445,19 +445,19 @@ Dockerfile配置信息在opendcp里叫做项目,共支持3种定义方式,分别
 
 1.  直接输入DockerFile，对于会编辑DockerFile的用户比较方便，但与方法二相比，缺点是无法保存历史版本。
 
-    ![](media/D055F53A-C089-4014-BD70-81EE7ED7FB37.png)
+    ![](media/47597CB6-16C8-448E-A3DC-C00A3C04D6FBN.png)
 
 2.  用户在Git上维护DockerFile。这也是系统推荐的方式。用户只需要输入Git地址和账号即可。每次构建镜像的时候，系统自动从
 
     Git上获取最新版本DockerFile。
 
-    ![](media/B58F31AE-A6F7-4A12-A65F-D94FD72D6356.png)
+    ![](media/7BFD3E61-9E24-4797-84AF-5967A429D88FN.png)
 
 3.  使用工具定义镜像：系统提供了一个编辑DockerFile的工具。用户通过界面提示输入必要的参数，不需要懂得DockerFile的语法，
 
     即可完成镜像的定义。具体使用方法参见下一节“镜像定义工具”的内容。
 
-    ![](media/3A49F1D6-A9CA-4670-A432-DF4C7B74408E.png)
+    ![](media/F57891C7-F8B6-483F-AD4A-5EC88C760B34N.png)
 
 
 ##### 4.1.2.3 Dockerfile子命令说明
