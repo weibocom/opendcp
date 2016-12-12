@@ -26,14 +26,15 @@ OpenDCP是一个基于Docker容器的云服务运维平台，集镜像仓库、�
 -   Fu Wen([@itfuwen](https://github.com/itfuwen))
 -   Ma Sihua([@masihua](https://github.com/masihua))
 -   Zhang Yingeng
--   Zhuang Wenhui
+-   Zhuang Wenhui([@hacpai](https://github.com/hacpai))
 -   Wang Xiao([@sean-w2011](https://github.com/sean-w2011))
 -   Yao Junxian
--   Ke Yinan
+-   Peng Tao([@PengTaoWW](https://github.com/PengTaoWW))
 -   He jigui([@hexuan1922](https://github.com/hexuan1922))
+-   Ke Yinan
 -   Liu Peng
 -   Sun Mingchao
--   Fu Yuhui([@hacpai](https://github.com/hacpai))
+-   Fu Yuhui
 -   Wang Guansheng
 
 
