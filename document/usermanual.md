@@ -728,11 +728,23 @@ library:harbor默认集群，暂时不用。
 -   参数：分为两种模式.一种为默认模式,一种为专家模式。
     -   默认模式便于用户编辑命令，支持两种 命令实现模板:
 
-        1. shell 命令:  只支持单行单个命令,不可以写多个命令。
+        1. shell 命令:  只支持单行单个命令,不可以写多个命令。例如:
+        <pre><code>echo {{name}}</code></pre>
+        
 
-        2. longscript 脚本: 支持多行shell脚本。
+        2. longscript 脚本: 支持多行shell脚本。例如:
+        <pre><code>#!/bin/sh
+        for ((i=0;i<{{times}};i++)); do
+            echo $i
+        done
+        </code></pre>
 
-    -   专家模式 让用户直接编辑json格式的ansible task。
+    -   专家模式 让用户直接编辑json格式的ansible task。例如：
+    	<pre><code>{
+    		"module": "shell",
+    		"args": "echo {{name}}"
+    	}
+        </code></pre>
 
     -   执行的命令/脚本，为具体要执行的命令的内容。
 
