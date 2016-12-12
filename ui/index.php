@@ -121,7 +121,6 @@ require_once('include/navbar.php');
               <div class="icon"><i class="fa fa-database"></i></div>
               <div class="count">168</div>
               <h3>Cluster Count</h3>
-              <p>You Are The One.</p>
             </div>
           </div>
           <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
@@ -129,7 +128,6 @@ require_once('include/navbar.php');
               <div class="icon"><i class="fa fa-laptop"></i></div>
               <div class="count">2860</div>
               <h3>Machine Count</h3>
-              <p>You Are The One.</p>
             </div>
           </div>
           <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
@@ -137,7 +135,6 @@ require_once('include/navbar.php');
               <div class="icon"><i class="fa fa-cubes"></i></div>
               <div class="count">5188</div>
               <h3>Container Count</h3>
-              <p>You Are The One.</p>
             </div>
           </div>
           <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
@@ -145,7 +142,6 @@ require_once('include/navbar.php');
               <div class="icon"><i class="fa fa-tasks"></i></div>
               <div class="count">10068</div>
               <h3>Schedual Task</h3>
-              <p>You Are The One.</p>
             </div>
           </div>
         </div>
@@ -156,7 +152,7 @@ require_once('include/navbar.php');
           <div class="col-md-12">
             <div class="x_panel">
               <div class="x_title">
-                <h2>Weekly Summary <small>Activity shares</small></h2>
+                <h2>Summary <small>Activity shares</small></h2>
                 <ul class="nav navbar-right panel_toolbox">
                   <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                   </li>
@@ -186,15 +182,15 @@ require_once('include/navbar.php');
                     <div class="row" style="text-align: center;">
                       <div class="col-md-4">
                         <canvas id="canvas1i" height="110" width="110" style="margin: 5px 10px 10px 0"></canvas>
-                        <h4 style="margin:0">Bounce Rates</h4>
+                        <h4 style="margin:0">IAAS</h4>
                       </div>
                       <div class="col-md-4">
                         <canvas id="canvas1i2" height="110" width="110" style="margin: 5px 10px 10px 0"></canvas>
-                        <h4 style="margin:0">New Traffic</h4>
+                        <h4 style="margin:0">PAAS</h4>
                       </div>
                       <div class="col-md-4">
                         <canvas id="canvas1i3" height="110" width="110" style="margin: 5px 10px 10px 0"></canvas>
-                        <h4 style="margin:0">Device Share</h4>
+                        <h4 style="margin:0">SAAS</h4>
                       </div>
                     </div>
                   </div>
@@ -209,7 +205,7 @@ require_once('include/navbar.php');
           <div class="col-md-4 col-sm-6 col-xs-12">
             <div class="x_panel fixed_height_320">
               <div class="x_title">
-                <h2>App Devices <small>Sessions</small></h2>
+                <h2>Versions</h2>
                 <ul class="nav navbar-right panel_toolbox">
                   <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                   </li>
@@ -228,10 +224,9 @@ require_once('include/navbar.php');
                 <div class="clearfix"></div>
               </div>
               <div class="x_content">
-                <h4>App Versions</h4>
                 <div class="widget_summary">
                   <div class="w_left w_25">
-                    <span>1.5.2</span>
+                    <span>1.0.0</span>
                   </div>
                   <div class="w_center w_55">
                     <div class="progress">
@@ -241,14 +236,14 @@ require_once('include/navbar.php');
                     </div>
                   </div>
                   <div class="w_right w_20">
-                    <span>123k</span>
+                    <span></span>
                   </div>
                   <div class="clearfix"></div>
                 </div>
 
                 <div class="widget_summary">
                   <div class="w_left w_25">
-                    <span>1.5.3</span>
+                    <span>0.1.1</span>
                   </div>
                   <div class="w_center w_55">
                     <div class="progress">
@@ -258,13 +253,13 @@ require_once('include/navbar.php');
                     </div>
                   </div>
                   <div class="w_right w_20">
-                    <span>53k</span>
+                    <span></span>
                   </div>
                   <div class="clearfix"></div>
                 </div>
                 <div class="widget_summary">
                   <div class="w_left w_25">
-                    <span>1.5.4</span>
+                    <span>0.1.0</span>
                   </div>
                   <div class="w_center w_55">
                     <div class="progress">
@@ -274,13 +269,13 @@ require_once('include/navbar.php');
                     </div>
                   </div>
                   <div class="w_right w_20">
-                    <span>23k</span>
+                    <span></span>
                   </div>
                   <div class="clearfix"></div>
                 </div>
                 <div class="widget_summary">
                   <div class="w_left w_25">
-                    <span>1.5.5</span>
+                    <span>0.0.2</span>
                   </div>
                   <div class="w_center w_55">
                     <div class="progress">
@@ -290,13 +285,13 @@ require_once('include/navbar.php');
                     </div>
                   </div>
                   <div class="w_right w_20">
-                    <span>3k</span>
+                    <span></span>
                   </div>
                   <div class="clearfix"></div>
                 </div>
                 <div class="widget_summary">
                   <div class="w_left w_25">
-                    <span>0.1.5.6</span>
+                    <span>0.0.1</span>
                   </div>
                   <div class="w_center w_55">
                     <div class="progress">
@@ -306,7 +301,7 @@ require_once('include/navbar.php');
                     </div>
                   </div>
                   <div class="w_right w_20">
-                    <span>1k</span>
+                    <span></span>
                   </div>
                   <div class="clearfix"></div>
                 </div>
@@ -318,7 +313,7 @@ require_once('include/navbar.php');
           <div class="col-md-4 col-sm-6 col-xs-12">
             <div class="x_panel fixed_height_320">
               <div class="x_title">
-                <h2>Daily users <small>Sessions</small></h2>
+                <h2>Cloud</h2>
                 <ul class="nav navbar-right panel_toolbox">
                   <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                   </li>
@@ -344,48 +339,48 @@ require_once('include/navbar.php');
                     </th>
                     <th>
                       <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
-                        <p class="">Device</p>
+                        <p class="">Market</p>
                       </div>
                       <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
-                        <p class="">Progress</p>
+                        <p class=""> &nbsp&nbsp&nbsp;Per</p>
                       </div>
                     </th>
                   </tr>
                   <tr>
                     <td>
-                      <canvas id="canvas1" height="140" width="140" style="margin: 15px 10px 10px 0"></canvas>
+                      <canvas id="canvas1" height="130" width="130" style="margin: 15px 10px 10px 0"></canvas>
                     </td>
                     <td>
                       <table class="tile_info">
                         <tr>
                           <td>
-                            <p><i class="fa fa-square blue"></i>IOS </p>
+                            <p><i class="fa fa-square blue"></i>AliCloud </p>
                           </td>
-                          <td>30%</td>
+                          <td>31%</td>
                         </tr>
                         <tr>
                           <td>
-                            <p><i class="fa fa-square green"></i>Android </p>
+                            <p><i class="fa fa-square green"></i>Telecom </p>
                           </td>
-                          <td>10%</td>
+                          <td>13%</td>
                         </tr>
                         <tr>
                           <td>
-                            <p><i class="fa fa-square purple"></i>Blackberry </p>
+                            <p><i class="fa fa-square purple"></i>Unicom </p>
                           </td>
-                          <td>20%</td>
+                          <td>7%</td>
                         </tr>
                         <tr>
                           <td>
-                            <p><i class="fa fa-square aero"></i>Symbian </p>
+                            <p><i class="fa fa-square aero"></i>Aws </p>
                           </td>
-                          <td>15%</td>
+                          <td>4.3%</td>
                         </tr>
                         <tr>
                           <td>
                             <p><i class="fa fa-square red"></i>Others </p>
                           </td>
-                          <td>30%</td>
+                          <td>45%</td>
                         </tr>
                       </table>
                     </td>
@@ -618,14 +613,14 @@ require_once('include/navbar.php');
       tooltipFillColor: "rgba(51, 51, 51, 0.55)",
       data: {
         labels: [
-          "Symbian",
-          "Blackberry",
-          "Other",
-          "Android",
-          "IOS"
+          "21Vianet",
+          "Unicom",
+          "Others",
+          "Telecom",
+          "Aliyun"
         ],
         datasets: [{
-          data: [15, 20, 30, 10, 30],
+          data: [4, 7, 45, 13, 31],
           backgroundColor: [
             "#BDC3C7",
             "#9B59B6",
@@ -651,14 +646,14 @@ require_once('include/navbar.php');
       tooltipFillColor: "rgba(51, 51, 51, 0.55)",
       data: {
         labels: [
-          "Symbian",
-          "Blackberry",
-          "Other",
-          "Android",
-          "IOS"
+          "Salesforce",
+          "Amazon",
+          "Others",
+          "Microsoft",
+          "IBM"
         ],
         datasets: [{
-          data: [15, 20, 30, 10, 30],
+          data: [24, 16.8, 45.8, 10, 3.4],
           backgroundColor: [
             "#BDC3C7",
             "#9B59B6",
@@ -684,14 +679,14 @@ require_once('include/navbar.php');
       tooltipFillColor: "rgba(51, 51, 51, 0.55)",
       data: {
         labels: [
-          "Symbian",
-          "Blackberry",
-          "Other",
-          "Android",
-          "IOS"
+          "Salesforce",
+          "Microsoft",
+          "Others",
+          "Adobe",
+          "SAP"
         ],
         datasets: [{
-          data: [15, 20, 30, 10, 30],
+          data: [11, 8, 70, 6, 5],
           backgroundColor: [
             "#BDC3C7",
             "#9B59B6",
@@ -728,14 +723,14 @@ require_once('include/navbar.php');
       tooltipFillColor: "rgba(51, 51, 51, 0.55)",
       data: {
         labels: [
-          "Symbian",
-          "Blackberry",
-          "Other",
-          "Android",
-          "IOS"
+          "21Vianet",
+          "Unicom",
+          "Others",
+          "Telecom",
+          "Aliyun"
         ],
         datasets: [{
-          data: [15, 20, 30, 10, 30],
+          data: [4, 7, 45, 13, 31],
           backgroundColor: [
             "#BDC3C7",
             "#9B59B6",
