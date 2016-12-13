@@ -23,9 +23,9 @@ OPENDCP主要由以下几个模块构成:
 	>由于项目会下载所需的必需基础镜像,建议将下载源码放到空间大于50G以上的目录中。    
     
 3. Harbor作为系统的一个模块.用于存储用户自定义的镜像,安装Harbor
-    > - `cd opendcp/deploy`
-    > - 使用`sudo`运行`scripts/installHarbor.sh <镜像仓库机器IP> 12380 /data1 aliyun` 部署Harbor(镜像市场)，最后一个参数表示镜像获取方式,aliyun表示从阿里云获取,其他的从docker.io中获取,Harbor可以在单独的一台Linux机器上运行。
-    > - 如果需要停止harbor服务,进入到安装目录/data1/harbor/harbor下,执行`docker-compose down`。
+    > - `cd opendcp/deploy/scripts` 进入到脚本目录
+    > - `sudo ./installHarbor.sh <镜像仓库机器IP> 12380 /data1 aliyun` 部署Harbor(镜像市场)，最后一个参数表示镜像获取方式,aliyun表示从阿里云获取,其他的从docker.io中获取,Harbor可以在单独的一台Linux机器上运行。
+    > - `cd /data1/harbor/harbor` 进入到安装目录, 执行`docker-compose down` 停止harbor服务。
 
 4.  修改配置
     > - `cd opendcp/deploy`
