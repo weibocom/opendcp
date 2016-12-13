@@ -1,6 +1,6 @@
 # OpenDCP
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/weibocom/opendcp/LICENSE)
+[![Gitter](https://badges.gitter.im/weibocom/opendcp.svg)](https://gitter.im/weibocom/opendcp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/weibocom/opendcp/LICENSE)
 
 ## 概览
 
