@@ -1,0 +1,8 @@
+docs/docs.go
+jupiter
+lastupdate.tmp
+note
+swagger/
+conf/jupiter.conf
+*.iml
+*.bak
