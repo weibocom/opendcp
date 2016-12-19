@@ -1,0 +1,12 @@
+---
+- name: install rsync
+  yum: name=rsync state=present
+- name: create dest dir
+  shell: 'mkdir -p /usr/local/nginx_conf/upstream'
+- name: copy nginx main config file nginx.conf
+  copy: src=roles/hubble-nginx/files/nginx.conf dest=/usr/local/nginx_conf/nginx.conf
+- name: copy nginx upstream config file default.upstream
+  copy: src=roles/hubble-nginx/files/default.upstream dest=/usr/local/nginx_conf/upstream/default.upstream
+- name: start a docker container
+shell: 'docker run -d -v /usr/local/nginx_conf:/usr/local/nginx/conf --name opendcp_lb_ngx_ctn --net=host registry.cn-beijing.aliyuncs.com/opendcp/hubble-nginx:latest ./run.sh'
+

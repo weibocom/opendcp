@@ -1,0 +1,9 @@
+#DEFAULT.UPSTREAM  
+upstream default_upstream{
+		keepalive 60;
+		server 127.0.0.1:8080 max_fails=0 fail_timeout=30s weight=20;
+		check interval=1000 rise=3 fall=2 timeout=3000 type=http default_down=false;
+		check_http_send "GET / HTTP/1.0\r\n\r\n";
+		check_http_expect_alive http_2xx;
+}
+

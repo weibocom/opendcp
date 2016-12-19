@@ -1,0 +1,12 @@
+{
+    "Password": "ASDqwe123",
+    "KeyId": "your_key_id",
+    "KeySecret": "your_secret",
+    "BufferSize": 40,
+    "KeyDir": "./keys",
+    "Ansible": {
+        "Url": "http://octans:8000",
+        "DefaultRole": "init",
+        "ForkNum": 5
+    }
+}

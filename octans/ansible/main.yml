@@ -1,0 +1,12 @@
+---
+- hosts: tencent
+  remote_user: whiteblue
+  tasks:
+  - name: copy
+    copy: src=./test.sh dest=~/test.sh owner=whiteblue  mode=0777
+
+  - name: echo
+    shell: echo "233"
+
+  - name: script...
+    longscript: content="echo '233'"

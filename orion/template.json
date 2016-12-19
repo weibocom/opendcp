@@ -1,0 +1,11 @@
+{
+  "action" : [
+    {
+      "module" : "shell",
+      "diff" : "args"
+    },
+    {
+      "module" : "longscript",
+      "diff" : "content"
+    }]
+}

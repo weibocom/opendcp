@@ -1,0 +1,15 @@
+# Intellij
+/.idea
+/*.iml
+/log
+/tmp
+
+# private keys dir
+/roles/common/files/keys
+
+# ansible config
+/ansible.cfg
+/plugins/plugin.conf
+
+# python
+*.pyc
