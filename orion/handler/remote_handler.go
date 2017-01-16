@@ -145,7 +145,6 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	ips := make([]string, len(nodes))
 	ipIDMap := make(map[string]int)
 	ipIdxMap := make(map[string]int)
-	ipsResChan = make(chan []string, len(nodes))
 	ret := make([]*NodeResult, len(nodes))
 
 	for i, node := range nodes {
