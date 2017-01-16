@@ -33,7 +33,10 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"fmt"
 	"encoding/json"
+	"time"
 )
+
+const PhyDev = "phydev"
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -97,32 +100,34 @@ func DeleteOne(instanceId, correlationId string) error {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
-	providerDriver, err := provider.New(ins.Provider)
-	if err != nil {
-		logstore.Error(correlationId, instanceId, err)
-		return err
-	}
-	_, err = providerDriver.Delete(instanceId)
-	if err != nil {
-		if strings.Contains(err.Error(), "InvalidInstanceId.NotFound") {
-			//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
-			logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
-		} else {
+	if ins.Provider != PhyDev {
+		providerDriver, err := provider.New(ins.Provider)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, err)
 			return err
 		}
-		logstore.Error(correlationId, instanceId, "delete instance, err:", err)
-	}
-	logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
-	usageHours, err := bill.GetUsageHours(instanceId)
-	cluster, err := GetCluster(instanceId)
-	if err != nil {
-		logstore.Error(correlationId, instanceId, "get cluster, err:", err)
-		return err
-	}
-	err = bill.Bill(cluster, usageHours)
-	if err != nil {
-		logstore.Error(correlationId, instanceId, "update bill, err:", err)
-		return err
+		_, err = providerDriver.Delete(instanceId)
+		if err != nil {
+			if strings.Contains(err.Error(), "InvalidInstanceId.NotFound") {
+				//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
+				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
+			} else {
+				return err
+			}
+			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
+		}
+		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
+		usageHours, err := bill.GetUsageHours(instanceId)
+		cluster, err := GetCluster(instanceId)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, "get cluster, err:", err)
+			return err
+		}
+		err = bill.Bill(cluster, usageHours)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, "update bill, err:", err)
+			return err
+		}
 	}
 	err = dao.UpdateDeletedStatus(instanceId)
 	if err != nil {
@@ -374,3 +379,35 @@ func QueryLogByInstanceId(instanceId string) (string, error) {
 	return jupiterLog, nil
 }
 
+func InputPhyDev(ins models.Instance) (models.Instance, error) {
+	clusters, err := dao.GetClustersByProvider(PhyDev)
+	if err != nil {
+		return ins, err
+	}
+	var cluster models.Cluster
+	if len(clusters) == 0 {
+		cluster = models.Cluster{
+			Name: "Physical device",
+			Provider: "phydev",
+			Desc: "About physical device",
+			CreateTime: time.Now(),
+			Network: &models.Network{},
+			Zone: &models.Zone{},
+		}
+		dao.InsertCluster(&cluster)
+		ins.Cluster = &cluster
+	} else {
+		ins.Cluster = &clusters[0]
+	}
+	ins.Provider = PhyDev
+	ins.Status = models.Success
+	if err := dao.InsertInstance(&ins); err != nil {
+		return ins, err
+	}
+	return ins, nil
+}
+
+func UploadSshKey(instanceId string, sshKey models.SshKey) (models.SshKey, error) {
+	err := dao.UpdateSshKey(instanceId, sshKey.PublicKey, sshKey.PrivateKey)
+	return sshKey, err
+}

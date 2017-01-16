@@ -161,6 +161,35 @@ func (ic *InstanceController) DownloadKey() {
 	os.Remove(path)
 }
 
+// @Title Upload ssh key
+// @Description Upload ssh key
+// @router sshkey/:instanceId [put]
+func (ic *InstanceController) UploadKey() {
+	instanceId := ic.GetString(":instanceId")
+	if instanceId == "" {
+		ic.RespMissingParams("instanceId")
+		return
+	}
+	var sshKey models.SshKey
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &sshKey)
+	if err != nil {
+		beego.Error("Could parase request before upload ssh key: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	result, err := instance.UploadSshKey(instanceId, sshKey)
+	if err != nil {
+		beego.Error("input phy dev error:", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp.Content = result
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
+}
+
 // @Title Get providers
 // @Description Get providers
 // @router /provider [get]
@@ -436,3 +465,26 @@ func (ic *InstanceController) QueryLogByInstanceId() {
 	ic.RespJsonWithStatus()
 }
 
+// @Title Input machine
+// @Description Input machine to manage
+// @router /phydev [put]
+func (ic *InstanceController) InputPyhDev() {
+	var ins models.Instance
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &ins)
+	if err != nil {
+		beego.Error("Could parase request before input instance: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	result, err := instance.InputPhyDev(ins)
+	if err != nil {
+		beego.Error("input phy dev error:", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp.Content = result
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
+}

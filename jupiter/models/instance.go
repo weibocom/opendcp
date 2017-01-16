@@ -122,10 +122,15 @@ type Instance struct {
 	// The public IP address or Elastic IP address bound to the network interface.
 	PublicIpAddress    string
 	NatIpAddress       string
-	// The status of the network interface.
+	// The status of the instance.
 	Status             InstanceStatus
 	PublicKey          string `orm:"type(text);null" json:"-"`
 	PrivateKey         string `orm:"type(text);null" json:"-"`
+}
+
+type SshKey struct {
+	PublicKey string
+	PrivateKey string
 }
 
 type StatusResp struct {
