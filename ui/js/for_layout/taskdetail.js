@@ -572,6 +572,10 @@ var view=function(type,idx,ip,offset){
       title='查看任务结果 - ' + ip;
       postData={"action":"result","fIdx":idx};
       break;
+    case 'tasklog':
+      title='查看任务总日志';
+      postData={"action":"tasklog","fIdx":idx};
+      break;
     default:
       illegal=true;
       break;
@@ -603,6 +607,19 @@ var view=function(type,idx,ip,offset){
                 });
                 text+='</div>';
                 if(cache.task.state==0||cache.task.state==1) window.setInterval('getResult("'+idx+'","'+ip+'")',5000);
+                break;
+              case 'tasklog':
+                cache.result={};
+                var log = '';
+                text='<div class="col-sm-12" id="tasklog_'+idx+'">';
+                $.each(data.content,function(k,v){
+                   log += '[ ' + timeStampToSting(v['ctime']) + '] ' + v['message'] + "<br>"
+                });
+
+                text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ log +'</span>';
+                text+='</div>';
+                console.log(cache.task);
+                if(cache.task.state==0||cache.task.state==1) window.setInterval('getTaskLog("'+idx+'")',5000);
                 break;
               default:
                 var locale={};
@@ -811,4 +828,72 @@ var getResult= function (idx,ip) {
       pageNotify('error','加载结果失败！','错误信息：接口不可用');
     }
   });
+}
+
+
+//获取任务主日志
+var getTaskLog= function (taskId) {
+  if(!taskId) return false;
+  if($('#tasklog_'+taskId).length==0) return false;
+
+  var postData={"action":"tasklog","fIdx":taskId};
+  url='/api/for_layout/task.php';
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: postData,
+    dataType: "json",
+    success: function (data) {
+      //执行结果提示
+      if(data.code==0){
+        if(typeof(data.content)!='undefined'){
+          if($('#tasklog_'+taskId).length>0){
+
+            var text = '<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">';
+            $.each(data.content,function(k,v){
+              text += '[ ' + timeStampToSting(v['ctime']) + '] ' + v['message'] + "<br>"
+            });
+
+            text+= '</span>';
+            text+= '<span class="pull-right text-danger">Updated @'+getDate(new Date(),'time')+'</span>'
+
+            $('#tasklog_'+taskId).html(text);
+          }
+        }else{
+          pageNotify('warning','数据为空！');
+        }
+      }else{
+        pageNotify('error','加载结果失败！','错误信息：'+data.msg);
+      }
+    },
+    error: function (){
+      pageNotify('error','加载结果失败！','错误信息：接口不可用');
+    }
+  });
+}
+
+/**
+ * 将UNIX时间戳 转化为 2015-06-11 11:10:37 形式的字符串
+ *
+ *
+ * @access public
+ * @param int data  UNIX时间戳 格式如：1430982663 [Must]
+ * @return string $str
+ */
+var timeStampToSting= function (data){
+  var time = new Date(data * 1000);
+  var y = time.getFullYear();
+  var m = time.getMonth()+1;
+  var d = time.getDate();
+  var h = time.getHours();
+  var mm = time.getMinutes();
+  var s = time.getSeconds();
+
+  m = (m < 10) ? '0'+m : m;
+  d = (d < 10) ? '0'+d : d;
+  h = (h < 10) ? '0'+h : h;
+  mm = (mm < 10) ? '0'+mm : mm;
+  s = (s < 10) ? '0'+s : s;
+
+  return y+'-'+m+'-'+d+' '+h+':'+mm+':'+s;
 }

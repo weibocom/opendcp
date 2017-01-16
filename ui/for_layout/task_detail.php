@@ -237,7 +237,11 @@ $arrIdx=array(
 
           <div class="x_panel">
             <div class="x_title">
-              <h2 class="text-primary"><i class="fa fa-list-ul"></i> 任务细节 <small>任务分发状态详情</small></h2>
+              <h2 class="text-primary"><i class="fa fa-list-ul"></i> 任务细节
+                <small>任务分发状态详情
+                  <a class="tooltips" id="viewTaskLog" data-container="body" data-trigger="hover" data-original-title="查看日志" data-toggle="modal" data-target="#myViewModal"><i class="fa fa-comment"></i></a>
+                </small>
+              </h2>
               <ul class="nav navbar-right panel_toolbox">
                 <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                 </li>
@@ -493,6 +497,14 @@ $arrIdx=array(
         list(1);
       }
     });
+
+    //查看任务主日志
+    $('#viewTaskLog').click(function(){
+        view('tasklog',cache.task_id,0,0);
+    })
+
+
+
   });
   $("#myModal").on("shown.bs.modal", function(){
     $("select.form-control").select2();

@@ -164,6 +164,29 @@ class myself{
     }
     return $ret;
   }
+
+  function getTaskLog($myUser = '', $idx=''){
+    global $thisClass;
+    $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+    if($strList = $thisClass->get($myUser, $this->module.'/flow/'.$idx,'log')){
+      $arrList = json_decode($strList,true);
+      if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
+        $ret = array(
+            'code' => 0,
+            'msg' => 'success',
+            'content' => array(),
+        );
+        $ret['content']=$arrList['data'];
+      }else{
+        $ret['code'] = 1;
+        $arrList = json_decode($strList,true);
+        $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+        $ret['remote'] = $strList;
+      }
+    }
+    $ret['ret'] = $strList;
+    return $ret;
+  }
 }
 $mySelf=new myself();
 
@@ -282,7 +305,10 @@ if($hasLimit){
         $retArr=$mySelf->update($myUser, 'stop_sub', $arrJson, $arrJson['id']);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
-    break;
+      break;
+    case 'tasklog':
+      $logFlag = false;//本操作不记录日志
+      $retArr = $mySelf->getTaskLog($myUser,$fIdx);
   }
 }else{
   $retArr['msg'] = 'Permission Denied!';
