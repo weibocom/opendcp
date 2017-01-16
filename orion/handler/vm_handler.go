@@ -178,7 +178,9 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 		node := nodes[i + len(vmIds)]
 		node.Status = CODE_ERROR
 		node.UpdatedTime = time.Now()
+
 		service.Cluster.UpdateBase(node)
+		service.Cluster.DeleteBase(node.Node)
 	}
 
 	// start checking result

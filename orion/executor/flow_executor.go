@@ -109,17 +109,20 @@ func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
 		return nil, errors.New("nodes is empty")
 	}
 
-	// make sure all nodes are in the same pool
+	// for now, DO NOT check all nodes are in the same pool
 	poolID := -1
 	for _, node := range nodes {
 		pid := node.Pool.Id
 		if poolID == -1 {
 			poolID = pid
 		} else {
+			// DO NOT check pool
+			/*
 			if pid != poolID {
 				beego.Error("Nodes are not in the same pool")
 				return nil, errors.New("nodes not in the same pool")
 			}
+			*/
 		}
 	}
 
