@@ -50,7 +50,7 @@ def return_failed(code=-1, message=""):
 
 #Return api invoking with success result
 def return_success(code=0, content=None):
-   
+
     if content is None:
         content = {}
     return jsonify(dict(code=code, content=content))
@@ -94,17 +94,17 @@ def defaultpage():
 Run system configuration task on specified ip
     param name: provide a new name for task, should not repeat with previous
     param nodes: target ip list
-    param tasks: task list , element type is according to task type.For ansible_role, the element should be role name in string, 
+    param tasks: task list , element type is according to task type.For ansible_role, the element should be role name in string,
                 for ansible task, the element should be json format,for example:[{"action":{"args":"echo {{name}}","module":"shell"}}]
     param tasktype: currently supports two values: ansible_task , ansible_role
     param params: params used in ansible python api variable_manager
-    param user: target system user to be used 
+    param user: target system user to be used
     param fork_num: thread count for parallel execution
 '''
 @App.route('/api/run', methods=['POST'])
 def run_task():
     try:
-        
+
         #read http params
         req_json = request.get_json(force=True, silent=True)
         if req_json is None:
@@ -138,13 +138,13 @@ def run_task():
 
         return return_success(content={"id": task_id}), 200
     except JsonEncodeException as e:
-        Logger.error("try run_task exception ---------@ ") 
+        Logger.error("try run_task exception ---------@ ")
         return return_failed(-1, "json encode error"), 400
     except ParamErrorException as e:
-        Logger.error("try run_task exception --------------> %s" %(str(e))) 
+        Logger.error("try run_task exception --------------> %s" %(str(e)))
         return return_failed(-1, "param error, error: " + e.message), 400
     except Exception as e:
-        Logger.error("try run_task exception --------------> %s" %(str(e))) 
+        Logger.error("try run_task exception --------------> %s" %(str(e)))
         return return_failed(-1, e.message), 500
 
 '''
@@ -187,10 +187,10 @@ def stop_task():
 
         return return_success(), 200
     except JsonEncodeException:
-        Logger.error("try stop_task exception --------------@") 
+        Logger.error("try stop_task exception --------------@")
         return return_failed(-1, "json encode error"), 400
     except Exception as e:
-        Logger.error("try stop_task exception --------------> %s" %(str(e))) 
+        Logger.error("try stop_task exception --------------> %s" %(str(e)))
         return return_failed(-1, e.message), 400
 
 '''
@@ -228,9 +228,9 @@ def check_task():
             task = Service.get_task_by_id(task_id)
             if task is None:
                 return return_failed(-1, "no task found for specified id:"+str(task_id)), 404
-        
+
         node_list = Service.check_task(task_id=str(task.id))
-        
+
         #return status data
         ret_node = []
         for node in node_list:
@@ -255,7 +255,7 @@ def check_task():
         Logger.error("try check_task exception --------------@")
         return return_failed(-1, "json encode error"), 400
     except Exception as e:
-        Logger.error("try check_task exception --------------> %s" %(str(e))) 
+        Logger.error("try check_task exception --------------> %s" %(str(e)))
         return return_failed(-1, e.message), 500
 '''
 Check status for specified request by id and name
@@ -293,7 +293,6 @@ def getlog():
             logs = Service.get_log_by_globalid_source_host(global_id, source, host)
             if logs is None:
                 return return_failed(-1, "no task found for specified global_id source host:"+str(global_id)), 404
-        
         #return status data
         ret_log = []
 
@@ -348,5 +347,43 @@ def getlog():
         Logger.error("try getlog exception --------------@")
         return return_failed(-1, "json encode error"), 400
     except Exception as e:
-        Logger.error("try getlog exception --------------> %s" %(str(e))) 
+        Logger.error("try getlog exception --------------> %s" %(str(e)))
         return return_failed(-1, e.message), 500
+
+@App.route('/api/parallel_run', methods=['POST'])
+def parallel_run_task():
+    try:
+        #read http params
+        req_json = request.get_json(force=True, silent=True)
+        if req_json is None:
+            raise JsonEncodeException
+        global_id = request.headers.get("X-CORRELATION-ID")
+        if global_id is None:
+            Logger.error("Missing X-CORRELATION-ID")
+            return return_failed(-1, "X-CORRELATION-ID is empyt"), 400
+        source = request.headers.get("X-SOURCE")
+        if source is None:
+            return return_failed(-1, "X-SOURCE is empyt"), 400
+        Logger.debug("Run request json:"+json.dumps(req_json)+str(global_id))
+        parallel_nodes = conform_param(req_json, "nodes", list)
+        headers ={'content-type': 'application/json',
+                  'X-CORRELATION-ID': request.headers.get("X-CORRELATION-ID"),
+                  'X-SOURCE': request.headers.get("X-SOURCE"),
+            'Authorization':'Basic bmlra2lfdGVzdDAwMkBzaW5hLmNuOjEyMzIyMw==',
+            'Cache-Control':'no-cache'}
+        return_list = []
+        for nodes in parallel_nodes:
+            r = requests.post("http://%s:9801/task/run" %(nodes),data=json.dumps(req_json), headers=headers, timeout=3)
+            return_list.append(r.json()['content']['id'])
+        # check task name duplicate
+        return return_success(content={"id": return_list[0]}), 200
+    except JsonEncodeException as e:
+        Logger.error("try run_task exception ---------@ ")
+        return return_failed(-1, "json encode error"), 400
+    except ParamErrorException as e:
+        Logger.error("try run_task exception --------------> %s" %(str(e)))
+        return return_failed(-1, "param error, error: " + e.message), 400
+    except Exception as e:
+        Logger.error("try run_task exception --------------> %s" %(str(e)))
+        return return_failed(-1, e.message), 500
+
