@@ -94,3 +94,13 @@ func GetClusters() ([]models.Cluster, error) {
 	}
 	return clusters, nil
 }
+
+func GetClustersByProvider(providerName string) ([]models.Cluster, error) {
+	o := GetOrmer()
+	var clusters []models.Cluster
+	_, err := o.QueryTable(CLUSTER_TABLE).RelatedSel().Filter("provider", providerName).All(&clusters)
+	if err != nil {
+		return nil, err
+	}
+	return clusters, nil
+}
