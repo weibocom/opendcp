@@ -18,33 +18,28 @@
  */
 
 
-package utils
+package models
 
 import (
-	"errors"
-	"fmt"
-	"reflect"
-	"strconv"
+	"time"
 )
 
-func ToInt(v interface{}) (int, error) {
-	switch v.(type) {
-	case int:
-		return v.(int), nil
-	case float64:
-		return int(v.(float64)), nil
-	case string:
-		i, err := strconv.Atoi(v.(string))
-		if err == nil {
-			return i, nil
-		}
-	}
-
-	return -1, errors.New("cannot convert to int:" + fmt.Sprintln(v) +
-		", type : " + reflect.TypeOf(v).String())
+type Logs struct {
+	Id               int      `json:"id" orm:"pk;auto"`
+	Fid              int      `json:"fid"`
+	BatchId          int      `json:"batch_id"`
+	CorrelationId    string   `json:"correlation_id"`
+	Message          string   `json:"message"`   //日志信息
+	Ctime            int      `json:"ctime"`
 }
 
-
-func GetCorrelationId(fid int, batchId int) string{
-	return fmt.Sprintf("%d-%d",fid,batchId)
+func NewLogsInit(Fid int,BatchId int, correlationId string, Message string) (result *Logs) {
+	result = &Logs{}
+	result.Fid = Fid
+	result.BatchId = BatchId
+	result.CorrelationId = correlationId
+	result.Message = Message
+	result.Ctime = int(time.Now().Unix())
+	return result
 }
+

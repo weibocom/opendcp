@@ -542,6 +542,28 @@ func (f *FlowApi) GetNodeStates() {
 	f.ReturnSuccess(ret)
 }
 
+
+func (f *FlowApi) GetFlowLogById() {
+	_id := f.Ctx.Input.Param(":id")
+	id, _ := strconv.Atoi(_id)
+
+	flow := &Flow{Id: id}
+	err := service.Flow.GetBase(flow)
+	if err != nil {
+		f.ReturnFailed("Flow not found: " + strconv.Itoa(id), 400)
+		return
+	}
+
+	logList := make([]Logs, 0)
+	_, err = service.Flow.ListByPageWithFilter(0, 1000,&Logs{}, &logList, "fid", id)
+	if err != nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	f.ReturnSuccess(logList)
+}
+
 // GetLog get log using nodeState Id
 func (f *FlowApi) GetLog() {
 	idStr := f.Ctx.Input.Param(":nsid")
