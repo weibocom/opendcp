@@ -136,6 +136,18 @@ CREATE TABLE IF NOT EXISTS `remote_action_impl` (
     `action_id` integer NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.Logs`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `logs` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `fid` int(10) NOT NULL,
+  `batch_id` int(10) NOT NULL DEFAULT '0',
+  `correlation_id` varchar(20) NOT NULL DEFAULT '0' COMMENT '全局id',
+  `message` text NOT NULL,
+  `ctime` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='日志信息表' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------
 -- DATA

@@ -60,6 +60,8 @@ var (
 	checkURL = "http://%s" + beego.AppConfig.String("remote_check_url")
 	logURL = "http://%s" + beego.AppConfig.String("remote_log_url")
 	forkNum  = 5
+
+	logService = service.Logs
 )
 
 const (
@@ -76,22 +78,29 @@ func (h *RemoteHandler) GetType() string {
 func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	stepParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
 
+	fid := nodes[0].Flow.Id
+	batchId := nodes[0].Batch.Id
+
 	step := action.Name
-	beego.Debug("Handle remote step", step)
+
+	logService.Debug(fid,batchId,corrId,fmt.Sprintf("Handle remote step:",step))
+
 	rstep := models.RemoteStep{Name: step}
 	err := service.Remote.GetBy(&rstep, "Name")
 
 	if err != nil {
-		beego.Error("remote step not found", step)
+		logService.Error(fid,batchId,corrId,fmt.Sprintf("remote step not found step:",step))
+
 		return Err("remote step not found: " + step)
 	}
 
 	// get actions
 	actions := rstep.Actions
-	beego.Debug("remote step has actions", actions)
+	logService.Debug(fid,batchId,corrId,fmt.Sprintf("remote step has actions",actions))
+
 	var actNames []string
 	json.Unmarshal([]byte(actions), &actNames)
-	beego.Debug("remote step has actions", actNames, len(actNames))
+	logService.Debug(fid,batchId,corrId,fmt.Sprintf("remote step has actions name:%s len:%d",actNames, len(actNames)))
 
 	var actionList []models.RemoteAction
 	service.Remote.GetByStringValues(&models.RemoteAction{}, &actionList,
@@ -101,37 +110,44 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	tpls := make([]interface{}, len(actionList))
 	for _, action := range actionList {
 		actID := action.Id
-		beego.Debug("getting act impl for ", actID)
+		logService.Debug(fid,batchId,corrId,fmt.Sprintf("getting act impl for %d",actID))
+
 		act := models.RemoteActionImpl{ActionId: actID}
 		err = service.Remote.GetBy(&act, "ActionId")
 		if err != nil {
-			beego.Error("Cannot find act impl", actID)
+			logService.Error(fid,batchId,corrId,fmt.Sprintf("Cannot find act impl %d",actID))
+
 			return Err("act impl not found: " + strconv.Itoa(actID))
 		}
 
 		tpl := make(map[string]interface{})
 		err = json.Unmarshal([]byte(act.Template), &tpl)
 		if err != nil {
-			beego.Error("Bad act impl template: ", actID, act.Template, err)
+			logService.Error(fid,batchId,corrId,fmt.Sprintf("Bad act impl template, actid:%d Template:%s",actID, act.Template),err)
+
 			return Err("bad impl template: " + strconv.Itoa(actID))
 		}
 
 		idx := h.indexOf(actNames, action.Name)
 		if idx == -1 {
-			beego.Error("Action [", action.Name, "] not in action list:", actNames)
+			logService.Error(fid,batchId,corrId,fmt.Sprintf("Action [%s] not in action list:%v",action.Name, actNames))
+
 			return Err("Action: " + action.Name)
 		}
 
 		tpls[idx] = tpl
-		beego.Debug("template of", actID, "is", act.Template)
+		logService.Debug(fid,batchId,corrId,fmt.Sprintf("template of %d is %s", actID,act.Template))
 	}
 
-	beego.Debug("remote step template:", tpls)
+	logService.Debug(fid,batchId,corrId,fmt.Sprintf("remote step template:%v",tpls))
 
 	// call ansible executor
 	ips := make([]string, len(nodes))
 	ipIDMap := make(map[string]int)
 	ipIdxMap := make(map[string]int)
+	ipsResChan = make(chan []string, len(nodes))
+	ret := make([]*NodeResult, len(nodes))
+
 	for i, node := range nodes {
 		ips[i] = node.Ip
 		ipIDMap[node.Ip] = node.Id
@@ -148,12 +164,12 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	for i := 0; i < checkTimeout; i++ {
 		time.Sleep(5 * time.Second)
 
-		beego.Debug("Checking result for task", execID, "for times", i+1)
+		logService.Debug(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d",execID, i+1))
+
 		resp, err := h.checkResult(execID, corrId)
 
 		if err == nil {
-			beego.Debug("Checking result for task", execID, "for times", i+1,
-				"status:", resp.Task.Status)
+			logService.Debug(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d status:%d", execID,i+1,resp.Task.Status))
 
 			switch resp.Task.Status {
 			case CODE_INIT, CODE_RUNNING:
@@ -161,7 +177,6 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 			case CODE_ERROR:
 				return Err(resp.Task.Err)
 			default:
-				ret := make([]*NodeResult, len(nodes))
 				for _, nodeResp := range resp.Nodes {
 					ip := nodeResp.IP
 					ret[ipIdxMap[ip]] = &NodeResult{
@@ -178,7 +193,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 			}
 
 		} else {
-			beego.Error("Checking result for task", execID, "for times", i+1, "FAIL:\n", err.Error())
+			logService.Error(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d FAIL:\n %s",execID,i+1,err.Error()))
 		}
 	}
 
