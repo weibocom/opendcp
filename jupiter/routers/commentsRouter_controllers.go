@@ -99,6 +99,13 @@ func init() {
 
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
 		beego.ControllerComments{
+			Method: "UploadKey",
+			Router: `sshkey/:instanceId`,
+			AllowHTTPMethods: []string{"put"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
+		beego.ControllerComments{
 			Method: "GetProviders",
 			Router: `/provider`,
 			AllowHTTPMethods: []string{"get"},
@@ -193,6 +200,13 @@ func init() {
 			Method: "QueryLogByInstanceId",
 			Router: `/log/:instanceId`,
 			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
+		beego.ControllerComments{
+			Method: "InputPyhDev",
+			Router: `/phydev`,
+			AllowHTTPMethods: []string{"put"},
 			Params: nil})
 
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:OrganizationController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:OrganizationController"],
