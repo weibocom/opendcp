@@ -373,7 +373,7 @@ def parallel_run_task():
             'Cache-Control':'no-cache'}
         return_list = []
         for nodes in parallel_nodes:
-            r = requests.post("http://%s:9801/task/run" %(nodes),data=json.dumps(req_json), headers=headers, timeout=3)
+            r = requests.post("http://%s:8000/task/run" %(nodes),data=json.dumps(req_json), headers=headers, timeout=3)
             return_list.append(r.json()['content']['id'])
         # check task name duplicate
         return return_success(content={"id": return_list[0]}), 200
