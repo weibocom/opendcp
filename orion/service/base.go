@@ -34,6 +34,7 @@ var (
 	Cluster = &ClusterService{}
 	Flow    = &FlowService{}
 	Remote  = &RemoteStepService{}
+	Logs    = &LogsService{}
 )
 
 func (b *BaseService) InsertBase(obj interface{}) error {
