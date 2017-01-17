@@ -29,6 +29,7 @@ from flask import request, jsonify, app
 from octans import Worker, App, Service
 from octans.ansible.ansible_task import AnsibleTask
 import json
+import requests
 from octans.logger import LogManager
 
 Logger = LogManager.get_logger("API")
