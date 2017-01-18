@@ -39,53 +39,53 @@ var (
 )
 
 
-func (store *LogsService) Debug(Fid int,BatchId int, correlationId string, Message string, v ...interface{}) {
+func (store *LogsService) Debug(Fid int,BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
-		beego.Debug(Message,v)
+		beego.Debug(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,Message,v ...)
+	go store.saveToDb(Fid,BatchId,correlationId,v ...)
 }
 
 
-func (store *LogsService) Info(Fid int,BatchId int, correlationId string, Message string, v ...interface{}) {
+func (store *LogsService) Info(Fid int,BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
-		beego.Info(Message,v)
+		beego.Info(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,Message,v ...)
+	go store.saveToDb(Fid,BatchId,correlationId,v ...)
 }
 
-func (store *LogsService) Warn(Fid int,BatchId int, correlationId string, Message string, v ...interface{}) {
+func (store *LogsService) Warn(Fid int,BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
-		beego.Warn(Message,v)
+		beego.Warn(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,Message,v ...)
+	go store.saveToDb(Fid,BatchId,correlationId,v ...)
 }
 
-func (store *LogsService) Error(Fid int,BatchId int, correlationId string, Message string, v ...interface{}) {
+func (store *LogsService) Error(Fid int,BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
-		beego.Error(Message,v)
+		beego.Error(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,Message,v ...)
+	go store.saveToDb(Fid,BatchId,correlationId,v ...)
 }
 
 
-func (store *LogsService) saveToDb(Fid int,BatchId int, correlationId string, Message string,v ...interface{}){
+func (store *LogsService) saveToDb(Fid int,BatchId int, correlationId string,v ...interface{}){
 	defer func() {
 		if r := recover(); r != nil {
 			beego.Info("saveToDb is error !", r)
 		}
 	}()
 
+	msg := strings.Repeat(" %v", len(v))
 	if len(v) > 0 {
-		msg := strings.Repeat(" %v", len(v))
-		Message += fmt.Sprintf(msg, v...)
+		msg = fmt.Sprintf(msg, v...)
 	}
 
-	logs := models.NewLogsInit(Fid,BatchId,correlationId,Message)
+	logs := models.NewLogsInit(Fid,BatchId,correlationId,msg)
 	orm := orm.NewOrm()
 	id, err := orm.Insert(logs)
 
