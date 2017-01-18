@@ -169,29 +169,32 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	haveSucc := false
 	for _, node := range nodes {
 		ip := node.Ip
-		if ipRet[ip] != nil{
-			if ipRet[ip].Code == CODE_SUCCESS && haveSucc == false {
-				haveSucc = true
-			}else if ipRet[ip].Code != CODE_SUCCESS && haveFail == false {
-				haveFail = true
+
+		if ipRet[ip] == nil{
+			ipRs := &NodeResult{
+				Code: CODE_ERROR,
+				Data: fmt.Sprintf(" %s runAndCheck timeout !",ip),
 			}
 
+			ret = append(ret,ipRs)
 			continue
 		}
 
-		ipRs := &NodeResult{
-			Code: CODE_ERROR,
-			Data: fmt.Sprintf(" %s runAndCheck timeout !",ip),
+		if ipRet[ip].Code == CODE_SUCCESS && haveSucc == false {
+			haveSucc = true
+		}else if ipRet[ip].Code != CODE_SUCCESS && haveFail == false {
+			haveFail = true
 		}
-		ret = append(ret,ipRs)
+
+		ret = append(ret,ipRet[ip])
 	}
 
 	taskRsCode := 0
 	if haveFail && haveSucc {
 		taskRsCode = CODE_PARTIAL
-	}else if haveFail && !haveSucc {
+	}else if haveFail {
 		taskRsCode = CODE_ERROR
-	}else if !haveFail && haveSucc {
+	}else if haveSucc {
 		taskRsCode = CODE_SUCCESS
 	}
 
