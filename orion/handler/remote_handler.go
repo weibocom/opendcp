@@ -145,7 +145,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 
 	ret := make([]*NodeResult, len(nodes))
 	ipsChan := make(chan map[string]*NodeResult, len(nodes))
-	ipRet := make(map[string]*NodeResult, len(nodes))
+	ipRet := make(map[string]*NodeResult,len(nodes))
 
 	for _, node := range nodes {
 		go h.callAndCheck(fid,batchId,corrId,node.Ip,rstep.Name,&tpls,&stepParams,ipsChan)
@@ -167,7 +167,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	//如果全部成功则为成功 ,如果全部失败则为失败.如果有成功有失败..则返回部分成功.
 	haveFail := false
 	haveSucc := false
-	for _, node := range nodes {
+	for i, node := range nodes {
 		ip := node.Ip
 
 		if ipRet[ip] == nil{
@@ -176,7 +176,8 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 				Data: fmt.Sprintf(" %s runAndCheck timeout !",ip),
 			}
 
-			ret = append(ret,ipRs)
+			ret[i] = ipRs
+			haveFail = true
 			continue
 		}
 
@@ -186,7 +187,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 			haveFail = true
 		}
 
-		ret = append(ret,ipRet[ip])
+		ret[i] = ipRet[ip]
 	}
 
 	taskRsCode := 0
