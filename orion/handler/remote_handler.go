@@ -142,62 +142,134 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	logService.Debug(fid,batchId,corrId,fmt.Sprintf("remote step template:%v",tpls))
 
 	// call ansible executor
-	ips := make([]string, len(nodes))
-	ipIDMap := make(map[string]int)
-	ipIdxMap := make(map[string]int)
-	ret := make([]*NodeResult, len(nodes))
 
-	for i, node := range nodes {
-		ips[i] = node.Ip
-		ipIDMap[node.Ip] = node.Id
-		ipIdxMap[node.Ip] = i
+	ret := make([]*NodeResult, len(nodes))
+	ipsChan := make(chan map[string]*NodeResult, len(nodes))
+	ipRet := make(map[string]*NodeResult, len(nodes))
+
+	for _, node := range nodes {
+		go h.callAndCheck(fid,batchId,corrId,node.Ip,rstep.Name,&tpls,&stepParams,ipsChan)
 	}
 
-	execID, user := rstep.Name+"_"+fmt.Sprint(time.Now().UnixNano()), "root"
-	_, err = h.callExecutor(&ips, user, execID, &tpls, &stepParams, corrId)
+	for i := 0; i < len(nodes); i++ {
+		select {
+		case nodeRespMapList := <-ipsChan:
+			for ipString,nodeResp := range nodeRespMapList{
+				logService.Debug(fid,batchId,corrId,fmt.Sprintf("%s runAndCheck is end !", ipString))
+				ipRet[ipString] = nodeResp
+			}
+
+		case <-time.After(time.Second * checkTimeout * 5 +1):
+			logService.Debug(fid,batchId,corrId,fmt.Sprintf("runAndCheck timeout !"))
+		}
+	}
+
+	//如果全部成功则为成功 ,如果全部失败则为失败.如果有成功有失败..则返回部分成功.
+	haveFail := false
+	haveSucc := false
+	for _, node := range nodes {
+		ip := node.Ip
+		if ipRet[ip] != nil{
+			if ipRet[ip].Code == CODE_SUCCESS && haveSucc == false {
+				haveSucc = true
+			}else if ipRet[ip].Code != CODE_SUCCESS && haveFail == false {
+				haveFail = true
+			}
+
+			continue
+		}
+
+		ipRs := &NodeResult{
+			Code: CODE_ERROR,
+			Data: fmt.Sprintf(" %s runAndCheck timeout !",ip),
+		}
+		ret = append(ret,ipRs)
+	}
+
+	taskRsCode := 0
+	if haveFail && haveSucc {
+		taskRsCode = CODE_PARTIAL
+	}else if haveFail && !haveSucc {
+		taskRsCode = CODE_ERROR
+	}else if !haveFail && haveSucc {
+		taskRsCode = CODE_SUCCESS
+	}
+
+	return &HandleResult{
+		Code:   taskRsCode,
+		Msg:    "",
+		Result: ret,
+	}
+}
+
+
+func (h *RemoteHandler) callAndCheck(fid int,batchId int ,corrId string,ip string,setupName string,tpls *[]interface{},stepParams *map[string]interface{},ipsChan chan map[string]*NodeResult)  {
+	execID, user := ip + "_" + setupName+"_"+fmt.Sprint(time.Now().UnixNano()), "root"
+
+	_, err := h.callExecutor(&[]string{ip}, user, execID, tpls, stepParams, corrId)
 	if err != nil {
-		return Err("fail to execute command: " + err.Error())
+		logService.Error(fid,batchId,corrId,fmt.Sprintf("%s fail to execute command %v",ip,err.Error()))
+
+		rs := make(map[string]*NodeResult)
+		rs[ip] = &NodeResult{
+			Code: CODE_ERROR,
+			Data: fmt.Sprintf("%s fail to execute command %v",ip,err.Error()),
+		}
+
+		ipsChan <- rs
+		return
 	}
 
 	// check until got result
 	for i := 0; i < checkTimeout; i++ {
 		time.Sleep(5 * time.Second)
-
 		logService.Debug(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d",execID, i+1))
 
 		resp, err := h.checkResult(execID, corrId)
-
-		if err == nil {
-			logService.Debug(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d status:%d", execID,i+1,resp.Task.Status))
-
-			switch resp.Task.Status {
-			case CODE_INIT, CODE_RUNNING:
-				continue
-			case CODE_ERROR:
-				return Err(resp.Task.Err)
-			default:
-				for _, nodeResp := range resp.Nodes {
-					ip := nodeResp.IP
-					ret[ipIdxMap[ip]] = &NodeResult{
-						Code: nodeResp.Status,
-						Data: nodeResp.Log,
-					}
-				}
-
-				return &HandleResult{
-					Code:   CODE_SUCCESS,
-					Msg:    "",
-					Result: ret,
-				}
-			}
-
-		} else {
+		if err != nil {
 			logService.Error(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d FAIL:\n %s",execID,i+1,err.Error()))
+			continue
+		}
+
+		logService.Debug(fid,batchId,corrId,fmt.Sprintf("Checking result for task %s for times %d status:%d", execID,i+1,resp.Task.Status))
+		switch resp.Task.Status {
+		case CODE_INIT, CODE_RUNNING:
+			continue
+		case CODE_ERROR:
+			for _, nodeResp := range resp.Nodes {
+				rs := make(map[string]*NodeResult)
+				rs[nodeResp.IP] = &NodeResult{
+					Code: nodeResp.Status,
+					Data: resp.Task.Err + nodeResp.Log,
+				}
+
+				ipsChan <- rs
+				return
+			}
+		default:
+			for _, nodeResp := range resp.Nodes {
+				rs := make(map[string]*NodeResult)
+				rs[nodeResp.IP] = &NodeResult{
+					Code: nodeResp.Status,
+					Data: nodeResp.Log,
+				}
+
+				ipsChan <- rs
+				return
+			}
 		}
 	}
 
-	return Err("Timeout to check result")
+
+	rs := make(map[string]*NodeResult)
+	rs[ip] = &NodeResult{
+		Code: CODE_ERROR,
+		Data: fmt.Sprintf("%s checkResult timeout !",ip),
+	}
+
+	ipsChan <- rs
 }
+
 
 // ListAction implements method of interface Handler, and will return all
 // remote steps defined bu users.
