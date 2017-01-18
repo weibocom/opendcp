@@ -240,16 +240,14 @@ func (h *RemoteHandler) callAndCheck(fid int,batchId int ,corrId string,ip strin
 		case CODE_INIT, CODE_RUNNING:
 			continue
 		case CODE_ERROR:
-			for _, nodeResp := range resp.Nodes {
-				rs := make(map[string]*NodeResult)
-				rs[nodeResp.IP] = &NodeResult{
-					Code: nodeResp.Status,
-					Data: resp.Task.Err + nodeResp.Log,
-				}
-
-				ipsChan <- rs
-				return
+			rs := make(map[string]*NodeResult)
+			rs[ip] = &NodeResult{
+				Code: CODE_ERROR,
+				Data: resp.Task.Err,
 			}
+
+			ipsChan <- rs
+			return
 		default:
 			for _, nodeResp := range resp.Nodes {
 				rs := make(map[string]*NodeResult)
