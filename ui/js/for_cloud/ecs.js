@@ -239,6 +239,9 @@ var change=function(step){
       postData=JSON.parse(postData.ecs);
       actionDesc='删除';
       break;
+    case 'addPhyDev':
+      actionDesc='添加';
+      break;
     default:
       actionDesc=action;
       break;
@@ -793,4 +796,14 @@ var viewLog=function(idx,desc){
     $('#myViewModalBody').html(text);
     NProgress.done();
   }
+}
+
+
+
+
+var checkPhyDev=function(){
+  var disabled=false;
+  if($('#Ip').val()=='') disabled=true;
+  if($('#Password').val()=='') disabled=true;
+  $('#btnCommit').attr('disabled',disabled)
 }
