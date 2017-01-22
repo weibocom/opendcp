@@ -5,6 +5,7 @@
     "KeyDir": "./keys",
     "Ansible": {
         "Url": "",
+        "GetOctansUrl": "",
         "DefaultRole": "",
         "ForkNum": 5
     }

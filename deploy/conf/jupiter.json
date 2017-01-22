@@ -6,6 +6,7 @@
     "KeyDir": "./keys",
     "Ansible": {
         "Url": "http://octans:8000",
+        "GetOctansUrl": "http://opendcp.oss-cn-shanghai.aliyuncs.com/manage_device.sh",
         "DefaultRole": "init",
         "ForkNum": 5
     }
