@@ -34,6 +34,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"time"
+	"github.com/astaxie/beego"
 )
 
 const PhyDev = "phydev"
@@ -310,8 +311,8 @@ func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
 	return instances, nil
 }
 
-func StartSshService(instanceId string, ip string, correlationId string) error {
-	sshCli, err := getSSHClient(ip, "")
+func StartSshService(instanceId string, ip string, password string, correlationId string) error {
+	sshCli, err := getSSHClient(ip, "", password)
 	if err != nil {
 		return err
 	}
@@ -323,11 +324,11 @@ func StartSshService(instanceId string, ip string, correlationId string) error {
 	return nil
 }
 
-func getSSHClient(ip string, path string) (*ssh.Client, error) {
+func getSSHClient(ip string, path string, password string) (*ssh.Client, error) {
 	var auth ssh.Auth
 	if path == "" {
 		auth = ssh.Auth{
-			Passwords: []string{conf.Config.Password},
+			Passwords: []string{password},
 		}
 	} else {
 		auth = ssh.Auth{
@@ -410,4 +411,22 @@ func InputPhyDev(ins models.Instance) (models.Instance, error) {
 func UploadSshKey(instanceId string, sshKey models.SshKey) (models.SshKey, error) {
 	err := dao.UpdateSshKey(instanceId, sshKey.PublicKey, sshKey.PrivateKey)
 	return sshKey, err
+}
+
+func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+	cli, err := getSSHClient(ip, "", password)
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	ret, err := cli.Run(cmd)
+	if err != nil {
+		return ssh.Output{}, err
+	}
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), beego.AppConfig.String("mysqladdr"), beego.AppConfig.String("mysqlport"), beego.AppConfig.String("mysqladdr"), beego.AppConfig.String("mysqladdr"))
+	logstore.Info(correlationId, instanceId, cmd)
+	ret, err = cli.Run(cmd)
+	if err != nil {
+		return ssh.Output{}, err
+	}
+	logstore.Info(correlationId, instanceId, ret)
+	return ret, nil
 }

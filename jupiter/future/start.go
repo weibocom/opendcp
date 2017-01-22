@@ -100,7 +100,7 @@ func (sf *StartFuture) Run() error {
 func (sf *StartFuture) Success() {
 	dao.UpdateInstanceStatus(sf.Ip, models.Initing)
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "store ssh key: ", sf.InstanceId, sf.Ip)
-	sshErr := instance.StartSshService(sf.InstanceId, sf.Ip, sf.CorrelationId)
+	sshErr := instance.StartSshService(sf.InstanceId, sf.Ip, conf.Config.Password, sf.CorrelationId)
 	if sshErr != nil {
 		logstore.Error(sf.CorrelationId, sf.InstanceId, "ssh instance: ", sf.InstanceId, "failed: ", sshErr)
 		dao.UpdateInstanceStatus(sf.Ip, models.InitTimeout)

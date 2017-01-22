@@ -52,6 +52,7 @@ type Configuration struct {
 
 type Ansible struct {
 	Url         string
+	GetOctansUrl string
 	DefaultRole string
 	ForkNum     int
 }
