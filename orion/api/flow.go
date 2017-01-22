@@ -32,6 +32,7 @@ import (
 	"weibo.com/opendcp/orion/handler"
 	. "weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
+	"fmt"
 )
 
 type FlowApi struct {
@@ -280,6 +281,8 @@ func (f *FlowApi) RunFlow() {
 
 	nodes := make([]string, 0)
 	nodeList := make([]*Node, 0, len(nodes))
+	errorNodesIp := " "
+
 	for _, n := range req.Nodes {
 		nodeIp, ok := n["ip"].(string)
 		if !ok {
@@ -289,9 +292,14 @@ func (f *FlowApi) RunFlow() {
 		node, err := service.Flow.GetNodeByIp(nodeIp)
 		if err != nil {
 			beego.Error("node :[", nodeIp, "] not found...")
+			errorNodesIp += nodeIp + ","
 			continue
 		}
 		nodeList = append(nodeList, node)
+	}
+
+	if len(errorNodesIp) >0 {
+		f.ReturnFailed(fmt.Sprintf("node :[%s] not found...",errorNodesIp), 400)
 	}
 
 	context := make(map[string]interface{})
