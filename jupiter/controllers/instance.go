@@ -465,10 +465,10 @@ func (ic *InstanceController) QueryLogByInstanceId() {
 	ic.RespJsonWithStatus()
 }
 
-// @Title Input machine
-// @Description Input machine to manage
+// @Title Upload machine infomation
+// @Description Upload machine information to DB
 // @router /phydev [put]
-func (ic *InstanceController) InputPyhDev() {
+func (ic *InstanceController) UploadPyhDevInfo() {
 	var ins models.Instance
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &ins)
 	if err != nil {
@@ -484,6 +484,30 @@ func (ic *InstanceController) InputPyhDev() {
 		return
 	}
 	resp.Content = result
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
+}
+
+// @Title manage physical device
+// @Description manage physical device
+// @router /phydev [post]
+func (ic *InstanceController) ManagePhyDev() {
+	correlationId := ic.Ctx.Input.Header("X-CORRELATION-ID")
+	if len(correlationId) <= 0 {
+		ic.RespMissingParams("X-CORRELATION-ID")
+		return
+	}
+	var phyAuth models.PhyAuth
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &phyAuth)
+	if err != nil {
+		beego.Error("Could parase request before input instance: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	go instance.ManageDev(phyAuth.Ip, phyAuth.Password, "", correlationId)
+	resp.Content = "Starting manage physical device"
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
