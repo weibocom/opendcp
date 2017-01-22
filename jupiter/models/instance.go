@@ -133,6 +133,11 @@ type SshKey struct {
 	PrivateKey string
 }
 
+type PhyAuth struct {
+	Ip string
+	Password string
+}
+
 type StatusResp struct {
 	InstanceId       string         `json:"instance_id"`
 	Status           InstanceStatus `json:"status"`
@@ -162,6 +167,7 @@ type EipAddressAssociateTypeAllin struct {
 	Bandwidth          int    `json:"Bandwidth"`
 	InternetChargeType string `json:"InternetChargeType"`
 }
+
 type InstanceAllIn struct {
 	InstanceId          string                       `json:"InstanceId"`
 	InstanceName        string                       `json:"InstanceName"`
