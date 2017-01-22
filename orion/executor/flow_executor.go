@@ -74,14 +74,17 @@ type FlowExecutor struct {
 func (exec *FlowExecutor) Run(tplID int, name string, option *ExecOption,
 	nodes []*models.Node,context map[string]interface{}) error {
 
-	fi, err := exec.Create(tplID, name, option, nodes, context)
+	fis, err := exec.Create(tplID, name, option, nodes, context)
 	if err != nil {
 		return err
 	}
 
-	err = exec.Start(fi)
-	if err != nil {
-		return err
+	for _, fi  := range fis{
+		ins := fi
+		err = exec.Start(ins)
+		if err  != nil{
+			return err
+		}
 	}
 
 	return nil
@@ -89,9 +92,12 @@ func (exec *FlowExecutor) Run(tplID int, name string, option *ExecOption,
 
 // Create creates a flow instance with given template id, and nodes.
 func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
-	nodes []*models.Node, context map[string]interface{}) (*models.Flow, error) {
+	nodes []*models.Node, context map[string]interface{}) ([]*models.Flow, error) {
 
 	beego.Info("Create new task from template[", tplID, "]")
+
+	nodesarray := make(map[int][]*models.Node)
+	var instances []*models.Flow
 
 	flow := &models.FlowImpl{Id: tplID}
 	err := flowService.GetBase(flow)
@@ -110,21 +116,10 @@ func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
 		return nil, errors.New("nodes is empty")
 	}
 
-	// for now, DO NOT check all nodes are in the same pool
-	poolID := -1
+	// make sure all nodes are in the same pool
 	for _, node := range nodes {
 		pid := node.Pool.Id
-		if poolID == -1 {
-			poolID = pid
-		} else {
-			// DO NOT check pool
-			/*
-			if pid != poolID {
-				beego.Error("Nodes are not in the same pool")
-				return nil, errors.New("nodes not in the same pool")
-			}
-			*/
-		}
+		nodesarray[pid] = append(nodesarray[pid], node)
 	}
 
 	var stepOps []*models.StepOption
@@ -153,28 +148,33 @@ func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
 		beego.Error("bad opUser:", context["opUser"])
 		return nil, errors.New("bad opUser!")
 	}
-	instance, err := exec.createFlowInstance(name, flow, &models.Pool{Id: poolID}, stepOps, option, opUser)
-	if err != nil {
-		beego.Error("Fail to create flow instance", err)
-		return nil, err
+
+
+	for pid, node := range nodesarray{
+		poolID := pid
+		poolNode := node
+		instance, err := exec.createFlowInstance(name, flow, &models.Pool{Id: poolID}, stepOps, option, opUser)
+		if err != nil {
+			beego.Error("Fail to create flow instance", err)
+			return nil, err
+		}
+		states, err := exec.createNodeStates(instance, poolNode)
+		if err != nil {
+			beego.Error("Fail to create node states for flow: ", instance.Name, err)
+			flowService.DeleteBase(instance)
+			return nil, err
+		}
+		// create batches
+		err = exec.createBatches(instance, states, option.MaxNum)
+		if err != nil {
+			beego.Error("Fail to create batches for flow: ", instance.Name, err)
+			flowService.DeleteBase(instance)
+			return nil, err
+		}
+		instances = append(instances, instance)
 	}
 
-	states, err := exec.createNodeStates(instance, nodes)
-	if err != nil {
-		beego.Error("Fail to create node states for flow: ", instance.Name, err)
-		flowService.DeleteBase(instance)
-		return nil, err
-	}
-
-	// create batches
-	err = exec.createBatches(instance, states, option.MaxNum)
-	if err != nil {
-		beego.Error("Fail to create batches for flow: ", instance.Name, err)
-		flowService.DeleteBase(instance)
-		return nil, err
-	}
-
-	return instance, nil
+	return instances, nil
 }
 
 // Start starts an existing flow instance.
