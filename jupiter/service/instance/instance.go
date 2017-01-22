@@ -17,24 +17,22 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package instance
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/astaxie/beego"
+	"strings"
+	"time"
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/dao"
+	"weibo.com/opendcp/jupiter/logstore"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
-	"weibo.com/opendcp/jupiter/logstore"
-	"strings"
-	"weibo.com/opendcp/jupiter/response"
-	"fmt"
-	"encoding/json"
-	"time"
-	"github.com/astaxie/beego"
 )
 
 const PhyDev = "phydev"
@@ -347,7 +345,7 @@ func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId strin
 	store := logstore.Store{}
 	logInfo := store.QueryLogByCorrelationIdAndInstanceId(instanceId, correlationId)
 	jupiterLog := logInfo.Message
-	url:= conf.Config.Ansible.Url + "/api/getlog"
+	url := conf.Config.Ansible.Url + "/api/getlog"
 	ip, err := dao.GetIpByInstanceId(instanceId)
 	if err != nil {
 		return "", err
@@ -364,7 +362,7 @@ func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId strin
 			Log []string
 		}
 	}
-	resp := &octansResp {}
+	resp := &octansResp{}
 	err = json.Unmarshal([]byte(raw), &resp)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "Error when parsing log for", instanceId, "err:", err)
@@ -388,12 +386,12 @@ func InputPhyDev(ins models.Instance) (models.Instance, error) {
 	var cluster models.Cluster
 	if len(clusters) == 0 {
 		cluster = models.Cluster{
-			Name: "Physical device",
-			Provider: "phydev",
-			Desc: "About physical device",
+			Name:       "Physical device",
+			Provider:   "phydev",
+			Desc:       "About physical device",
 			CreateTime: time.Now(),
-			Network: &models.Network{},
-			Zone: &models.Zone{},
+			Network:    &models.Network{},
+			Zone:       &models.Zone{},
 		}
 		dao.InsertCluster(&cluster)
 		ins.Cluster = &cluster
@@ -420,7 +418,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	if err != nil {
 		return ssh.Output{}, err
 	}
-	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083",
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 > /root/result.out",
 		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), beego.AppConfig.String("mysqladdr"), beego.AppConfig.String("mysqlport"), beego.AppConfig.String("mysqladdr"), beego.AppConfig.String("mysqladdr"))
 	logstore.Info(correlationId, instanceId, cmd)
 	ret, err = cli.Run(cmd)
