@@ -195,6 +195,29 @@ class myself{
     die($content);
   }
 
+  function addPhyDev($myUser = '', $method = 'POST', $arrJson = array()){
+    global $thisClass;
+    $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+    if(isset($arrJson['Ip'])&&!empty($arrJson['Password'])){
+      if($strList = $thisClass->get($myUser, 'instance/phydev', $method,$arrJson)){
+        $arrList = json_decode($strList,true);
+        if(isset($arrList['code']) && $arrList['code'] == 0){
+          $ret = array(
+              'code' => 0,
+              'msg' => 'success',
+          );
+        }else{
+          $ret['code'] = 1;
+          $arrList = json_decode($strList,true);
+          $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+          $ret['remote'] = $strList;
+        }
+      }
+      $ret['ret'] = $strList;
+    }
+    return $ret;
+  }
+
 }
 $mySelf=new myself();
 
@@ -268,6 +291,12 @@ if($hasLimit){
       break;
     case 'down_sshkey':
       $mySelf->getSshkey($myUser,$fIdx);
+      break;
+    case 'addPhyDev':
+      if(isset($arrJson) && !empty($arrJson)){
+        $retArr = $mySelf->addPhyDev($myUser,'POST', $arrJson);
+        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+      }
       break;
   }
 }else{
