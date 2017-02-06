@@ -418,8 +418,10 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	if err != nil {
 		return ssh.Output{}, err
 	}
+	dbAddr := GetLocalIp()
+	jupiterAddr := GetLocalIp()
 	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 > /root/result.out",
-		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), beego.AppConfig.String("mysqladdr"), beego.AppConfig.String("mysqlport"), beego.AppConfig.String("mysqladdr"), beego.AppConfig.String("mysqladdr"))
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr)
 	logstore.Info(correlationId, instanceId, cmd)
 	ret, err = cli.Run(cmd)
 	if err != nil {
@@ -427,4 +429,13 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	}
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
+}
+
+func GetLocalIp() string {
+	conn, err := net.Dial("udp", "t.cn:80")
+	if err != nil {
+		return "127.0.0.1"
+	}
+	defer conn.Close()
+	return strings.Split(conn.LocalAddr().String(), ":")[0]
 }
