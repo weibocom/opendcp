@@ -281,7 +281,7 @@ func (f *FlowApi) RunFlow() {
 
 	nodes := make([]string, 0)
 	nodeList := make([]*Node, 0, len(nodes))
-	errorNodesIp := " "
+	errorNodesIp := ""
 
 	for _, n := range req.Nodes {
 		nodeIp, ok := n["ip"].(string)
