@@ -138,6 +138,17 @@ type PhyAuth struct {
 	Password string
 }
 
+type PhyDev struct {
+	PhyAuth
+	Cpu int
+	Ram int
+}
+
+type InstanceIdStatus struct {
+	InstanceId     string
+	Status         InstanceStatus
+}
+
 type StatusResp struct {
 	InstanceId       string         `json:"instance_id"`
 	Status           InstanceStatus `json:"status"`
