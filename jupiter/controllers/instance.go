@@ -85,7 +85,7 @@ func (ic *InstanceController) GetInstance() {
 	ic.RespJsonWithStatus()
 }
 
-// @Title Get instances
+// @Title Check status
 // @Description check instances status
 // @router status/:instanceIds [get]
 func (ic *InstanceController) GetInstancesStatus() {
@@ -102,6 +102,30 @@ func (ic *InstanceController) GetInstancesStatus() {
 	}
 	resp := ApiResponse{}
 	resp.Content = ins
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
+}
+
+// @Title Update machine status
+// @Description Update machine status
+// @router /status [post]
+func (ic *InstanceController) UpdateInstanceStatus() {
+	var insStat models.InstanceIdStatus
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
+	if err != nil {
+		beego.Error("Could parase request before crate instance: ", err)
+		ic.RespInputError()
+		return
+	}
+	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status)
+	if err != nil {
+		beego.Error("update instance status err: ", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = status
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
@@ -468,7 +492,7 @@ func (ic *InstanceController) QueryLogByInstanceId() {
 // @Title Upload machine infomation
 // @Description Upload machine information to DB
 // @router /phydev [put]
-func (ic *InstanceController) UploadPyhDevInfo() {
+func (ic *InstanceController) UploadPhyDevInfo() {
 	var ins models.Instance
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &ins)
 	if err != nil {
@@ -498,15 +522,24 @@ func (ic *InstanceController) ManagePhyDev() {
 		ic.RespMissingParams("X-CORRELATION-ID")
 		return
 	}
-	var phyAuth models.PhyAuth
-	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &phyAuth)
+	var phyDev models.PhyDev
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &phyDev)
 	if err != nil {
 		beego.Error("Could parase request before input instance: ", err)
 		ic.RespInputError()
 		return
 	}
+	var ins models.Instance
+        ins.Cpu = phyDev.Cpu
+        ins.Ram = phyDev.Ram
+        ins, err = instance.InputPhyDev(ins)
+        if err != nil {
+               beego.Error("input phy dev err:", err)
+               ic.RespServiceError(err)
+               return
+        }
 	resp := ApiResponse{}
-	go instance.ManageDev(phyAuth.Ip, phyAuth.Password, "", correlationId)
+	go instance.ManageDev(phyDev.Ip, phyDev.Password, ins.InstanceId, correlationId)
 	resp.Content = "Starting manage physical device"
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
