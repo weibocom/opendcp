@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/astaxie/beego"
+	"github.com/rs/xid"
 	"strings"
 	"time"
 	"weibo.com/opendcp/jupiter/conf"
@@ -394,12 +395,19 @@ func InputPhyDev(ins models.Instance) (models.Instance, error) {
 			Zone:       &models.Zone{},
 		}
 		dao.InsertCluster(&cluster)
+		_, err = bill.InsertBill(&cluster)
+		if err != nil {
+			return ins, err
+		}
 		ins.Cluster = &cluster
 	} else {
 		ins.Cluster = &clusters[0]
 	}
+	guid := xid.New()
+	instanceId := "i-" + guid.String()
+	ins.InstanceId = instanceId
 	ins.Provider = PhyDev
-	ins.Status = models.Success
+	ins.Status = models.Initing
 	if err := dao.InsertInstance(&ins); err != nil {
 		return ins, err
 	}
@@ -411,7 +419,21 @@ func UploadSshKey(instanceId string, sshKey models.SshKey) (models.SshKey, error
 	return sshKey, err
 }
 
+func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (models.InstanceStatus, error) {
+	err := dao.UpdateInstanceStatusByInstanceId(instanceId, status)
+	if err != nil {
+		return status, err
+	}
+	return status, nil
+}
+
 func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+	sshErr := StartSshService(instanceId, ip, password, correlationId)
+	if sshErr != nil {
+		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
+		dao.UpdateInstanceStatus(ip, models.InitTimeout)
+		return ssh.Output{}, sshErr
+	}
 	cli, err := getSSHClient(ip, "", password)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
 	ret, err := cli.Run(cmd)
@@ -420,8 +442,8 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	}
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
-	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 > /root/result.out",
-		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr)
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId)
 	logstore.Info(correlationId, instanceId, cmd)
 	ret, err = cli.Run(cmd)
 	if err != nil {
