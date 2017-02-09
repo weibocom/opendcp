@@ -134,7 +134,8 @@ type SshKey struct {
 }
 
 type PhyAuth struct {
-	Ip string
+	PublicIp string
+	PrivateIp string
 	Password string
 }
 
