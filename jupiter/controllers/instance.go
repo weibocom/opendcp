@@ -532,6 +532,8 @@ func (ic *InstanceController) ManagePhyDev() {
 	var ins models.Instance
         ins.Cpu = phyDev.Cpu
         ins.Ram = phyDev.Ram
+	ins.PublicIpAddress = phyDev.PublicIp
+	ins.PrivateIpAddress = phyDev.PrivateIp
         ins, err = instance.InputPhyDev(ins)
         if err != nil {
                beego.Error("input phy dev err:", err)
@@ -539,7 +541,11 @@ func (ic *InstanceController) ManagePhyDev() {
                return
         }
 	resp := ApiResponse{}
-	go instance.ManageDev(phyDev.Ip, phyDev.Password, ins.InstanceId, correlationId)
+	var ip = ins.PublicIpAddress
+	if ip != "" {
+		ip = ins.PrivateIpAddress
+	}
+	go instance.ManageDev(ip, phyDev.Password, ins.InstanceId, correlationId)
 	resp.Content = "Starting manage physical device"
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
