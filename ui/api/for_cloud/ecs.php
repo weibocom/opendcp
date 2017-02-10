@@ -198,7 +198,7 @@ class myself{
   function addPhyDev($myUser = '', $method = 'POST', $arrJson = array()){
     global $thisClass;
     $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if(empty($arrJson['Password'])){
+    if(!empty($arrJson['Password'])){
       if($strList = $thisClass->get($myUser, 'instance/phydev', $method,$arrJson)){
         $arrList = json_decode($strList,true);
         if(isset($arrList['code']) && $arrList['code'] == 0){
@@ -294,6 +294,10 @@ if($hasLimit){
       break;
     case 'addPhyDev':
       if(isset($arrJson) && !empty($arrJson)){
+
+        if(isset($arrJson['Cpu'])) $arrJson['Cpu'] = intval($arrJson['Cpu']);
+        if(isset($arrJson['Ram'])) $arrJson['Ram'] = intval($arrJson['Ram']);
+
         $retArr = $mySelf->addPhyDev($myUser,'POST', $arrJson);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
