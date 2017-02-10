@@ -15,13 +15,13 @@
 package future
 
 import (
-	"weibo.com/opendcp/jupiter/provider"
 	"time"
 	"weibo.com/opendcp/jupiter/conf"
-	"weibo.com/opendcp/jupiter/logstore"
 	"weibo.com/opendcp/jupiter/dao"
-	"weibo.com/opendcp/jupiter/service/instance"
+	"weibo.com/opendcp/jupiter/logstore"
 	"weibo.com/opendcp/jupiter/models"
+	"weibo.com/opendcp/jupiter/provider"
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 const (
@@ -30,19 +30,19 @@ const (
 )
 
 type StartFuture struct {
-	InstanceId   string
-	ProviderName string
-	AutoInit     bool
-	Ip           string
+	InstanceId    string
+	ProviderName  string
+	AutoInit      bool
+	Ip            string
 	CorrelationId string
 }
 
 func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, correlationId string) *StartFuture {
 	return &StartFuture{
-		InstanceId:      instanceId,
-		ProviderName:      providerName,
-		AutoInit: autoInit,
-		Ip:       ip,
+		InstanceId:    instanceId,
+		ProviderName:  providerName,
+		AutoInit:      autoInit,
+		Ip:            ip,
 		CorrelationId: correlationId,
 	}
 }
@@ -86,7 +86,7 @@ func (sf *StartFuture) Run() error {
 		return err
 	}
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
-	for i:= 0; i < 60; i++ {
+	for i := 0; i < 60; i++ {
 		time.Sleep(10 * time.Second)
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
 		if providerDriver.WaitToStartInstance(sf.InstanceId) {
@@ -99,19 +99,20 @@ func (sf *StartFuture) Run() error {
 
 func (sf *StartFuture) Success() {
 	dao.UpdateInstanceStatus(sf.Ip, models.Initing)
-	logstore.Info(sf.CorrelationId, sf.InstanceId, "store ssh key: ", sf.InstanceId, sf.Ip)
-	sshErr := instance.StartSshService(sf.InstanceId, sf.Ip, conf.Config.Password, sf.CorrelationId)
-	if sshErr != nil {
-		logstore.Error(sf.CorrelationId, sf.InstanceId, "ssh instance: ", sf.InstanceId, "failed: ", sshErr)
-		dao.UpdateInstanceStatus(sf.Ip, models.InitTimeout)
-		return
-	}
+	/*logstore.Info(sf.CorrelationId, sf.InstanceId, "store ssh key: ", sf.InstanceId, sf.Ip)*/
+	//sshErr := instance.StartSshService(sf.InstanceId, sf.Ip, conf.Config.Password, sf.CorrelationId)
+	//if sshErr != nil {
+	//logstore.Error(sf.CorrelationId, sf.InstanceId, "ssh instance: ", sf.InstanceId, "failed: ", sshErr)
+	//dao.UpdateInstanceStatus(sf.Ip, models.InitTimeout)
+	//return
+	/*}*/
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "StartFuture success: ", sf.InstanceId, sf.Ip)
-	roles := []string{
-		conf.Config.Ansible.DefaultRole,
-	}
+	//roles := []string{
+	//conf.Config.Ansible.DefaultRole,
+	//}
 	if sf.AutoInit {
-		Exec.Submit(NewAnsibleTaskFuture(sf.InstanceId, sf.Ip, roles, sf.CorrelationId))
+		//Exec.Submit(NewAnsibleTaskFuture(sf.InstanceId, sf.Ip, roles, sf.CorrelationId))
+		instance.ManageDev(sf.Ip, conf.Config.Password, sf.InstanceId, sf.CorrelationId, true)
 	}
 }
 
