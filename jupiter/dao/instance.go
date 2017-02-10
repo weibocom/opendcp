@@ -173,6 +173,20 @@ func UpdateInstanceStatus(ip string, status models.InstanceStatus) error {
 	return nil
 }
 
+func UpdateInstanceStatusByInstanceId(instanceId string, status models.InstanceStatus) error {
+	o := GetOrmer()
+	instance, err := GetInstance(instanceId)
+	if err != nil {
+		return err
+	}
+	instance.Status = status
+	_, err = o.Update(instance)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetIpByInstanceId(instanceId string) (string, error) {
 	ins, err := GetInstanceIncludeDeleted(instanceId)
 	if err != nil {

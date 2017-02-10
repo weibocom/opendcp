@@ -134,8 +134,20 @@ type SshKey struct {
 }
 
 type PhyAuth struct {
-	Ip string
+	PublicIp string
+	PrivateIp string
 	Password string
+}
+
+type PhyDev struct {
+	PhyAuth
+	Cpu int
+	Ram int
+}
+
+type InstanceIdStatus struct {
+	InstanceId     string
+	Status         InstanceStatus
 }
 
 type StatusResp struct {
