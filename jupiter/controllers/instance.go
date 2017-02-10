@@ -530,19 +530,19 @@ func (ic *InstanceController) ManagePhyDev() {
 		return
 	}
 	var ins models.Instance
-        ins.Cpu = phyDev.Cpu
-        ins.Ram = phyDev.Ram
+	ins.Cpu = phyDev.Cpu
+	ins.Ram = phyDev.Ram
 	ins.PublicIpAddress = phyDev.PublicIp
 	ins.PrivateIpAddress = phyDev.PrivateIp
-        ins, err = instance.InputPhyDev(ins)
-        if err != nil {
-               beego.Error("input phy dev err:", err)
-               ic.RespServiceError(err)
-               return
-        }
+	ins, err = instance.InputPhyDev(ins)
+	if err != nil {
+		beego.Error("input phy dev err:", err)
+		ic.RespServiceError(err)
+		return
+	}
 	resp := ApiResponse{}
 	var ip = ins.PublicIpAddress
-	if ip != "" {
+	if ip == "" {
 		ip = ins.PrivateIpAddress
 	}
 	go instance.ManageDev(ip, phyDev.Password, ins.InstanceId, correlationId)
