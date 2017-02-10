@@ -198,7 +198,7 @@ class myself{
   function addPhyDev($myUser = '', $method = 'POST', $arrJson = array()){
     global $thisClass;
     $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if(isset($arrJson['Ip'])&&!empty($arrJson['Password'])){
+    if(empty($arrJson['Password'])){
       if($strList = $thisClass->get($myUser, 'instance/phydev', $method,$arrJson)){
         $arrList = json_decode($strList,true);
         if(isset($arrList['code']) && $arrList['code'] == 0){

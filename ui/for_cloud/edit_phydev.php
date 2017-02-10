@@ -5,22 +5,30 @@
 
         <div class="modal-body" style="overflow:auto;" id="myModalBody">
             <div class="form-group">
-                <label for="Ip" class="col-sm-2 control-label">Ip</label>
+                <label for="PublicIp" class="col-sm-2 control-label">PublicIp</label>
                 <div class="col-sm-4">
-                    <input type="text" class="form-control" id="Ip" name="Ip" onkeyup="checkPhyDev()" placeholder="Ip">
+                    <input type="text" class="form-control" id="PublicIp" name="PublicIp" onkeyup="checkPhyDev()" placeholder="PublicIp">
                 </div>
 
-                <label for="Password" class="col-sm-2 control-label">Password</label>
+                <label for="PrivateIp" class="col-sm-2 control-label">PrivateIp</label>
                 <div class="col-sm-4">
-                    <input type="text" class="form-control" id="Password" name="Password" onkeyup="checkPhyDev()" placeholder="Root User Password">
+                    <input type="text" class="form-control" id="PrivateIp" name="PrivateIp" onkeyup="checkPhyDev()" placeholder="PrivateIp">
                 </div>
             </div>
 
             <div class="form-group">
+                <label for="Password" class="col-sm-2 control-label">Password</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" id="Password" name="Password" onkeyup="checkPhyDev()" placeholder="Root User Password">
+                </div>
+
                 <label for="Cpu" class="col-sm-2 control-label">Cpu</label>
                 <div class="col-sm-4">
                     <input type="text" class="form-control" id="Cpu" name="Cpu" onkeyup="checkPhyDev()" placeholder="Cpu">
                 </div>
+            </div>
+
+            <div class="form-group">
                 <label for="Ram" class="col-sm-2 control-label">Ram</label>
                 <div class="col-sm-4">
                     <input type="text" class="form-control" id="Ram" name="Ram" onkeyup="checkPhyDev()" placeholder="Ram">
