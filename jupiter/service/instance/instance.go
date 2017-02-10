@@ -427,7 +427,7 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 	return status, nil
 }
 
-func ManageDev(ip, password, instanceId, correlationId string, isExpand bool) (ssh.Output, error) {
+func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
 	sshErr := StartSshService(instanceId, ip, password, correlationId)
 	if sshErr != nil {
 		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
@@ -442,13 +442,8 @@ func ManageDev(ip, password, instanceId, correlationId string, isExpand bool) (s
 	}
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
-	if isExpand {
-		cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
-			beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
-	} else {
-		cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
-			beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, PhyDev)
-	}
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
 	logstore.Info(correlationId, instanceId, cmd)
 	ret, err = cli.Run(cmd)
 	if err != nil {
