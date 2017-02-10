@@ -545,7 +545,7 @@ func (ic *InstanceController) ManagePhyDev() {
 	if ip == "" {
 		ip = ins.PrivateIpAddress
 	}
-	go instance.ManageDev(ip, phyDev.Password, ins.InstanceId, correlationId, false)
+	go instance.ManageDev(ip, phyDev.Password, ins.InstanceId, correlationId)
 	resp.Content = "Starting manage physical device"
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS

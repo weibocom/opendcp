@@ -112,7 +112,7 @@ func (sf *StartFuture) Success() {
 	//}
 	if sf.AutoInit {
 		//Exec.Submit(NewAnsibleTaskFuture(sf.InstanceId, sf.Ip, roles, sf.CorrelationId))
-		instance.ManageDev(sf.Ip, conf.Config.Password, sf.InstanceId, sf.CorrelationId, true)
+		instance.ManageDev(sf.Ip, conf.Config.Password, sf.InstanceId, sf.CorrelationId)
 	}
 }
 
