@@ -17,19 +17,17 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
-	"github.com/weibocom/opendcp/jupiter/service/instance"
-	"errors"
+	"weibocom/opendcp/jupiter/service/instance"
 )
 
 // Operations about cluster
