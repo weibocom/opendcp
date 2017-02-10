@@ -28,6 +28,8 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
+	"github.com/weibocom/opendcp/jupiter/service/instance"
+	"errors"
 )
 
 // Operations about cluster
@@ -198,6 +200,13 @@ func (clusterController *ClusterController) ExpandInstances() {
 	theCluster, err := cluster.GetCluster(clusterId)
 	if err != nil {
 		beego.Error("Get cluster error:", err)
+		clusterController.RespServiceError(err)
+		return
+	}
+	if theCluster.Provider == instance.PhyDev {
+		msg := "physical device can't expand."
+		err = errors.New(msg)
+		beego.Error(err)
 		clusterController.RespServiceError(err)
 		return
 	}
