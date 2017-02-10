@@ -27,7 +27,7 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
-	"weibocom/opendcp/jupiter/service/instance"
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 // Operations about cluster
