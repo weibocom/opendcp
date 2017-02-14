@@ -529,22 +529,29 @@ func (ic *InstanceController) ManagePhyDev() {
 		ic.RespInputError()
 		return
 	}
-	var ins models.Instance
-	ins.Cpu = phyDev.Cpu
-	ins.Ram = phyDev.Ram
-	ins.PublicIpAddress = phyDev.PublicIp
-	ins.PrivateIpAddress = phyDev.PrivateIp
-	ins, err = instance.InputPhyDev(ins)
-	if err != nil {
-		beego.Error("input phy dev err:", err)
-		ic.RespServiceError(err)
+	var ip = phyDev.PublicIp
+	if ip == "" {
+		ip = phyDev.PrivateIp
+	}
+	inst, _ := instance.GetInstanceByIp(ip)
+	if inst != nil {
+		msg := "This ip alread existed."
+		beego.Error(msg)
+		ic.RespIpExisted(msg)
 		return
 	}
+	var ins models.Instance
+        ins.Cpu = phyDev.Cpu
+        ins.Ram = phyDev.Ram
+	ins.PublicIpAddress = phyDev.PublicIp
+	ins.PrivateIpAddress = phyDev.PrivateIp
+        ins, err = instance.InputPhyDev(ins)
+        if err != nil {
+               beego.Error("input phy dev err:", err)
+               ic.RespServiceError(err)
+               return
+        }
 	resp := ApiResponse{}
-	var ip = ins.PublicIpAddress
-	if ip == "" {
-		ip = ins.PrivateIpAddress
-	}
 	go instance.ManageDev(ip, phyDev.Password, ins.InstanceId, correlationId)
 	resp.Content = "Starting manage physical device"
 	ic.ApiResponse = resp
