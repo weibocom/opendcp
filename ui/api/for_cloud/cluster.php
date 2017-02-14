@@ -50,6 +50,10 @@ class myself{
         );
         $i=0;
         foreach($arrList['content'] as $k => $v){
+
+          //机型模板不再对外显示物理机
+          if($v['Provider'] == 'phydev') continue;
+
           $i++;
           $tArr = array();
           $tArr['i'] = $i;

@@ -152,7 +152,7 @@ require_once('../include/navbar.php');
                 <div class="x_panel" style="border: 0px;">
 
                   <div class="row" style="margin-bottom: 10px;">
-                   <div class="col-md-8 ">
+                   <div class="col-md-6 ">
                      <div class="btn-group">
                        <div class="hidden">
                          <input type="hidden" id="tab" name="tab" value="ecs">
@@ -171,7 +171,7 @@ require_once('../include/navbar.php');
                      </div>
                    </div>
 
-                   <div class="col-md-4">
+                   <div class="col-md-6">
                      <div class="btn-group pull-right" id="tab_toolbar">
                        <div class="btn-group pull-right" id="tab_toolbar">
                          <a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_ecs.php"> 创建云主机 <i class="fa fa-plus"></i></a>
