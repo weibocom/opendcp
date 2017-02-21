@@ -367,17 +367,32 @@ def parallel_run_task():
             return return_failed(-1, "X-SOURCE is empyt"), 400
         Logger.debug("Run request json:"+json.dumps(req_json)+str(global_id))
         parallel_nodes = conform_param(req_json, "nodes", list)
+        task_name = conform_param(req_json, "name", basestring)
+        tasks = conform_param(req_json, "tasks", list)
+        tasktype= conform_param(req_json, "tasktype", basestring,default_value="ansible_task")
+        params = conform_param(req_json, "params", dict,{},True)
+        user_name = conform_param(req_json, "user", basestring, allowNone=True)
+        fork_num = conform_param(req_json, "fork_num", int, allowNone=True)
+
         headers ={'content-type': 'application/json',
                   'X-CORRELATION-ID': request.headers.get("X-CORRELATION-ID"),
                   'X-SOURCE': request.headers.get("X-SOURCE"),
             'Authorization':'Basic bmlra2lfdGVzdDAwMkBzaW5hLmNuOjEyMzIyMw==',
             'Cache-Control':'no-cache'}
+        task = Service.get_task_by_name(task_name)
+        if task is not None:
+            Logger.error("task name is duplicate:" + task_name)
+            return return_failed(-1, "task name is duplicate"), 400
+        task_id = Service.new_task({"name": task_name})
         return_list = []
         for nodes in parallel_nodes:
+            req_json['nodes'] = [nodes]
+            req_json['come_from_master'] = 1
+            req_json['mtask_id'] = task_id
             r = requests.post("http://%s:8000/api/run" %(nodes),data=json.dumps(req_json), headers=headers, timeout=3)
             return_list.append(r.json()['content']['id'])
         # check task name duplicate
-        return return_success(content={"id": return_list[0]}), 200
+        return return_success(content={"id": task_id}), 200
     except JsonEncodeException as e:
         Logger.error("try run_task exception ---------@ ")
         return return_failed(-1, "json encode error"), 400
