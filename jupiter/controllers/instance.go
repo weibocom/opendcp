@@ -27,6 +27,12 @@ type AppendPhyDevRequest struct {
 	InstanceList []models.PhyAuth `json:"instancelist"`
 }
 
+type AppendPhyDevResponse struct {
+	Success int                `json:"success"`
+	Failed  int                `json:"failed"`
+	Errors  []string        `json:"errors"`
+}
+
 // @Title create instance
 // @Description create a instance
 // @router / [post]
@@ -548,6 +554,7 @@ func (ic *InstanceController) ManagePhyDev() {
 	}
 
 	// 2. start insert DB
+	successCount := 0
 	failedCount := 0
 	errList := make([]string, 0)
 	for _, info := range request.InstanceList {
@@ -558,6 +565,8 @@ func (ic *InstanceController) ManagePhyDev() {
 		// already in database, skip
 		inst, _ := instance.GetInstanceByIp(ip)
 		if inst != nil {
+			failedCount++
+			errList = append(errList, "Instance: "+ip+" is already in DB")
 			continue
 		}
 		var ins models.Instance
@@ -572,16 +581,19 @@ func (ic *InstanceController) ManagePhyDev() {
 			failedCount++
 			errList = append(errList, err.Error())
 		} else {
+			successCount++
 			// asynchronous manage
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
 		}
 	}
 
-	beego.Debug("Failed:", failedCount)
-
 	// 3. response
 	resp := ApiResponse{}
-	resp.Content = errList
+	resp.Content = AppendPhyDevResponse{
+		Success:successCount,
+		Failed: failedCount,
+		Errors: errList,
+	}
 	ic.ApiResponse = resp
 	if failedCount == 0 {
 		ic.Status = SERVICE_SUCCESS
