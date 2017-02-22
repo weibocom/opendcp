@@ -30,7 +30,7 @@ OpenDCP是一个基于Docker的云资源管理与调度平台，集镜像仓库�
 -   He Jigui([@hexuan1922](https://github.com/hexuan1922))
 -   Li Meng([@MyEngIsPoor](https://github.com/MyEngIsPoor))
 -   Jiang Tao([@jiangtao12](https://github.com/jiangtao12))
-    WhiteBlue([@WhiteBlue](https://github.com/WhiteBlue))
+    Ke Yinan([@WhiteBlue](https://github.com/WhiteBlue))
 -   Liu Peng
 -   Sun Mingchao
 -   Fu Yuhui
