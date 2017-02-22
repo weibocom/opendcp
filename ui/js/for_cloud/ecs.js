@@ -803,7 +803,6 @@ var viewLog=function(idx,desc){
 
 var checkPhyDev=function(){
   var disabled=false;
-  if($('#PublicIp').val()=='' && $('#PrivateIp').val()=='' ) disabled=true;
-  if($('#Password').val()=='') disabled=true;
+  if($('#InstanceList').val()=='') disabled=true;
   $('#btnCommit').attr('disabled',disabled)
 }
