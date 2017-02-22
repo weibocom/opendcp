@@ -18,6 +18,7 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+error_reporting(0);
 
 header('Content-type: application/json');
 include_once('../../include/config.inc.php');
@@ -198,7 +199,22 @@ class myself{
   function addPhyDev($myUser = '', $method = 'POST', $arrJson = array()){
     global $thisClass;
     $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if(!empty($arrJson['Password'])){
+    if(!empty($arrJson['InstanceList'])){
+        $retArr = [];
+        $lineArr = explode("\n", $arrJson['InstanceList']);
+        foreach ($lineArr as $line) {
+            $lineSplit = explode(",", $line);
+            if (sizeof($lineSplit) < 3) {
+                return $ret;
+            }
+            array_push($retArr, [
+                "publicip" => $lineSplit[0],
+                "privateip" => $lineSplit[1],
+                "password" => $lineSplit[2],
+            ]);
+        }
+
+        $arrJson['InstanceList'] = $retArr;
       if($strList = $thisClass->get($myUser, 'instance/phydev', $method,$arrJson)){
         $arrList = json_decode($strList,true);
         if(isset($arrList['code']) && $arrList['code'] == 0){

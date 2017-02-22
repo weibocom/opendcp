@@ -15,9 +15,16 @@ import (
 	_ "weibo.com/opendcp/jupiter/provider/aws"
 )
 
+const DEFAULT_CPU = 1
+const DEFAULT_RAM = 1
+
 // Operations about Instance
 type InstanceController struct {
 	BaseController
+}
+
+type AppendPhyDevRequest struct {
+	InstanceList []models.PhyAuth `json:"instancelist"`
 }
 
 // @Title create instance
@@ -522,39 +529,64 @@ func (ic *InstanceController) ManagePhyDev() {
 		ic.RespMissingParams("X-CORRELATION-ID")
 		return
 	}
-	var phyDev models.PhyDev
-	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &phyDev)
+
+	var request AppendPhyDevRequest
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &request)
 	if err != nil {
 		beego.Error("Could parase request before input instance: ", err)
 		ic.RespInputError()
 		return
 	}
-	var ip = phyDev.PublicIp
-	if ip == "" {
-		ip = phyDev.PrivateIp
+
+	// 1. check request form
+	for _, info := range request.InstanceList {
+		if (strings.TrimSpace(info.PublicIp) == "" && strings.TrimSpace(info.PrivateIp) == "") || strings.TrimSpace(info.Password) == "" {
+			beego.Error("Please check request")
+			ic.RespInputError()
+			return
+		}
 	}
-	inst, _ := instance.GetInstanceByIp(ip)
-	if inst != nil {
-		msg := "This ip alread existed."
-		beego.Error(msg)
-		ic.RespIpExisted(msg)
-		return
+
+	// 2. start insert DB
+	failedCount := 0
+	errList := make([]string, 0)
+	for _, info := range request.InstanceList {
+		ip := info.PublicIp
+		if ip == "" {
+			ip = info.PrivateIp
+		}
+		// already in database, skip
+		inst, _ := instance.GetInstanceByIp(ip)
+		if inst != nil {
+			continue
+		}
+		var ins models.Instance
+		ins.Cpu = DEFAULT_CPU
+		ins.Ram = DEFAULT_RAM
+		ins.PublicIpAddress = info.PublicIp
+		ins.PrivateIpAddress = info.PrivateIp
+
+		ins, err = instance.InputPhyDev(ins)
+
+		if err != nil {
+			failedCount++
+			errList = append(errList, err.Error())
+		} else {
+			// asynchronous manage
+			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
+		}
 	}
-	var ins models.Instance
-        ins.Cpu = phyDev.Cpu
-        ins.Ram = phyDev.Ram
-	ins.PublicIpAddress = phyDev.PublicIp
-	ins.PrivateIpAddress = phyDev.PrivateIp
-        ins, err = instance.InputPhyDev(ins)
-        if err != nil {
-               beego.Error("input phy dev err:", err)
-               ic.RespServiceError(err)
-               return
-        }
+
+	beego.Debug("Failed:", failedCount)
+
+	// 3. response
 	resp := ApiResponse{}
-	go instance.ManageDev(ip, phyDev.Password, ins.InstanceId, correlationId)
-	resp.Content = "Starting manage physical device"
+	resp.Content = errList
 	ic.ApiResponse = resp
-	ic.Status = SERVICE_SUCCESS
+	if failedCount == 0 {
+		ic.Status = SERVICE_SUCCESS
+	} else {
+		ic.Status = SERVICE_ERRROR
+	}
 	ic.RespJsonWithStatus()
 }
