@@ -438,6 +438,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
 	ret, err := cli.Run(cmd)
 	if err != nil {
+		dao.UpdateInstanceStatus(ip, models.StatusError)
 		return ssh.Output{}, err
 	}
 	dbAddr := beego.AppConfig.String("host")
@@ -447,6 +448,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	logstore.Info(correlationId, instanceId, cmd)
 	ret, err = cli.Run(cmd)
 	if err != nil {
+		dao.UpdateInstanceStatus(ip, models.StatusError)
 		return ssh.Output{}, err
 	}
 	logstore.Info(correlationId, instanceId, ret)
