@@ -56,8 +56,9 @@ func NewConfig(user string, auth *Auth) (*ssh.ClientConfig, error) {
 	}
 
 	return &ssh.ClientConfig{
-		User: user,
-		Auth: authMethods,
+		User:   user,
+		Auth:   authMethods,
+		Timeout:10 * time.Second,
 	}, nil
 }
 
