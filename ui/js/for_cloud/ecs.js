@@ -171,7 +171,10 @@ var processBody = function(data,page,head,body){
       var btnAdd='',btnEdit='',btnDel='';
       td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'ecs\',\''+v.InstanceId+'\')">' + v.InstanceId + '</a></td>';
       tr.append(td);
-      td = '<td>' + ((v.PrivateIpAddress)?v.PrivateIpAddress: v.PublicIpAddress ) + '</td>';
+
+      var ipShow = (v.PrivateIpAddress ? (v.PrivateIpAddress + " [内网]<br/>") : "") + (v.PublicIpAddress ? (v.PublicIpAddress + " [公网]") : "");
+
+      td = '<td>' + ipShow + '</td>';
       tr.append(td);
       td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'cluster\',\''+v.Cluster.Id+'\')">' + v.Cluster.Name + '</a></td>';
       tr.append(td);
