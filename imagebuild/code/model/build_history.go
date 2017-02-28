@@ -31,6 +31,7 @@ type BuildHistory struct {
 	operator string
 	time     time.Time
 	state    int
+	logs     string
 }
 
 func (h *BuildHistory) State() int {

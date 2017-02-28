@@ -51,15 +51,15 @@ func GetDockerOperatorInstance() *DockerOperator {
 	return instance
 }
 
-func (do *DockerOperator) BuildImage(dockerFilePath string, tag string) *stackError.Error {
-	_, error := util.ExecuteFullCommand("docker build -t " + tag + " " + dockerFilePath)
+func (do *DockerOperator) BuildImage(dockerFilePath string, tag string) (string, *stackError.Error) {
+	logBack, err := util.ExecuteFullCommand("docker build -t " + tag + " " + dockerFilePath)
 
-	if error != nil {
-		util.PrintErrorStack(error)
-		return util.ErrorWrapper(error)
+	if err != nil {
+		util.PrintErrorStack(err)
+		return logBack, util.ErrorWrapper(err)
 	}
 
-	return nil
+	return logBack, nil
 }
 
 func (do *DockerOperator) timeIsOk(imageTime string, startTime time.Time) bool {
@@ -128,14 +128,14 @@ func (do *DockerOperator) LoginHarbor() *stackError.Error {
 }
 
 // push image
-func (do *DockerOperator) PushImage(dockerfilePath, tag string) *stackError.Error {
-	_, error := util.ExecuteFullCommand("docker push " + tag)
-	if error != nil {
-		util.PrintErrorStack(error)
-		return util.ErrorWrapper(error)
+func (do *DockerOperator) PushImage(dockerfilePath, tag string) (string, *stackError.Error) {
+	logStr, err := util.ExecuteFullCommand("docker push " + tag)
+	if err != nil {
+		util.PrintErrorStack(err)
+		return logStr, util.ErrorWrapper(err)
 	}
 
-	return nil
+	return logStr, nil
 }
 
 // delete image

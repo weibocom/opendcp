@@ -273,6 +273,9 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 
 	// 异步线程处理构建并且进行更新任务状态
 	go func() {
+		//清空日志
+		project.ClearLog()
+
 		success := project.BuildImage()
 		if success {
 			log.Infof("%s build dockerfile success id:%d", projectName, id)
@@ -283,14 +286,14 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 				pro.ClearTmp(projectName)
 				if id != -1 {
 					log.Infof("start update project %s state for id:%d", projectName, id)
-					buildHistoryService.UpdateRecord(id, service.SUCCESS)
+					buildHistoryService.UpdateRecord(id, project.GetLogInJson(), service.SUCCESS)
 					log.Infof("finish update project %s state for id:%d", projectName, id)
 				}
 			} else {
 				log.Errorf("%s push fail id:%d tag:%s", projectName, id, tag)
 				if id != -1 {
 					log.Infof("start update project %s state for build id:%d", projectName, id)
-					buildHistoryService.UpdateRecord(id, service.FAIL)
+					buildHistoryService.UpdateRecord(id, project.GetLogInJson(), service.FAIL)
 					log.Infof("finish update project %s state for build id:%d", projectName, id)
 				}
 			}
@@ -298,7 +301,7 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 			log.Errorf("%s build fail id:%d", projectName, id)
 			if id != -1 {
 				log.Infof("start update project %s state for build id:%d", projectName, id)
-				buildHistoryService.UpdateRecord(id, service.FAIL)
+				buildHistoryService.UpdateRecord(id, project.GetLogInJson(), service.FAIL)
 				log.Infof("finish update project %s state for build id:%d", projectName, id)
 			}
 		}
@@ -306,7 +309,7 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 		defer func() {
 			if r := recover(); r != nil {
 				log.Infof("start update project %s state for build id:%d", projectName, id)
-				buildHistoryService.UpdateRecord(id, service.FAIL)
+				buildHistoryService.UpdateRecord(id, project.GetLogInJson(), service.FAIL)
 				log.Infof("finish update project %s state for build id:%d", projectName, id)
 			}
 		}()
