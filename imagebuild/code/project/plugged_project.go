@@ -35,6 +35,7 @@ import (
 	plu "weibo.com/opendcp/imagebuild/code/plugin"
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
+	"encoding/json"
 )
 
 /**
@@ -46,6 +47,8 @@ type PluggedProject struct {
 
 	DockerfilePlugins *util.ConcurrentMap
 	BuildPlugins      *util.ConcurrentMap
+
+	logs    []string
 }
 
 func (p *PluggedProject) Init() bool {
@@ -121,20 +124,36 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 	dockerFilePath := projectPath + p.Name + "/tmp/"
 
 	log.Info("BuildImage dockerFilePath:" + dockerFilePath + " fullImageName:" + fullImageName)
-	if error := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName); error != nil {
-		log.Error("Build Image with error:", error)
+
+	p.appendLog("start build image ....")
+
+	logStr, err := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName)
+
+	p.appendLog(logStr)
+
+	if  err != nil {
+		log.Error("Build Image with error:", err)
+		p.appendLog(err.Error())
 		return false
 	}
 
 	log.Info("Login Harbor")
-	if error := service.GetDockerOperatorInstance().LoginHarbor(); error != nil {
-		log.Error("Login Harbor with error:", error)
+	if err := service.GetDockerOperatorInstance().LoginHarbor(); err != nil {
+		log.Error("Login Harbor with error:", err)
+		p.appendLog(err.Error())
 		return false
 	}
 
+	p.appendLog("login haror success ...")
+
 	log.Info("PushImage fullImageName:" + fullImageName)
-	if error := service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName); error != nil {
-		log.Error("Push Image with error:", error)
+
+	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
+
+	p.appendLog(logStr)
+
+	if err != nil {
+		log.Error("Push Image with error:", err)
 		return false
 	}
 
@@ -163,6 +182,23 @@ func (p *PluggedProject) readInfo() {
 	p.DefineDockerFileType = infoMap["defineDockerFileType"]
 }
 
+func (p *PluggedProject) appendLog(line string) {
+	p.logs = append(p.logs, line+"\n")
+}
+
+func (p *PluggedProject) GetLogInJson() string {
+	logsBytes, err := json.Marshal(p.logs)
+
+	if err != nil {
+		return ""
+	}
+	return string(logsBytes)
+}
+
+func (p *PluggedProject) ClearLog() {
+	p.logs = make([]string, 0)
+}
+
 // 构建project对象
 func BuildPluginProject(projectName string,
 	creator string,
@@ -181,6 +217,8 @@ func BuildPluginProject(projectName string,
 	project.LastModifyOperator = creator
 	project.Cluster = cluster
 	project.DefineDockerFileType = defineDockerFileType
+
+	project.logs = make([]string, 0)
 
 	var dockerfileBuilder interfaces.Handler
 

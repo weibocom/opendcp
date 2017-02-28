@@ -17,8 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package service
 
 import (
@@ -70,7 +68,7 @@ func GetBuildHistoryServiceInstance() *BuildHistoryService {
 				buildHistoryServiceInstance.db = db
 
 				// 预编译sql语句
-				stmt, err := buildHistoryServiceInstance.db.Prepare("insert into t_build_history (project, operator, time, state) values (?, ?, ?, ?)")
+				stmt, err := buildHistoryServiceInstance.db.Prepare("insert into t_build_history (project, operator, time, state, logs) values (?, ?, ?, ?, ?)")
 				if err != nil {
 					log.Errorf("hitory service init failed: %s", err)
 					buildHistoryServiceInstance = nil
@@ -78,7 +76,7 @@ func GetBuildHistoryServiceInstance() *BuildHistoryService {
 				}
 				buildHistoryServiceInstance.insertStmt = stmt
 
-				stmt, err = buildHistoryServiceInstance.db.Prepare("update t_build_history set state = ? where id = ?")
+				stmt, err = buildHistoryServiceInstance.db.Prepare("update t_build_history set state = ?, logs = ? where id = ?")
 				if err != nil {
 					log.Errorf("hitory service init failed: %s", err)
 					buildHistoryServiceInstance = nil
@@ -120,7 +118,8 @@ func GetBuildHistoryServiceInstance() *BuildHistoryService {
 
 func (s *BuildHistoryService) InsertRecord(operator string, project string) int64 {
 	buildTime := time.Now()
-	result, err := s.insertStmt.Exec(project, operator, buildTime, BUILDING)
+
+	result, err := s.insertStmt.Exec(project, operator, buildTime, BUILDING, "")
 	if err != nil {
 		log.Errorf("insert build record error: %s", err)
 		return -1
@@ -146,8 +145,8 @@ func (s *BuildHistoryService) InsertRecord(operator string, project string) int6
 	return lastInsertId
 }
 
-func (s *BuildHistoryService) UpdateRecord(id int64, state int) {
-	_, error := s.updateStmt.Exec(state, id)
+func (s *BuildHistoryService) UpdateRecord(id int64, logs string, state int) {
+	_, error := s.updateStmt.Exec(state, logs, id)
 	if error != nil {
 		util.PrintErrorStack(error)
 	}
