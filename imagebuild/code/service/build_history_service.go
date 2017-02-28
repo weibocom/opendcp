@@ -84,7 +84,7 @@ func GetBuildHistoryServiceInstance() *BuildHistoryService {
 				}
 				buildHistoryServiceInstance.updateStmt = stmt
 
-				stmt, err = buildHistoryServiceInstance.db.Prepare("select project, operator, state, time from t_build_history where project = ? limit ?,?")
+				stmt, err = buildHistoryServiceInstance.db.Prepare("select project, operator, state, time, logs from t_build_history where project = ? limit ?,?")
 				if err != nil {
 					log.Errorf("hitory service init failed: %s", err)
 					buildHistoryServiceInstance = nil
@@ -92,7 +92,7 @@ func GetBuildHistoryServiceInstance() *BuildHistoryService {
 				}
 				buildHistoryServiceInstance.queryByProjectStmt = stmt
 
-				stmt, err = buildHistoryServiceInstance.db.Prepare("select project, operator, state, time from t_build_history where id = ?")
+				stmt, err = buildHistoryServiceInstance.db.Prepare("select project, operator, state, time, logs from t_build_history where id = ?")
 				if err != nil {
 					log.Errorf("hitory service init failed: %s", err)
 					buildHistoryServiceInstance = nil
@@ -101,7 +101,7 @@ func GetBuildHistoryServiceInstance() *BuildHistoryService {
 
 				buildHistoryServiceInstance.queryByIdStmt = stmt
 
-				stmt, err = buildHistoryServiceInstance.db.Prepare("select project, operator, state, time  from t_build_history where project = ? order by id desc limit 1")
+				stmt, err = buildHistoryServiceInstance.db.Prepare("select project, operator, state, time, logs  from t_build_history where project = ? order by id desc limit 1")
 				if err != nil {
 					log.Errorf("hitory service init failed: %s", err)
 					buildHistoryServiceInstance = nil
@@ -163,10 +163,13 @@ func (s *BuildHistoryService) QueryRecordList(cursor int, offset int, project st
 		var project string
 		var operator string
 		var state int
-		var time time.Time
-		rows.Scan(&project, &operator, &state, &time)
+		var time_bytes []byte
+		var logs string
 
-		record := model.GetBuildHistory(project, operator, time, state)
+		rows.Scan(&project, &operator, &state, &time_bytes, &logs)
+		build_time,_:= time.Parse("2006-01-02 15:04:05", string(time_bytes))
+
+		record := model.GetBuildHistory(project, operator, build_time, state, logs)
 		records = append(records, record)
 	}
 
@@ -184,11 +187,15 @@ func (s *BuildHistoryService) QueryLastBuildRecord(project string) *model.BuildH
 		var project string
 		var operator string
 		var state int
-		var time time.Time
+		var time_bytes []byte
+		var logs string
 
-		rows.Scan(&project, &operator, &state, &time)
+		rows.Scan(&project, &operator, &state, &time_bytes, &logs)
 
-		record := model.GetBuildHistory(project, operator, time, state)
+		build_time,_:= time.Parse("2006-01-02 15:04:05", string(time_bytes))
+
+		record := model.GetBuildHistory(project, operator, build_time, state, logs)
+
 		return record
 	}
 
@@ -207,9 +214,11 @@ func (s *BuildHistoryService) QueryRecord(id int) *model.BuildHistory {
 		var operator string
 		var state int
 		var time time.Time
-		rows.Scan(&project, &operator, &state, &time)
+		var logs string
 
-		record := model.GetBuildHistory(project, operator, time, state)
+		rows.Scan(&project, &operator, &state, &time, &logs)
+
+		record := model.GetBuildHistory(project, operator, time, state, logs)
 		return record
 	}
 
