@@ -35,7 +35,6 @@ import (
 	plu "weibo.com/opendcp/imagebuild/code/plugin"
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
-	"encoding/json"
 	"strings"
 )
 
