@@ -125,15 +125,12 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 
 	log.Info("BuildImage dockerFilePath:" + dockerFilePath + " fullImageName:" + fullImageName)
 
-	p.appendLog("start build image ....")
-
 	logStr, err := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName)
 
 	p.appendLog(logStr)
 
 	if  err != nil {
 		log.Error("Build Image with error:", err)
-		p.appendLog(err.Error())
 		return false
 	}
 
@@ -145,8 +142,6 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 	}
 
 	p.appendLog("login haror success ...")
-
-	log.Info("PushImage fullImageName:" + fullImageName)
 
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
 
