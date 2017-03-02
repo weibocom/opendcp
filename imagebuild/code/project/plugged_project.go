@@ -36,6 +36,7 @@ import (
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
 	"encoding/json"
+	"strings"
 )
 
 /**
@@ -181,13 +182,8 @@ func (p *PluggedProject) appendLog(line string) {
 	p.logs = append(p.logs, line+"\n")
 }
 
-func (p *PluggedProject) GetLogInJson() string {
-	logsBytes, err := json.Marshal(p.logs)
-
-	if err != nil {
-		return ""
-	}
-	return string(logsBytes)
+func (p *PluggedProject) GetLog() string {
+	return strings.Join(p.logs,"")
 }
 
 func (p *PluggedProject) ClearLog() {

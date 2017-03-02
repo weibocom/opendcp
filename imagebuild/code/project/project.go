@@ -46,7 +46,7 @@ type Project interface {
 	Save(configs []map[string]interface{}) bool // 保存配置
 
 	ClearLog()
-	GetLogInJson() string
+	GetLog() string
 }
 
 func NewProject(projectName string,
