@@ -129,15 +129,16 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 
 	p.appendLog(logStr)
 
-	if  err != nil {
+	if err != nil {
 		log.Error("Build Image with error:", err)
+		p.appendLog("Build Image with error:" + err.Error())
 		return false
 	}
 
 	log.Info("Login Harbor")
 	if err := service.GetDockerOperatorInstance().LoginHarbor(); err != nil {
 		log.Error("Login Harbor with error:", err)
-		p.appendLog(err.Error())
+		p.appendLog("Login Harbor with error:" + err.Error())
 		return false
 	}
 

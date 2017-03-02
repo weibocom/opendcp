@@ -611,7 +611,7 @@ var showLog = function (i){
   if(typeof i != 'undefined'){
     if(typeof cache.state[i] != 'undefined'){
       if(typeof cache.state[i].content != 'undefined'){
-        cache.state[i].content.logs.replace(/\n/, '<br/>');
+        cache.state[i].content.logs.replace('\n', '<br/>');
         text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
 
         // if (isJson(cache.state[i].content.logs)){
