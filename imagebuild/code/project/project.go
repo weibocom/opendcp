@@ -44,6 +44,9 @@ type Project interface {
 	BuildImage() bool                           // 构建镜像
 	BuildAndPushImage(tag string) bool          // push镜像
 	Save(configs []map[string]interface{}) bool // 保存配置
+
+	ClearLog()
+	GetLog() string
 }
 
 func NewProject(projectName string,

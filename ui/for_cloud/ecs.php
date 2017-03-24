@@ -152,8 +152,7 @@ require_once('../include/navbar.php');
                 <div class="x_panel" style="border: 0px;">
 
                   <div class="row" style="margin-bottom: 10px;">
-                    <input type="hidden" id="tab" name="tab" value="ecs">
-                   <div class="col-md-9 ">
+                   <div class="col-md-6 ">
                      <div class="btn-group">
                        <div class="hidden">
                          <input type="hidden" id="tab" name="tab" value="ecs">
@@ -172,16 +171,16 @@ require_once('../include/navbar.php');
                      </div>
                    </div>
 
-                   <div class="col-md-3">
+                   <div class="col-md-6">
                      <div class="btn-group pull-right" id="tab_toolbar">
                        <div class="btn-group pull-right" id="tab_toolbar">
-                         <a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_ecs.php"> 创建 <i class="fa fa-plus"></i></a>
+                         <a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_ecs.php"> 创建云主机 <i class="fa fa-plus"></i></a>
+                         <a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_phydev.php"> 创建物理机 <i class="fa fa-plus"></i></a>
                          <a type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal" onclick="twiceCheck('del')"> 批量删除 <i class="fa fa-minus"></i></a>
                        </div>
                      </div>
                    </div>
                   </div>
-
 
 
                   <table class="table table-bordered table-hover" id="page_table">

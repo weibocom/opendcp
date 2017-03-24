@@ -21,7 +21,9 @@
 
 package model
 
-import "time"
+import (
+	"time"
+)
 
 /**
 build 历史记录
@@ -31,16 +33,23 @@ type BuildHistory struct {
 	operator string
 	time     time.Time
 	state    int
+	logs     string
 }
 
 func (h *BuildHistory) State() int {
 	return h.state
 }
 
-func GetBuildHistory(project string, operator string, time time.Time, state int) *BuildHistory {
+func (h *BuildHistory) Logs() string {
+	return h.logs
+}
+
+func GetBuildHistory(project string, operator string, time time.Time, state int, logs string) *BuildHistory {
 	return &BuildHistory{
 		project:  project,
 		operator: operator,
 		time:     time,
-		state:    state}
+		state:    state,
+		logs:     logs,
+	}
 }

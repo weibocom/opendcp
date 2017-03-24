@@ -17,23 +17,26 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package instance
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/astaxie/beego"
+	"github.com/rs/xid"
+	"strings"
+	"time"
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/dao"
+	"weibo.com/opendcp/jupiter/logstore"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
-	"weibo.com/opendcp/jupiter/logstore"
-	"strings"
-	"weibo.com/opendcp/jupiter/response"
-	"fmt"
-	"encoding/json"
 )
+
+const PhyDev = "phydev"
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -97,32 +100,34 @@ func DeleteOne(instanceId, correlationId string) error {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
-	providerDriver, err := provider.New(ins.Provider)
-	if err != nil {
-		logstore.Error(correlationId, instanceId, err)
-		return err
-	}
-	_, err = providerDriver.Delete(instanceId)
-	if err != nil {
-		if strings.Contains(err.Error(), "InvalidInstanceId.NotFound") {
-			//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
-			logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
-		} else {
+	if ins.Provider != PhyDev {
+		providerDriver, err := provider.New(ins.Provider)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, err)
 			return err
 		}
-		logstore.Error(correlationId, instanceId, "delete instance, err:", err)
-	}
-	logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
-	usageHours, err := bill.GetUsageHours(instanceId)
-	cluster, err := GetCluster(instanceId)
-	if err != nil {
-		logstore.Error(correlationId, instanceId, "get cluster, err:", err)
-		return err
-	}
-	err = bill.Bill(cluster, usageHours)
-	if err != nil {
-		logstore.Error(correlationId, instanceId, "update bill, err:", err)
-		return err
+		_, err = providerDriver.Delete(instanceId)
+		if err != nil {
+			if strings.Contains(err.Error(), "InvalidInstanceId.NotFound") {
+				//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
+				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
+			} else {
+				return err
+			}
+			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
+		}
+		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
+		usageHours, err := bill.GetUsageHours(instanceId)
+		cluster, err := GetCluster(instanceId)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, "get cluster, err:", err)
+			return err
+		}
+		err = bill.Bill(cluster, usageHours)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, "update bill, err:", err)
+			return err
+		}
 	}
 	err = dao.UpdateDeletedStatus(instanceId)
 	if err != nil {
@@ -305,8 +310,8 @@ func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
 	return instances, nil
 }
 
-func StartSshService(instanceId string, ip string, correlationId string) error {
-	sshCli, err := getSSHClient(ip, "")
+func StartSshService(instanceId string, ip string, password string, correlationId string) error {
+	sshCli, err := getSSHClient(ip, "", password)
 	if err != nil {
 		return err
 	}
@@ -318,11 +323,11 @@ func StartSshService(instanceId string, ip string, correlationId string) error {
 	return nil
 }
 
-func getSSHClient(ip string, path string) (*ssh.Client, error) {
+func getSSHClient(ip string, path string, password string) (*ssh.Client, error) {
 	var auth ssh.Auth
 	if path == "" {
 		auth = ssh.Auth{
-			Passwords: []string{conf.Config.Password},
+			Passwords: []string{password},
 		}
 	} else {
 		auth = ssh.Auth{
@@ -341,7 +346,7 @@ func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId strin
 	store := logstore.Store{}
 	logInfo := store.QueryLogByCorrelationIdAndInstanceId(instanceId, correlationId)
 	jupiterLog := logInfo.Message
-	url:= conf.Config.Ansible.Url + "/api/getlog"
+	url := conf.Config.Ansible.Url + "/api/getlog"
 	ip, err := dao.GetIpByInstanceId(instanceId)
 	if err != nil {
 		return "", err
@@ -358,7 +363,7 @@ func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId strin
 			Log []string
 		}
 	}
-	resp := &octansResp {}
+	resp := &octansResp{}
 	err = json.Unmarshal([]byte(raw), &resp)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "Error when parsing log for", instanceId, "err:", err)
@@ -374,3 +379,78 @@ func QueryLogByInstanceId(instanceId string) (string, error) {
 	return jupiterLog, nil
 }
 
+func InputPhyDev(ins models.Instance) (models.Instance, error) {
+	clusters, err := dao.GetClustersByProvider(PhyDev)
+	if err != nil {
+		return ins, err
+	}
+	var cluster models.Cluster
+	if len(clusters) == 0 {
+		cluster = models.Cluster{
+			Name:       "Physical device",
+			Provider:   "phydev",
+			Desc:       "About physical device",
+			CreateTime: time.Now(),
+			Network:    &models.Network{},
+			Zone:       &models.Zone{},
+		}
+		dao.InsertCluster(&cluster)
+		_, err = bill.InsertBill(&cluster)
+		if err != nil {
+			return ins, err
+		}
+		ins.Cluster = &cluster
+	} else {
+		ins.Cluster = &clusters[0]
+	}
+	guid := xid.New()
+	instanceId := "i-" + guid.String()
+	ins.InstanceId = instanceId
+	ins.Provider = PhyDev
+	ins.Status = models.Initing
+	if err := dao.InsertInstance(&ins); err != nil {
+		return ins, err
+	}
+	return ins, nil
+}
+
+func UploadSshKey(instanceId string, sshKey models.SshKey) (models.SshKey, error) {
+	err := dao.UpdateSshKey(instanceId, sshKey.PublicKey, sshKey.PrivateKey)
+	return sshKey, err
+}
+
+func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (models.InstanceStatus, error) {
+	err := dao.UpdateInstanceStatusByInstanceId(instanceId, status)
+	if err != nil {
+		return status, err
+	}
+	return status, nil
+}
+
+func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+	sshErr := StartSshService(instanceId, ip, password, correlationId)
+	if sshErr != nil {
+		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
+		dao.UpdateInstanceStatus(ip, models.InitTimeout)
+		return ssh.Output{}, sshErr
+	}
+	cli, err := getSSHClient(ip, "", password)
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	ret, err := cli.Run(cmd)
+	if err != nil {
+		dao.UpdateInstanceStatus(ip, models.StatusError)
+		return ssh.Output{}, err
+	}
+	dbAddr := beego.AppConfig.String("host")
+	jupiterAddr := beego.AppConfig.String("host")
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
+	logstore.Info(correlationId, instanceId, cmd)
+	ret, err = cli.Run(cmd)
+	if err != nil {
+		dao.UpdateInstanceStatus(ip, models.StatusError)
+		return ssh.Output{}, err
+	}
+	logstore.Info(correlationId, instanceId, ret)
+	return ret, nil
+}

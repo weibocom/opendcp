@@ -66,7 +66,10 @@ func (c *BuildImageHistoryController) Get() {
 	var resp interface{}
 	resp = models.BuildResponse(
 		errors.OK,
-		model.State(),
+		map[string]interface{}{
+			"state":model.State(),
+			"logs": model.Logs(),
+		},
 		errors.ErrorCodeToMessage(errors.OK))
 
 	c.Data["json"] = resp

@@ -126,6 +126,11 @@ var (
 		Msg:  "Over size limited",
 	}
 
+	IpAlreadExistedResp = ApiResponse{
+		Code: 11995,
+		Msg:  "This ip alread existed",
+	}
+
 	NoAuthRespStr        = fmt.Sprintf("{\"code\": %d, \"msg\": \"You are not authorized!\"}", NO_AUTH_CODE)
 	AppkeyFaildRespStr   = fmt.Sprintf("{\"code\": %d, \"msg\": \"Incorrect appkey!\"}", APPKEY_FAIL_CODE)
 	AppkeyBannedRespStr  = fmt.Sprintf("{\"code\": %d, \"msg\": \"Appkey has been banned!\"}", APPKEY_BAN_CODE)
@@ -477,6 +482,13 @@ func (c *BaseController) GetPageErrorResp(err string) {
 	c.ApiResponse = r
 }
 
+
+func (c *BaseController) GetExistedIpResp(msg string) {
+	r := IpAlreadExistedResp
+	r.Msg = msg
+	c.ApiResponse = r
+}
+
 func (c *BaseController) RespJsonWithStatus() {
 	c.Data["json"] = c.ApiResponse
 	c.Ctx.Output.SetStatus(c.Status)
@@ -498,7 +510,13 @@ func (c *BaseController) RespInputOverLimited(param string, rangeSize string) {
 
 func (c *BaseController) RespPageError(err error) {
 	c.GetPageErrorResp(err.Error())
-	c.Status = 400
+	c.Status = BAD_REQUEST
+	c.RespJsonWithStatus()
+}
+
+func (c *BaseController) RespIpExisted(msg string) {
+	c.GetExistedIpResp(msg)
+	c.Status = BAD_REQUEST
 	c.RespJsonWithStatus()
 }
 

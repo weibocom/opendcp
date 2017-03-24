@@ -8,6 +8,7 @@ CREATE TABLE `t_build_history` (
     `operator` varchar(50) NOT NULL DEFAULT '' COMMENT 'people that start the building task',
     `time` datetime NOT NULL COMMENT 'build time' COMMENT 'time',
     `state` tinyint NOT NULL COMMENT '0: building 1: success 2: fail',
+    `logs` text NOT NULL COMMENT 'logs in json',
     PRIMARY KEY (id)
 )  COMMENT='table record build history';
 

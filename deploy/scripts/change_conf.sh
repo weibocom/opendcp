@@ -20,7 +20,7 @@ cd $DEPLOY_DIR
 
 echo "current pwd:"`pwd`
 echo "Changing config..."
-FILES="conf/hubble_conf.php conf/web_conf.php docker-compose.yml conf/octans_roles/init/files/docker ../db_init/sql/orion.sql"
+FILES="conf/hubble_conf.php conf/web_conf.php docker-compose.yml conf/octans_roles/init/files/docker ../db_init/sql/orion.sql conf/jupiter.conf"
 for FILE in $FILES; do
     echo "  changing config in $FILE"
 

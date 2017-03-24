@@ -38,7 +38,7 @@ func ExecuteCommand(command string, params ...string) (string, error) {
 	err := cmd.Run()
 	if err != nil {
 		log.Errorf("Command: %s fail, Output: %s", command, out.String())
-		return command, ErrorWrapper(err)
+		return out.String(), ErrorWrapper(err)
 	}
 
 	log.Infof("Command: %s success, Output: %s", command, out.String())

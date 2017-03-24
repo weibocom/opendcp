@@ -36,7 +36,7 @@ func GetInstance(instanceId string) (*models.Instance, error) {
 	return &instance, nil
 }
 
-func GetInstanceIncludeDelted(instanceId string) (*models.Instance, error) {
+func GetInstanceIncludeDeleted(instanceId string) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
 	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).One(&instance)
@@ -67,7 +67,6 @@ func UpdateDeletedStatus(instanceId string) error {
 	}
 	return nil
 }
-
 
 func UpdateDeletingStatus(instanceId string) error {
 	o := GetOrmer()
@@ -112,6 +111,9 @@ func InsertInstance(instance *models.Instance) error {
 func UpdateInstancePrivateIp(instanceId, private_ip_address string) error {
 	o := GetOrmer()
 	instance, err := GetInstance(instanceId)
+	if err != nil {
+		return err
+	}
 	instance.PrivateIpAddress = private_ip_address
 	_, err = o.Update(instance)
 	if err != nil {
@@ -123,6 +125,9 @@ func UpdateInstancePrivateIp(instanceId, private_ip_address string) error {
 func UpdateInstancePublicIp(instanceId, public_ip_address string) error {
 	o := GetOrmer()
 	instance, err := GetInstance(instanceId)
+	if err != nil {
+		return err
+	}
 	instance.PublicIpAddress = public_ip_address
 	_, err = o.Update(instance)
 	if err != nil {
@@ -168,8 +173,22 @@ func UpdateInstanceStatus(ip string, status models.InstanceStatus) error {
 	return nil
 }
 
+func UpdateInstanceStatusByInstanceId(instanceId string, status models.InstanceStatus) error {
+	o := GetOrmer()
+	instance, err := GetInstance(instanceId)
+	if err != nil {
+		return err
+	}
+	instance.Status = status
+	_, err = o.Update(instance)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetIpByInstanceId(instanceId string) (string, error) {
-	ins, err := GetInstanceIncludeDelted(instanceId)
+	ins, err := GetInstanceIncludeDeleted(instanceId)
 	if err != nil {
 		return "", err
 	}
@@ -180,4 +199,13 @@ func GetIpByInstanceId(instanceId string) (string, error) {
 		return ins.PublicIpAddress, nil
 	}
 	return "", errors.New("The instance no private ip address or public ip address.")
+}
+
+func UpdateSshKey(instanceId string, publicKey string, privateKey string) error {
+	o := GetOrmer()
+	ins, err := GetInstance(instanceId)
+	ins.PublicKey = publicKey
+	ins.PrivateKey = privateKey
+	_, err = o.Update(ins)
+	return err
 }

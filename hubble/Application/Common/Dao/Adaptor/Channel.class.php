@@ -70,7 +70,7 @@ class Channel {
             'fork_num' => $fork_num,
         ];
 
-        $url = C('HUBBLE_ANSIBLE_HTTP').'/api/run';
+        $url = C('HUBBLE_ANSIBLE_HTTP').'/api/parallel_run';
         $data = json_encode($data);
         hubble_log(HUBBLE_DEBUG, "call ansible http: [$url]- [$data]");
         hubble_log(HUBBLE_INFO, "call ansible http: [$url]");

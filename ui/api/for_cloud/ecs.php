@@ -18,6 +18,7 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+error_reporting(0);
 
 header('Content-type: application/json');
 include_once('../../include/config.inc.php');
@@ -195,6 +196,44 @@ class myself{
     die($content);
   }
 
+  function addPhyDev($myUser = '', $method = 'POST', $arrJson = array()){
+    global $thisClass;
+    $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+    if(!empty($arrJson['InstanceList'])){
+        $retArr = [];
+        $lineArr = explode("\n", $arrJson['InstanceList']);
+        foreach ($lineArr as $line) {
+            $lineSplit = explode(",", $line);
+            if (sizeof($lineSplit) < 3) {
+                return $ret;
+            }
+            array_push($retArr, [
+                "publicip" => $lineSplit[0],
+                "privateip" => $lineSplit[1],
+                "password" => $lineSplit[2],
+            ]);
+        }
+
+        $arrJson['InstanceList'] = $retArr;
+      if($strList = $thisClass->get($myUser, 'instance/phydev', $method,$arrJson)){
+        $arrList = json_decode($strList,true);
+        if(isset($arrList['code']) && $arrList['code'] == 0){
+          $ret = array(
+              'code' => 0,
+              'msg' => 'success',
+          );
+        }else{
+          $ret['code'] = 1;
+          $arrList = json_decode($strList,true);
+          $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+          $ret['remote'] = $strList;
+        }
+      }
+      $ret['ret'] = $strList;
+    }
+    return $ret;
+  }
+
 }
 $mySelf=new myself();
 
@@ -268,6 +307,16 @@ if($hasLimit){
       break;
     case 'down_sshkey':
       $mySelf->getSshkey($myUser,$fIdx);
+      break;
+    case 'addPhyDev':
+      if(isset($arrJson) && !empty($arrJson)){
+
+        if(isset($arrJson['Cpu'])) $arrJson['Cpu'] = intval($arrJson['Cpu']);
+        if(isset($arrJson['Ram'])) $arrJson['Ram'] = intval($arrJson['Ram']);
+
+        $retArr = $mySelf->addPhyDev($myUser,'POST', $arrJson);
+        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+      }
       break;
   }
 }else{
