@@ -3,6 +3,16 @@ cache = {
   projects: [],
   tags:{},
   autocomplete:[],
+  state: {},
+}
+
+var isJson = function(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
 }
 
 var getDate = function(t){
@@ -147,6 +157,7 @@ var processBody = function(data,head,body){
     if(data.content.length>0){
       var tab=$('#tab').val();
       for (var i = 0; i < data.content.length; i++) {
+        cache.state[i] = {};
         var v = data.content[i];
         var tr = $('<tr></tr>');
         td = '<td>' + v.i + '</td>';
@@ -164,7 +175,7 @@ var processBody = function(data,head,body){
             tr.append(td);
             getState(i, v.name);
             btnAdd = '<a class="text-success tooltips" title="克隆" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'clone\',\''+v.name+'\')"><i class="fa fa-copy"></i></a>' +
-              ' <a class="text-primary tooltips" title="构建镜像" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'build\',\''+v.name+'\',\''+v.Cluster+'\')"><i class="fa fa-building-o"></i></a>';
+                ' <a class="text-primary tooltips" title="构建镜像" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'build\',\''+v.name+'\',\''+v.Cluster+'\')"><i class="fa fa-building-o"></i></a>';
             td = '<td>' + btnAdd + '</td>';
             tr.append(td);
             btnEdit = '<a class="text-success tooltips" title="修改" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'edit\',\''+v.name+'\')"><i class="fa fa-edit"></i></a>';
@@ -174,7 +185,7 @@ var processBody = function(data,head,body){
         var tb=(!btnEdit && !btnDel) ? '-' : btnEdit + ' ' + btnDel;
         td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + tb + '</div></td>';
         if(tb!='-') tr.append(td);
-        
+
         body.append(tr);
       }
     }else{
@@ -412,17 +423,17 @@ var twiceCheck=function(action,idx,desc){
           case 'clone':
             modalTitle='克隆项目';
             modalBody+='<div class="form-group">' +
-              '<label for="srcProjectName" class="col-sm-2 control-label">源项目名称</label>' +
-              '<div class="col-sm-10">' +
-              '<input type="text" class="form-control" id="srcProjectName" name="srcProjectName" onkeyup="check(\'clone\')" value="'+idx+'" readonly>' +
-              '</div>' +
-              '</div>';
+                '<label for="srcProjectName" class="col-sm-2 control-label">源项目名称</label>' +
+                '<div class="col-sm-10">' +
+                '<input type="text" class="form-control" id="srcProjectName" name="srcProjectName" onkeyup="check(\'clone\')" value="'+idx+'" readonly>' +
+                '</div>' +
+                '</div>';
             modalBody+='<div class="form-group">' +
-              '<label for="dstProjectName" class="col-sm-2 control-label">新项目名称</label>' +
-              '<div class="col-sm-10">' +
-              '<input type="text" class="form-control" id="dstProjectName" name="dstProjectName" onkeyup="check(\'clone\')" placeholder="新项目名称,eg:测试">' +
-              '</div>' +
-              '</div>';
+                '<label for="dstProjectName" class="col-sm-2 control-label">新项目名称</label>' +
+                '<div class="col-sm-10">' +
+                '<input type="text" class="form-control" id="dstProjectName" name="dstProjectName" onkeyup="check(\'clone\')" placeholder="新项目名称,eg:测试">' +
+                '</div>' +
+                '</div>';
             modalBody+='<input type="hidden" id="page_action" name="page_action" value="clone">';
             btnDisable=true;
             break;
@@ -434,12 +445,12 @@ var twiceCheck=function(action,idx,desc){
             modalBody+='</div>';
             modalBody+='</div>';
             modalBody+='<div class="form-group">' +
-              '<label for="tag" class="col-sm-2 control-label">标签</label>' +
-              '<div class="col-sm-10">' +
-              '<input type="text" class="form-control" id="tag" name="tag" onkeyup="check(\'build\')" placeholder="标签(不支持中文和特殊符号) ,eg:test">' +
-              '<div id="tag-container" style="position: relative; float: left; width: 400px; margin: 10px;" z-index="99999"></div>' +
-              '</div>' +
-              '</div>';
+                '<label for="tag" class="col-sm-2 control-label">标签</label>' +
+                '<div class="col-sm-10">' +
+                '<input type="text" class="form-control" id="tag" name="tag" onkeyup="check(\'build\')" placeholder="标签(不支持中文和特殊符号) ,eg:test">' +
+                '<div id="tag-container" style="position: relative; float: left; width: 400px; margin: 10px;" z-index="99999"></div>' +
+                '</div>' +
+                '</div>';
             modalBody+='<input type="hidden" id="projectName" name="projectName" value="'+idx+'">';
             modalBody+='<input type="hidden" id="page_action" name="page_action" value="build">';
             break;
@@ -561,7 +572,7 @@ var getTag=function(cluster,o){
 //获取构建状态
 var getState=function(i,o){
   if(!o) return false;
-  var postData={"fIdx":o};
+  var postData={"fIdx":o},str='';
   var url='/api/for_repos/package.php?action=state';
   $.ajax({
     type: "POST",
@@ -569,27 +580,63 @@ var getState=function(i,o){
     data: postData,
     dataType: "json",
     success: function (data) {
+      cache.state[i] = data;
       if(data.code==0){
         if(typeof data.content != 'undefined'){
-          switch(data.content){
+          switch(data.content.state){
             case 0:
-              $('#state_'+i).html('<span class="badge bg-blue">构建中</span>');
+              str = '<span class="badge bg-blue">构建中</span>';
               break;
             case 1:
-              $('#state_'+i).html('<span class="badge bg-green">成功</span>');
+              str = '<span class="badge bg-green">成功</span>';
               break;
             case 2:
-              $('#state_'+i).html('<span class="badge bg-red">失败</span>');
+              str = '<span class="badge bg-red">失败</span>';
               break;
             default:
-              $('#state_'+i).html('<span class="badge">未知状态</span>');
+              str = '<span class="badge">未知状态</span>';
               break;
           }
-          $('#state_'+i).html();
-        }else{
-          $('#state_'+i).html('-');
+          str += '<a class="pull-right" data-toggle="modal" data-target="#myViewModal" title="查看日志" onclick="showLog('+i+')"><i class="fa fa-history"></i></a>';
+          $('#state_'+i).html(str);
         }
       }
     }
   });
+}
+
+var showLog = function (i){
+  NProgress.start();
+  var title='查看构建日志',text='';
+  if(typeof i != 'undefined'){
+    if(typeof cache.state[i] != 'undefined'){
+      if(typeof cache.state[i].content != 'undefined'){
+        cache.state[i].content.logs.replace('\n', '<br/>');
+        text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
+
+        // if (isJson(cache.state[i].content.logs)){
+        //   if($.isPlainObject(JSON.parse(cache.state[i].content.logs))){
+        //     text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">';
+        //     $.each(JSON.parse(cache.state[i].content.logs),function(k,v){
+        //       text += v.replace(/\n/, '<br/>') + '<br/>';
+        //     });
+        //     text+='</span>';
+        //   }else{
+        //     text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
+        //   }
+        // }else{
+        //   text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
+        // }
+      }else{
+        text='<div class="note note-danger">'+JSON.stringify(cache.state[i])+'</div>';
+      }
+    } else {
+      text='<div class="note note-danger">加载失败：未找到对应日志</div>';
+    }
+  }else{
+    text='<div class="note note-danger">加载失败：参数错误</div>';
+  }
+  $('#myViewModalLabel').html(title);
+  $('#myViewModalBody').html(text);
+  NProgress.done();
 }

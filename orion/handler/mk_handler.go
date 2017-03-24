@@ -79,6 +79,10 @@ func (v *MockH) GetType() string {
 	return "vm"
 }
 
+func (v *MockH) GetLog(nodeState *NodeState) string {
+	return ""
+}
+
 func (v *MockH) Handle(action *ActionImpl, actionParams map[string]interface{},
 	nodes []*NodeState, corrId string) *HandleResult {
 

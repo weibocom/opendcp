@@ -9,4 +9,4 @@ echo "Deploy nginx on $IP ..."
 NOW=`date +"%Y%m%d-%H%M%S"`
 curl -l -H "Content-type: application/json" -X POST \
     -d  "{\"tasks\": [\"hubble-nginx\"], \"name\": \"$IP_$NOW\", \"fork_num\":5, \"tasktype\": \"ansible_role\", \"nodes\": [\"$IP\"], \"user\": \"root\"}" \
-    http://{{octans_host}}:8082/api/run
+    http://{{octans_host}}:8082/api/parallel_run

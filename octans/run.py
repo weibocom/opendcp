@@ -24,9 +24,11 @@
 # Time  : 2016/07/20
 
 from octans import App, start_app
+from multiprocessing import cpu_count
 
 if __name__ == '__main__':
     start_app()
 
     #App.run("0.0.0.0", 8000, debug=False)
-    App.run("0.0.0.0", 8000, debug=True)
+    App.run("0.0.0.0", 8000, threaded=True, debug=True)
+    App.run(processes=cpu_count())

@@ -15,9 +15,22 @@ import (
 	_ "weibo.com/opendcp/jupiter/provider/aws"
 )
 
+const DEFAULT_CPU = 1
+const DEFAULT_RAM = 1
+
 // Operations about Instance
 type InstanceController struct {
 	BaseController
+}
+
+type AppendPhyDevRequest struct {
+	InstanceList []models.PhyAuth `json:"instancelist"`
+}
+
+type AppendPhyDevResponse struct {
+	Success int                `json:"success"`
+	Failed  int                `json:"failed"`
+	Errors  []string        `json:"errors"`
 }
 
 // @Title create instance
@@ -85,7 +98,7 @@ func (ic *InstanceController) GetInstance() {
 	ic.RespJsonWithStatus()
 }
 
-// @Title Get instances
+// @Title Check status
 // @Description check instances status
 // @router status/:instanceIds [get]
 func (ic *InstanceController) GetInstancesStatus() {
@@ -102,6 +115,30 @@ func (ic *InstanceController) GetInstancesStatus() {
 	}
 	resp := ApiResponse{}
 	resp.Content = ins
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
+}
+
+// @Title Update machine status
+// @Description Update machine status
+// @router /status [post]
+func (ic *InstanceController) UpdateInstanceStatus() {
+	var insStat models.InstanceIdStatus
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
+	if err != nil {
+		beego.Error("Could parase request before crate instance: ", err)
+		ic.RespInputError()
+		return
+	}
+	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status)
+	if err != nil {
+		beego.Error("update instance status err: ", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = status
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
@@ -159,6 +196,35 @@ func (ic *InstanceController) DownloadKey() {
 	}
 	ic.Ctx.Output.Download(path)
 	os.Remove(path)
+}
+
+// @Title Upload ssh key
+// @Description Upload ssh key
+// @router sshkey/:instanceId [put]
+func (ic *InstanceController) UploadKey() {
+	instanceId := ic.GetString(":instanceId")
+	if instanceId == "" {
+		ic.RespMissingParams("instanceId")
+		return
+	}
+	var sshKey models.SshKey
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &sshKey)
+	if err != nil {
+		beego.Error("Could parase request before upload ssh key: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	result, err := instance.UploadSshKey(instanceId, sshKey)
+	if err != nil {
+		beego.Error("input phy dev error:", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp.Content = result
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
 }
 
 // @Title Get providers
@@ -436,3 +502,103 @@ func (ic *InstanceController) QueryLogByInstanceId() {
 	ic.RespJsonWithStatus()
 }
 
+// @Title Upload machine infomation
+// @Description Upload machine information to DB
+// @router /phydev [put]
+func (ic *InstanceController) UploadPhyDevInfo() {
+	var ins models.Instance
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &ins)
+	if err != nil {
+		beego.Error("Could parase request before input instance: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	result, err := instance.InputPhyDev(ins)
+	if err != nil {
+		beego.Error("input phy dev error:", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp.Content = result
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
+	ic.RespJsonWithStatus()
+}
+
+// @Title manage physical device
+// @Description manage physical device
+// @router /phydev [post]
+func (ic *InstanceController) ManagePhyDev() {
+	correlationId := ic.Ctx.Input.Header("X-CORRELATION-ID")
+	if len(correlationId) <= 0 {
+		ic.RespMissingParams("X-CORRELATION-ID")
+		return
+	}
+
+	var request AppendPhyDevRequest
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &request)
+	if err != nil {
+		beego.Error("Could parase request before input instance: ", err)
+		ic.RespInputError()
+		return
+	}
+
+	// 1. check request form
+	for _, info := range request.InstanceList {
+		if (strings.TrimSpace(info.PublicIp) == "" && strings.TrimSpace(info.PrivateIp) == "") || strings.TrimSpace(info.Password) == "" {
+			beego.Error("Please check request")
+			ic.RespInputError()
+			return
+		}
+	}
+
+	// 2. start insert DB
+	successCount := 0
+	failedCount := 0
+	errList := make([]string, 0)
+	for _, info := range request.InstanceList {
+		ip := info.PublicIp
+		if ip == "" {
+			ip = info.PrivateIp
+		}
+		// already in database, skip
+		inst, _ := instance.GetInstanceByIp(ip)
+		if inst != nil {
+			failedCount++
+			errList = append(errList, "Instance: "+ip+" is already in DB")
+			continue
+		}
+		var ins models.Instance
+		ins.Cpu = DEFAULT_CPU
+		ins.Ram = DEFAULT_RAM
+		ins.PublicIpAddress = info.PublicIp
+		ins.PrivateIpAddress = info.PrivateIp
+
+		ins, err = instance.InputPhyDev(ins)
+
+		if err != nil {
+			failedCount++
+			errList = append(errList, err.Error())
+		} else {
+			successCount++
+			// asynchronous manage
+			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
+		}
+	}
+
+	// 3. response
+	resp := ApiResponse{}
+	resp.Content = AppendPhyDevResponse{
+		Success:successCount,
+		Failed: failedCount,
+		Errors: errList,
+	}
+	ic.ApiResponse = resp
+	if failedCount == 0 {
+		ic.Status = SERVICE_SUCCESS
+	} else {
+		ic.Status = SERVICE_ERRROR
+	}
+	ic.RespJsonWithStatus()
+}
