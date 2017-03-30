@@ -28,15 +28,15 @@ OPENDCP主要由以下几个模块构成:
     > - 如需停止harbor服务，`cd /data1/harbor/harbor` 进入到安装目录, 执行`docker-compose down`。
 
 4.  修改配置
-    > - `cd opendcp/deploy`
-    > - 执行`./scripts/change_conf.sh`，按照提示修改配置文件。   
-    > - 或者按以下几个步骤手工修改：
-        > - 编辑 conf/hubble_conf.php, 修改配置项 'HUBBLE_HOST','HUBBLE_ANSIBLE_HTTP' 和 'HUBBLE_SLB_HTTP' 为本机IP。
-        > - 编辑 docker-compose.yml, 找到配置项 'imagebuild', 修改  'SERVER_IP' 为本机IP, 'HARBOR_ADDRESS'改为Harbor服务器的地址.
-        > - 在conf/octans_roles/init/files/docker里，增加--insecure-registry 'harbor_ip:12380'。
-        > - 编辑 conf/jupiter.json, 修改`KeyId`和`KeySecret`为您的阿里云账号和密码。
-        > - 编辑 conf/web_conf.php, 修改  REPOS_DOMAIN 为 Harbor部署的IP。
-        > - <span id="auth">关于登录系统和认证</span>
+    - `cd opendcp/deploy`
+    - 执行`./scripts/change_conf.sh`，按照提示修改配置文件。   
+    - 或者按以下几个步骤手工修改：
+        - <p>编辑 conf/hubble_conf.php, 修改配置项 'HUBBLE_HOST','HUBBLE_ANSIBLE_HTTP' 和 'HUBBLE_SLB_HTTP' 为本机IP。</p>
+        - <p>编辑 docker-compose.yml, 找到配置项 'imagebuild', 修改  'SERVER_IP' 为本机IP, 'HARBOR_ADDRESS'改为Harbor服务器的地址.</p>
+        - <p>在conf/octans_roles/init/files/docker里，增加--insecure-registry 'harbor_ip:12380'。</p>
+        - <p>编辑 conf/jupiter.json, 修改`KeyId`和`KeySecret`为您的阿里云账号和密码。</p>
+        - <p>编辑 conf/web_conf.php, 修改  REPOS_DOMAIN 为 Harbor部署的IP。</p>
+        - <span id="auth">关于登录系统和认证</span>
             - 当选择本地认证方式时，用户需要自行维护所有用户的登录账号。缺省只有管理员账号“root”能够登录，密码是“admin”。登录成功后，到导航栏 系统管理 -> 用户管理 可以增加管理用户。
             - 如果使用LDAP，需配置LDAP授权：修改deploy/conf/web_conf.php中“LDAP配置信息”一节。其中，“LDAP_HOST”是LDAP服务器的IP地址，“LDAP_PORT”是端口号，“LDAP_USER”是访问认证用的账号，“LDAP_PASS”是账号对应的密码，“LDAP_BIND”是LDAP绑定目录，“LDAP_SEARCH”是LDAP查找目录。首次使用可以忽略此步骤，登陆时采用本地登录不使用LDAP登录。
 5.  构建镜像.
