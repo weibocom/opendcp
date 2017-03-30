@@ -11,18 +11,20 @@ OPENDCP主要由以下几个模块构成:
 系统部署后将运行在docker容器内,所以系统将依赖docker服务.并会在本地打包生成镜像
 
 ## 安装步骤
-以下介绍了系统快速部署方法，系统的详细使用请参照使用手册。  
+以下介绍了系统快速部署方法，系统的详细使用请参照使用手册。**注意**安装Harbor，Docker Compose等组件的时候，由于国内网络环境的原因，访问github可能失败，遇此情况需要重试安装。
 
-1.  安装 **Docker-1.10.0**和**Docker-Compose-1.6.0**以上版本, 详细请查看 [Docker
+1.  安装 **Docker-1.10.0**和**Docker-Compose-1.6.0**以上版本, 详细请查看[Docker Install](https://www.docker.com/docker-centos-distribution)和[Docker
     Compose Install](https://docs.docker.com/compose/install/).  
     并确保docker-daemon已正常启动.
 
-2.  下载源码，`git clone http://github.com/weibocom/opendcp.git`
-	>由于项目会下载所需的必需基础镜像,建议将下载源码放到空间大于50G以上的目录中。    
-    
+2.  确保**Git**已经安装，然后下载源码，`git clone http://github.com/weibocom/opendcp.git`
+	>由于项目会下载所需的必需基础镜像,建议将下载源码放到空间大于50G以上的目录中。 
+	
+3. 以下步骤请使用root用户或有sudo权限的用户`sudo su -`切换到root用户后执行。
+
 3. Harbor作为系统的一个模块.用于存储用户自定义的镜像,安装Harbor
     > - `cd opendcp/deploy/scripts` 进入到脚本目录
-    > - `sudo ./installHarbor.sh <镜像仓库机器IP> 12380 /data1 aliyun` 部署Harbor(镜像市场)，最后一个参数表示镜像获取方式,aliyun表示从阿里云获取,其他的从docker.io中获取,Harbor可以在单独的一台Linux机器上运行。
+    > - `./installHarbor.sh <镜像仓库机器IP> 12380 /data1 aliyun` 部署Harbor(镜像市场)，最后一个参数表示镜像获取方式,aliyun表示从阿里云获取,其他的从docker.io中获取,Harbor可以在单独的一台Linux机器上运行。
     > - `cd /data1/harbor/harbor` 进入到安装目录, 执行`docker-compose down` 停止harbor服务。
 
 4.  修改配置
@@ -43,6 +45,6 @@ OPENDCP主要由以下几个模块构成:
         - source 基础镜像来源,目前支持的来源有: aliyun, dockerio，国内用户推荐使用aliyun
         - tag   本次build命令执行输出的tag版本，默认不填为latest
 
-6.  在`opendcp/deploy`目录下，运行 ./run.sh & 启动 OpenDCP, 访问网址
+6.  在`opendcp/deploy`目录下，运行 `./run.sh &` 启动 OpenDCP。 如果想要让OpenDCP在后台运行`./run.sh -d`。运行日志可在`logs`目录下查看:`tail -f logs/orion.log`。OpenDCP启动完成后，请访问网址
      [http://localhost:8888](http://localhost:8888/) 可以看到管理控制台界面。
-7.  在`opendcp/deploy`目录下，运行 ./stop.sh 停止 OpenDCP。
+7.  如果要停止OpenDCP，在`opendcp/deploy`目录下，运行 ./stop.sh 。
