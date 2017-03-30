@@ -13,7 +13,7 @@ OPENDCP主要由以下几个模块构成:
 ## 安装步骤
 以下介绍了系统快速部署方法，系统的详细使用请参照使用手册。**注意**安装Harbor，Docker Compose等组件的时候，由于国内网络环境的原因，访问github可能失败，遇此情况需要重试安装。
 
-1.  安装 **Docker-1.10.0**和**Docker-Compose-1.6.0**以上版本, 详细请查看[Docker Install](https://www.docker.com/docker-centos-distribution)和[Docker
+1.  安装 **Docker-1.10.0**和**Docker-Compose-1.6.0**以上版本, 详细请查看[Docker Install](https://www.docker.com/docker-centos-distribution) 和 [Docker
     Compose Install](https://docs.docker.com/compose/install/).  
     并确保docker-daemon已正常启动.
 
@@ -45,6 +45,6 @@ OPENDCP主要由以下几个模块构成:
         - source 基础镜像来源,目前支持的来源有: aliyun, dockerio，国内用户推荐使用aliyun
         - tag   本次build命令执行输出的tag版本，默认不填为latest
 
-6.  在`opendcp/deploy`目录下，运行 `./run.sh &` 启动 OpenDCP。 如果想要让OpenDCP在后台运行`./run.sh -d`。运行日志可在`logs`目录下查看:`tail -f logs/orion.log`。OpenDCP启动完成后，请访问网址
+6.  在`opendcp/deploy`目录下，运行 `./run.sh &` 启动 OpenDCP。 如果想要让OpenDCP在后台运行`./run.sh -d`。运行日志可在`logs`目录下查看:`tail -f logs/orion.log`。OpenDCP启动完成后，访问网址
      [http://localhost:8888](http://localhost:8888/) 可以看到管理控制台界面。
-7.  如果要停止OpenDCP，在`opendcp/deploy`目录下，运行 ./stop.sh 。
+7.  如要停止OpenDCP，在`opendcp/deploy`目录下，运行 ./stop.sh 。
