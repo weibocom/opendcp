@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `t_build_history` (
     `operator` varchar(50) NOT NULL DEFAULT '' COMMENT 'people that start the building task',
     `time` datetime NOT NULL COMMENT 'build time' COMMENT 'time',
     `state` tinyint NOT NULL COMMENT '0: building 1: success 2: fail',
+    `logs` longtext NOT NULL COMMENT 'logs',
     PRIMARY KEY (id)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8
    COMMENT='table record build history';
