@@ -112,4 +112,11 @@ if [[ $fail == 1 ]]; then
     exit 1
 fi
 
+currentDir=$(dirname $(cd $(dirname $0) && pwd))
+sed -i "s/VER=.*/VER=${VER}/g" $currentDir/deploy/run.sh
+if [[ 0 != $? ]] ; then
+    info "FAIL update run.sh"
+    exit 1
+fi
+
 echo "ALL DONE"
