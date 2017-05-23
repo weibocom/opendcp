@@ -597,22 +597,24 @@ var getState=function(i,o){
               str = '<span class="badge">未知状态</span>';
               break;
           }
-          str += '<a class="pull-right" data-toggle="modal" data-target="#myViewModal" title="查看日志" onclick="showLog('+i+')"><i class="fa fa-history"></i></a>';
+          str += '<a class="pull-right" data-toggle="modal" data-target="#myViewModal" title="查看日志" onclick="showLog(' + i + ',\''+ o +'\')"><i class="fa fa-history"></i></a>';
           $('#state_'+i).html(str);
         }
       }
     }
   });
+
 }
 
-var showLog = function (i){
+var showLog = function (i, o){
   NProgress.start();
   var title='查看构建日志',text='';
   if(typeof i != 'undefined'){
     if(typeof cache.state[i] != 'undefined'){
       if(typeof cache.state[i].content != 'undefined'){
-        cache.state[i].content.logs.replace('\n', '<br/>');
-        text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
+        var result = cache.state[i].content.logs.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+        //cache.state[i].content.logs.replace('\n', '<br/>');
+        text ='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ result +'</span>';
 
         // if (isJson(cache.state[i].content.logs)){
         //   if($.isPlainObject(JSON.parse(cache.state[i].content.logs))){
@@ -638,5 +640,6 @@ var showLog = function (i){
   }
   $('#myViewModalLabel').html(title);
   $('#myViewModalBody').html(text);
+  getState(i,o)
   NProgress.done();
 }
