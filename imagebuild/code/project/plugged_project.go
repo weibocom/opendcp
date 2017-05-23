@@ -123,6 +123,9 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 
 	projectPath := env.PROJECT_CONFIG_BASEDIR
 	dockerFilePath := projectPath + p.Name + "/tmp/"
+
+
+	
 	//第一步创建镜像
 	log.Info(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + " fullImageName: " + fullImageName)
 	p.appendLog(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName)
