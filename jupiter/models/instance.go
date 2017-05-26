@@ -93,6 +93,7 @@ type ListInstancesResponse struct {
 }
 
 type Instance struct {
+	OpenstackInstace
 	Id                 int      `orm:"pk;auto"`
 	Cluster            *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
 	Provider           string
@@ -181,6 +182,7 @@ type EipAddressAssociateTypeAllin struct {
 }
 
 type InstanceAllIn struct {
+	OpenstackInstace
 	InstanceId          string                       `json:"InstanceId"`
 	InstanceName        string                       `json:"InstanceName"`
 	Description         string                       `json:"Description"`
