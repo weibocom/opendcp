@@ -24,6 +24,7 @@ include_once('../../include/config.inc.php');
 include_once('../../include/function.php');
 include_once('../../include/func_session.php');
 include_once('../../include/cloud.php');
+//cloud类提供了curl方法的调用
 $thisClass = $cloud;
 
 class myself{
