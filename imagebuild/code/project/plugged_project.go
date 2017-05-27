@@ -123,9 +123,6 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 
 	projectPath := env.PROJECT_CONFIG_BASEDIR
 	dockerFilePath := projectPath + p.Name + "/tmp/"
-
-
-	
 	//第一步创建镜像
 	log.Info(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + " fullImageName: " + fullImageName)
 	p.appendLog(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName)
@@ -146,8 +143,9 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 		p.appendLog(p.timeNow() + "[Error]\t"+"Login Harbor with error:" + err.Error())
 		return false
 	}
-	p.appendLog("login haror success ...")
+	p.appendLog(p.timeNow() +"login haror success ...")
 	//第三步推送镜像到仓库
+	p.appendLog(p.timeNow() + "[Info]\t"+"Begin push image")
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
 	p.logs = append(p.logs, p.timeNow() +"[Info]\t" + logStr)
 
@@ -156,7 +154,7 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 		p.appendLog(p.timeNow() + "[Error]\t"+"Push Image with error:" + err.Error())
 		return false
 	}
-
+	p.appendLog(p.timeNow() + "[Info]\t"+"push image success...")
 	return true
 }
 

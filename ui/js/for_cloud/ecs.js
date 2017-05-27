@@ -9,6 +9,10 @@ cache = {
   copy: {
     ip: [],
   },
+  //保存当前查看日志信息
+  currentidx: "",
+  currentdesc: "",
+
 }
 
 var getDate = function(t){
@@ -755,6 +759,8 @@ var checkEcsState=function(ips,flag){
 }
 
 var viewLog=function(idx,desc){
+  cache.currentidx = idx;
+  cache.currentdesc = desc;
   NProgress.start();
   var url='',title='查看创建 - ',text='',postData={};
   title+=(desc)?desc:idx;
@@ -800,10 +806,12 @@ var viewLog=function(idx,desc){
     NProgress.done();
   }
 }
-
-
-
-
+//刷新日志
+var refreshLog = function(){
+    viewLog(cache.currentidx, cache.currentdesc);
+    //刷新整个状态机器状态
+    //getList();
+}
 var checkPhyDev=function(){
   var disabled=false;
   if($('#InstanceList').val()=='') disabled=true;

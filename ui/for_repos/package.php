@@ -240,18 +240,18 @@ require_once('../include/navbar.php');
                     </div>
                   </form>
                   <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true">
+                    <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true" onclick ="closeRefresh()">
                       <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick ="closeRefresh()"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="myViewModalLabel">Loading ...</h4>
                           </div>
                           <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
                             <p> </p>
                           </div>
                           <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick ="closeRefresh()">关闭</button>
                           </div>
                         </div>
                       </div>
