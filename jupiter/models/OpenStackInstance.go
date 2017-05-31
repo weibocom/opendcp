@@ -40,7 +40,7 @@ type OpenstackInstace struct {
 	//Metadata map[string]interface{}
 
 	// Links includes HTTP references to the itself, useful for passing along to other APIs that might want a server reference.
-	Links []interface{}
+	//Links []interface{}
 
 	// KeyName indicates which public key was injected into the server on launch.
 	KeyName string `json:"key_name" mapstructure:"key_name"`
