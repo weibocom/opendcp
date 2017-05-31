@@ -55,14 +55,14 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 			instance.Progress = instanceOP.Progress
 			instance.AccessIPv4 = instanceOP.AccessIPv4
 			instance.AccessIPv6 = instanceOP.AccessIPv6
-			instance.Image = instanceOP.Image
-			instance.Flavor = instanceOP.Flavor
-			instance.Addresses = instanceOP.Addresses
-			instance.Metadata = instanceOP.Metadata
+			//instance.Image = instanceOP.Image
+			//instance.Flavor = instanceOP.Flavor
+			//instance.Addresses = instanceOP.Addresses
+			//instance.Metadata = instanceOP.Metadata
 			instance.Links = instanceOP.Links
 			instance.KeyName = instanceOP.KeyName
 			instance.AdminPass = instanceOP.AdminPass
-			instance.SecurityGroups = instanceOP.SecurityGroups
+			//instance.SecurityGroups = instanceOP.SecurityGroups
 			listInstancesResp.Reservations = append(listInstancesResp.Reservations, instance)
 		}
 		return  true, nil
@@ -166,14 +166,14 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 	instance.Progress = server.Progress
 	instance.AccessIPv4 = server.AccessIPv4
 	instance.AccessIPv6 = server.AccessIPv6
-	instance.Image = server.Image
-	instance.Flavor = server.Flavor
-	instance.Addresses = server.Addresses
-	instance.Metadata = server.Metadata
+	//instance.Image = server.Image
+	//instance.Flavor = server.Flavor
+	//instance.Addresses = server.Addresses
+	//instance.Metadata = server.Metadata
 	instance.Links = server.Links
 	instance.KeyName = server.KeyName
 	instance.AdminPass = server.AdminPass
-	instance.SecurityGroups = server.SecurityGroups
+	//instance.SecurityGroups = server.SecurityGroups
 	return &instance, err
 }
 

@@ -28,16 +28,16 @@ type OpenstackInstace struct {
 	AccessIPv4, AccessIPv6 string
 
 	// Image refers to a JSON object, which itself indicates the OS image used to deploy the server.
-	Image map[string]interface{}
+	//Image map[string]interface{}
 
 	// Flavor refers to a JSON object, which itself indicates the hardware configuration of the deployed server.
-	Flavor map[string]interface{}
+	//Flavor map[string]interface{}
 
 	// Addresses includes a list of all IP addresses assigned to the server, keyed by pool.
-	Addresses map[string]interface{}
+	//Addresses map[string]interface{}
 
 	// Metadata includes a list of all user-specified key-value pairs attached to the server.
-	Metadata map[string]interface{}
+	//Metadata map[string]interface{}
 
 	// Links includes HTTP references to the itself, useful for passing along to other APIs that might want a server reference.
 	Links []interface{}
@@ -50,5 +50,5 @@ type OpenstackInstace struct {
 	AdminPass string `json:"adminPass" mapstructure:"adminPass"`
 
 	// SecurityGroups includes the security groups that this instance has applied to it
-	SecurityGroups []map[string]interface{} `json:"security_groups" mapstructure:"security_groups"`
+	//SecurityGroups []map[string]interface{} `json:"security_groups" mapstructure:"security_groups"`
 }
