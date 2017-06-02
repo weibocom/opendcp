@@ -83,6 +83,7 @@ func (app *Server) Init(ip string, port string) {
 	app.loadProjects()
 	log.Info("finish load all projects")
 	bytes, _ := json.MarshalIndent(app.projects, "", "  ")
+	log.Info(len(app.projects));
 	log.Info(string(bytes))
 
 	log.Info("start create defaultProject")
@@ -251,7 +252,6 @@ func (app *Server) GetProjects(projectName string) pro.ProjectInfoList {
 			projectInfos = append(projectInfos, projectInfo)
 		}
 	}
-
 	// sort
 	sort.Sort(pro.ProjectInfoList(projectInfos))
 

@@ -209,7 +209,7 @@ require_once('../include/navbar.php');
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="myModalLabel">Loading ...</h4>
                           </div>
-                          <div class="modal-body" style="overflow:auto;" id="myModalBody">
+                          <div class="modal-body" style="overflow:auto;line-height:200%" id="myModalBody">
                             <p> </p>
                           </div>
                           <div class="modal-footer">

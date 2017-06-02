@@ -155,6 +155,7 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 		return false
 	}
 	p.appendLog(p.timeNow() + "[Info]\t"+"push image success...")
+	p.appendLog(p.timeNow() + "[Info]\t"+"Build and Push image success..." + "\n")
 	return true
 }
 

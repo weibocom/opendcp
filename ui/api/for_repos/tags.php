@@ -53,6 +53,7 @@ class myself{
           $tArr['name'] = $v;
           $ret['content'][] = $tArr;
         }
+        $ret['imageAddress'] = REPOS_DOMAIN;
         $ret['count'] = (isset($arrList['header']['X-Total-Count'])) ? (int)$arrList['header']['X-Total-Count'] : count($ret['content']);
         $ret['page'] = (isset($arrList['pageNumber'])) ? $arrList['pageNumber'] : 1;
       }else{
@@ -78,6 +79,7 @@ class myself{
           'content' => array(),
         );
         $ret['content']=$arrList['content'];
+
       }else{
         $ret['code'] = 1;
         $arrList = json_decode($strList,true);

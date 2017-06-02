@@ -213,7 +213,7 @@ var updateEle=function(o,idx){
         case 1: $('#state').html('<span class="badge bg-blue">执行中</span>'); break;
         case 2: $('#state').html('<span class="badge bg-green">已完成</span>'); cache.flag=false; break;
         case 3: $('#state').html('<span class="badge bg-red">失败</span>'); cache.flag=false; break;
-        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>'); cache.flag=false; break;
+        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>'); break;
         default: $('#state').html('<span class="badge bg-red" title="'+ idx +'">未知</span>'); break;
       }
       break;
