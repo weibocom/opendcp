@@ -436,19 +436,24 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	}
 	cli, err := getSSHClient(ip, "", password)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
+		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err)
+		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
 	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
 		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
-	logstore.Info(correlationId, instanceId, cmd)
+	logstore.Info(correlationId, instanceId, "###Third### Exec init operaration："+cmd)
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
+		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err)
+		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
 	logstore.Info(correlationId, instanceId, ret)

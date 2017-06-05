@@ -42,16 +42,24 @@ const (
 )
 
 const (
-	vmPending = iota
-	vmSuccess
-	vmUninit
-	vmIniting
-	vmInitTimeout
-	vmDeleted
-	vmUninstalling
-	vmUniTimeout
-	vmDeleting
-	vmError
+	//vmPending = iota
+	//vmSuccess
+	//vmUninit
+	//vmIniting
+	//vmInitTimeout
+	//vmDeleted
+	//vmUninstalling
+	//vmUniTimeout
+	//vmDeleting
+	//vmError
+	vmPending = iota 		    //正在创建
+	vmSuccess                           //初始化完成
+	vmUninit                            //未初始化
+	vmIniting                           //正在初始化
+	vmInitTimeout                       //初始化超时
+	vmDeleted                           //资源已删除
+	vmDeleting                          //正在删除
+	vmError                       	    //初始化失败
 )
 
 var (
