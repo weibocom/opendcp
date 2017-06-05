@@ -47,8 +47,8 @@ func (w *Worker) loop() {
 			// queue closed
 			break
 		}
-
-		w.safeRun(job)
+		//修改使任务并行运行
+		go w.safeRun(job)
 	}
 }
 
