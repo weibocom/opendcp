@@ -36,7 +36,6 @@ import (
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
 	"strings"
-	"time"
 )
 
 /**
@@ -123,35 +122,40 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 
 	projectPath := env.PROJECT_CONFIG_BASEDIR
 	dockerFilePath := projectPath + p.Name + "/tmp/"
-	//第一步创建镜像
-	log.Info(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + " fullImageName: " + fullImageName)
-	p.appendLog(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName)
+
+	log.Info("BuildImage dockerFilePath:" + dockerFilePath + " fullImageName:" + fullImageName)
+
 	logStr, err := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName)
-	//formatlogStr := strings.Replace(logStr, "\r", "\n", -1)
-	p.logs = append(p.logs, p.timeNow() + "[info]\t" + logStr)
-	//p.appendLog(logStr)
+
+	p.appendLog(logStr)
+
 	if err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Build Image with error: ", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Build Image with error: " + err.Error())
+		log.Error("Build Image with error:", err)
+		p.appendLog("Build Image with error:" + err.Error())
 		return false
 	}
-	//第二步登录仓库
+
 	log.Info("Login Harbor")
-	p.appendLog(p.timeNow() + "[Info]\t"+"Login Harbor")
 	if err := service.GetDockerOperatorInstance().LoginHarbor(); err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Login Harbor with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Login Harbor with error:" + err.Error())
+		log.Error("Login Harbor with error:", err)
+		p.appendLog("Login Harbor with error:" + err.Error())
 		return false
 	}
+<<<<<<< HEAD
 	p.appendLog(p.timeNow() +"login haror success ...")
 	//第三步推送镜像到仓库
 	p.appendLog(p.timeNow() + "[Info]\t"+"Begin push image")
+=======
+
+	p.appendLog("login haror success ...")
+
+>>>>>>> parent of 5ed8bfb... Format image build's log
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
-	p.logs = append(p.logs, p.timeNow() +"[Info]\t" + logStr)
+
+	p.appendLog(logStr)
 
 	if err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Push Image with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Push Image with error:" + err.Error())
+		log.Error("Push Image with error:", err)
 		return false
 	}
 	p.appendLog(p.timeNow() + "[Info]\t"+"push image success...")
@@ -195,12 +199,12 @@ func (p *PluggedProject) ClearLog() {
 
 // 构建project对象
 func BuildPluginProject(projectName string,
-creator string,
-cluster string,
-defineDockerFileType string,
-createTime string,
-dockerfilePlugins *util.ConcurrentMap,
-buildPlugins *util.ConcurrentMap) *PluggedProject {
+	creator string,
+	cluster string,
+	defineDockerFileType string,
+	createTime string,
+	dockerfilePlugins *util.ConcurrentMap,
+	buildPlugins *util.ConcurrentMap) *PluggedProject {
 
 	// build Project object
 	project := &PluggedProject{}
@@ -225,10 +229,4 @@ buildPlugins *util.ConcurrentMap) *PluggedProject {
 	project.BuildPlugins = buildPlugins
 
 	return project
-}
-
-
-//新增
-func (p *PluggedProject) timeNow() string {
-	return time.Now().Format("2006-01-02 15:04:05") + "\t"
 }
