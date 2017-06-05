@@ -141,9 +141,15 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 		p.appendLog("Login Harbor with error:" + err.Error())
 		return false
 	}
+<<<<<<< HEAD
+	p.appendLog(p.timeNow() +"login haror success ...")
+	//第三步推送镜像到仓库
+	p.appendLog(p.timeNow() + "[Info]\t"+"Begin push image")
+=======
 
 	p.appendLog("login haror success ...")
 
+>>>>>>> parent of 5ed8bfb... Format image build's log
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
 
 	p.appendLog(logStr)
@@ -152,7 +158,8 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 		log.Error("Push Image with error:", err)
 		return false
 	}
-
+	p.appendLog(p.timeNow() + "[Info]\t"+"push image success...")
+	p.appendLog(p.timeNow() + "[Info]\t"+"Build and Push image success..." + "\n")
 	return true
 }
 

@@ -4,7 +4,13 @@ cache = {
   tags:{},
   autocomplete:[],
   state: {},
+  //保存当前项目的信息
+  currentProjectLogId: 0,
+  currentProjectName: "",
 }
+
+//自动刷新
+var autoRefresh = null;
 
 var isJson = function(str) {
   try {
@@ -603,6 +609,35 @@ var getState=function(i,o){
       }
     }
   });
+<<<<<<< HEAD
+    NProgress.done();
+}
+
+//关闭自动刷新
+ var closeRefresh = function(){
+     if(autoRefresh){
+        clearInterval(autoRefresh);
+     }
+ }
+var showLog = function (i, o){
+    cache.currentProjectLogId = i;
+    cache.currentProjectName = o;
+    refreshLog();
+    autoRefresh = setInterval(refreshLog,5000);//5秒刷新一次
+}
+
+var refreshLog = function (){
+  var index = cache.currentProjectLogId;
+  var name =  cache.currentProjectName;
+  NProgress.start();
+  var title='查看构建日志',text='';
+  if(typeof index != 'undefined'){
+    if(typeof cache.state[index] != 'undefined'){
+      if(typeof cache.state[index].content != 'undefined'){
+        var result = cache.state[index].content.logs.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+        //cache.state[i].content.logs.replace('\n', '<br/>');
+        text ='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ result +'</span>';
+=======
 }
 
 var showLog = function (i){
@@ -613,6 +648,7 @@ var showLog = function (i){
       if(typeof cache.state[i].content != 'undefined'){
         cache.state[i].content.logs.replace('\n', '<br/>');
         text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
+>>>>>>> parent of 5ed8bfb... Format image build's log
 
         // if (isJson(cache.state[i].content.logs)){
         //   if($.isPlainObject(JSON.parse(cache.state[i].content.logs))){
@@ -628,7 +664,7 @@ var showLog = function (i){
         //   text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
         // }
       }else{
-        text='<div class="note note-danger">'+JSON.stringify(cache.state[i])+'</div>';
+        text='<div class="note note-danger">'+JSON.stringify(cache.state[index])+'</div>';
       }
     } else {
       text='<div class="note note-danger">加载失败：未找到对应日志</div>';
@@ -636,7 +672,34 @@ var showLog = function (i){
   }else{
     text='<div class="note note-danger">加载失败：参数错误</div>';
   }
+  text += '<span class="pull-right text-danger">Updated:'+getDate(new Date(),'time')+'</span>'
   $('#myViewModalLabel').html(title);
   $('#myViewModalBody').html(text);
+<<<<<<< HEAD
+  getState(index,name)
+
+}
+
+
+var getDate = function(t,type){
+  if(!t) t='';
+  var d= new Date(t);
+  var M= (d.getMonth()+1);
+  var D= d.getDate();
+  var h= d.getHours();
+  var i= d.getMinutes();
+  var s= d.getSeconds();
+  var ret='';
+  switch (type){
+    case 'time':
+      ret=((h<10)?'0'+h:h) +':'+ ((i<10)?'0'+i:i) +':'+ ((s<10)?'0'+s:s);
+      break;
+    default:
+      ret=d.getFullYear()+'.'+ ((M<10)?'0'+M:M) +'.'+ ((D<10)?'0'+D:D) +' '+ ((h<10)?'0'+h:h) +':'+ ((i<10)?'0'+i:i) +':'+ ((s<10)?'0'+s:s);
+      break;
+  }
+  return ret;
+=======
   NProgress.done();
+>>>>>>> parent of 5ed8bfb... Format image build's log
 }

@@ -83,6 +83,7 @@ func (app *Server) Init(ip string, port string) {
 	app.loadProjects()
 	log.Info("finish load all projects")
 	bytes, _ := json.MarshalIndent(app.projects, "", "  ")
+	log.Info(len(app.projects));
 	log.Info(string(bytes))
 
 	log.Info("start create defaultProject")
@@ -95,6 +96,7 @@ func (app *Server) Init(ip string, port string) {
 	log.Info("------finish init server")
 }
 
+//克隆操作
 func (app *Server) CloneProject(srcProjectName, dstProjectName, creator, cluster, defineDockerFileType string) (bool, int) {
 	project, code := pro.CloneProject(srcProjectName,
 		dstProjectName,
@@ -116,7 +118,7 @@ func (app *Server) CloneProject(srcProjectName, dstProjectName, creator, cluster
 	log.Infof("clone project: %s from project: %s success", dstProjectName, srcProjectName)
 	return true, code
 }
-
+//项目是否存在
 func (app *Server) IsProjectExist(projectName string) bool {
 	var project pro.Project = app.getProject(projectName)
 	if project != nil {
@@ -125,7 +127,7 @@ func (app *Server) IsProjectExist(projectName string) bool {
 	}
 	return false
 }
-
+//更新项目
 func (app *Server) UpdateProject(projectName, creator, cluster, defineDockerFileType string) (bool, int) {
 	// write lock
 	app.projectLock.Lock()
@@ -148,7 +150,7 @@ func (app *Server) UpdateProject(projectName, creator, cluster, defineDockerFile
 	log.Infof("update project: %s success", projectName)
 	return true, code
 }
-
+//创建项目
 func (app *Server) NewProject(projectName, creator, cluster, defineDockerFileType string) (bool, int) {
 	project, code := pro.NewProject(projectName,
 		creator,
@@ -169,7 +171,7 @@ func (app *Server) NewProject(projectName, creator, cluster, defineDockerFileTyp
 	log.Infof("new project: %s success", projectName)
 	return true, code
 }
-
+//删除项目
 func (app *Server) DeleteProject(projectName string, operator string) (bool, int) {
 	// write lock
 	app.projectLock.Lock()
@@ -189,7 +191,7 @@ func (app *Server) DeleteProject(projectName string, operator string) (bool, int
 	log.Infof("delete project: %s success", projectName)
 	return true, errors.OK
 }
-
+//保存项目配置文件
 func (app *Server) SaveProjectConfig(projectName string, configs []map[string]interface{}) bool {
 	var project pro.Project = app.getProject(projectName)
 	if project == nil {
@@ -198,7 +200,7 @@ func (app *Server) SaveProjectConfig(projectName string, configs []map[string]in
 	}
 	return project.Save(configs)
 }
-
+//获取项目配置文件信息
 func (app *Server) GetProjectConfigView(projectName string) (int, string) {
 	var project pro.Project = app.getProject(projectName)
 
@@ -250,7 +252,6 @@ func (app *Server) GetProjects(projectName string) pro.ProjectInfoList {
 			projectInfos = append(projectInfos, projectInfo)
 		}
 	}
-
 	// sort
 	sort.Sort(pro.ProjectInfoList(projectInfos))
 

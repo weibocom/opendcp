@@ -261,6 +261,7 @@ require_once('../include/navbar.php');
                           </div>
                           <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary" onclick="refreshLog()" style="margin-bottom: 6px;">刷新</button>
                           </div>
                         </div>
                       </div>
