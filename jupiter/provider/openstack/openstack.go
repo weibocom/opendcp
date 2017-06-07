@@ -162,7 +162,8 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 	instance.InstanceId = server.ID
 	instance.Provider = "openstack"
 	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05", server.Created, time.Local)
-	instance.ImageId = server.Image["id"]
+	tmp := server.Image["id"]
+	instance.ImageId = tmp.(*string)
 	//InstanceType
 	//VpcId
 	//subnetId
@@ -317,7 +318,11 @@ func newProvider() (provider.ProviderDriver, error){
 		openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
 			Region: "RegionOne",
 		})
-	return client, err
+
+	ret := openstackProvider{
+		client: client,
+	}
+	return ret, err
 }
 
 
