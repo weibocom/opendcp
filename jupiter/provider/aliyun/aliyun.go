@@ -36,6 +36,7 @@ import (
 
 func init() {
 	provider.RegisterProviderDriver("aliyun", new)
+	fmt.Println("aliyun init() execute")
 }
 
 const (
@@ -535,6 +536,7 @@ func new() (provider.ProviderDriver, error) {
 }
 
 func newProvider() (provider.ProviderDriver, error) {
+	fmt.Println("aliyunNewProvider is execute")
 	client := ecs.NewClient(
 		conf.Config.KeyId,
 		conf.Config.KeySecret,
