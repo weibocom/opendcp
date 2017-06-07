@@ -545,7 +545,7 @@ func (driver awsProvider) WaitToStartInstance(instanceId string) bool {
 }
 
 func new() (provider.ProviderDriver, error) {
-	return newProvider()
+	return  newProvider()
 }
 
 func newProvider() (provider.ProviderDriver, error) {

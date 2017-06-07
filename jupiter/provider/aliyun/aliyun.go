@@ -36,7 +36,6 @@ import (
 
 func init() {
 	provider.RegisterProviderDriver("aliyun", new)
-	fmt.Println("aliyun init() execute")
 }
 
 const (
