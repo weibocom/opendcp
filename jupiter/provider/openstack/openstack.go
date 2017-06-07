@@ -73,6 +73,51 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 	return &listInstancesResp, err
 }
 
+func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error){
+	return nil, nil
+}
+
+func (driver openstackProvider) ListInstanceTypes() ([]string, error){
+	return nil, nil
+}
+
+func (driver openstackProvider) ListSecurityGroup(regionId string, vpcId string) (*models.SecurityGroupsResp, error){
+	return nil, nil
+}
+
+func (driver openstackProvider) ListAvailabilityZones(regionId string) (*models.AvailabilityZonesResp, error){
+	return nil, nil
+}
+
+func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
+	return nil, nil
+}
+
+func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
+	return nil, nil
+}
+
+func (driver openstackProvider) ListSubnets(zoneId string, vpcId string) (*models.SubnetsResp, error){
+	return nil, nil
+}
+
+func (driver openstackProvider) GetInstanceType(key string) string{
+	return nil
+}
+
+func (driver openstackProvider) ListDiskCategory() []string{
+	return nil
+}
+
+func (driver openstackProvider) ListInternetChargeType() []string{
+	return nil
+}
+
+func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
+	return nil, nil
+}
+
+
 //创建实例代码待做
 //func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
 //	client, err :=
@@ -163,7 +208,7 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 	instance.Provider = "openstack"
 	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05", server.Created, time.Local)
 	tmp := server.Image["id"]
-	instance.ImageId = tmp.(*string)
+	instance.ImageId = tmp.(string)
 	//InstanceType
 	//VpcId
 	//subnetId
