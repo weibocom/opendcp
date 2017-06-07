@@ -29,6 +29,7 @@ type openstackProvider struct {
 
 func init(){
 	provider.RegisterProviderDriver("openstack", new)
+	fmt.Println("openstack init() execute")
 }
 
 //列出所有server
