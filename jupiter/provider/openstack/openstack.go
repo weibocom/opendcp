@@ -18,6 +18,7 @@ import (
 
 	"weibo.com/opendcp/jupiter/models"
 
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -44,7 +45,7 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 		serverList, _ := servers.ExtractServers(page)
 		for _, instanceOP := range serverList {
 			var instance models.InstanceAllIn
-			instance.ID = instanceOP.ID
+			instance.InstanceId = instanceOP.ID
 			instance.TenantID = instanceOP.TenantID
 			instance.UserID = instanceOP.UserID
 			instance.Name = instanceOP.Name
@@ -59,7 +60,7 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 			//instance.Flavor = instanceOP.Flavor
 			//instance.Addresses = instanceOP.Addresses
 			//instance.Metadata = instanceOP.Metadata
-			instance.Links = instanceOP.Links
+			//instance.Links = instanceOP.Links
 			instance.KeyName = instanceOP.KeyName
 			instance.AdminPass = instanceOP.AdminPass
 			//instance.SecurityGroups = instanceOP.SecurityGroups
@@ -154,26 +155,25 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance, error) {
 
 	server, err := servers.Get(driver.client, instanceId).Extract()
+	if err != nil {
+		return nil, err
+	}
 	var instance models.Instance
-	instance.ID = server.ID
-	instance.TenantID = server.TenantID
-	instance.UserID = server.UserID
-	instance.Name = server.Name
-	instance.Updated = server.Updated
-	instance.Created = server.Created
-	instance.HostID = server.HostID
-	instance.Status = server.Status
-	instance.Progress = server.Progress
+
+	instance.InstanceId = server.ID
+	instance.Provider = "openstack"
+	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05", server.Created, time.Local)
+	instance.ImageId = server.Image["id"]
+	//InstanceType
+	//VpcId
+	//subnetId
+	//SecurityGroupsId
+	//私有Ip和公有Ip替换为IPV4和IPV6
 	instance.AccessIPv4 = server.AccessIPv4
 	instance.AccessIPv6 = server.AccessIPv6
-	//instance.Image = server.Image
-	//instance.Flavor = server.Flavor
-	//instance.Addresses = server.Addresses
-	//instance.Metadata = server.Metadata
-	instance.Links = server.Links
-	instance.KeyName = server.KeyName
-	instance.AdminPass = server.AdminPass
-	//instance.SecurityGroups = server.SecurityGroups
+	instance.Name = server.Name
+	instance.TenantID = server.TenantID
+	instance.UserID = server.UserID
 	return &instance, err
 }
 
@@ -306,9 +306,9 @@ func new() (provider.ProviderDriver, error){
 }
 func newProvider() (provider.ProviderDriver, error){
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: os.Getenv("OS_AUTH_URL"),
-		Username: os.Getenv("OS_USERNAME"),
-		Password: os.Getenv("OS_PASSWORD"),
+		IdentityEndpoint: "http://10.39.59.27:5000/v3/auth",
+		Username: "admin",
+		Password: "ZYGL32NDG7JS8IGC",
 		DomainName: "default",
 	}
 
@@ -316,7 +316,7 @@ func newProvider() (provider.ProviderDriver, error){
 
 	client, err :=
 		openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
-			Region: os.Getenv("OS_REGION_NAME"),
+			Region: "RegionOne",
 		})
 	return client, err
 }

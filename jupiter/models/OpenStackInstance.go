@@ -1,7 +1,7 @@
 package models
 
 type OpenstackInstace struct {
-	ID string
+
 	// TenantID identifies the tenant owning this server resource.
 	TenantID string `mapstructure:"tenant_id"`
 
@@ -17,8 +17,7 @@ type OpenstackInstace struct {
 
 	HostID string
 
-	// Status contains the current operational status of the server, such as IN_PROGRESS or ACTIVE.
-	Status string
+
 
 	// Progress ranges from 0..100.
 	// A request made against the server completes only once Progress reaches 100.
