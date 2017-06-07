@@ -93,7 +93,7 @@ type ListInstancesResponse struct {
 }
 
 type Instance struct {
-	OpenstackInstace
+
 	Id                 int      `orm:"pk;auto"`
 	Cluster            *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
 	Provider           string
@@ -127,6 +127,7 @@ type Instance struct {
 	Status             InstanceStatus
 	PublicKey          string `orm:"type(text);null" json:"-"`
 	PrivateKey         string `orm:"type(text);null" json:"-"`
+	OpenstackInstace
 }
 
 type SshKey struct {
