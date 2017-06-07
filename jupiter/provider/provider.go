@@ -57,6 +57,7 @@ var registeredPlugins = map[string](ProviderDriverFunc){}
 
 func RegisterProviderDriver(name string, f ProviderDriverFunc) {
 	registeredPlugins[name] = f
+	fmt.Println(name + " is registering")
 }
 
 func New(name string) (ProviderDriver, error) {
@@ -74,6 +75,7 @@ func ListDrivers() []string {
 	drivers := make([]string, 0, len(registeredPlugins))
 	for name := range registeredPlugins {
 		drivers = append(drivers, name)
+		fmt.Println(name + " is creating")
 	}
 	sort.Strings(drivers)
 	return drivers
