@@ -57,6 +57,7 @@ var registeredPlugins = map[string](ProviderDriverFunc){}
 
 func RegisterProviderDriver(name string, f ProviderDriverFunc) {
 	registeredPlugins[name] = f
+	fmt.Println(name + "is registering")
 }
 
 func New(name string) (ProviderDriver, error) {
