@@ -9,7 +9,7 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/servers"
 	"github.com/rackspace/gophercloud/pagination"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/images"
-	"os"
+
 	"weibo.com/opendcp/jupiter/provider"
 	"sync"
 
@@ -17,8 +17,6 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 
 	"weibo.com/opendcp/jupiter/models"
-
-	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -61,8 +59,8 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 			//instance.Addresses = instanceOP.Addresses
 			//instance.Metadata = instanceOP.Metadata
 			//instance.Links = instanceOP.Links
-			instance.KeyName = instanceOP.KeyName
-			instance.AdminPass = instanceOP.AdminPass
+			//instance.KeyName = instanceOP.KeyName
+			//instance.AdminPass = instanceOP.AdminPass
 			//instance.SecurityGroups = instanceOP.SecurityGroups
 			listInstancesResp.Reservations = append(listInstancesResp.Reservations, instance)
 		}
