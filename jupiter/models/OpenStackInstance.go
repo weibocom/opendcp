@@ -42,11 +42,11 @@ type OpenstackInstace struct {
 	//Links []interface{}
 
 	// KeyName indicates which public key was injected into the server on launch.
-	KeyName string `json:"key_name" mapstructure:"key_name"`
+	//KeyName string `json:"key_name" mapstructure:"key_name"`
 
 	// AdminPass will generally be empty ("").  However, it will contain the administrative password chosen when provisioning a new server without a set AdminPass setting in the first place.
 	// Note that this is the ONLY time this field will be valid.
-	AdminPass string `json:"adminPass" mapstructure:"adminPass"`
+	//AdminPass string `json:"adminPass" mapstructure:"adminPass"`
 
 	// SecurityGroups includes the security groups that this instance has applied to it
 	//SecurityGroups []map[string]interface{} `json:"security_groups" mapstructure:"security_groups"`
