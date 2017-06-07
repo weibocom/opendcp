@@ -461,7 +461,7 @@ require_once('include/navbar.php');
 
 <div id="walkthrough-content">
   <div id="walkthrough-1">
-    <h1>欢迎使用<br>微博混合云开源平台</h1>
+    <h1>欢迎使用<br>DCP混合云开源平台</h1>
     <p>首次使用流程</p>
     <p style="text-align: left;"><span style="color: orange;">第一步:</span> 多云对接 &gt;&gt; 创建机型模板, 并设置配额</p>
     <p style="text-align: left;"><span style="color: orange;">第二步:</span> 镜像市场 &gt;&gt; 创建打包配置, 并构建镜像</p>
