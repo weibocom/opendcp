@@ -102,7 +102,7 @@ func (driver openstackProvider) ListSubnets(zoneId string, vpcId string) (*model
 }
 
 func (driver openstackProvider) GetInstanceType(key string) string{
-	return nil
+	return ""
 }
 
 func (driver openstackProvider) ListDiskCategory() []string{
@@ -114,7 +114,7 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 }
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
-	return nil, nil
+	return "", nil
 }
 
 
