@@ -17,6 +17,7 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 
 	"weibo.com/opendcp/jupiter/models"
+
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -29,7 +30,6 @@ type openstackProvider struct {
 
 func init(){
 	provider.RegisterProviderDriver("openstack", new)
-	fmt.Println("openstack init() execute")
 }
 
 //列出所有server
@@ -73,9 +73,7 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 	return &listInstancesResp, err
 }
 
-func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error){
-	return nil, nil
-}
+
 
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 	return nil, nil
@@ -119,81 +117,52 @@ func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (stri
 
 
 //创建实例代码待做
-//func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
-//	client, err :=
-//		openstack.NewComputeV2(driver, gophercloud.EndpointOpts{
-//			Region: cluster.Zone.Id,
-//		})
-//	if err != nil {
-//		return nil, err
-//	}
-//	createdInstances := make(chan string, number)
-//	createdError := make(chan error, number)
-//	for i := 0; i < number; i++ {
-//		go func(i int) {
-//			server, err := servers.Create(client, servers.CreateOpts{
-//				Name:      "My new server!",
-//				ImageRef:  "d96e4977-3e0b-4a39-afe7-4641b5e63b3d",
-//				FlavorRef: "7c307b7f-4a1e-4e4e-8a42-a36b1ac3c5f5",
-//				AvailabilityZone: "nova:75-29-208-yf-core.jpool.sinaimg.cn",
-//				Networks: []servers.Network{{UUID : "e9634c8b-0e14-4c2f-83ec-43bd45689f8a"}},
-//
-//
-//
-//			}).Extract()
-//			if err != nil {
-//				for i := 0; i < 3; i++ {
-//					delete(params, "Signature")
-//					result, err = driver.client.Instance.CreateInstance(params)
-//					if err == nil {
-//						createdInstances <- result.InstanceId
-//						return
-//					}
-//				}
-//				createdError <- err
-//				return
-//			}
-//			createdInstances <- result.InstanceId
-//		}(i)
-//	}
-//	instanceIds := make([]string, 0)
-//	errs := make([]error, 0)
-//	for i := 0; i < number; i++ {
-//		select {
-//		case instanceId := <-createdInstances:
-//			instanceIds = append(instanceIds, instanceId)
-//		case err := <-createdError:
-//			errs = append(errs, err)
-//		}
-//	}
-//	return instanceIds, errs
-//}
+func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
 
-//func buildCreateRequest(input *models.Cluster) map[string]interface{} {
-//	params := make(map[string]interface{})
-//	params["RegionId"] = input.Zone.RegionName
-//	params["ZoneId"] = input.Zone.ZoneName
-//	params["ImageId"] = input.ImageId
-//	params["InstanceType"] = input.InstanceType
-//	params["SecurityGroupId"] = input.Network.SecurityGroup
-//	params["Password"] = conf.Config.Password
-//	params["SystemDisk.Category"] = input.SystemDiskCategory
-//	for i := 1; i <= input.DataDiskNum; i++ {
-//		params["DataDisk."+strconv.Itoa(i)+".Size"] = strconv.Itoa(input.DataDiskSize)
-//		params["DataDisk."+strconv.Itoa(i)+".Category"] = input.DataDiskCategory
-//	}
-//	if strings.EqualFold(input.Zone.ZoneName, CN_BEIJING_C) {
-//		params["IoOptimized"] = IO_OPTIMIZED
-//	}
-//	if len(input.Network.VpcId) > 0 {
-//		params["VSwitchId"] = input.Network.SubnetId
-//	}
-//	if len(input.Network.VpcId) <= 0 {
-//		params["InternetChargeType"] = input.Network.InternetChargeType
-//		params["InternetMaxBandwidthOut"] = strconv.Itoa(input.Network.InternetMaxBandwidthOut)
-//	}
-//	return params
-//}
+	createdInstances := make(chan string, number)
+	createdError := make(chan error, number)
+	for i := 0; i < number; i++ {
+		go func(i int) {
+			result, err := servers.Create(driver.client, servers.CreateOpts{
+				Name:      cluster.Name + i,
+				ImageRef:  cluster.ImageId,
+				FlavorRef: cluster.FlavorId,
+				AvailabilityZone: cluster.Zone.Id,
+				Networks: cluster.Network.Id,
+			}).Extract()
+			if err != nil {
+				for i := 0; i < 3; i++ {
+					result, err := servers.Create(driver.client, servers.CreateOpts{
+						//Name:      "My new server!",
+						ImageRef:  cluster.ImageId,
+						FlavorRef: cluster.FlavorId,
+						AvailabilityZone: cluster.Zone.Id,
+						Networks: cluster.Network.Id,
+					}).Extract()
+					if err == nil {
+						createdInstances <- result.ID
+						return
+					}
+				}
+				createdError <- err
+				return
+			}
+			createdInstances <- result.ID
+		}(i)
+	}
+	instanceIds := make([]string, 0)
+	errs := make([]error, 0)
+	for i := 0; i < number; i++ {
+		select {
+		case instanceId := <-createdInstances:
+			instanceIds = append(instanceIds, instanceId)
+		case err := <-createdError:
+			errs = append(errs, err)
+		}
+	}
+	return instanceIds, errs
+}
+
 
 
 func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance, error) {
