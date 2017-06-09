@@ -14,6 +14,7 @@ import (
 	"sync"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 	"weibo.com/opendcp/jupiter/models"
+
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -25,6 +26,7 @@ type openstackProvider struct {
 }
 
 func init(){
+
 	provider.RegisterProviderDriver("openstack", new)
 }
 
