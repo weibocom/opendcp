@@ -13,10 +13,7 @@ import (
 	"weibo.com/opendcp/jupiter/provider"
 	"sync"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
-
 	"weibo.com/opendcp/jupiter/models"
-
-	"weibo.com/opendcp/jupiter/service/cluster"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -132,11 +129,11 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			if err != nil {
 				for i := 0; i < 3; i++ {
 					result, err := servers.Create(driver.client, servers.CreateOpts{
-						//Name:      "My new server!",
+						Name:      cluster.Name + strconv.Itoa(i),
 						ImageRef:  cluster.ImageId,
 						FlavorRef: cluster.FlavorId,
-						AvailabilityZone: cluster.Zone.Id,
-						Networks: cluster.Network.Id,
+						AvailabilityZone: strconv.FormatInt(cluster.Zone.Id,36),
+						Networks: []servers.Network{{UUID: strconv.FormatInt(cluster.Network.Id,36)}},
 					}).Extract()
 					if err == nil {
 						createdInstances <- result.ID
