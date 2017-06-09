@@ -126,8 +126,8 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 				Name:      cluster.Name + strconv.Itoa(i),
 				ImageRef:  cluster.ImageId,
 				FlavorRef: cluster.FlavorId,
-				AvailabilityZone: strconv.Itoa(cluster.Zone.Id),
-				Networks: []servers.Network{{UUID: strconv.Itoa(cluster.Network.Id)}},
+				AvailabilityZone: strconv.FormatInt(cluster.Zone.Id,36),
+				Networks: []servers.Network{{UUID: strconv.FormatInt(cluster.Network.Id,36)}},
 			}).Extract()
 			if err != nil {
 				for i := 0; i < 3; i++ {
