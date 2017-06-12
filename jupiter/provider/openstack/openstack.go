@@ -121,6 +121,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 	createdError := make(chan error, number)
 	for i := 0; i < number; i++ {
 		go func(i int) {
+			fmt.Println("first create")
 			result, err := servers.Create(driver.client, servers.CreateOpts{
 				Name:      cluster.Name ,
 				ImageRef:  cluster.ImageId,
@@ -130,6 +131,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			}).Extract()
 			if err != nil {
 				for i := 0; i < 3; i++ {
+					fmt.Println("try to create instance")
 					result, err := servers.Create(driver.client, servers.CreateOpts{
 						Name:      cluster.Name ,
 						ImageRef:  cluster.ImageId,
@@ -138,6 +140,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 						Networks: []servers.Network{{UUID: cluster.Network.VpcId}},
 					}).Extract()
 					if err == nil {
+						fmt.Println("create success")
 						createdInstances <- result.ID
 						return
 					}
@@ -145,6 +148,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 				createdError <- err
 				return
 			}
+			fmt.Println("create success")
 			createdInstances <- result.ID
 		}(i)
 	}
@@ -158,6 +162,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
+
 	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
 	return instanceIds, nil
 }
