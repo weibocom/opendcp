@@ -144,7 +144,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 						return
 					}
 				}
-				fmt.Println("create failed")
+				fmt.Println("create failed ")
 				createdError <- err
 				return
 			}
