@@ -161,7 +161,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
-	fmt.Println("发生了该异常：" + errs)
+	fmt.Println(errs)
 	return instanceIds, errs
 }
 
