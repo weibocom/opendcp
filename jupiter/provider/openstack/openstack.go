@@ -9,7 +9,7 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/servers"
 	"github.com/rackspace/gophercloud/pagination"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/images"
-	"strconv"
+
 	"weibo.com/opendcp/jupiter/provider"
 	"sync"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
@@ -121,23 +121,26 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 	createdError := make(chan error, number)
 	for i := 0; i < number; i++ {
 		go func(i int) {
+			fmt.Println("first create")
 			result, err := servers.Create(driver.client, servers.CreateOpts{
-				Name:      cluster.Name + strconv.Itoa(i),
+				Name:      cluster.Name ,
 				ImageRef:  cluster.ImageId,
 				FlavorRef: cluster.FlavorId,
-				AvailabilityZone: strconv.FormatInt(cluster.Zone.Id,36),
-				Networks: []servers.Network{{UUID: strconv.FormatInt(cluster.Network.Id,36)}},
+				AvailabilityZone: cluster.Zone.ZoneName,
+				Networks: []servers.Network{{UUID: cluster.Network.VpcId}},
 			}).Extract()
 			if err != nil {
 				for i := 0; i < 3; i++ {
+					fmt.Println("try to create instance")
 					result, err := servers.Create(driver.client, servers.CreateOpts{
-						Name:      cluster.Name + strconv.Itoa(i),
+						Name:      cluster.Name ,
 						ImageRef:  cluster.ImageId,
 						FlavorRef: cluster.FlavorId,
-						AvailabilityZone: strconv.FormatInt(cluster.Zone.Id,36),
-						Networks: []servers.Network{{UUID: strconv.FormatInt(cluster.Network.Id,36)}},
+						AvailabilityZone: cluster.Zone.ZoneName,
+						Networks: []servers.Network{{UUID: cluster.Network.VpcId}},
 					}).Extract()
 					if err == nil {
+						fmt.Println("create success")
 						createdInstances <- result.ID
 						return
 					}
@@ -145,6 +148,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 				createdError <- err
 				return
 			}
+			fmt.Println("create success")
 			createdInstances <- result.ID
 		}(i)
 	}
@@ -158,6 +162,8 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
+
+	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
 	return instanceIds, errs
 }
 
@@ -318,7 +324,7 @@ func new() (provider.ProviderDriver, error){
 }
 func newProvider() (provider.ProviderDriver, error){
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "http://10.39.59.27:5000/v3/auth",
+		IdentityEndpoint: "http://10.39.59.27:5000/v3",
 		Username: "admin",
 		Password: "ZYGL32NDG7JS8IGC",
 		DomainName: "default",
