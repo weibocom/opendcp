@@ -159,10 +159,11 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			instanceIds = append(instanceIds, instanceId)
 		case err := <-createdError:
 			errs = append(errs, err)
+			fmt.Println("find error")
 		}
 	}
 	fmt.Println(errs)
-	return instanceIds, errs
+	return instanceIds, nil
 }
 
 
