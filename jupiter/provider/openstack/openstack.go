@@ -122,16 +122,18 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 	for i := 0; i < number; i++ {
 		go func(i int) {
 			result, err := servers.Create(driver.client, servers.CreateOpts{
-				Name:      cluster.Name + strconv.Itoa(i),
+				Name:      cluster.Name ,
 				ImageRef:  cluster.ImageId,
 				FlavorRef: cluster.FlavorId,
 				AvailabilityZone: cluster.Zone.ZoneName,
 				Networks: []servers.Network{{UUID: cluster.Network.VpcId}},
 			}).Extract()
+			fmt.Println("first create")
 			if err != nil {
 				for i := 0; i < 3; i++ {
+					fmt.Println("try to create server")
 					result, err := servers.Create(driver.client, servers.CreateOpts{
-						Name:      cluster.Name + strconv.Itoa(i),
+						Name:      cluster.Name ,
 						ImageRef:  cluster.ImageId,
 						FlavorRef: cluster.FlavorId,
 						AvailabilityZone: cluster.Zone.ZoneName,
@@ -142,6 +144,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 						return
 					}
 				}
+				fmt.Println("create failed")
 				createdError <- err
 				return
 			}
