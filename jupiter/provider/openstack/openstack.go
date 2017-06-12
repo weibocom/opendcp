@@ -318,7 +318,7 @@ func new() (provider.ProviderDriver, error){
 }
 func newProvider() (provider.ProviderDriver, error){
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "http://10.39.59.27:5000/v3/auth",
+		IdentityEndpoint: "http://10.39.59.27:5000/v3",
 		Username: "admin",
 		Password: "ZYGL32NDG7JS8IGC",
 		DomainName: "default",
