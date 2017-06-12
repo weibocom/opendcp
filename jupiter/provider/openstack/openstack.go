@@ -128,10 +128,8 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 				AvailabilityZone: cluster.Zone.ZoneName,
 				Networks: []servers.Network{{UUID: cluster.Network.VpcId}},
 			}).Extract()
-			fmt.Println("first create")
 			if err != nil {
 				for i := 0; i < 3; i++ {
-					fmt.Println("try to create server")
 					result, err := servers.Create(driver.client, servers.CreateOpts{
 						Name:      cluster.Name ,
 						ImageRef:  cluster.ImageId,
@@ -144,7 +142,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 						return
 					}
 				}
-				fmt.Println("create failed ")
 				createdError <- err
 				return
 			}
@@ -159,10 +156,9 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			instanceIds = append(instanceIds, instanceId)
 		case err := <-createdError:
 			errs = append(errs, err)
-			fmt.Println("find error")
 		}
 	}
-	fmt.Println(errs)
+	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
 	return instanceIds, nil
 }
 
