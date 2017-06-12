@@ -32,7 +32,7 @@
         <div class="animate form login_form">
           <section class="login_content">
             <form>
-              <h1>Docker容器平台</h1>
+              <h1>OpenDCP混合云平台</h1>
               <div>
                 <input type="text" id="username" class="form-control" placeholder="用户名" onkeyup="check()" onchange="check()" required="" />
               </div>
@@ -42,14 +42,30 @@
               <div>
                 <select class="form-control" id="authtype" onchange="check()">
                   <option value="local">本地认证</option>
-                  <option value="ldap">LDAP</option>
+                  <!--<option value="ldap">LDAP</option>-->
                 </select>
               </div>
+              <div style="margin-top: 20px;">
+                <input type="text" id="verification_code" class="form-control" placeholder="验证码" onkeyup="check()" onchange="check()" required="" />
+              </div>
+
+              <div style="text-align: left">
+                <img name="validate" onclick="validate.src+='?' + Math.random();" src="verification.php"  alt="点击刷新">
+                <span>点击图片刷新</span>
+              </div>
+
               <div style="margin-top: 10px;">
-                <button class="btn btn-default" style="width: 100px;" id="btnCommit" onclick="login('login');return false;" disabled>登 录</button>
+                <button class="btn btn-default" style="width: 200px;" id="btnCommit" onclick="login('login');return false;" disabled>登 录</button>
               </div>
 
               <div class="clearfix"></div>
+
+              <div class="separator">
+                <p class="change_link"> 想体验一下?
+                  <a href="reg.html" class="to_register"> 点击申请 </a>
+                </p>
+              </div>
+
             </form>
           </section>
         </div>
@@ -63,14 +79,52 @@
     <script src="gentelella/vendors/pnotify/dist/pnotify.nonblock.js"></script>
     <!-- page level -->
     <script src="js/pnotify.js"></script>
-    <script src="js/login.js"></script>
     <script>
       var check=function(){
         var disabled=false;
         if($('#username').val()=='') disabled=true;
         if($('#password').val()=='') disabled=true;
         if($('#authtype').val()=='') disabled=true;
+        if($('#verification_code').val()=='') disabled=true;
         $("#btnCommit").attr('disabled',disabled);
+      }
+
+      var login=function(action){
+        var post={};
+        var url='/api/login.php';
+        switch(action){
+          case 'login':
+            var type=$('#authtype').val();
+            var user=$('#username').val();
+            var pass=$('#password').val();
+            var code=$('#verification_code').val();
+            post={'action':action,'data':JSON.stringify({type: type, user: user, pass: pass, verification_code: code})};
+            break;
+          case 'logout':
+            post={'action':action};
+            break;
+          default:
+            pageNotify('error','非法操作','错误信息: 非法请求');
+            return false;
+        }
+        $.ajax({
+          type: "POST",
+          url: url,
+          data: post,
+          dataType: "json",
+          success: function (data) {
+            //执行结果提示
+            if(data.code==0){
+              pageNotify('success','您已成功登录系统！');
+              setTimeout("window.parent.location.href='/'",1000);
+            }else{
+              pageNotify('error','操作失败！','错误信息：'+data.msg);
+            }
+          },
+          error: function (){
+            pageNotify('error','操作失败！','错误信息：接口不可用');
+          }
+        });
       }
     </script>
 </body>

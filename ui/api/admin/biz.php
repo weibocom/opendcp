@@ -23,8 +23,8 @@ header('Content-type: application/json');
 include_once('../../include/config.inc.php');
 include_once('../../include/function.php');
 include_once('../../include/func_session.php');
-include_once('../../include/user.php');
-$thisClass=$user;
+include_once('../../include/biz.php');
+$thisClass=$biz;
 
 class myself{
 
@@ -43,12 +43,8 @@ class myself{
         'filter'=>$fIdx,
         'title' => array(
           '#',
-          '账号',
-          '姓名',
-          '类型',
-          '手机',
-          '邮箱',
-          '状态',
+          '业务方名称',
+          '开关',
           '#',
         ),
         'content' => array(),
@@ -133,7 +129,7 @@ $logDesc = '';
 $arrRecodeLog=array(
   't_time' => date('Y-m-d H:i:s'),
   't_user' => $myUser,
-  't_module' => '用户管理',
+  't_module' => '业务方管理',
   't_action' => '',
   't_desc' => 'Resource:' . $_SERVER['REMOTE_ADDR'] . '.',
   't_code' => '传入：' . json_encode($logJson) . "\n\n",
