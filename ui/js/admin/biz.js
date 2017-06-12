@@ -12,10 +12,10 @@ var list = function(page,tab) {
   NProgress.start();
   var postData={};
   if(!tab) tab=$('#tab').val();
-  if(tab!='user') tab='user';
+  if(tab!='biz') tab='biz';
   var fIdx=$('#fIdx').val();
   switch(tab){
-    case 'user':
+    case 'biz':
       $('#tab_1').attr('class','active');
       $('#tab_toolbar').html('<a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_'+tab+'.php"> 创建 <i class="fa fa-plus"></i></a>');
       postData={"fIdx":fIdx};
@@ -128,15 +128,7 @@ var processBody = function(data,head,body){
         var tr = $('<tr></tr>');
         td = '<td>' + v.i + '</td>';
         tr.append(td);
-        td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'user\',\''+v.id+'\')">' + v.en + '</a></td>';
-        tr.append(td);
-        td = '<td>' + v.cn + '</td>';
-        tr.append(td);
-        td = '<td>' + ((v.type=='local')?'本地用户':v.type) + '</td>';
-        tr.append(td);
-        td = '<td>' + v.mobile + '</td>';
-        tr.append(td);
-        td = '<td>' + v.mail + '</td>';
+        td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'biz\',\''+v.id+'\')">' + v.name + '</a></td>';
         tr.append(td);
         switch(v.status){
           case '0':
@@ -153,8 +145,8 @@ var processBody = function(data,head,body){
             break;
         }
         var btnAdd='',btnEdit='',btnDel='';
-        btnEdit = '<a class="text-primary tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_user.php?action=edit&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
-        btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.en+'\')"><i class="fa fa-trash-o"></i></a>';
+        btnEdit = '<a class="text-primary tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_' + tab + '.php?action=edit&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
+        btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.name+'\')"><i class="fa fa-trash-o"></i></a>';
         td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + ' ' + btnDel + '</div></td>';
         tr.append(td);
 
@@ -253,9 +245,9 @@ var view=function(type,idx){
   var url='',title='',text='',illegal=false,height='',postData={};
   var tStyle='word-break:break-all;word-warp:break-word;';
   switch(type){
-    case 'user':
-      url='/api/admin/user.php';
-      title='查看用户详情 - '+idx;
+    case 'biz':
+      url='/api/admin/biz.php';
+      title='查看业务方详情 - '+idx;
       postData={"action":"info","fIdx":idx};
       break;
     default:
@@ -274,7 +266,7 @@ var view=function(type,idx){
           if(typeof(data.content)!='undefined'){
             //pageNotify('success','加载成功！');
             switch(type){
-              case 'user':
+              case 'biz':
                 $.each(data.content,function(k,v){
                   if(v=='') v='空';
                   text+='<span class="title col-sm-2" style="font-weight: bold;">'+k+'</span> <span class="col-sm-4" style="'+tStyle+'">'+v+'</span>'+"\n";
@@ -324,26 +316,9 @@ var view=function(type,idx){
 var check=function(tab){
   if(!tab) tab=$('#tab').val();
   switch(tab){
-    case 'user':
+    case 'biz':
       var disabled=false,type=$('#type').val(),action=$('#page_action').val();
-      if(type=='') disabled=true;
-      switch (type){
-        case 'local':
-          $('#pw').attr('disabled',false);
-          if(action=='insert'){
-            if($('#pw').val()=='') disabled=true;
-          }
-          break;
-        default:
-          $('#pw').attr('disabled',true);
-          $('#pw').val('');
-          break;
-      }
-      if($('#en').val()=='') disabled=true;
-      if($('#cn').val()=='') disabled=true;
-      if($('#mobile').val()=='') disabled=true;
-      if($('#mail').val()=='') disabled=true;
-      if($('#status').val()=='') disabled=true;
+      if($('#name').val()=='') disabled=true;
       $("#btnCommit").attr('disabled',disabled);
       break;
   }
@@ -354,7 +329,7 @@ var get = function (idx) {
   var tab=$('#tab').val();
   var url='/api/admin/'+tab+'.php',postData={};
   switch (tab){
-    case 'user':
+    case 'biz':
       postData={"action":"info","fIdx":idx};
       break;
   }
@@ -428,14 +403,14 @@ var twiceCheck=function(action,idx,desc){
     pageNotify('error','非法请求！','错误信息：参数错误');
   }else{
     switch(tab){
-      case 'user':
+      case 'biz':
         switch(action){
           case 'del':
-            modalTitle='删除用户';
+            modalTitle='删除业务方';
             modalBody=modalBody+'<div class="form-group col-sm-12">';
             modalBody=modalBody+'<div class="note note-danger">';
             modalBody=modalBody+'<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> ID : '+idx+'<br>' +
-              '用户 : '+desc;
+              '业务方 : '+desc;
             modalBody=modalBody+'</div>';
             modalBody=modalBody+'</div>';
             modalBody=modalBody+'<input type="hidden" id="id" name="id" value="'+idx+'">';
@@ -469,7 +444,7 @@ var twiceCheck=function(action,idx,desc){
 //开关
 var switchs=function(action,index){
   NProgress.start();
-  var url='/api/admin/user.php';
+  var url='/api/admin/biz.php';
   var postData={id:index};
   $.ajax({
     type: "POST",

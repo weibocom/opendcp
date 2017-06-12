@@ -27,6 +27,9 @@ class login{
   var $usertype;
   var $usermail;
   var $userstatus;
+  var $userbizid;
+  var $userbizname;
+  var $userbizstatus;
   
   var $authtable='member';//验证用数据表
   
@@ -62,6 +65,9 @@ class login{
     $_SESSION['open_usertype'] = $this->usertype;
     $_SESSION['open_email'] = $this->usermail;
     $_SESSION['open_status'] = (int)$this->userstatus;
+    $_SESSION['open_biz_id'] = (int)$this->userbizid;
+    $_SESSION['open_biz_name'] = $this->userbizname;
+    $_SESSION['open_biz_status'] = (int)$this->userbizstatus;
   }
   
   function userLogout(){
@@ -69,6 +75,27 @@ class login{
     unset($_SESSION['open_user']);
     session_unset();
     session_destroy();
+  }
+
+  function getBiz($id){
+    global $db;
+    $ret = [ 'id' => 0, 'name' => '', 'status' => 0 ];
+    if($id){
+      $sql = 'SELECT * FROM biz WHERE id=' . (int)$id;
+      if($query=$db->query($sql)){
+        if($arr=$query->fetch_array(MYSQL_ASSOC)){
+          $ret = [
+            'id' => (int)$arr['id'],
+            'name' => $arr['name'],
+            'status' => (int)$arr['status']
+          ];
+        }
+      }
+    }
+    $this->userbizid=$ret['id'];
+    $this->userbizname=$ret['name'];
+    $this->userbizstatus=$ret['status'];
+    return $ret;
   }
   
   function userAuth($arrJson){
@@ -99,6 +126,7 @@ class login{
           $this->usertype=$arr['type'];
           $this->usermail=$arr['mail'];
           $this->userstatus=$arr['status'];
+          $this->getBiz($arr['biz_id']);
           $this->setSession();
           if(!empty($arr)) return $arr;
         }
@@ -114,6 +142,7 @@ class login{
             $this->usertype=$arr['type'];
             $this->usermail=$arr['mail'];
             $this->userstatus=$arr['status'];
+            $this->getBiz($arr['biz_id']);
             $this->setSession();
             unset($arr['pw']);
             if(!empty($arr)) return $arr;

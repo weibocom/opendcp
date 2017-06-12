@@ -23,11 +23,11 @@ $myAction=(isset($_GET['action'])&&!empty($_GET['action']))?trim($_GET['action']
 $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):'';
 switch($myAction){
   case 'add':
-    $myTitle='添加用户';
+    $myTitle='添加体验申请';
     $pageAction='insert';
     break;
   case 'edit':
-    $myTitle='修改用户';
+    $myTitle='修改体验申请';
     $pageAction='update';
     break;
   default:
@@ -41,15 +41,6 @@ switch($myAction){
   <h4 class="modal-title" id="myModalLabel"><?php echo $myTitle;?></h4>
 </div>
 <div class="modal-body" style="overflow:auto;" id="myModalBody">
-  <div class="form-group">
-    <label for="type" class="col-sm-2 control-label">用户类型</label>
-    <div class="col-sm-10">
-      <select class="form-control" id="type" name="type" onchange="check()">
-        <option value="local">本地用户</option>
-        <option value="ldap">LDAP</option>
-      </select>
-    </div>
-  </div>
   <div class="form-group">
     <label for="en" class="col-sm-2 control-label">账号</label>
     <div class="col-sm-10">
@@ -81,12 +72,9 @@ switch($myAction){
     </div>
   </div>
   <div class="form-group">
-    <label for="status" class="col-sm-2 control-label">用户状态</label>
+    <label for="biz" class="col-sm-2 control-label">公司名称</label>
     <div class="col-sm-10">
-      <select class="form-control" id="status" name="status" onchange="check()">
-        <option value="0">启用</option>
-        <option value="1">停用</option>
-      </select>
+      <input type="text" class="form-control" id="biz" name="biz" onkeyup="check()" placeholder="eg:新浪微博">
     </div>
   </div>
   <input type="hidden" id="id" name="id" value="<?php echo $myIdx;?>" />

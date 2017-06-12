@@ -37,6 +37,9 @@ class cloud{
         'X-HTTP-Method-Override: ' . $method,
         'Authorization: '.$token,
         'X-CORRELATION-ID: ' . $this->reqid,
+        'X-Biz-ID: ' . $_SESSION['open_biz_id'],
+        'X-Biz-Name: ' . $_SESSION['open_biz_name'],
+        'X-Biz-Status: ' . $_SESSION['open_biz_status'],
       );
       $url = $this -> domain . '/v1/' . $module;
       if($id) $url.='/' . $id;
