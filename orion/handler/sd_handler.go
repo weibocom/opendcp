@@ -30,11 +30,13 @@ import (
 
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/utils"
+	"strconv"
 )
 
 const (
 	REG   = "register"
 	UNREG = "unregister"
+	REQUESTSID = "request_sid"
 
 	SV_ID = "service_discovery_id"
 )
@@ -47,9 +49,30 @@ var (
 	UNREG_URL    = "http://%s" + beego.AppConfig.String("sd_unregister_url")
 	SD_CHECK_URL = "http://%s" + beego.AppConfig.String("sd_check_url") // + "?%s=%d&%s=%s"
 	SD_LOG_URL   = "http://%s" + beego.AppConfig.String("sd_log_url")
+	SD_ID        = "http://%s" + beego.AppConfig.String("sd_id")
 )
 
 type ServiceDiscoveryHandler struct {
+}
+
+type sdBlanceListResp struct {
+	Code    int
+	Message string `json:"msg"`
+	Data struct {
+			count  		string
+			page   		int
+			limit  		int
+			total_page 	int
+			Content []struct {
+				Id    		string
+				Name  		string
+				Type  		string
+				content		string
+				create_time	string
+				update_time	string
+				opr_user	string
+			}
+		} `json:"data"`
 }
 
 type sdCmdResp struct {
@@ -79,7 +102,7 @@ type sdChkResp struct {
 	} `json:"data"`
 }
 
-func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
+func (v *ServiceDiscoveryHandler) ListAction(biz_id int) []models.ActionImpl {
 	return []models.ActionImpl{
 		{
 			Name: REG,
@@ -88,6 +111,7 @@ func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
 			Params: map[string]interface{}{
 				SV_ID: "Integer",
 			},
+			BizId:biz_id,
 		},
 		{
 			Name: UNREG,
@@ -96,12 +120,32 @@ func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
 			Params: map[string]interface{}{
 				SV_ID: "Integer",
 			},
+			BizId:biz_id,
+		},
+		{
+			Name: REQUESTSID,
+			Desc: "request sid from service",
+			Type: "sd",
+			Params: map[string]interface{}{
+				SV_ID: "Integer",
+			},
+			BizId:biz_id,
 		},
 	}
 }
 
 func (h *ServiceDiscoveryHandler) GetType() string {
 	return "sd"
+}
+
+func (v *ServiceDiscoveryHandler) HandleInit(action *models.ActionImpl,parmas map[string]interface{}) *HandleResult{
+	switch action.Name {
+	case REQUESTSID:
+		return v.requestSID(action)
+	default:
+		beego.Error(fmt.Sprintf("Unknown SD action: [%s]", action.Name))
+		return Err("Unknown SD action: " + action.Name)
+	}
 }
 
 func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
@@ -115,29 +159,59 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 
 	switch action.Name {
 	case REG:
-		return h.register(actionParams, nodes, corrId)
+		return h.register(action, actionParams, nodes, corrId)
 	case UNREG:
-		return h.unregister(actionParams, nodes, corrId)
+		return h.unregister(action, actionParams, nodes, corrId)
 	default:
 		logService.Error(fid,batchId,corrId,fmt.Sprintf("Unknown SD action: [%s]",action.Name))
 
-		return Err("Unknown action: " + action.Name)
+		return Err("Unknown SD action: " + action.Name)
 	}
 }
 
-func (h *ServiceDiscoveryHandler) register(params map[string]interface{},
-	nodes []*models.NodeState, corrId string) *HandleResult {
+func (h *ServiceDiscoveryHandler) requestSID(action *models.ActionImpl) *HandleResult {
+	biz_id := action.BizId
+	beego.Info(fmt.Sprintf("Request vm_type_id for biz %d", biz_id))
 
-	return h.do(REG_URL, params, nodes, corrId)
+	url := fmt.Sprintf(SD_ID, SD_ADDR)
+	header := map[string]interface{} {
+		"X-Biz-ID": strconv.Itoa(biz_id),
+	}
+
+	resp := make(map[string]interface{})
+
+	hr := h.callAPI("GET", url, nil, &header, resp)
+	if hr != nil {
+		return hr
+	}
+
+
+	data := resp["data"].(map[string]interface{})
+	content := data["content"].([]interface{})
+	first := content[0].(map[string]interface{})
+
+	id := (first["id"].(string))
+
+
+	return &HandleResult{
+		Code:CODE_SUCCESS,
+		Msg:id,
+	}
 }
 
-func (h *ServiceDiscoveryHandler) unregister(params map[string]interface{},
+func (h *ServiceDiscoveryHandler) register(action *models.ActionImpl, params map[string]interface{},
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
-	return h.do(UNREG_URL, params, nodes, corrId)
+	return h.do(action, REG_URL, params, nodes, corrId)
 }
 
-func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{},
+func (h *ServiceDiscoveryHandler) unregister(action *models.ActionImpl, params map[string]interface{},
+	nodes []*models.NodeState, corrId string) *HandleResult {
+
+	return h.do(action, UNREG_URL, params, nodes, corrId)
+}
+
+func (h *ServiceDiscoveryHandler) do(actionImpl *models.ActionImpl, action string, params map[string]interface{},
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
@@ -170,6 +244,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	header:= make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
+	header["X-Biz-ID"] = actionImpl.BizId
 	header["APPKEY"] = SD_APPKEY
 
 	resp := &sdCmdResp{}
@@ -245,12 +320,15 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 
 	msg, err := utils.Http.Do(method, url, data, header)
 	if err != nil {
+		fmt.Println("1111111")
+		fmt.Println(err)
 		beego.Error("Fail to ", method, url, ": ", err)
 		return Err("Fail: " + err.Error())
 	}
 
 	err = json.Unmarshal([]byte(msg), obj)
 	if err != nil {
+		fmt.Println(err)
 		beego.Error("Fail to unmarshal", msg, "err:", err)
 		beego.Error("Bad resp:", msg)
 		return Err("Bad resp: " + msg)

@@ -25,6 +25,7 @@ type Cluster struct {
 	Name string `json:"name" orm:"size(50)"`
 	Desc string `json:"desc" orm:"size(255);null"`
 	Biz  string `json:"biz"` //产品线
+	BizId   int `json:"biz_id"`
 }
 
 type Service struct {

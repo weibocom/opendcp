@@ -129,6 +129,10 @@ func init() {
 		beego.NSRouter("/list", &api.RemoteApi{}, "*:RemoteActionImplList"),
 	)
 
+	init := beego.NewNamespace("/init",
+		beego.NSRouter("/db", &api.InitApi{}, "*:Init"),
+	)
+
 	beego.Router("/", &controllers.MainController{}, "*:Index")
 
 	beego.AddNamespace(cluster)
@@ -140,5 +144,6 @@ func init() {
 	beego.AddNamespace(tasktpl)
 	beego.AddNamespace(taskstep)
 	beego.AddNamespace(remoteactionimpl)
+	beego.AddNamespace(init)
 
 }

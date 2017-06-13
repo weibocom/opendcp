@@ -34,7 +34,7 @@ import (
 type MockH struct {
 }
 
-func (v *MockH) ListAction() []ActionImpl {
+func (v *MockH) ListAction(biz_id int) []ActionImpl {
 	return []ActionImpl{
 		{
 			Name:   "ok",
@@ -81,6 +81,10 @@ func (v *MockH) GetType() string {
 
 func (v *MockH) GetLog(nodeState *NodeState) string {
 	return ""
+}
+
+func (v *MockH) HandleInit(*ActionImpl, map[string]interface{}) *HandleResult{
+	return nil
 }
 
 func (v *MockH) Handle(action *ActionImpl, actionParams map[string]interface{},

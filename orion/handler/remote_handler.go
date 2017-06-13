@@ -74,6 +74,10 @@ func (h *RemoteHandler) GetType() string {
 	return "remote"
 }
 
+func (h *RemoteHandler) HandleInit(action *models.ActionImpl,parmas map[string]interface{}) *HandleResult{
+	return nil
+}
+
 // Handle implements method of interface Handler, handles remote step.
 func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	stepParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
@@ -103,7 +107,9 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	logService.Debug(fid,batchId,corrId,fmt.Sprintf("remote step has actions name:%s len:%d",actNames, len(actNames)))
 
 	var actionList []models.RemoteAction
-	service.Remote.GetByStringValues(&models.RemoteAction{}, &actionList,
+	//service.Remote.GetByStringValues(&models.RemoteAction{}, &actionList,
+	//	"name", actNames)
+	service.Remote.GetByStringValuesByBiz(action.BizId, &models.RemoteAction{}, &actionList,
 		"name", actNames)
 
 	// generate playbook
@@ -275,9 +281,9 @@ func (h *RemoteHandler) callAndCheck(fid int,batchId int ,corrId string,ip strin
 
 // ListAction implements method of interface Handler, and will return all
 // remote steps defined bu users.
-func (h *RemoteHandler) ListAction() []models.ActionImpl {
+func (h *RemoteHandler) ListAction(biz_id int) []models.ActionImpl {
 	var list []models.RemoteStep
-	count, err := service.Remote.ListByPage(0, maxCount, &models.RemoteStep{}, &list)
+	count, err := service.Remote.ListByPage(0, maxCount, biz_id, &models.RemoteStep{}, &list)
 	if err != nil {
 		beego.Error("Fail to get remote steps ", err)
 		return []models.ActionImpl{}
@@ -296,6 +302,7 @@ func (h *RemoteHandler) ListAction() []models.ActionImpl {
 			Desc:   step.Desc,
 			Type:   "remote",
 			Params: params,
+			BizId:	biz_id,
 		}
 
 		acts[i] = act
@@ -360,8 +367,12 @@ func (h *RemoteHandler) getStepParams(step *models.RemoteStep) (map[string]inter
 
 	params := make(map[string]interface{})
 	for _, act := range acts {
-		ra := &models.RemoteAction{Name: act}
-		err = service.Remote.GetBy(ra, "Name")
+		ra := &models.RemoteAction{}
+		condition := make(map[string]interface{})
+		condition["Name"] = act
+		condition["BizId"] = step.BizId
+		err = service.Remote.GetByMultiFieldValue(ra,condition)
+
 		if err != nil {
 			msg := "cannot find remote action " + act
 			beego.Error("Getting params for", step.Name, ", err: ", msg)

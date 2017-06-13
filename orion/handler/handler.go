@@ -34,8 +34,9 @@ const (
 
 // Handler defines how a certain type of Step is processed.
 type Handler interface {
-	ListAction() []ActionImpl
+	ListAction(biz_id int) []ActionImpl
 	Handle(*ActionImpl, map[string]interface{}, []*NodeState, string) *HandleResult
+	HandleInit(*ActionImpl, map[string]interface{}) *HandleResult
 	GetType() string
 	GetLog(*NodeState) string
 }

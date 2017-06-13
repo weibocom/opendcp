@@ -35,6 +35,7 @@ var (
 	Flow    = &FlowService{}
 	Remote  = &RemoteStepService{}
 	Logs    = &LogsService{}
+	Init    = &InitService{}
 )
 
 func (b *BaseService) InsertBase(obj interface{}) error {
@@ -50,6 +51,20 @@ func (b *BaseService) UpdateBase(obj interface{}) error {
 
 	_, err := o.Update(obj)
 
+	return err
+}
+
+func (b *BaseService) UpdateField(obj interface{}, column ...string) (err error) {
+	o := orm.NewOrm()
+	switch len(column) {
+	case 1:
+		_, err = o.Update(obj, column[0])
+	case 2:
+		_, err = o.Update(obj, column[0], column[1])
+	case 3:
+		_, err = o.Update(obj, column[0], column[1], column[2])
+
+	}
 	return err
 }
 
@@ -134,6 +149,22 @@ func (b *BaseService) GetByStringValues(obj interface{}, list interface{}, field
 }
 
 /*
+*	load data by value list of specified field
+ */
+func (b *BaseService) GetByStringValuesByBiz(biz_id int, obj interface{}, list interface{}, field string, values []string) error {
+
+	o := orm.NewOrm()
+
+	expression := field + "__" + "in"
+	_, err := o.QueryTable(obj).Filter("BizId", biz_id).Filter(expression, values).All(list)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/*
  *	Get by objects by ids
  */
 func (b *BaseService) GetByIds(obj interface{}, list interface{}, ids []int) error {
@@ -159,10 +190,10 @@ func (b *BaseService) GetByMultiIds(obj interface{}, list interface{},
 	return nil
 }
 
-func (b *BaseService) ListByPage(page, pageSize int, obj interface{}, list interface{}) (int, error) {
+func (b *BaseService) ListByPage(page, pageSize, biz_id int, obj interface{}, list interface{}) (int, error) {
 	o := orm.NewOrm()
 
-	qr := o.QueryTable(obj)
+	qr := o.QueryTable(obj).Filter("BizId",biz_id)
 
 	count, err := qr.Count()
 	if err != nil {
@@ -184,18 +215,18 @@ func (b *BaseService) ListByPage(page, pageSize int, obj interface{}, list inter
 *   list: 		query result
 *   sortstr: 	sort field names, multiple fields sorting is available. default is asc and field name with previous '-' means
  */
-func (b *BaseService) ListByPageWithSort(page, pageSize int, obj interface{}, list interface{}, sortstr ...string) (int, error) {
+func (b *BaseService) ListByPageWithSort(page, pageSize, biz_id int, obj interface{}, list interface{}, sortstr ...string) (int, error) {
 	o := orm.NewOrm()
 	var qr orm.QuerySeter
 	switch len(sortstr) {
 	case 1:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0])
+		qr = o.QueryTable(obj).Filter("BizId",biz_id).OrderBy(sortstr[0])
 	case 2:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1])
+		qr = o.QueryTable(obj).Filter("BizId",biz_id).OrderBy(sortstr[0], sortstr[1])
 	case 3:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1], sortstr[2])
+		qr = o.QueryTable(obj).Filter("BizId",biz_id).OrderBy(sortstr[0], sortstr[1], sortstr[2])
 	default:
-		qr = o.QueryTable(obj)
+		qr = o.QueryTable(obj).Filter("BizId",biz_id)
 	}
 	count, err := qr.Count()
 	if err != nil {
@@ -236,5 +267,15 @@ func (b *BaseService) GetCount(obj interface{}, filterkey string, filtervalue in
 
 	count, err := qr.Count()
 
+	return int(count), err
+}
+
+func (b *BaseService) CheckIsExists(obj interface{}, params map[string]interface{}) (int, error) {
+	o := orm.NewOrm()
+	qr := o.QueryTable(obj)
+	for k,v := range params {
+		qr = qr.Filter(k,v)
+	}
+	count, err := qr.Count()
 	return int(count), err
 }
