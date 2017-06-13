@@ -43,7 +43,12 @@ func (e *ExecApi) URLMapping() {
 }
 
 func (c *ExecApi) ExpandPool() {
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	opUser := c.Ctx.Input.Header("Authorization")
 	id := c.Ctx.Input.Param(":id")
 	idInt, _ := strconv.Atoi(id)
@@ -53,7 +58,7 @@ func (c *ExecApi) ExpandPool() {
 		Num int `json:"num"`
 	}{}
 
-	err := c.Body2Json(&req)
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -65,7 +70,7 @@ func (c *ExecApi) ExpandPool() {
 		return
 	}
 
-	err = h.Expand(idInt, num, opUser)
+	err = h.Expand(idInt, num, opUser, biz_id)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -75,7 +80,12 @@ func (c *ExecApi) ExpandPool() {
 }
 
 func (c *ExecApi) ShrinkPool() {
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	opUser := c.Ctx.Input.Header("Authorization")
 	id := c.Ctx.Input.Param(":id")
 	poolId, _ := strconv.Atoi(id)
@@ -84,14 +94,14 @@ func (c *ExecApi) ShrinkPool() {
 		Nodes []string `json:"nodes"`
 	}{}
 
-	err := c.Body2Json(&req)
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 
 	nodes := req.Nodes
-	err = h.Shrink(poolId, nodes, opUser)
+	err = h.Shrink(poolId, nodes, opUser, biz_id)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -101,7 +111,12 @@ func (c *ExecApi) ShrinkPool() {
 }
 
 func (c *ExecApi) DeployPool() {
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	opUser := c.Ctx.Input.Header("Authorization")
 	id := c.Ctx.Input.Param(":id")
 	poolId, _ := strconv.Atoi(id)
@@ -111,13 +126,13 @@ func (c *ExecApi) DeployPool() {
 		Tag    string `json:"tag"`
 	}{}
 
-	err := c.Body2Json(&req)
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 
-	err = h.Deploy(poolId, req.Tag, req.MaxNum, opUser)
+	err = h.Deploy(poolId, req.Tag, req.MaxNum, opUser, biz_id)
 	//err = h.Deploy(poolId, req.MaxNum)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)

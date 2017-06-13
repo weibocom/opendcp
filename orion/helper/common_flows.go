@@ -54,7 +54,7 @@ const (
 )
 
 // Expand will expand a service pool by add vms and start service on them.
-func Expand(poolId int, num int, opUser string) error {
+func Expand(poolId int, num int, opUser string, biz_id int) error {
 	pool, flow, steps, error := getModels(poolId, EXPAND)
 	if error != nil {
 		return error
@@ -107,7 +107,7 @@ func Expand(poolId int, num int, opUser string) error {
 		",sd_id =", pool.SdId)
 
 	beego.Debug("exec flow ...")
-	err := executor.Executor.Run(flow.Id, "expand_"+pool.Name,
+	err := executor.Executor.Run(flow.Id, "expand_"+pool.Name, biz_id,
 		&executor.ExecOption{MaxNum: num}, nodes, context)
 	beego.Debug("exec flow ... [DONE]")
 
@@ -115,7 +115,7 @@ func Expand(poolId int, num int, opUser string) error {
 }
 
 // Shrink will shrink a service pool by stopping service on vms and return them.
-func Shrink(poolId int, nodeIps []string, opUser string) error {
+func Shrink(poolId int, nodeIps []string, opUser string, biz_id int) error {
 
 	pool, flow, steps, error := getModels(poolId, SHRINK)
 	if error != nil {
@@ -148,14 +148,14 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 	context["opUser"] = opUser
 
 	beego.Debug("exec shrink flow...")
-	err := executor.Executor.Run(flow.Id, "shrink_"+pool.Name,
+	err := executor.Executor.Run(flow.Id, "shrink_"+pool.Name, biz_id,
 		&executor.ExecOption{MaxNum: len(nodes)}, nodes, context)
 	beego.Debug("exec flow ... [DONE]")
 
 	return err
 }
 
-func Deploy(poolId int, tag string, maxNum int, opUser string) error {
+func Deploy(poolId int, tag string, maxNum int, opUser string, biz_id int) error {
 
 	pool, flow, steps, error := getModels(poolId, DEPLOY)
 	if error != nil {
@@ -183,7 +183,7 @@ func Deploy(poolId int, tag string, maxNum int, opUser string) error {
 	context["opUser"] = opUser
 
 	beego.Debug("exec flow on Pool[", pool.Name, "] node_cound=", count, "...")
-	err = executor.Executor.Run(flow.Id, "deploy_"+pool.Name,
+	err = executor.Executor.Run(flow.Id, "deploy_"+pool.Name, biz_id,
 		&executor.ExecOption{MaxNum: maxNum}, nodes, context)
 	beego.Debug("exec flow ... [DONE]")
 

@@ -45,10 +45,10 @@ func RegisterHandler(typeName string, h Handler) error {
 	return nil
 }
 
-func GetActionImpl(name string) *ActionImpl {
+func GetActionImpl(biz_id int, name string) *ActionImpl {
 	for _, h := range handlers {
 		// TODO cache action list
-		acts := h.ListAction()
+		acts := h.ListAction(biz_id)
 		for _, act := range acts {
 			if act.Name == name {
 				return &act
@@ -59,10 +59,10 @@ func GetActionImpl(name string) *ActionImpl {
 	return nil
 }
 
-func GetAllActionImpl() []ActionImpl {
+func GetAllActionImpl(biz_id int) []ActionImpl {
 	all := make([]ActionImpl, 0)
 	for _, h := range handlers {
-		acts := h.ListAction()
+		acts := h.ListAction(biz_id)
 		for _, act := range acts {
 			all = append(all, act)
 		}

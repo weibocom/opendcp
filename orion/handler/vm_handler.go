@@ -39,6 +39,9 @@ const (
 	returnVM = "return_vm"
 
 	vmTypeId = "vm_type_id"
+
+	RequestVMTypeId = "request_vm_typeId"
+	BizId    = "BizId"
 )
 
 const (
@@ -70,14 +73,16 @@ var (
 	apiReturn = "http://%s" + beego.AppConfig.String("vm_return_url")
 	apiCheck  = "http://%s" + beego.AppConfig.String("vm_check_url")
 	apiLog    = "http://%s" + beego.AppConfig.String("vm_log_url")
+	apiVmTypeId    = "http://%s" + beego.AppConfig.String("vm_type_id")
 )
+
 
 // VMHandler handles step involving creating, returning VM machines.
 type VMHandler struct {
 }
 
 // ListAction implements method of Handler.
-func (v *VMHandler) ListAction() []models.ActionImpl {
+func (v *VMHandler) ListAction(biz_id int) []models.ActionImpl {
 	return []models.ActionImpl{
 		{
 			Name: createVM,
@@ -86,6 +91,7 @@ func (v *VMHandler) ListAction() []models.ActionImpl {
 			Params: map[string]interface{}{
 				vmTypeId: "Integer",
 			},
+			BizId:biz_id,
 		},
 		{
 			Name: returnVM,
@@ -94,6 +100,16 @@ func (v *VMHandler) ListAction() []models.ActionImpl {
 			Params: map[string]interface{}{
 				vmTypeId: "Integer",
 			},
+			BizId:biz_id,
+		},
+		{
+			Name: RequestVMTypeId,
+			Desc: "request vm_type_id",
+			Type: "vm",
+			Params: map[string]interface{}{
+				BizId: "Integer",
+			},
+			BizId:biz_id,
 		},
 	}
 }
@@ -101,6 +117,16 @@ func (v *VMHandler) ListAction() []models.ActionImpl {
 // GetType implements method of Handler.
 func (v *VMHandler) GetType() string {
 	return "vm"
+}
+
+func (v *VMHandler) HandleInit(action *models.ActionImpl,parmas map[string]interface{}) *HandleResult{
+	switch action.Name {
+	case RequestVMTypeId:
+		return v.requestVMTypeId(action)
+	default:
+		beego.Error(fmt.Sprintf("Unknown VM action: %s",action.Name))
+		return Err("Unknown VM action: " + action.Name)
+	}
 }
 
 // Handle implements method of Handler.
@@ -115,9 +141,9 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 
 	switch action.Name {
 	case createVM:
-		return v.createVMs(actionParams, nodes, corrId)
+		return v.createVMs(action,actionParams, nodes, corrId)
 	case returnVM:
-		return v.returnVMs(actionParams, nodes, corrId)
+		return v.returnVMs(action,actionParams, nodes, corrId)
 	default:
 		logService.Error(fid,batchId,correlationId,fmt.Sprintf("Unknown VM action: %s",action.Name))
 
@@ -126,7 +152,35 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 }
 
 // Create vm machines from jupiter.
-func (v *VMHandler) createVMs(params map[string]interface{},
+func (v *VMHandler) requestVMTypeId(action *models.ActionImpl) *HandleResult {
+	biz_id := action.BizId
+
+	beego.Info(fmt.Sprintf("Request vm_type_id for biz %d", biz_id))
+
+	url := fmt.Sprintf(apiVmTypeId, jupiterAddr)
+	header := map[string]interface{} {
+		"X-Biz-ID": biz_id,
+	}
+	resp, hr := v.callAPI("GET", url, nil, &header)
+	if hr != nil {
+		return hr
+	}
+
+	data := resp["content"].([]interface{})
+	first := data[0].(map[string]interface{})
+
+	id64 := (first["Id"].(float64))
+
+	id := strconv.FormatFloat(id64,'f', -1, 64)
+
+	return &HandleResult{
+		Code:CODE_SUCCESS,
+		Msg:id,
+	};
+}
+
+// Create vm machines from jupiter.
+func (v *VMHandler) createVMs(action *models.ActionImpl, params map[string]interface{},
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	num := len(nodes)
@@ -151,6 +205,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 	url := fmt.Sprintf(apiCreate, jupiterAddr, cluster, num)
 	header := map[string]interface{} {
+		"X-Biz-ID": action.BizId,
 		"X-CORRELATION-ID": corrId,
 	}
 	resp, hr := v.callAPI("POST", url, nil, &header)
@@ -340,7 +395,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 }
 
 // Return vm machines to jupiter.
-func (v *VMHandler) returnVMs(params map[string]interface{},
+func (v *VMHandler) returnVMs(action *models.ActionImpl, params map[string]interface{},
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	ids := make([]string, 0)
@@ -359,6 +414,7 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 	url := fmt.Sprintf(apiReturn, jupiterAddr, strings.Join(ids, ","))
 	header := map[string]interface{} {
 		"X-CORRELATION-ID": corrId,
+		"X-Biz-ID": action.BizId,
 		"APPKEY": SD_APPKEY,
 	}
 	_, hr := v.callAPI("DELETE", url, nil, &header)

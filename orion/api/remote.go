@@ -90,8 +90,13 @@ func (f *RemoteApi) URLMapping() {
 func (c *RemoteApi) ActionAppend() {
 
 	req := action_struct{}
-
-	err := c.Body2Json(&req)
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -108,10 +113,22 @@ func (c *RemoteApi) ActionAppend() {
 		c.ReturnFailed("there is unicode character in param", 400)
 		return
 	}
-
+	params := make(map[string]interface{},2)
+	params["BizId"] = biz_id
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.RemoteAction{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
+		return
+	}
 
 	data := models.RemoteAction{
 		Name:   req.Name,
+		BizId:  biz_id,
 		Desc:   req.Desc,
 		Params: string(paramsStr),
 	}
@@ -131,12 +148,17 @@ func (c *RemoteApi) ActionList() {
 
 	page := c.Query2Int("page", 1)
 	pageSize := c.Query2Int("page_size", 10)
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	c.CheckPage(&page, &pageSize)
 
 	list := make([]models.RemoteAction, 0, pageSize)
 
-	count, err := service.Remote.ListByPageWithSort(page, pageSize, &models.RemoteAction{}, &list,"-id")
+	count, err := service.Remote.ListByPageWithSort(page, pageSize, biz_id, &models.RemoteAction{}, &list,"-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -238,17 +260,34 @@ func (c *RemoteApi) ActionDelete() {
  */
 func (c *RemoteApi) RemoteStepAppend() {
 	req := remotestep_struct{}
-
-	err := c.Body2Json(&req)
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
-
+	params := make(map[string]interface{},2)
+	params["BizId"] = biz_id
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.RemoteStep{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
+		return
+	}
 	actionsStr, _ := json.Marshal(req.Actions)
 
 	data := models.RemoteStep{
 		Name:    req.Name,
+		BizId:   biz_id,
 		Desc:    req.Desc,
 		Actions: string(actionsStr),
 	}
@@ -329,12 +368,17 @@ func (c *RemoteApi) RemoteStepList() {
 
 	page := c.Query2Int("page", 1)
 	pageSize := c.Query2Int("page_size", 10)
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	c.CheckPage(&page, &pageSize)
 
 	list := make([]models.RemoteStep, 0, pageSize)
 
-	count, err := service.Remote.ListByPageWithSort(page, pageSize, &models.RemoteStep{}, &list,"-id")
+	count, err := service.Remote.ListByPageWithSort(page, pageSize, biz_id, &models.RemoteStep{}, &list,"-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -532,7 +576,12 @@ func (c *RemoteApi) RemoteActionImplUpdate() {
 *  load RemoteActionImpl by page
  */
 func (c *RemoteApi) RemoteActionImplList() {
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	page := c.Query2Int("page", 1)
 	pageSize := c.Query2Int("page_size", 10)
 
@@ -540,7 +589,7 @@ func (c *RemoteApi) RemoteActionImplList() {
 
 	list := make([]models.RemoteActionImpl, 0, pageSize)
 
-	count, err := service.Remote.ListByPage(page, pageSize, &models.RemoteActionImpl{}, &list)
+	count, err := service.Remote.ListByPage(page, pageSize, biz_id, &models.RemoteActionImpl{}, &list)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
