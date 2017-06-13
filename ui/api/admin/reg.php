@@ -128,11 +128,11 @@ class myself{
       //获取申请详情
       $retReg = $thisClass->get($regId);
       $regStatus = (isset($retReg[$regId]['status'])) ? $retReg[$regId]['status'] : 99;
-      if($regStatus!=='0'&&$regStatus!=='1'){
+      if($regStatus!==0&&$regStatus!==1){
         $ret['msg'] = '审核操作失败';
         return $ret;
       }
-      if($regStatus==='1'){
+      if($regStatus===1){
         $ret['code'] = 0;
         $ret['msg'] = '审核操作成功';
         return $ret;
