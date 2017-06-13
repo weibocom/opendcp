@@ -59,6 +59,7 @@ class UnitController extends RestController
         $name = I('name','');
         $group_id = I('group_id',0);
         $user = I('user','');
+        $bid = I('server.X-BIZ-ID',0);
 
         if($group_id <= 0 ){
             $this->ajaxReturn(std_error('group_id error'));
@@ -67,19 +68,24 @@ class UnitController extends RestController
         if(empty($name)){
             $this->ajaxReturn(std_error('name is empty'));
         }
+
         if(empty($user)){
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+
 
         $unit = new UnitModel() ;
-        $ret = $unit->existsUnitName($name,$group_id);
+        $ret = $unit->existsUnitName($name,$group_id,$bid);
         if($ret['code'] != 0 ){
             $this->ajaxReturn(std_error($ret['msg']));
         }
-        $ret = $unit->addUnit($name,$group_id,$user);
+        $ret = $unit->addUnit($name,$group_id,$user,$bid);
 
-        if($ret['code'] == 1){
+        if($ret['code'] == HUBBLE_DB_ERR){
             $this->ajaxReturn(std_error($ret['msg']));
         }
 
@@ -92,21 +98,27 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error("mkdir $conf_main failed"));
         }
 
-        hubble_oprlog('Nginx', 'Add unit', I('server.HTTP_APPKEY'), $user, "name:$name, group:$group_id");
+        hubble_oprlog('Nginx', 'Add unit', I('server.HTTP_APPKEY'), $user, " name:$name, group:$group_id");
         $this->ajaxReturn(std_return($ret['msg']));
 
     }
 
     public function detail_get(){
         $id = I('id',0);
+        $bid = I('server.X-BIZ-ID',0);
+
         if($id <= 0){
             $this->ajaxReturn(std_error('id error'));
         }
+        
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
 
         $unit = new UnitModel();
-        $ret = $unit->getDetail($id);
+        $ret = $unit->getDetail(['id' => $id, 'biz_id' => $bid]);
 
-        if($ret['code'] == 1){
+        if($ret['code'] != HUBBLE_RET_SUCCESS){
             $this->ajaxReturn(std_error($ret['msg']));
         }
         $this->ajaxReturn(std_return($ret['content']));
@@ -127,6 +139,7 @@ class UnitController extends RestController
         $name = I('name','');
         $group_id = I('group_id',0);
         $user = I('user','');
+        $bid = I('server.X-BIZ-ID',0);
 
         if($group_id <=0 ){
             $this->ajaxReturn(std_error('group_id error'));
@@ -143,12 +156,15 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
         //检查ID是否存在
         if($group_id > 0 ){
             $group = new GroupModel();
 
             //检查分组是否存在
-            $ret = $group->existsGroup($group_id);
+            $ret = $group->existsGroup($group_id,$bid);
             if($ret['code'] == 1){
                 $this->ajaxReturn(std_error($ret['msg']));
             }
@@ -158,7 +174,7 @@ class UnitController extends RestController
         //更新
         $unit = new UnitModel();
 
-        $ret = $unit->existsUnitName($name,$group_id);
+        $ret = $unit->existsUnitName($name,$group_id,$bid);
         if($ret['code'] == 1 ){
             $this->ajaxReturn(std_error($ret['msg']));
         }
@@ -184,6 +200,7 @@ class UnitController extends RestController
     public function delete_delete(){
         $unit_id = I('id',0);
         $user = I('user','');
+        $bid = I('server.X-BIZ-ID',0);
 
         if($unit_id <=0 ){
             $this->ajaxReturn(std_error('id error'));
@@ -193,10 +210,14 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+
         //检查单元下是否有节点
         $node = new NodeModel();
-        $filter = [];
-        $filter['unit_id'] = $unit_id;
+        $filter = [ 'unit_id' => $unit_id, 'biz_id' => $bid];
+        
         $ret = $node->existsNode($filter);
         if($ret['code'] == 0){
             $this->ajaxReturn(std_error('node exists'));
@@ -207,10 +228,10 @@ class UnitController extends RestController
 
         //删除
         $unit = new UnitModel();
-        $gret = $unit->getGid($unit_id);
+        $gret = $unit->getGid($unit_id,$bid);
 
         if($gret['code'] !== 0 ){
-            $this->ajaxReturn(std_error($ret['msg']));
+            $this->ajaxReturn(std_error($gret['msg']));
         }
         $ret = $unit->deleteUnit($unit_id);
 
@@ -240,6 +261,7 @@ class UnitController extends RestController
         $limit = I('limit',20);
         $group_id = I('group_id',0);
         $uname = I('name','');
+        $bid = I('server.X-BIZ-ID',0);
         $like  = I('like',true);
 
         if($page <=0 ){
@@ -250,7 +272,11 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('limit error'));
         }
 
-        $filter  = [];
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
+        $filter  = ['biz_id' => $bid];
         if(!empty($uname)){
             $filter['name'] = $uname;
         }

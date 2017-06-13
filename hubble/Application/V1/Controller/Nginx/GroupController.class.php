@@ -55,6 +55,7 @@ class GroupController extends RestController{
 
         $name = I('name','');
         $user = I('user','');
+        $bid = I('server.X-BIZ-ID',0);
 
         if(empty($name)){
             $this->ajaxReturn(std_error('name is empty'));
@@ -64,13 +65,17 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+
         $group = new GroupModel() ;
 
-        $ret = $group->existsGroupName($name);
+        $ret = $group->existsGroupName($name,$bid);
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
         }
-        $ret = $group->addGroup($name,$user);
+        $ret = $group->addGroup($name,$user,$bid);
 
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
@@ -89,12 +94,18 @@ class GroupController extends RestController{
 
     public function detail_get(){
         $id = I('id',0);
+        $bid = I('server.X-BIZ-ID',0);
 
         if($id <= 0){
             $this->ajaxReturn(std_error('id is error'));
         }
+
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+
         $group = new GroupModel() ;
-        $ret = $group->getDetail($id);
+        $ret = $group->getDetail(['id' => $id, 'biz_id' => $bid]);
 
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
@@ -116,6 +127,7 @@ class GroupController extends RestController{
         $gid = I('id',0);
         $name = I('name','');
         $user = I('user','');
+        $bid = I('server.X-BIZ-ID',0);
 
         if($gid <= 0 ){
             $this->ajaxReturn(std_error('id is error'));
@@ -129,15 +141,18 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
 
         //查找ID是否存在
         $group = new GroupModel();
-        $ret = $group->existsGroup($gid);
+        $ret = $group->existsGroup($gid,$bid);
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
         }
 
-        $ret = $group->existsGroupName($name);
+        $ret = $group->existsGroupName($name, $bid);
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
         }
@@ -150,9 +165,7 @@ class GroupController extends RestController{
 
         hubble_oprlog('Nginx', 'Update group', I('server.HTTP_APPKEY'), $user, "name:$name, id:".$ret['content']['gid']);
         $this->ajaxReturn(std_return($ret['msg']));
-
-
-
+        
     }
 
     /*
@@ -165,6 +178,7 @@ class GroupController extends RestController{
     public function delete_delete(){
         $gid = I('id',0);
         $user = I('user','');
+        $bid = I('server.X-BIZ-ID',0);
 
         if($gid <= 0){
             $this->ajaxReturn(std_error('id is error'));
@@ -174,12 +188,17 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+
         $group = new GroupModel();
 
         //查找分组下单元
         $unit = new UnitModel();
         $filter = [];
         $filter['group_id'] = $gid;
+        $filter['biz_id'] = $bid;
 
         $ret = $unit->existsUnit($filter);
         if($ret['code'] == 0 ){
@@ -195,10 +214,12 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error("there still have upstream in group, delete that first"));
 
         //删除
-        $arr = $group->existsGroup($gid);
+        $arr = $group->existsGroup($gid,$bid);
+        if($arr['code'] != 0 )
+            $this->ajaxReturn(std_error($ret['msg']));
 
-        $ret = $group->deleteGroup($gid);
-        if($ret == 1 ){
+        $ret = $group->deleteGroup($gid,$bid);
+        if($ret['code'] == 1 ){
             $this->ajaxReturn(std_error($ret['msg']));
         }
 
@@ -207,7 +228,7 @@ class GroupController extends RestController{
         rmdir_recursive($dir);
 
 
-        hubble_oprlog('Nginx', 'Delete group', I('server.HTTP_APPKEY'), $user, "id:$gid content:".json_encode($arr));
+        hubble_oprlog('Nginx', 'Delete group', I('server.HTTP_APPKEY'), $user, " id:$gid content:".json_encode($arr));
 
         $this->ajaxReturn(std_return($ret['msg']));
 
@@ -226,6 +247,7 @@ class GroupController extends RestController{
         $page = I('page',1);
         $limit = I('limit',20);
         $gname = I('name','');
+        $bid = I('server.X-BIZ-ID',0);
         $like= I('like', true);
 
         if(empty($page) || $page <= 0 ){
@@ -236,8 +258,12 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('limit is error'));
         }
 
+        if($bid < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         $group = new GroupModel();
-        $filter = [];
+        $filter = ['biz_id' => $bid];
         if(!empty($gname)){
             $filter['name'] = $gname;
         }

@@ -36,11 +36,12 @@ class GroupModel{
     }
 
     //添加分组
-    public function addGroup($name,$user){
+    public function addGroup($name,$user,$bid){
 
         $data = [
             'name' => $name,
             'opr_user' => $user,
+            'biz_id' => $bid,
             'create_time' => date("Y-m-d H:i:s"),
         ];
         $ret = $this->table->add($data);
@@ -64,9 +65,9 @@ class GroupModel{
 
     }
     //删除分组
-    public function deleteGroup($id){
+    public function deleteGroup($id,$bid){
 
-        $ret = $this->table->where(['id'=>$id])->select();
+        $ret = $this->table->where(['id'=>$id, 'biz_id' => $bid])->select();
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->table->getLastSql().' ERROR: '. $this->table->getDbError());
             return array('code'=>1 ,'msg'=>"db error: {$this->table->getDbError()}") ;
@@ -86,9 +87,9 @@ class GroupModel{
     }
 
 
-   public function existsGroup($id){
+   public function existsGroup($id,$bid){
 
-       $ret = $this->table->where(['id'=>$id])->select();
+       $ret = $this->table->where(['id'=>$id, 'biz_id' => $bid])->select();
        if($ret === false){
            return array('code'=>1 ,'msg'=>"db error: {$this->table->getDbError()}") ;
        }
@@ -98,8 +99,8 @@ class GroupModel{
        return array('code'=>0,'msg'=>"success");
    }
 
-   public function existsGroupName($name){
-       $ret = $this->table->where(['name'=>$name])->select();
+   public function existsGroupName($name,$bid){
+       $ret = $this->table->where(['name'=>$name, 'biz_id' => $bid])->select();
        if($ret === false){
            return array('code'=>1 ,'msg'=>"db error: {$this->table->getDbError()}") ;
        }
@@ -109,10 +110,10 @@ class GroupModel{
        return array('code'=>1,'msg'=>"$name exists");
    }
 
-    public function getDetail($id){
+    public function getDetail($where){
 
         $ret = $this->table
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];

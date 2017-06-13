@@ -35,10 +35,10 @@ class NodeModel{
     }
 
     //添加分组  ips array()
-    public function addNode($uid,$user,$data){
+    public function addNode($uid,$user,$bid,$data){
         $arr = [] ;
         foreach($data as $v ){
-            $arr[] = ['ip'=>$v,'unit_id'=>$uid,'opr_user'=>$user,'create_time'=>date("Y-m-d H:i:s") ];
+            $arr[] = ['ip'=>$v,'unit_id'=>$uid,'opr_user'=>$user,'biz_id'=>$bid,'create_time'=>date("Y-m-d H:i:s") ];
         }
         $ret = $this->table->addAll($arr);
         if($ret === false){
@@ -49,10 +49,10 @@ class NodeModel{
 
     }
 
-    public function getDetail($id){
+    public function getDetail($where){
 
         $ret = $this->table
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -133,9 +133,9 @@ class NodeModel{
 
     }
 
-    public function getNodeIpsByGroupId($groupId){
+    public function getNodeIpsByGroupId($groupId, $bid){
 
-        $sql = "SELECT ip FROM tbl_hubble_nginx_node WHERE unit_id IN (SELECT id FROM tbl_hubble_nginx_unit WHERE group_id = '$groupId')";
+        $sql = "SELECT ip FROM tbl_hubble_nginx_node WHERE unit_id IN (SELECT id FROM tbl_hubble_nginx_unit WHERE group_id = '$groupId' AND biz_id = '$bid')";
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
@@ -155,9 +155,10 @@ class NodeModel{
 
     }
 
-    public function getNodeIpsByUnitIds($unitId){
+    public function getNodeIpsByUnitIds($unitId, $bid){
 
-        $ret = $this->table->field('ip')->where(['unit_id' => ['IN', $unitId]])->select();
+        $ret = $this->table->field('ip')
+            ->where(['unit_id' => ['IN', $unitId], 'biz_id' => $bid])->select();
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         if($ret === false){
