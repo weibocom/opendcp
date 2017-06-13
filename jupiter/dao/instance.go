@@ -26,37 +26,38 @@ import (
 	"errors"
 )
 
-func GetInstance(instanceId string) (*models.Instance, error) {
+func GetInstance(instanceId string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).Exclude("status", models.Deleted).One(&instance)
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).Filter("biz_id", bizId).
+		Exclude("status", models.Deleted).One(&instance)
 	if err != nil {
 		return nil, err
 	}
 	return &instance, nil
 }
 
-func GetInstanceIncludeDeleted(instanceId string) (*models.Instance, error) {
+func GetInstanceIncludeDeleted(instanceId string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).One(&instance)
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("instance_id", instanceId).One(&instance)
 	if err != nil {
 		return nil, err
 	}
 	return &instance, nil
 }
 
-func GetClusterByInstanceId(instanceId string) (*models.Cluster, error) {
-	instance, err := GetInstance(instanceId)
+func GetClusterByInstanceId(instanceId string, bizId int) (*models.Cluster, error) {
+	instance, err := GetInstance(instanceId, bizId)
 	if err != nil {
 		return nil, err
 	}
 	return instance.Cluster, nil
 }
 
-func UpdateDeletedStatus(instanceId string) error {
+func UpdateDeletedStatus(instanceId string, bizId int) error {
 	o := GetOrmer()
-	instance, err := GetInstance(instanceId)
+	instance, err := GetInstance(instanceId, bizId)
 	if err != nil {
 		return err
 	}
@@ -68,9 +69,9 @@ func UpdateDeletedStatus(instanceId string) error {
 	return nil
 }
 
-func UpdateDeletingStatus(instanceId string) error {
+func UpdateDeletingStatus(instanceId string, bizId int) error {
 	o := GetOrmer()
-	instance, err := GetInstance(instanceId)
+	instance, err := GetInstance(instanceId, bizId)
 	if err != nil {
 		return err
 	}
@@ -82,20 +83,22 @@ func UpdateDeletingStatus(instanceId string) error {
 	return nil
 }
 
-func GetInstanceByPrivateIp(ip string) (*models.Instance, error) {
+func GetInstanceByPrivateIp(ip string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("private_ip_address", ip).Exclude("status", models.Deleted).One(&instance)
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("private_ip_address", ip).
+		Exclude("status", models.Deleted).One(&instance)
 	if err != nil {
 		return nil, err
 	}
 	return &instance, nil
 }
 
-func GetInstanceByPublicIp(ip string) (*models.Instance, error) {
+func GetInstanceByPublicIp(ip string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("public_ip_address", ip).Exclude("status", models.Deleted).One(&instance)
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("public_ip_address", ip).
+		Exclude("status", models.Deleted).One(&instance)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +111,9 @@ func InsertInstance(instance *models.Instance) error {
 	return err
 }
 
-func UpdateInstancePrivateIp(instanceId, private_ip_address string) error {
+func UpdateInstancePrivateIp(instanceId, private_ip_address string, bizId int) error {
 	o := GetOrmer()
-	instance, err := GetInstance(instanceId)
+	instance, err := GetInstance(instanceId, bizId)
 	if err != nil {
 		return err
 	}
@@ -122,9 +125,9 @@ func UpdateInstancePrivateIp(instanceId, private_ip_address string) error {
 	return err
 }
 
-func UpdateInstancePublicIp(instanceId, public_ip_address string) error {
+func UpdateInstancePublicIp(instanceId, public_ip_address string, bizId int) error {
 	o := GetOrmer()
-	instance, err := GetInstance(instanceId)
+	instance, err := GetInstance(instanceId, bizId)
 	if err != nil {
 		return err
 	}
@@ -136,7 +139,7 @@ func UpdateInstancePublicIp(instanceId, public_ip_address string) error {
 	return err
 }
 
-func ListInstances() ([]models.Instance, error) {
+func ListInstances(bizId int) ([]models.Instance, error) {
 	o := GetOrmer()
 	var instances []models.Instance
 	_, err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Exclude("status", models.Deleted).OrderBy("-id").All(&instances)
@@ -146,21 +149,21 @@ func ListInstances() ([]models.Instance, error) {
 	return instances, nil
 }
 
-func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
+func ListInstancesByClusterId(clusterId int64, bizId int) ([]models.Instance, error) {
 	o := GetOrmer()
 	var instances []models.Instance
-	_, err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("cluster_id", clusterId).Exclude("status", models.Deleted).All(&instances)
+	_, err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("cluster_id", clusterId).Exclude("status", models.Deleted).All(&instances)
 	if err != nil {
 		return nil, err
 	}
 	return instances, nil
 }
 
-func UpdateInstanceStatus(ip string, status models.InstanceStatus) error {
+func UpdateInstanceStatus(ip string, status models.InstanceStatus, bizId int) error {
 	o := GetOrmer()
-	instance, err := GetInstanceByPrivateIp(ip)
+	instance, err := GetInstanceByPrivateIp(ip, bizId)
 	if err != nil {
-		instance, err = GetInstanceByPublicIp(ip)
+		instance, err = GetInstanceByPublicIp(ip, bizId)
 		if err != nil {
 			return err
 		}
@@ -173,9 +176,9 @@ func UpdateInstanceStatus(ip string, status models.InstanceStatus) error {
 	return nil
 }
 
-func UpdateInstanceStatusByInstanceId(instanceId string, status models.InstanceStatus) error {
+func UpdateInstanceStatusByInstanceId(instanceId string, status models.InstanceStatus, bizId int) error {
 	o := GetOrmer()
-	instance, err := GetInstance(instanceId)
+	instance, err := GetInstance(instanceId, bizId)
 	if err != nil {
 		return err
 	}
@@ -187,8 +190,8 @@ func UpdateInstanceStatusByInstanceId(instanceId string, status models.InstanceS
 	return nil
 }
 
-func GetIpByInstanceId(instanceId string) (string, error) {
-	ins, err := GetInstanceIncludeDeleted(instanceId)
+func GetIpByInstanceId(instanceId string, bizId int) (string, error) {
+	ins, err := GetInstanceIncludeDeleted(instanceId, bizId)
 	if err != nil {
 		return "", err
 	}
@@ -201,11 +204,12 @@ func GetIpByInstanceId(instanceId string) (string, error) {
 	return "", errors.New("The instance no private ip address or public ip address.")
 }
 
-func UpdateSshKey(instanceId string, publicKey string, privateKey string) error {
+func UpdateSshKey(instanceId string, publicKey string, privateKey string, bizId int) error {
 	o := GetOrmer()
-	ins, err := GetInstance(instanceId)
+	ins, err := GetInstance(instanceId, bizId)
 	ins.PublicKey = publicKey
 	ins.PrivateKey = privateKey
 	_, err = o.Update(ins)
 	return err
 }
+

@@ -27,6 +27,7 @@ type Cluster struct {
 	DataDiskSize       int
 	DataDiskNum        int
 	DataDiskCategory   string
+	BizId		   int
 }
 
 type Replication struct {
