@@ -122,8 +122,8 @@ var processBody = function(data,head,body){
   if(data.content){
     if(data.content.length>0){
       var tab=$('#tab').val();
-      var btnAdd=' - ',btnEdit='',btnDel='';
       for (var i = 0; i < data.content.length; i++) {
+        var btnAdd=' - ',btnEdit='',btnDel='';
         var v = data.content[i];
         var tr = $('<tr></tr>');
         td = '<td>' + v.i + '</td>';
@@ -141,11 +141,11 @@ var processBody = function(data,head,body){
         td = '<td>' + v.reg_time + '</td>';
         tr.append(td);
         switch(v.status){
-          case '0':
+          case 0:
             td = '<td><span class="badge bg-green">已通过</span></td>';
             tr.append(td);
             break;
-          case '1':
+          case 1:
             td = '<td><span class="badge bg-red">已拒绝</span></td>';
             tr.append(td);
             break;
