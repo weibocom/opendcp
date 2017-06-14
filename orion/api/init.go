@@ -103,6 +103,7 @@ func (c *InitApi) InitDB() {
 		content[tbName] = records
 	}
 
+	c.DeleteALl(biz_id,content)
 
 	err = c.CreateRemoteAction(biz_id, content)
 
@@ -136,6 +137,18 @@ func (c *InitApi) InitDB() {
 
 
 	c.ReturnSuccess(true)
+
+}
+
+func (c *InitApi) DeleteALl (biz_id int, content map[string][]string) (err error) {
+	deleteSql := "delete from %s where biz_id=%d"
+
+	for table,_:= range content {
+		fmt.Println(table)
+		service.Init.DeleteBysql(fmt.Sprintf(deleteSql,table,biz_id))
+	}
+
+	return nil
 
 }
 
@@ -247,8 +260,6 @@ func (c *InitApi) CreateRemoteAction(biz_id int, content map[string][]string) (e
 	for index,sql := range actions {
 
 		sql = fmt.Sprintf(sql,biz_id)
-
-		fmt.Println(sql)
 
 		id64, err := service.Init.InsertBysql(sql)
 		if err != nil {
