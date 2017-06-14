@@ -55,9 +55,11 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("insert into database")
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
+	fmt.Println("have inserted")
 	return instanceIds[0], nil
 }
 
