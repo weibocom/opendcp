@@ -6,4 +6,6 @@ cp hosts /etc/hosts
 
 gopm build
 
+go build
+
 ./jupiter

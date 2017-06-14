@@ -530,12 +530,13 @@ func (aliyunProvider) AttachGateway(input *models.AttachGateway) (bool, error) {
 	return true, nil
 }
 
+
+
 func new() (provider.ProviderDriver, error) {
 	return newProvider()
 }
 
 func newProvider() (provider.ProviderDriver, error) {
-	fmt.Println("aliyunNewProvider is execute")
 	client := ecs.NewClient(
 		conf.Config.KeyId,
 		conf.Config.KeySecret,
