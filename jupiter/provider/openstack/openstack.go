@@ -164,7 +164,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 	}
 
 	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
-	return instanceIds, nil
+	return instanceIds, errs
 }
 
 

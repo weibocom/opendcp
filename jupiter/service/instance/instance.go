@@ -44,9 +44,12 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		return "", err
 	}
 	instanceIds, errs := providerDriver.Create(cluster, 1)
-	if errs != nil {
+	if len(errs) != 0 {
 		return "", errs[0]
 	}
+	//if errs != nil {
+	//	return "", errs[0]
+	//}
 	fmt.Println("getting instance")
 	ins, err := providerDriver.GetInstance(instanceIds[0])
 	if err != nil {
