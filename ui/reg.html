@@ -45,6 +45,11 @@
           <div class="x_panel">
             <div class="x_title">
               <h2><i class="fa fa-cloud-upload"></i> 申请体验</h2>
+              <ul class="nav navbar-right panel_toolbox">
+                <li>
+                  <a href="/" style="color:currentColor;"><i class="fa fa-home"> 返回首页</i></a>
+                </li>
+              </ul>
               <div class="clearfix"></div>
             </div>
             <div class="x_content">
@@ -150,8 +155,8 @@
         var disabled=false;
         if($('#en').val()=='') disabled=true;
         if($('#cn').val()=='') disabled=true;
-        if($('#mobile').val()=='') disabled=true;
-        if($('#mail').val()=='') disabled=true;
+        if(!checkParam('mobile', 'mobile')) disabled=true;
+        if(!checkParam('email', 'mail')) disabled=true;
         if($('#biz').val()=='') disabled=true;
         if($('#pw').val()=='') disabled=true;
         if($('#verification_code').val()=='') disabled=true;
@@ -159,7 +164,7 @@
       }
 
       var commit=function(){
-        $("#btnCommit").attr('disabled',true);
+        $("#btnCommit").attr('disabled',true).html('提交中 . . .');
         NProgress.start();
         var url='/api/admin/register.php';
         var postData={};
@@ -178,17 +183,43 @@
           success: function (data) {
             //执行结果提示
             if(data.code==0){
-              pageNotify('success','申请成功！', '请等待审核');
+              pageNotify('success','申请成功！', '请等待审核', false);
+              $("#btnCommit").html('已提交申请，请联系XXX审批！');
+              $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
             }else{
-              pageNotify('error','操作失败！','错误信息：'+data.msg);
+              pageNotify('error','操作失败！','错误信息：'+data.msg, false);
             }
             NProgress.done();
           },
           error: function (){
-            pageNotify('error','操作失败！','错误信息：接口不可用');
+            pageNotify('error','操作失败！','错误信息：接口不可用', false);
             NProgress.done();
           }
         });
+      }
+
+      var checkParam=function(t,o){
+        var ret = false;
+        switch (t){
+          case 'mobile':
+            var myreg = /^(((13[0-9]{1})|(15[0-9]{1})|(17[0-9]{1})|(18[0-9]{1}))+\d{8})$/;
+            break;
+          case 'email':
+            var myreg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/;
+            break;
+          default:
+            return ret;
+            break;
+        }
+        if($('#' + o).val()!=''){
+          if(myreg.test($('#' + o).val())){
+            ret = true;
+            $('#' + o).parent().css('border','0px none rgb(115, 135, 156)');
+          }else{
+            $('#' + o).parent().css('border','1px solid #CE5454');
+          }
+        }
+        return ret;
       }
     </script>
 </body>
