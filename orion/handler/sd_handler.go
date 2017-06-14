@@ -178,11 +178,21 @@ func (h *ServiceDiscoveryHandler) requestSID(action *models.ActionImpl) *HandleR
 		"X-Biz-ID": strconv.Itoa(biz_id),
 	}
 
-	resp := make(map[string]interface{})
 
-	hr := h.callAPI("GET", url, nil, &header, resp)
-	if hr != nil {
-		return hr
+	msg, err := utils.Http.Do("GET", url, nil, &header)
+
+	resp, err := utils.Json.ToMap(msg)
+
+	if err != nil {
+		beego.Error("Bad resp:", msg, ", err:", err)
+		return Err("Bad resp: " + msg)
+	}
+	code := int(resp["code"].(float64))
+
+	if code != 0 {
+		msg = fmt.Sprint(resp["msg"])
+		beego.Error("Fail: " + msg)
+		return Err(msg)
 	}
 
 
@@ -320,15 +330,12 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 
 	msg, err := utils.Http.Do(method, url, data, header)
 	if err != nil {
-		fmt.Println("1111111")
-		fmt.Println(err)
 		beego.Error("Fail to ", method, url, ": ", err)
 		return Err("Fail: " + err.Error())
 	}
 
 	err = json.Unmarshal([]byte(msg), obj)
 	if err != nil {
-		fmt.Println(err)
 		beego.Error("Fail to unmarshal", msg, "err:", err)
 		beego.Error("Bad resp:", msg)
 		return Err("Bad resp: " + msg)
