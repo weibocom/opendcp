@@ -12,10 +12,10 @@ var list = function(page,tab) {
   NProgress.start();
   var postData={};
   if(!tab) tab=$('#tab').val();
-  if(tab!='user') tab='user';
+  if(tab!='reg') tab='reg';
   var fIdx=$('#fIdx').val();
   switch(tab){
-    case 'user':
+    case 'reg':
       $('#tab_1').attr('class','active');
       $('#tab_toolbar').html('<a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_'+tab+'.php"> 创建 <i class="fa fa-plus"></i></a>');
       postData={"fIdx":fIdx};
@@ -92,7 +92,6 @@ var processPage = function(data,pageinfo,paginate){
         }else{
           if(i==p2){
             if(p2<data.pageCount-1){
-              console.log(i+' '+p2);
               li='<li><a href="javascript:;" onclick="list('+i+')">'+i+'</a></li>'+"\n"+'<li class="disabled"><a href="#">...</a></li>';
             }else{
               li='<li><a href="javascript:;" onclick="list('+i+')">'+i+'</a></li>';
@@ -124,38 +123,43 @@ var processBody = function(data,head,body){
     if(data.content.length>0){
       var tab=$('#tab').val();
       for (var i = 0; i < data.content.length; i++) {
+        var btnAdd=' - ',btnEdit='',btnDel='';
         var v = data.content[i];
         var tr = $('<tr></tr>');
         td = '<td>' + v.i + '</td>';
         tr.append(td);
-        td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'user\',\''+v.id+'\')">' + v.en + '</a></td>';
+        td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'reg\',\''+v.id+'\')">' + v.en + '</a></td>';
         tr.append(td);
         td = '<td>' + v.cn + '</td>';
-        tr.append(td);
-        td = '<td>' + ((v.type=='local')?'本地用户':v.type) + '</td>';
         tr.append(td);
         td = '<td>' + v.mobile + '</td>';
         tr.append(td);
         td = '<td>' + v.mail + '</td>';
         tr.append(td);
+        td = '<td>' + v.biz + '</td>';
+        tr.append(td);
+        td = '<td>' + v.reg_time + '</td>';
+        tr.append(td);
         switch(v.status){
-          case '0':
-            td = '<td><div><label class="tooltips" title="点击停用" onclick="return false;"><input type="checkbox" class="js-switch" checked onchange="switchs(\'off\',\'' + v.id + '\')"/> 启用</label></div></td>';
+          case 0:
+            td = '<td><span class="badge bg-green">已通过</span></td>';
             tr.append(td);
             break;
-          case '1':
-            td = '<td><div><label class="tooltips" title="点击启用" onclick="return false;"><input type="checkbox" class="js-switch" onchange="switchs(\'on\',\'' + v.id + '\')"/> 停用</label></div></td>';
+          case 1:
+            td = '<td><span class="badge bg-red">已拒绝</span></td>';
             tr.append(td);
             break;
           default:
-            td = '<td>' + v.status + '</td>';
+            btnAdd = '<a class="text-info tooltips" title="审核" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'audit\',\''+v.id+'\',\''+v.en+'\',\''+v.biz+'\')"><i class="fa fa-check-square-o"></i></a>';
+            btnEdit = '<a class="text-primary tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_reg.php?action=edit&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
+            btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.en+'\')"><i class="fa fa-trash-o"></i></a>';
+            td = '<td><span class="badge bg-default">未审核</span></td>';
             tr.append(td);
             break;
         }
-        var btnAdd='',btnEdit='',btnDel='';
-        btnEdit = '<a class="text-primary tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_user.php?action=edit&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
-        btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.en+'\')"><i class="fa fa-trash-o"></i></a>';
-        td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + ' ' + btnDel + '</div></td>';
+        td = '<td>' + v.audit_time + '</td>';
+        tr.append(td);
+        td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnAdd + ' ' + btnEdit + ' ' + btnDel + '</div></td>';
         tr.append(td);
 
         body.append(tr);
@@ -202,8 +206,6 @@ var change=function(){
   var action=$("#page_action").val();
   delete postData['page_action'];
   delete postData['page_other'];
-  //console.log("action="+action);
-  //console.log(JSON.stringify(postData));
   var actionDesc='';
   switch(action){
     case 'insert':
@@ -253,9 +255,9 @@ var view=function(type,idx){
   var url='',title='',text='',illegal=false,height='',postData={};
   var tStyle='word-break:break-all;word-warp:break-word;';
   switch(type){
-    case 'user':
-      url='/api/admin/user.php';
-      title='查看用户详情 - '+idx;
+    case 'reg':
+      url='/api/admin/reg.php';
+      title='查看申请详情 - '+idx;
       postData={"action":"info","fIdx":idx};
       break;
     default:
@@ -274,7 +276,7 @@ var view=function(type,idx){
           if(typeof(data.content)!='undefined'){
             //pageNotify('success','加载成功！');
             switch(type){
-              case 'user':
+              case 'reg':
                 $.each(data.content,function(k,v){
                   if(v=='') v='空';
                   text+='<span class="title col-sm-2" style="font-weight: bold;">'+k+'</span> <span class="col-sm-4" style="'+tStyle+'">'+v+'</span>'+"\n";
@@ -324,26 +326,16 @@ var view=function(type,idx){
 var check=function(tab){
   if(!tab) tab=$('#tab').val();
   switch(tab){
-    case 'user':
-      var disabled=false,type=$('#type').val(),action=$('#page_action').val();
-      if(type=='') disabled=true;
-      switch (type){
-        case 'local':
-          $('#pw').attr('disabled',false);
-          if(action=='insert'){
-            if($('#pw').val()=='') disabled=true;
-          }
-          break;
-        default:
-          $('#pw').attr('disabled',true);
-          $('#pw').val('');
-          break;
+    case 'reg':
+      var disabled=false,action=$('#page_action').val();
+      if(action=='insert'){
+        if($('#pw').val()=='') disabled=true;
       }
       if($('#en').val()=='') disabled=true;
       if($('#cn').val()=='') disabled=true;
       if($('#mobile').val()=='') disabled=true;
       if($('#mail').val()=='') disabled=true;
-      if($('#status').val()=='') disabled=true;
+      if($('#biz').val()=='') disabled=true;
       $("#btnCommit").attr('disabled',disabled);
       break;
   }
@@ -354,7 +346,7 @@ var get = function (idx) {
   var tab=$('#tab').val();
   var url='/api/admin/'+tab+'.php',postData={};
   switch (tab){
-    case 'user':
+    case 'reg':
       postData={"action":"info","fIdx":idx};
       break;
   }
@@ -416,7 +408,7 @@ var get = function (idx) {
 }
 
 //二次确认
-var twiceCheck=function(action,idx,desc){
+var twiceCheck=function(action,idx,desc,biz){
   NProgress.start();
   if(!idx) idx='';
   if(!desc) desc='';
@@ -428,18 +420,37 @@ var twiceCheck=function(action,idx,desc){
     pageNotify('error','非法请求！','错误信息：参数错误');
   }else{
     switch(tab){
-      case 'user':
+      case 'reg':
         switch(action){
+          case 'audit':
+            modalTitle='审核申请';
+            modalBody+='<div class="form-group col-sm-12">' +
+              '<label for="audit" class="col-sm-2 control-label">用户信息</label>' +
+              '<div class="col-sm-10">' +
+              'ID : ' + idx + '<br>申请用户 : ' + desc + '<br>公司名称 : ' + biz +
+              '</div>' +
+              '</div>';
+            modalBody+='<div class="form-group col-sm-12">' +
+              '<label for="status" class="col-sm-2 control-label">请审核</label>' +
+              '<div class="col-sm-10">' +
+              '<select class="form-control" id="status" name="status" onchange="check()">' +
+              '<option value="1">拒绝</option><option value="0">通过</option>' +
+              '</select>' +
+              '</div>' +
+              '</div>';
+            modalBody+='<input type="hidden" id="id" name="id" value="'+idx+'">';
+            modalBody+='<input type="hidden" id="page_action" name="page_action" value="audit">';
+            break;
           case 'del':
-            modalTitle='删除用户';
-            modalBody=modalBody+'<div class="form-group col-sm-12">';
-            modalBody=modalBody+'<div class="note note-danger">';
-            modalBody=modalBody+'<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> ID : '+idx+'<br>' +
-              '用户 : '+desc;
-            modalBody=modalBody+'</div>';
-            modalBody=modalBody+'</div>';
-            modalBody=modalBody+'<input type="hidden" id="id" name="id" value="'+idx+'">';
-            modalBody=modalBody+'<input type="hidden" id="page_action" name="page_action" value="delete">';
+            modalTitle='删除申请';
+            modalBody+='<div class="form-group col-sm-12">';
+            modalBody+='<div class="note note-danger">';
+            modalBody+='<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> ID : '+idx+'<br>' +
+              '申请用户 : '+desc;
+            modalBody+='</div>';
+            modalBody+='</div>';
+            modalBody+='<input type="hidden" id="id" name="id" value="'+idx+'">';
+            modalBody+='<input type="hidden" id="page_action" name="page_action" value="delete">';
             break;
           default:
             modalTitle='非法请求';
@@ -469,7 +480,7 @@ var twiceCheck=function(action,idx,desc){
 //开关
 var switchs=function(action,index){
   NProgress.start();
-  var url='/api/admin/user.php';
+  var url='/api/admin/reg.php';
   var postData={id:index};
   $.ajax({
     type: "POST",

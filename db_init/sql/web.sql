@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `member` (
   `mail` varchar(50) NOT NULL DEFAULT '',
   `status` int(11) NOT NULL,
   `pw` varchar(32) NOT NULL DEFAULT '',
+  `biz_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -104,6 +105,44 @@ LOCK TABLES `user_log` WRITE;
 /*!40000 ALTER TABLE `user_log` DISABLE KEYS */;
 /*!40000 ALTER TABLE `user_log` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `biz`
+--
+
+DROP TABLE IF EXISTS `biz`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `biz` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  `status` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `reg`
+--
+
+DROP TABLE IF EXISTS `reg`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reg` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `en` varchar(45) NOT NULL,
+  `cn` varchar(45) NOT NULL,
+  `mobile` varchar(45) NOT NULL,
+  `mail` varchar(45) NOT NULL,
+  `pw` varchar(45) NOT NULL,
+  `biz` varchar(45) NOT NULL,
+  `status` int(11) NOT NULL,
+  `reg_time` varchar(45) NOT NULL,
+  `audit_time` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `en_UNIQUE` (`en`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

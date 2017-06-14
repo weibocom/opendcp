@@ -56,10 +56,6 @@ require_once('../include/navbar.php');
   <link href="../gentelella/vendors/pnotify/dist/pnotify.css" rel="stylesheet">
   <link href="../gentelella/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
   <link href="../gentelella/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
-  <!-- reveal -->
-  <link href="../gentelella/vendors/reveal330/css/reveal.css" rel="stylesheet" id="reveal">
-  <link href="../gentelella/vendors/reveal330/css/theme/solarized.css" rel="stylesheet" id="theme">
-  <link href="../gentelella/vendors/reveal330/lib/css/zenburn.css" rel="stylesheet" id="zenburn">
 
   <!-- Custom Theme Style -->
   <link href="../gentelella/build/css/custom.min.css" rel="stylesheet">
@@ -133,9 +129,6 @@ require_once('../include/navbar.php');
           <div class="title_left">
             <h3><?php echo $pageName;?> <small><?php echo $pageDesc;?></small></h3>
           </div>
-          <div class="pull-right">
-            <h3><a class="text-primary tooltips" title="查看帮助" data-toggle="modal" data-target="#myRevealModal" onclick="showHelp()"><i class="fa fa-question-circle"></i></a></h3>
-          </div>
         </div>
 
         <div class="clearfix"></div>
@@ -143,11 +136,8 @@ require_once('../include/navbar.php');
         <div class="" style="background-color:#fff;">
           <div class="" role="tabpanel" data-example-id="togglable-tabs">
             <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist" style="margin-bottom: 10px;">
-              <li id="tab_1" role="presentation" class="hidden">
-                <a data-toggle="tab" role="tab" aria-expanded="true" onclick="list(1,'projects')">项目</a>
-              </li>
-              <li id="tab_2" role="presentation">
-                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="getList('repositories','projects')">镜像&标签</a>
+              <li id="tab_1" role="presentation" class="active">
+                <a data-toggle="tab" aria-expanded="true" onclick="list(1,'biz')">业务方列表</a>
               </li>
             </ul>
             <div id="myTabContent" class="tab-content">
@@ -157,26 +147,13 @@ require_once('../include/navbar.php');
                     <div class="col-md-9 form-group">
                       <div class="btn-group">
                         <div class="hidden">
-                          <input type="hidden" id="tab" name="tab" value="projects">
+                          <input type="hidden" id="tab" name="tab" value="biz">
                         </div>
-                        <div class="col-sm-4" style="padding-left:0px;" hidden="hidden">
-                          <div class="input-group">
-                            <span class="input-group-addon">集群</span>
-                            <select class="form-control" id="fProject" onchange="list(1)">
-                              <option value="">全部集群</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="col-sm-3" style="padding-left:0px;">
-                          <div class="input-group">
-                            <input type="name" id="fIdx" class="form-control" placeholder="关键字">
-                                <span class="input-group-btn">
-                                  <button class="btn btn-default" type="button" onclick="list(1)">Go!</button>
-                                </span>
-                          </div>
-                        </div>
-                        <div style="padding-left:0px;">
-                          <button class="btn btn-default" type="button" onclick="reset()">重置</button>
+                        <div class="input-group col-md-4">
+                          <input type="name" id="fIdx" name="fIdx" class="form-control" placeholder="Search for..." value="">
+                          <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="list(1)">Go!</button>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -194,8 +171,6 @@ require_once('../include/navbar.php');
                     <tbody id="table-body">
                     </tbody>
                   </table>
-                  <div class="accordion" id="page_images" role="tablist" aria-multiselectable="true">
-                  </div>
                   <div class="row">
                     <div class="col-md-5 col-sm-5">
                       <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">Showing 1 to 0 of 0 entries</div>
@@ -222,7 +197,26 @@ require_once('../include/navbar.php');
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="myModalLabel">Loading ...</h4>
                           </div>
-                          <div class="modal-body" style="overflow:auto;line-height:200%"" id="myModalBody">
+                          <div class="modal-body" style="overflow:auto;" id="myModalBody">
+                            <p> </p>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-success" id="btnCommit" data-dismiss="modal" onclick="change()" style="margin-bottom: 5px;" disabled>提交</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                  <form method="post" class="form-horizontal">
+                    <div class="modal fade bs-modal-lg" id="myChildModal" role="dialog" aria-hidden="true">
+                      <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myChildModalLabel">Loading ...</h4>
+                          </div>
+                          <div class="modal-body" style="overflow:auto;" id="myChildModalBody">
                             <p> </p>
                           </div>
                           <div class="modal-footer">
@@ -242,24 +236,6 @@ require_once('../include/navbar.php');
                             <h4 class="modal-title" id="myViewModalLabel">Loading ...</h4>
                           </div>
                           <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
-                            <p> </p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                  <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myRevealModal" role="dialog" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myRevealModalLabel">帮助</h4>
-                          </div>
-                          <div class="modal-body" style="height:500px;" id="myRevealModalBody">
                             <p> </p>
                           </div>
                           <div class="modal-footer">
@@ -329,9 +305,6 @@ require_once('../include/navbar.php');
 <script src="../gentelella/vendors/pnotify/dist/pnotify.js"></script>
 <script src="../gentelella/vendors/pnotify/dist/pnotify.buttons.js"></script>
 <script src="../gentelella/vendors/pnotify/dist/pnotify.nonblock.js"></script>
-<!-- reveal -->
-<script src="../gentelella/vendors/reveal330/lib/js/head.min.js"></script>
-<script src="../gentelella/vendors/reveal330/js/reveal.js"></script>
 
 <!-- Custom Theme Scripts -->
 <script src="../gentelella/build/js/custom.min.js"></script>
@@ -339,21 +312,19 @@ require_once('../include/navbar.php');
 <script src="../js/pnotify.js"></script>
 <script src="../js/switchery.js"></script>
 <script src="../js/login.js"></script>
-<script src="../js/locale_messages.js"></script>
-<script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
-<script src="../js/for_repos/repos.js?_t=<?php echo date('U');?>"></script>
+<script src="../js/admin/biz.js?_t=<?php echo date('U');?>"></script>
 
 
 <!-- Custom Notification -->
 <script>
   $(document).ready(function() {
     $("select.form-control").select2({width:'100%'});
+    window.setTimeout('list();',200);
     $('#fIdx').bind('keypress',function(event){
       if(event.keyCode == "13"){
         list(1);
       }
     });
-    window.setTimeout('getList(\'repositories\',\'projects\')',200);
   });
   $("#myModal").on("shown.bs.modal", function(){
     $("select.form-control").select2();
@@ -364,6 +335,17 @@ require_once('../include/navbar.php');
     $('#myModalLabel').html('Loading ...');
     $("#myModalBody").html('<p> </p>');
   });
+
+  $("#myChildModal").on("shown.bs.modal", function(){
+    $("select.form-control").select2();
+  });
+  $("#myChildModal").on("hidden.bs.modal", function() {
+    $(this).removeData("bs.modal");
+    $('#myChildModalBody').css('height','');
+    $('#myChildModalLabel').html('Loading ...');
+    $("#myChildModalBody").html('<p> </p>');
+  });
+
   $("#myViewModal").on("shown.bs.modal", function(){
     $("select.form-control").select2();
   });
@@ -373,6 +355,7 @@ require_once('../include/navbar.php');
     $('#myViewModalLabel').html('Loading ...');
     $("#myViewModalBody").html('<p> </p>');
   });
+
 
 </script>
 <!-- /Custom Notification -->

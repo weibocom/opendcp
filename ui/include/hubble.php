@@ -65,6 +65,9 @@ class hubble{
         'X-HTTP-Method-Override: ' . $method,
         'appkey: ' . $this->appkey,
         'X-CORRELATION-ID: ' . $this->reqid,
+        'X-Biz-ID: ' . $_SESSION['open_biz_id'],
+        'X-Biz-Name: ' . $_SESSION['open_biz_name'],
+        'X-Biz-Status: ' . $_SESSION['open_biz_status'],
       );
       if($module=='extension'){
         if($subModule){

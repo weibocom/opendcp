@@ -29,6 +29,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/instance"
 	"weibo.com/opendcp/jupiter/service/slb"
 	"weibo.com/opendcp/jupiter/provider"
+	"strconv"
 )
 
 const MAX_IP_NUMBER = 20
@@ -344,10 +345,18 @@ func (sc *SlbController) SetBackendOfLoadBalance() {
 // @Description DescribeHealthStatus handles POST /v1/slb/backendservers/by_ip
 // @router /backendservers/by_ip [post]
 func (sc *SlbController) AddToLoadBalance() {
+	bizId := sc.Ctx.Input.Header("bizId")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get instance bizId err!")
+		sc.RespInputError()
+		return
+	}
+
 	resp := ApiResponse{}
 	body := sc.Ctx.Input.RequestBody
 	var addServer models.BackendServerRequest
-	err := json.Unmarshal(body, &addServer)
+	err = json.Unmarshal(body, &addServer)
 	if err != nil {
 		beego.Error("parameter error: ", err)
 		sc.RespInputError()
@@ -356,7 +365,7 @@ func (sc *SlbController) AddToLoadBalance() {
 	servers := make([]models.BackendServer, 0)
 	if addServer.BackendServerList != nil {
 		for _, v := range addServer.BackendServerList {
-			ins, err := instance.GetInstanceByIp(v.Address)
+			ins, err := instance.GetInstanceByIp(v.Address, bid)
 			if err != nil {
 				beego.Error("get instance failed: ", err)
 				sc.RespServiceError(err)
@@ -395,10 +404,17 @@ func (sc *SlbController) AddToLoadBalance() {
 // @Description DescribeHealthStatus handles DELETE /v1/slb/backendservers/by_ip
 // @router /backendservers/by_ip [delete]
 func (sc *SlbController) RemoveFromLoadBalance() {
+	bizId := sc.Ctx.Input.Header("bizId")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get instance bizId err!")
+		sc.RespInputError()
+		return
+	}
 	resp := ApiResponse{}
 	body := sc.Ctx.Input.RequestBody
 	var removeServer models.BackendServerRequest
-	err := json.Unmarshal(body, &removeServer)
+	err = json.Unmarshal(body, &removeServer)
 	if err != nil {
 		beego.Error("parameter error: ", err)
 		sc.RespInputError()
@@ -407,7 +423,7 @@ func (sc *SlbController) RemoveFromLoadBalance() {
 	servers := make([]string, 0)
 	if removeServer.BackendServerList != nil {
 		for _, v := range removeServer.BackendServerList {
-			ins, err := instance.GetInstanceByIp(v.Address)
+			ins, err := instance.GetInstanceByIp(v.Address, bid)
 			if err != nil {
 				beego.Error("get resource failed: ", err)
 				sc.RespServiceError(err)

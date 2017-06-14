@@ -18,13 +18,12 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 header('Content-type: application/json');
 include_once('../../include/config.inc.php');
 include_once('../../include/function.php');
 include_once('../../include/func_session.php');
-include_once('../../include/user.php');
-$thisClass=$user;
+include_once('../../include/reg.php');
+$thisClass=$reg;
 
 class myself{
 
@@ -45,10 +44,12 @@ class myself{
           '#',
           '账号',
           '姓名',
-          '类型',
           '手机',
           '邮箱',
-          '状态',
+          '业务方名称',
+          '申请时间',
+          '审核状态',
+          '审核时间',
           '#',
         ),
         'content' => array(),
@@ -97,6 +98,8 @@ class myself{
     if(!empty($param)){
       switch($action) {
         case 'add':
+          $param['status'] = 99;
+          $param['reg_time'] = date('Y-m-d H:i:s');
           $ret = $thisClass->add($param);
           break;
         case 'update':
@@ -106,6 +109,71 @@ class myself{
           $ret = $thisClass->delete($param);
           break;
       }
+    }
+    return $ret;
+  }
+
+  function audit($param = array()){
+    global $thisClass,$biz,$user;
+    $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+    if(!empty($param)){
+      $regId = (isset($param['id'])&&!empty($param['id'])) ? $param['id'] : 0;
+      if(empty($regId)){
+        $ret['msg'] = '无效申请ID';
+        return $ret;
+      }
+      $param['audit_time'] = date('Y-m-d H:i:s');
+      //更新审核状态
+      $retAudit = $thisClass->update($param);
+      //获取申请详情
+      $retReg = $thisClass->get($regId);
+      $regStatus = (isset($retReg[$regId]['status'])) ? $retReg[$regId]['status'] : 99;
+      if($regStatus!==0&&$regStatus!==1){
+        $ret['msg'] = '审核操作失败';
+        return $ret;
+      }
+      if($regStatus===1){
+        $ret['code'] = 0;
+        $ret['msg'] = '审核操作成功';
+        return $ret;
+      }
+      //注册公司名称
+      $retBiz = $biz->add(['name' => $retReg[$regId]['biz']]);
+      $bizId = (isset($retBiz['content'])&&!empty($retBiz['content'])) ? $retBiz['content'] : 0;
+      if(empty($bizId)){
+        $ret['msg'] = '公司名称注册失败';
+        $param['status'] = 99;
+        unset($param['audit_time']);
+        $retAudit = $thisClass->update($param); //回滚审批状态
+        return $ret;
+      }
+      //注册用户信息
+      $paramUser = [
+        'en' => $retReg[$regId]['en'],
+        'cn' => $retReg[$regId]['cn'],
+        'type' => 'local',
+        'mobile' => $retReg[$regId]['mobile'],
+        'mail' => $retReg[$regId]['mail'],
+        'status' => 0,
+        'pw' => $retReg[$regId]['pw'],
+        'biz_id' => $bizId,
+      ];
+      $retUser = $user->add($paramUser);
+      $userId = (isset($retUser['content'])&&!empty($retUser['content'])) ? $retUser['content'] : 0;
+      if(empty($userId)){
+        $ret['msg'] = '用户信息写入失败';
+        unset($param['audit_time']);
+        $param['status'] = 99;
+        $retAudit = $thisClass->update($param); //回滚审批状态
+        $retBiz = $biz->delete(['id' => $bizId]); //删除公司信息
+        return $ret;
+      }
+      //通知多云对接模块初始化
+      //通知镜像市场模块初始化
+      //通知服务编排模块初始化
+      //通知服务发现模块初始化
+      $ret['code'] = 0;
+      $ret['msg'] = '审批操作成功';
     }
     return $ret;
   }
@@ -133,7 +201,7 @@ $logDesc = '';
 $arrRecodeLog=array(
   't_time' => date('Y-m-d H:i:s'),
   't_user' => $myUser,
-  't_module' => '用户管理',
+  't_module' => '申请体验管理',
   't_action' => '',
   't_desc' => 'Resource:' . $_SERVER['REMOTE_ADDR'] . '.',
   't_code' => '传入：' . json_encode($logJson) . "\n\n",
@@ -181,26 +249,17 @@ if($hasLimit){
       if(!$pageForSuper && $myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
       $arrRecodeLog['t_action'] = '删除';
       if(isset($arrJson) && !empty($arrJson)){
-        $arrJson['user'] = $myUser;
         $retArr=$mySelf->update('delete', $arrJson);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
       break;
-    case 'on':
+    case 'audit':
       if(!$pageForSuper && $myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '启用';
+      $arrRecodeLog['t_action'] = '审核申请';
       if(isset($arrJson) && !empty($arrJson)){
-        $arrJson['status'] = 0;
-        $retArr = $mySelf->update('update', $arrJson);
-        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-      }
-      break;
-    case 'off':
-      if(!$pageForSuper && $myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '停用';
-      if(isset($arrJson) && !empty($arrJson)){
-        $arrJson['status'] = 1;
-        $retArr = $mySelf->update('update', $arrJson);
+        include_once('../../include/biz.php');
+        include_once('../../include/user.php');
+        $retArr = $mySelf->audit($arrJson);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
       break;

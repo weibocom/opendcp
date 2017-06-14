@@ -7,7 +7,8 @@ var login=function(action){
       var type=$('#authtype').val();
       var user=$('#username').val();
       var pass=$('#password').val();
-      post={'action':action,'data':JSON.stringify({'type':type,'user':user,'pass':pass})};
+      var code=$('#verification_code').val();
+      post={'action':action,'data':JSON.stringify({type: type, user: user, pass: pass, verification_code: code})};
       break;
     case 'logout':
       post={'action':action};

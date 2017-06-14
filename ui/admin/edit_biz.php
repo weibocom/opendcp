@@ -23,11 +23,11 @@ $myAction=(isset($_GET['action'])&&!empty($_GET['action']))?trim($_GET['action']
 $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):'';
 switch($myAction){
   case 'add':
-    $myTitle='添加用户';
+    $myTitle='添加业务方';
     $pageAction='insert';
     break;
   case 'edit':
-    $myTitle='修改用户';
+    $myTitle='修改业务方';
     $pageAction='update';
     break;
   default:
@@ -42,51 +42,9 @@ switch($myAction){
 </div>
 <div class="modal-body" style="overflow:auto;" id="myModalBody">
   <div class="form-group">
-    <label for="type" class="col-sm-2 control-label">用户类型</label>
+    <label for="name" class="col-sm-2 control-label">业务方名称</label>
     <div class="col-sm-10">
-      <select class="form-control" id="type" name="type" onchange="check()">
-        <option value="local">本地用户</option>
-        <option value="ldap">LDAP</option>
-      </select>
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="en" class="col-sm-2 control-label">账号</label>
-    <div class="col-sm-10">
-      <input type="text" class="form-control" id="en" name="en" onkeyup="check()" placeholder="eg:admin">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="cn" class="col-sm-2 control-label">姓名</label>
-    <div class="col-sm-10">
-      <input type="text" class="form-control" id="cn" name="cn" onkeyup="check()" placeholder="eg:管理员">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="mobile" class="col-sm-2 control-label">手机</label>
-    <div class="col-sm-10">
-      <input type="text" class="form-control" id="mobile" name="mobile" onkeyup="check()" placeholder="eg:13812345678">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="mail" class="col-sm-2 control-label">邮箱</label>
-    <div class="col-sm-10">
-      <input type="text" class="form-control" id="mail" name="mail" onkeyup="check()" placeholder="eg:admin@xxx.com">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="pw" class="col-sm-2 control-label">密码</label>
-    <div class="col-sm-10">
-      <input type="password" class="form-control" id="pw" name="pw" onkeyup="check()" placeholder="为空时不修改">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="status" class="col-sm-2 control-label">用户状态</label>
-    <div class="col-sm-10">
-      <select class="form-control" id="status" name="status" onchange="check()">
-        <option value="0">启用</option>
-        <option value="1">停用</option>
-      </select>
+      <input type="text" class="form-control" id="name" name="name" onkeyup="check()" placeholder="eg:新浪微博">
     </div>
   </div>
   <input type="hidden" id="id" name="id" value="<?php echo $myIdx;?>" />
