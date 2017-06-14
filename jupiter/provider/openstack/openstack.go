@@ -14,7 +14,8 @@ import (
 	"sync"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 	"weibo.com/opendcp/jupiter/models"
-
+	"github.com/rackspace/gophercloud/openstack/compute/v2/flavors"
+	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -29,6 +30,13 @@ func init(){
 
 	provider.RegisterProviderDriver("openstack", new)
 }
+
+
+var instanceTypesInOpenStack = map[string]string{}
+
+var instanceTypesList []string
+var networksInOpenStack = map[string]string{}
+var networksList []string
 
 //列出所有server
 //openstack不需要提供pageNumber和pageSize,该如何处理
@@ -72,9 +80,28 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 }
 
 
-
+//将instanceType对应OpenStack中的flavor
+//openstack中的获取InstanceType方法待做，需要与创建机型模板那边联动
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
-	return nil, nil
+
+	
+	//if instanceTypesInOpenStack != nil{
+	//	return instanceTypesList, nil
+	//}
+	opts := flavors.ListOpts{}
+	pager := flavors.ListDetail(driver.client, opts)
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
+
+		flavorList, err := flavors.ExtractFlavors(page)
+		for _, flavor := range flavorList {
+			instanceTypesList = append(instanceTypesList, flavor.Name)
+			instanceTypesInOpenStack[flavor.Name] = flavor.ID
+		}
+		return true, err
+	})
+
+
+	return instanceTypesList, err
 }
 
 func (driver openstackProvider) ListSecurityGroup(regionId string, vpcId string) (*models.SecurityGroupsResp, error){
@@ -90,7 +117,41 @@ func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
 }
 
 func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
-	return nil, nil
+	opts := gophercloud.AuthOptions{
+		IdentityEndpoint: "http://10.39.59.27:5000/v3",
+		Username: "admin",
+		Password: "ZYGL32NDG7JS8IGC",
+		DomainName: "default",
+	}
+
+	provider, err := openstack.AuthenticatedClient(opts)
+
+	if(err != nil){
+		return nil, err
+	}
+	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
+		Name:   "neutron",
+		Region: "RegionOne",
+	})
+	opts1 := networks.ListOpts{}
+	// Retrieve a pager (i.e. a paginated collection)
+	pager := networks.List(client, opts1)
+
+	var vpcsResp models.VpcsResp
+
+	err = pager.EachPage(func(page pagination.Page) (bool, error) {
+		networkList, err := networks.ExtractNetworks(page)
+		for _, network := range networkList {
+			// "n" will be a networks.Network
+			var vpc models.Vpc
+			vpc.VpcId = network.ID
+			vpc.State = network.Name
+			vpcsResp.Vpcs = append(vpcsResp.Vpcs, vpc)
+		}
+
+		return true, err
+	})
+	return &vpcsResp, err
 }
 
 func (driver openstackProvider) ListSubnets(zoneId string, vpcId string) (*models.SubnetsResp, error){
@@ -208,9 +269,10 @@ func (driver openstackProvider) ListImages(regionId string, snapshotId string, p
 		imageList, err := images.ExtractImages(page)
 		for _, imageOp := range imageList {
 			image := models.Image{
+
 				//Architecture: imageOp.
 				CreationDate: imageOp.Created,
-				//Description: imageOp.
+				Description: imageOp.Name,
 				ImageId: imageOp.ID,
 				Name: imageOp.Name,
 				//OwnerId: imageOp.
@@ -317,6 +379,8 @@ func waitForSpecific(f func() bool, maxAttempts int, waitInterval time.Duration)
 	}
 	return fmt.Errorf("Maximum number of retries (%d) exceeded", maxAttempts)
 }
+
+
 
 func new() (provider.ProviderDriver, error){
 
