@@ -2,6 +2,8 @@
 
 echo "start building..."
 
+cp hosts /etc/hosts
+
 gopm build
 
 ./jupiter
