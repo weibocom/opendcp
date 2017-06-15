@@ -38,6 +38,8 @@ import (
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
 	log "github.com/Sirupsen/logrus"
+	"github.com/astaxie/beego"
+	"strconv"
 )
 
 var DefaultProjectName = "DefaultProjectName"
@@ -60,12 +62,15 @@ type Server struct {
 	// all internal plugins of procedure "build"
 	buildPlugins *util.ConcurrentMap
 
+
 	projects map[string]pro.Project
 
 	projectLock sync.RWMutex
 }
 
 func (app *Server) Init(ip string, port string) {
+
+	beego.Warn("Server Init....")
 	log.Info("------start init server")
 	app.version = "v1.0"
 	log.Info("app version v1.0")
@@ -95,8 +100,8 @@ func (app *Server) Init(ip string, port string) {
 	log.Info("------finish init server")
 }
 
-func (app *Server) CloneProject(srcProjectName, dstProjectName, creator, cluster, defineDockerFileType string) (bool, int) {
-	project, code := pro.CloneProject(srcProjectName,
+func (app *Server) CloneProject(srcCluster, srcProjectName, dstProjectName, creator, cluster, defineDockerFileType string) (bool, int) {
+	project, code := pro.CloneProject(srcCluster, srcProjectName,
 		dstProjectName,
 		creator,
 		cluster,
@@ -112,12 +117,22 @@ func (app *Server) CloneProject(srcProjectName, dstProjectName, creator, cluster
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
 
-	app.projects[dstProjectName] = project
+	dstWholeProjectName := app.getWholeProjectName(cluster,dstProjectName)
+	app.projects[dstWholeProjectName] = project
 	log.Infof("clone project: %s from project: %s success", dstProjectName, srcProjectName)
 	return true, code
 }
 
-func (app *Server) IsProjectExist(projectName string) bool {
+func (app *Server) IsProjectExist(cluster string, projectName string) bool {
+	var projectWholeName = app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
+	if project != nil {
+		log.Infof("Project: %s is exist", projectName)
+		return true
+	}
+	return false
+}
+func (app *Server) IsDefaultProjectExist(projectName string) bool {
 	var project pro.Project = app.getProject(projectName)
 	if project != nil {
 		log.Infof("Project: %s is exist", projectName)
@@ -130,13 +145,17 @@ func (app *Server) UpdateProject(projectName, creator, cluster, defineDockerFile
 	// write lock
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
+	beego.Warn("UpdateProject")
 	infoMap, code := pro.UpdateInfo(projectName, creator, cluster, defineDockerFileType)
 
 	if code != errors.OK {
+		beego.Error("UpdateProject error: ", code)
 		return false, code
 	}
 
-	project := app.projects[projectName]
+	var projectWholeName = app.getWholeProjectName(cluster,projectName)
+
+	project := app.projects[projectWholeName]
 	project.(*pro.PluggedProject).LastModifyOperator = infoMap["lastModifyOperator"]
 	project.(*pro.PluggedProject).LastModifyTime = infoMap["lastModifyTime"]
 	project.(*pro.PluggedProject).Creator = infoMap["creator"]
@@ -144,13 +163,18 @@ func (app *Server) UpdateProject(projectName, creator, cluster, defineDockerFile
 	project.(*pro.PluggedProject).DefineDockerFileType = infoMap["defineDockerFileType"]
 	project.(*pro.PluggedProject).Cluster = infoMap["cluster"]
 
-	app.projects[projectName] = project
+	app.projects[projectWholeName] = project
+	beego.Warn("update project: %s success", projectName)
+
+
 	log.Infof("update project: %s success", projectName)
 	return true, code
 }
 
 func (app *Server) NewProject(projectName, creator, cluster, defineDockerFileType string) (bool, int) {
-	project, code := pro.NewProject(projectName,
+	beego.Warn("NewProject... cluster:" + cluster)
+	project, code := pro.NewProject(
+		projectName,
 		creator,
 		cluster,
 		defineDockerFileType,
@@ -165,33 +189,36 @@ func (app *Server) NewProject(projectName, creator, cluster, defineDockerFileTyp
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
 
-	app.projects[projectName] = project
+	projectWholeName := app.getWholeProjectName(cluster,projectName)
+	app.projects[projectWholeName] = project
 	log.Infof("new project: %s success", projectName)
 	return true, code
 }
 
-func (app *Server) DeleteProject(projectName string, operator string) (bool, int) {
+func (app *Server) DeleteProject(cluster string, projectName string, operator string) (bool, int) {
 	// write lock
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
-	if _, ok := app.projects[projectName]; !ok {
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	if _, ok := app.projects[projectWholeName]; !ok {
 		log.Errorf("project: %s to delete no exist", projectName)
 		return false, errors.DELETE_PROJECT_NOT_EXIST
 	}
 
-	code := pro.DeleteProject(projectName, operator)
+	code := pro.DeleteProject(cluster, projectName, operator)
 	if code != errors.OK {
 		return false, code
 	}
 
-	delete(app.projects, projectName)
+	delete(app.projects, projectWholeName)
 
 	log.Infof("delete project: %s success", projectName)
 	return true, errors.OK
 }
 
-func (app *Server) SaveProjectConfig(projectName string, configs []map[string]interface{}) bool {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) SaveProjectConfig(cluster string, projectName string, configs []map[string]interface{}) bool {
+	var projectWholeName = app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
 		log.Errorf("Project: %s to save config not exist", projectName)
 		return false
@@ -199,13 +226,19 @@ func (app *Server) SaveProjectConfig(projectName string, configs []map[string]in
 	return project.Save(configs)
 }
 
-func (app *Server) GetProjectConfigView(projectName string) (int, string) {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) GetProjectConfigView(cluster string, projectName string) (int, string) {
+	beego.Warn("GetProjectConfigView cluster:" + cluster)
+	beego.Warn("GetProjectConfigView project:" + projectName)
+	var projectWholeName = app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
+
 
 	if project == nil {
+		beego.Error("GetProjectConfigView...project　＝　ｎｉｌ")
 		project = app.getProject(DefaultProjectName)
 	}
 
+	beego.Warn("GetProjectConfigView...app.Lang: "+app.Lang)
 	projectView := project.View(app.Lang)
 
 	return errors.OK, projectView
@@ -229,8 +262,9 @@ func (app *Server) GetDockerfileExtensionPlugins() []string {
 	return dockerfileExtensionPlugins
 }
 
-func (app *Server) GetProjectInfo(projectName string) (int, pro.ProjectInfo) {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) GetProjectInfo(cluster string, projectName string) (int, pro.ProjectInfo) {
+	projectWholeName := app.getWholeProjectName(cluster,projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
 		log.Errorf("Project: %s to query info not exist", projectName)
 		return errors.PROJECT_NOT_EXIST, pro.BuildEmptyProjectInfo()
@@ -239,7 +273,31 @@ func (app *Server) GetProjectInfo(projectName string) (int, pro.ProjectInfo) {
 	return errors.OK, project.Info()
 }
 
-func (app *Server) GetProjects(projectName string) pro.ProjectInfoList {
+func (app *Server) GetProjects(cluster string, projectName string) pro.ProjectInfoList {
+	app.projectLock.RLock()
+	defer app.projectLock.RUnlock()
+
+
+	beego.Warn("GetProjects.....")
+	projectInfos := make([]pro.ProjectInfo, 0)
+	for _, project := range app.projects {
+		projectInfo := pro.Project(project).Info()
+
+		if projectInfo.Name != DefaultProjectName && strings.Contains(projectInfo.Name, projectName) &&
+			strings.Compare(projectInfo.Cluster, cluster) == 0 {
+			beego.Warn("GetProjects--Name: " + projectInfo.Name);
+			projectInfos = append(projectInfos, projectInfo)
+		}
+	}
+	beego.Warn("GetProjects len: " + strconv.Itoa(len(projectInfos)));
+	// sort
+	sort.Sort(pro.ProjectInfoList(projectInfos))
+
+	return projectInfos
+}
+
+
+func (app *Server) GetClusterProjects(projectName string) pro.ProjectInfoList {
 	app.projectLock.RLock()
 	defer app.projectLock.RUnlock()
 
@@ -257,8 +315,10 @@ func (app *Server) GetProjects(projectName string) pro.ProjectInfoList {
 	return projectInfos
 }
 
-func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
-	var project pro.Project = app.getProject(projectName)
+
+func (app *Server) BuildImage(cluster, projectName, tag, operator string) (int, int64) {
+	var projectWholeName = app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
 		log.Errorf("Project: %s to build not exist, operator", projectName, operator)
 		return errors.BUILD_PROJECT_NOT_EXIST, -1
@@ -269,7 +329,7 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 		return errors.INTERNAL_ERROR, -1
 	}
 
-	id := buildHistoryService.InsertRecord(operator, projectName)
+	id := buildHistoryService.InsertRecord(cluster,operator, projectName)
 
 	// 异步线程处理构建并且进行更新任务状态
 	go func() {
@@ -283,7 +343,7 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 			pushSuccess := project.BuildAndPushImage(tag)
 			if pushSuccess {
 				log.Infof("%s push success id:%d tag:%s", projectName, id, tag)
-				pro.ClearTmp(projectName)
+				pro.ClearTmp(cluster, projectName)
 				if id != -1 {
 					log.Infof("start update project %s state for id:%d", projectName, id)
 					buildHistoryService.UpdateRecord(id, project.GetLog(), service.SUCCESS)
@@ -322,8 +382,10 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 	}
 }
 
-func (app *Server) GetBuildLastHistory(projectName string) *model.BuildHistory {
-	return service.GetBuildHistoryServiceInstance().QueryLastBuildRecord(projectName)
+func (app *Server) GetBuildLastHistory(cluster string, projectName string) *model.BuildHistory {
+
+	beego.Warn("GetBuildLastHistory....")
+	return service.GetBuildHistoryServiceInstance().QueryLastBuildRecord(cluster,projectName)
 }
 
 func (app *Server) GetBuildHistories(cursor int, offset int, projectName string) []*model.BuildHistory {
@@ -384,6 +446,9 @@ func (app *Server) CallExtensionInterface(pluginName string, method string, para
 	return errors.OK, result
 }
 
+
+
+
 // ===================== private function ======================
 func (app *Server) getProject(projectName string) pro.Project {
 	// read lock
@@ -401,7 +466,7 @@ func (app *Server) createDefaultProject() {
 	app.projectLock.RLock()
 	defer app.projectLock.RUnlock()
 
-	exist := app.IsProjectExist(DefaultProjectName)
+	exist := app.IsDefaultProjectExist(DefaultProjectName)
 	if !exist {
 		project, code := pro.NewProject(DefaultProjectName, "", "", "", app.dockerfilePlugins, app.buildPlugins)
 		if code != errors.OK {
@@ -415,6 +480,8 @@ func (app *Server) createDefaultProject() {
 func (app *Server) loadProjects() {
 	app.projects = make(map[string]pro.Project, 0)
 
+
+	beego.Warn("loadProjects.....")
 	fileInfos, error := ioutil.ReadDir(env.PROJECT_CONFIG_BASEDIR)
 	if error != nil {
 		error := os.Mkdir(env.PROJECT_CONFIG_BASEDIR, 0700)
@@ -493,4 +560,9 @@ func (app *Server) loadNewPlugin(pluginType int, name string, path string) {
 	} else {
 		app.dockerfilePlugins.Put(name, pluginWrapper)
 	}
+}
+
+//返回完整名称
+func (app *Server) getWholeProjectName(cluster string, projectName string)(string){
+	return cluster + "^" + projectName
 }

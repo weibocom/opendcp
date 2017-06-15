@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/web/models"
+	"github.com/astaxie/beego"
 )
 /**
 build image
@@ -38,11 +39,19 @@ func (c *BuildImageController) Post() {
 	log.Infof("BuildImageController: %s", c.Ctx.Request.Form)
 
 	project := c.GetString("projectName")
+	cluster := c.BizName()
 	tag := c.GetString("tag")
+
 	operator := c.Operator()
 
-	if project == "" || operator == "" || tag == "" {
-		log.Error("project,operator,tag should not be empy when building project")
+	if project == "" || operator == "" || tag == "" || cluster == ""{
+		beego.Warn("cluster,project,operator,tag should not be empy when building project")
+		beego.Warn(project)
+		beego.Warn(cluster)
+		beego.Warn(tag)
+		beego.Warn(operator)
+
+		log.Error("cluster,project,operator,tag should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -53,7 +62,7 @@ func (c *BuildImageController) Post() {
 		return
 	}
 
-	code, id := models.AppServer.BuildImage(project, tag, operator)
+	code, id := models.AppServer.BuildImage(cluster, project, tag, operator)
 	idStr := strconv.FormatInt(id, 10)
 
 	var resp interface{}

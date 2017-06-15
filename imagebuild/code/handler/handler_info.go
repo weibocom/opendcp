@@ -25,6 +25,7 @@ package handler
 handler的基本信息。
 */
 type HandlerInfo struct {
+	Cluster		     string
 	ProjectName          string
 	ConfigRelativeFolder string
 }

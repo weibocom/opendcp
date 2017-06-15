@@ -32,6 +32,7 @@ import (
 	"weibo.com/opendcp/imagebuild/code/env"
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/util"
+	"github.com/astaxie/beego"
 )
 
 /**
@@ -56,20 +57,25 @@ func NewProject(projectName string,
 	dockerfilePlugins *util.ConcurrentMap,
 	buildPlugins *util.ConcurrentMap) (project Project, code int) {
 
+	beego.Warn("project ---> NewProject..")
+
 	//　项目目录
-	if code := createProjectFolder(projectName); code != errors.OK {
+	beego.Warn("begin createProjectFolder ....")
+	if code := createProjectFolder(cluster ,projectName ); code != errors.OK {
 		return nil, code
 	}
-
+	beego.Warn("create createProjectFolder done....")
 	//　插件目录
-	if error := createPluginConfigDirectory(projectName); error != errors.OK {
+	if error := createPluginConfigDirectory(cluster + "/" + projectName); error != errors.OK {
 		return nil, error
 	}
-
+	beego.Warn("create createPluginConfigDirectory done....")
 	// 临时文件夹
-	if error := createTmpDirectory(projectName); error != errors.OK {
+	if error := createTmpDirectory(cluster + "/" + projectName); error != errors.OK {
 		return nil, error
 	}
+	beego.Warn("create File done....")
+
 
 	// 初始化信息文件
 	createTime, code := createInfoFile(projectName, creator, cluster, defineDockerFileType)
@@ -79,7 +85,7 @@ func NewProject(projectName string,
 	}
 
 	// 插件列表
-	if code := createPluginListFile(projectName); code != errors.OK {
+	if code := createPluginListFile(cluster + "/" + projectName); code != errors.OK {
 		return nil, code
 	}
 
@@ -103,9 +109,9 @@ func UpdateInfo(projectName string,
 	return updateInfoFile(projectName, creator, cluster, defineDockerFileType)
 }
 
-func DeleteProject(projectName string, operator string) (code int) {
+func DeleteProject(cluster string, projectName string, operator string) (code int) {
 	//　删除项目
-	projectPath := env.PROJECT_CONFIG_BASEDIR + projectName
+	projectPath := env.PROJECT_CONFIG_BASEDIR + cluster + "/" + projectName
 	if !util.DeleteFile(projectPath) {
 		log.Errorf("delete project: %s error", projectName)
 		return errors.INTERNAL_ERROR
@@ -114,19 +120,20 @@ func DeleteProject(projectName string, operator string) (code int) {
 	return errors.OK
 }
 
-func ClearTmp(projectName string)  int {
-	projectTmpPath := env.PROJECT_CONFIG_BASEDIR + projectName + "/tmp"
+func ClearTmp(cluster string, projectName string)  int {
+	projectTmpPath := env.PROJECT_CONFIG_BASEDIR + cluster + "/" + projectName + "/tmp"
 	util.ClearFolder(projectTmpPath)
 
 	return errors.OK
 }
 
-func handleCloneError(projectName string) (project Project, code int) {
-	DeleteProject(projectName, "system")
+func handleCloneError(cluster string, projectName string) (project Project, code int) {
+	DeleteProject(cluster, projectName, "system")
 	return nil, errors.INTERNAL_ERROR
 }
 
-func CloneProject(srcProjectName string,
+func CloneProject(srcCluster string,
+	srcProjectName string,
 	dstProjectName string,
 	creator string,
 	cluster string,
@@ -135,7 +142,7 @@ func CloneProject(srcProjectName string,
 	buildPlugins *util.ConcurrentMap) (project Project, code int) {
 
 	// 检查源项目是否存在
-	srcProjectPath := env.PROJECT_CONFIG_BASEDIR + srcProjectName
+	srcProjectPath := env.PROJECT_CONFIG_BASEDIR + srcCluster + "/" + srcProjectName
 	exists := util.IsDirExists(srcProjectPath)
 	if !exists {
 		log.Errorf("src project: %s not exist", srcProjectName)
@@ -143,36 +150,36 @@ func CloneProject(srcProjectName string,
 	}
 
 	//　创建项目目录
-	if code := createProjectFolder(dstProjectName); code != errors.OK {
+	if code := createProjectFolder(cluster, dstProjectName); code != errors.OK {
 		return nil, code
 	}
 
-	dstProjectPath := env.PROJECT_CONFIG_BASEDIR + dstProjectName
+	dstProjectPath := env.PROJECT_CONFIG_BASEDIR + cluster + "/" + dstProjectName
 
 	// 插件目录
 	if !util.NewFile(dstProjectPath, "dockerfile", true) {
 		log.Errorf("dockerfile plug folder create fail, src project: %s, dst project: %s", srcProjectName, dstProjectName)
-		return handleCloneError(dstProjectName)
+		return handleCloneError(cluster, dstProjectName)
 	}
 
 	if !util.NewFile(dstProjectPath, "build", true) {
 		log.Errorf("build plug folder create fail, src project: %s, dst project: %s", srcProjectName, dstProjectName)
-		return handleCloneError(dstProjectName)
+		return handleCloneError(cluster, dstProjectName)
 	}
 
 	if !copyFolder(srcProjectPath+"/"+"dockerfile", dstProjectPath+"/"+"dockerfile") {
 		log.Errorf("copy dockerfile plugin config error, src project: %s, dst project: %s", srcProjectName, dstProjectName)
-		return handleCloneError(dstProjectName)
+		return handleCloneError(cluster,dstProjectName)
 	}
 
 	if !copyFolder(srcProjectPath+"/"+"build", dstProjectPath+"/"+"build") {
 		log.Errorf("copy build plugin config error, src project: %s, dst project: %s", srcProjectName, dstProjectName)
-		return handleCloneError(dstProjectName)
+		return handleCloneError(cluster, dstProjectName)
 	}
 
 	if !util.NewFile(dstProjectPath, "tmp", true) {
 		log.Errorf("create tmp folder error, src project: %s, dst project: %s", srcProjectName, dstProjectName)
-		return handleCloneError(dstProjectName)
+		return handleCloneError(cluster, dstProjectName)
 	}
 
 	createTime, code := createInfoFile(dstProjectName, creator, cluster, defineDockerFileType)
@@ -243,26 +250,32 @@ func copyFolder(srcFolder string, dstFolder string) bool {
 	return true
 }
 
-func createProjectFolder(projectName string) (code int) {
-	projectPath := env.PROJECT_CONFIG_BASEDIR + projectName
+
+func createProjectFolder(cluster string, projectName string) (code int) {
+	projectPath := env.PROJECT_CONFIG_BASEDIR + cluster + "/" + projectName
+	beego.Warn(projectPath)
 	exists := util.IsDirExists(projectPath)
 	if exists {
+		beego.Warn("project %s already exist", projectName)
 		log.Errorf("project %s already exist", projectName)
 		return errors.CREATE_PROJECT_ALREADY_EXIST
 	}
 
-	suc := util.NewFile(env.PROJECT_CONFIG_BASEDIR, projectName, true)
+	beego.Warn(env.PROJECT_CONFIG_BASEDIR)
+
+	suc := util.NewFile(env.PROJECT_CONFIG_BASEDIR + cluster, projectName, true)
 	if !suc {
+		beego.Warn("project %s folder create fail", projectName)
 		log.Errorf("project %s folder create fail", projectName)
 		return errors.INTERNAL_ERROR
 	}
-
 	return errors.OK
 }
 
 func createInfoFile(projectName, creator, cluster, defineDockerFileType string) (createTime string, code int) {
 	infoMap := make(map[string]string, 0)
 	createTime = time.Now().String()
+	infoMap["projectName"] = projectName;
 	infoMap["createTime"] = createTime
 	infoMap["lastModifyTime"] = createTime
 	infoMap["creator"] = creator
@@ -275,7 +288,7 @@ func createInfoFile(projectName, creator, cluster, defineDockerFileType string) 
 		return "", errors.INTERNAL_ERROR
 	}
 
-	code = writeDataToInfo(projectName, infoBytes)
+	code = writeDataToInfo(cluster + "/" + projectName, infoBytes)
 	if code == errors.INTERNAL_ERROR {
 		return "", code
 	}
@@ -284,9 +297,11 @@ func createInfoFile(projectName, creator, cluster, defineDockerFileType string) 
 }
 
 func updateInfoFile(projectName, creator, cluster, defineDockerFileType string) (map[string]string, int) {
+	beego.Warn("updateInfoFile...")
 	infoMap := make(map[string]string, 0)
 
 	project := &PluggedProject{}
+	project.Cluster = cluster
 	project.Name = projectName
 	project.readInfo()
 
@@ -300,14 +315,16 @@ func updateInfoFile(projectName, creator, cluster, defineDockerFileType string) 
 
 	infoBytes, error := yaml.Marshal(infoMap)
 	if error != nil {
+		beego.Warn("errors.INTERNAL_ERROR...")
 		return nil, errors.INTERNAL_ERROR
 	}
 
-	code := writeDataToInfo(projectName, infoBytes)
+	code := writeDataToInfo(cluster + "/" + projectName, infoBytes)
 	if code == errors.INTERNAL_ERROR {
+		beego.Warn("writeDataToInfo errors.INTERNAL_ERROR...")
 		return nil, code
 	}
-
+	beego.Warn("updateInfoFile...sucess")
 	return infoMap, code
 }
 

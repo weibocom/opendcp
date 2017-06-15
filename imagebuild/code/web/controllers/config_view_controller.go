@@ -34,7 +34,8 @@ type ConfigViewController struct {
 
 func (c *ConfigViewController) Get() {
 	project := c.GetString("projectName")
-	_, configView := models.AppServer.GetProjectConfigView(project)
+	cluster := c.BizName()
+	_, configView := models.AppServer.GetProjectConfigView(cluster,project)
 	if configView == "" {
 		c.Ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
 		return
@@ -43,6 +44,7 @@ func (c *ConfigViewController) Get() {
 	c.Layout = "project.tpl"
 	c.TplName = "config.tpl"
 	c.Data["project"] = project
+	c.Data["cluster"] = cluster
 	c.Data["view"] = configView
 	c.Data["page"] = "config"
 	c.Data["showSubmit"] = "show"

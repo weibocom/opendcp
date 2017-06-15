@@ -34,14 +34,15 @@ type IndependentConfigViewController struct {
 
 func (c *IndependentConfigViewController) Get() {
 	project := c.GetString("projectName")
-	_, configView := models.AppServer.GetProjectConfigView(project)
+	cluster := c.BizName()
+	_, configView := models.AppServer.GetProjectConfigView(cluster, project)
 	if configView == "" {
 		c.Ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	c.TplName = "config.tpl"
-
+	c.Data["cluster"] = cluster
 	c.Data["project"] = project
 	c.Data["view"] = configView
 	c.Data["showSubmit"] = ""

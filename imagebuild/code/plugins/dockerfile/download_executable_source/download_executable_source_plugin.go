@@ -31,6 +31,7 @@ import (
 	"time"
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
+	"github.com/astaxie/beego"
 )
 
 /**
@@ -42,6 +43,7 @@ var SVN = "svn"
 
 func (p *DownloadExecutableSourcePlugin) Process(params map[string]interface{}, resp *string) error {
 	project := params["project"].(string)
+	cluster := params["cluster"].(string)
 
 	projectPath := params["projectFolder"].(string)
 
@@ -68,8 +70,11 @@ func (p *DownloadExecutableSourcePlugin) Process(params map[string]interface{}, 
 		checkoutAs = "/" + checkoutAs
 	}
 
+
 	var localPath string = "localPath" + strconv.Itoa(time.Now().Nanosecond())
-	realCheckoutAs := projectPath + project + "/tmp/" + localPath
+
+	beego.Warn(projectPath + cluster + "/"+ project + "/tmp/" + localPath)
+	realCheckoutAs := projectPath + cluster + "/"+ project + "/tmp/" + localPath
 
 	if sourceType == SVN {
 		fmt.Printf("svn download")
@@ -78,6 +83,9 @@ func (p *DownloadExecutableSourcePlugin) Process(params map[string]interface{}, 
 		fmt.Printf("git download")
 		util.GitDownload(sourceUrl, username, password, realCheckoutAs, project)
 	}
+
+	beego.Warn(containerPath)
+	beego.Warn(localPath+checkoutAs)
 
 	newDockerfile, error := service.GetDockerFileOperatorInstance().Add(currentDockerfile, containerPath, localPath+checkoutAs)
 	if error != nil {

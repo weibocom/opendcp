@@ -28,6 +28,7 @@ import (
 	"weibo.com/opendcp/imagebuild/code/env"
 	p "weibo.com/opendcp/imagebuild/code/plugin"
 	"weibo.com/opendcp/imagebuild/code/util"
+	"github.com/astaxie/beego"
 )
 
 /**
@@ -38,13 +39,14 @@ type ExtensibleDockerFileGenerator struct {
 	plugins *util.ConcurrentMap
 }
 
-func BuildExtensibleDockerFileGenerator(projectName string,
+func BuildExtensibleDockerFileGenerator(cluster string, projectName string,
 	configRelativeFolder string,
 	plugins *util.ConcurrentMap) *ExtensibleDockerFileGenerator {
 
 	g := &ExtensibleDockerFileGenerator{
 		plugins: plugins}
 
+	g.Cluster = cluster
 	g.ProjectName = projectName
 	g.ConfigRelativeFolder = configRelativeFolder
 
@@ -52,28 +54,33 @@ func BuildExtensibleDockerFileGenerator(projectName string,
 }
 
 func (generator *ExtensibleDockerFileGenerator) Init() bool {
-
 	generator.pipeline = p.BuildPluginPipeline(
+		generator.Cluster,
 		generator.ProjectName,
 		"Dockerfile Pipeline",
 		"Dockerfile Pipeline")
 
 	// 初始化pipeline
-	generator.initPipeline(generator.ProjectName, generator.plugins)
+	generator.initPipeline(generator.Cluster, generator.ProjectName, generator.plugins)
 
 	return true
 }
 
 func (builder *ExtensibleDockerFileGenerator) Handle() bool {
+
+	beego.Warn("ExtensibleDockerFileGenerator...Handle")
 	dockerFile := ""
 
-	err, tmp := builder.pipeline.Handle(builder.ProjectName, dockerFile)
+	err, tmp := builder.pipeline.Handle(builder.Cluster, builder.ProjectName, dockerFile)
 	if err != nil {
 		log.Errorf("build dockerfile pipeline error")
 		return false
 	}
 
 	dockerFile = tmp.(string)
+
+	beego.Warn("ExtensibleDockerFileGenerator...Handle  --》",dockerFile)
+
 
 	//sort
 	dcmdList := strings.Split(dockerFile, "\n")
@@ -111,12 +118,13 @@ func (builder *ExtensibleDockerFileGenerator) Handle() bool {
 		return true
 	}
 
-	tmpPath := env.PROJECT_CONFIG_BASEDIR + builder.GetProjectName() + "/tmp"
+	tmpPath := env.PROJECT_CONFIG_BASEDIR + builder.GetCluster() + "/" + builder.GetProjectName() + "/tmp"
 	if !util.IsDirExists(tmpPath) {
-		util.NewFile(env.PROJECT_CONFIG_BASEDIR+builder.GetProjectName(), "tmp", true)
+		beego.Error("ExtensibleDockerFileGenerator...Handle...IsDirExists")
+		util.NewFile(env.PROJECT_CONFIG_BASEDIR + builder.GetCluster() + "/"+ builder.GetProjectName(), "tmp2", true)
 	}
 
-	dockerfilePath := env.PROJECT_CONFIG_BASEDIR + builder.GetProjectName() + "/tmp/Dockerfile"
+	dockerfilePath := env.PROJECT_CONFIG_BASEDIR + builder.GetCluster() + "/" + builder.GetProjectName() + "/tmp/Dockerfile"
 	error := ioutil.WriteFile(dockerfilePath, []byte(dockerFile), 0777)
 	if error != nil {
 		log.Errorf("write dockerfile to disk error: %s\n", error)

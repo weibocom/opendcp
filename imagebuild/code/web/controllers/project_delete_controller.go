@@ -25,6 +25,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/web/models"
+	"github.com/astaxie/beego"
 )
 
 /**
@@ -36,9 +37,17 @@ type ProjectDeleteController struct {
 
 func (c *ProjectDeleteController) Post() {
 	projectName := c.GetString("projectName")
+	cluster := c.BizName()
+
 	operator := c.Operator()
-	if operator == "" || projectName == "" {
-		log.Error("operator,projectName should not be empy when building project")
+	if operator == "" || projectName == "" || cluster == "" {
+
+		beego.Warn("cluster,operator,projectName should not be empy when building project")
+		beego.Warn(projectName)
+		beego.Warn(cluster)
+		beego.Warn(operator)
+
+		log.Error("cluster,operator,projectName should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -48,7 +57,7 @@ func (c *ProjectDeleteController) Post() {
 		c.ServeJSON(true)
 		return
 	}
-	_, code := models.AppServer.DeleteProject(projectName, operator)
+	_, code := models.AppServer.DeleteProject(cluster, projectName, operator)
 	response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 	c.Data["json"] = response
 	c.ServeJSON(true)
