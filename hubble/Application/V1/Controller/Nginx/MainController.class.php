@@ -49,7 +49,7 @@ class MainController extends RestController{
         $nameArg = I('name');
         $idArg = I('unit_id');
         $likeArg = I('like', true);
-
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page', 1);
         $limit = I('limit', 20);
 
@@ -59,9 +59,13 @@ class MainController extends RestController{
         // 参数检查
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
-
+        
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         // 设置过滤器
-        $filter     = [];
+        $filter     = ['biz_id' => $bidArg];
         if(!empty($nameArg))
             $filter['name'] = $nameArg;
 
@@ -104,7 +108,7 @@ class MainController extends RestController{
         $nameArg = I('name');
         $idArg = I('unit_id');
         $likeArg = I('like', true);
-
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page', 1);
         $limit = I('limit', 20);
 
@@ -115,8 +119,11 @@ class MainController extends RestController{
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
 
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
         // 设置过滤器
-        $filter     = [];
+        $filter     = ['biz_id' => $bidArg];
         if(!empty($nameArg))
             $filter['name'] = $nameArg;
 
@@ -157,13 +164,17 @@ class MainController extends RestController{
 
     public function detail_get(){
         $idArg = I('id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $main = new Main();
 
-        $ret = $main->getMainDetail($idArg);
+        $ret = $main->getMainDetail(['id' => $idArg, 'biz_id' => $bidArg]);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
@@ -174,6 +185,7 @@ class MainController extends RestController{
 
     public function add_post(){
         $nameArg = I('name');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $contentArg = I('content', '', 'unsafe_raw');
         $unitIdArg = I('unit_id');
         $userArg = I('user');
@@ -190,15 +202,18 @@ class MainController extends RestController{
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
-
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         $main = new Main();
 
-        $nextId = $main->getNextVersion($nameArg, $unitIdArg);
+        $nextId = $main->getNextVersion($nameArg, $unitIdArg, $bidArg);
         if($nextId === false){
             $this->ajaxReturn(std_error('get new version from DB failed.'));
         }
 
-        $ret = $main->addMain($nameArg, $contentArg, $unitIdArg, $nextId, $userArg);
+        $ret = $main->addMain($nameArg, $contentArg, $unitIdArg, $nextId, $userArg, $bidArg);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'Add main conf', I('server.HTTP_APPKEY'), $userArg, "name:$nameArg, unit_id:$unitIdArg");
@@ -211,6 +226,7 @@ class MainController extends RestController{
     public function deprecated_post(){
         $idArg = I('id');
         $userArg = I('user');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -218,10 +234,13 @@ class MainController extends RestController{
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
-
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         $main = new Main();
 
-        $ret = $main->setDeprecated($idArg);
+        $ret = $main->setDeprecated($idArg, $bidArg);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'deprecated main conf', I('server.HTTP_APPKEY'), $userArg, "id:$idArg");

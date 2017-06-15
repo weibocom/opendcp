@@ -59,6 +59,7 @@ class NodeController extends RestController
         $ips = I('ips','');
         $unit_id = I('unit_id',0);
         $user = I('user','');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($ips) || !is_string($ips)){
             $this->ajaxReturn(std_error('ips is empty'));
@@ -73,10 +74,13 @@ class NodeController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         //检查是否存在单元
         $unit = new UnitModel() ;
 
-        $filter = [];
+        $filter = ['biz_id' => $bidArg];
         $filter['id'] = $unit_id;
         $ret = $unit->existsUnit($filter);
 
@@ -90,13 +94,14 @@ class NodeController extends RestController
         foreach($ip as $v ){
             $data[] = $v;
         }
-        $filer = [];
+
+        $filter = ['biz_id' => $bidArg];
         $arr = [];
 
-        $filer['ip'] = ['in' , $data];
+        $filter['ip'] = ['in' , $data];
         $node = new NodeModel() ;
         //检查
-        $check = $node->existsNode($filer);
+        $check = $node->existsNode($filter);
         //错误
         if($check['code'] == 2){
             $this->ajaxReturn(std_error($ret['msg']));
@@ -116,7 +121,7 @@ class NodeController extends RestController
             $msg = "exits:".implode(",",$intersect);
             $this->ajaxReturn(std_error($msg));
         }
-        $ret = $node->addNode($unit_id,$user,array_diff($data,$arr));
+        $ret = $node->addNode($unit_id,$user,$bidArg,array_diff($data,$arr));
 
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
@@ -136,12 +141,17 @@ class NodeController extends RestController
 
     public function detail_get(){
         $id = I('id',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if($id <= 0){
             $this->ajaxReturn(std_error('id error'));
         }
+        
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $node = new NodeModel() ;
-        $ret = $node->getDetail($id);
+        $ret = $node->getDetail(['id' => $id, 'biz_id' => $bidArg]);
 
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
@@ -161,6 +171,7 @@ class NodeController extends RestController
         $uid = I('unit_id',0);
         $nodes = I('nodes','');
         $user = I('user','');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if($uid <= 0 ){
             $this->ajaxReturn(std_error('unit_id error'));
@@ -174,8 +185,11 @@ class NodeController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        $filter = [];
-        $where = [];
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
+        $filter = ['biz_id' => $bidArg];
+        $where = ['biz_id' => $bidArg];
         $where['id'] = ['in',$nodes];
 
         //添加
@@ -208,7 +222,8 @@ class NodeController extends RestController
         $unit_id = I('unit_id',0 );
         $ip = I('ip','' );
         $like = I('like',true);
-        $filter = [];
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
+        $filter = ['biz_id' => $bidArg];
 
         if($page <= 0){
             $this->ajaxReturn(std_error('page error'));
@@ -221,6 +236,9 @@ class NodeController extends RestController
         if($unit_id <= 0 ){
             $this->ajaxReturn(std_error('unit_id error'));
         }
+
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         $filter['unit_id'] = $unit_id;
 

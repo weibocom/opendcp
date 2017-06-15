@@ -82,7 +82,7 @@ class Upstream {
             ->select();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
-        if($ret === NULL){
+        if(empty($ret)){
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';
         } elseif($ret === false) {
@@ -95,10 +95,10 @@ class Upstream {
         return $return;
     }
 
-    public function getUpstreamDetail($id){
+    public function getUpstreamDetail($where){
 
         $ret = $this->upstreamTbl
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -115,11 +115,12 @@ class Upstream {
         return $return;
     }
 
-    public function getUpstreamContent($groupId, $name){
+    public function getUpstreamContent($groupId, $name, $bid){
 
         $ret = $this->upstreamTbl->where([
             'group_id' => $groupId,
             'name'     => $name,
+            'biz_id'   => $bid
         ])->find();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -138,7 +139,7 @@ class Upstream {
         return $return;
     }
 
-    public function addUpstream($name, $content, $groupId, $isConsul, $user){
+    public function addUpstream($name, $content, $groupId, $isConsul, $user, $bid){
 
         $data = [
             'name'        => $name,
@@ -149,11 +150,12 @@ class Upstream {
             'create_time' => date("Y-m-d H:i:s"),
             'update_time' => date("Y-m-d H:i:s"),
             'opr_user'    => $user,
+            'biz_id'      => $bid
         ];
 
         $ret = $this->upstreamTbl->add($data);
 
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
 
         if($ret === false) {
             $return['code'] = HUBBLE_DB_ERR;
@@ -185,10 +187,10 @@ class Upstream {
         return $return;
     }
 
-    public function deleteUpstream($id){
+    public function deleteUpstream($id, $bid){
 
         $ret = $this->upstreamTbl
-            ->where(['id' => $id])
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->delete();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -204,7 +206,7 @@ class Upstream {
 
     }
 
-    public function modifyUpstream($id, $content){
+    public function modifyUpstream($id, $content, $bid){
 
         $data = [
             'content' => $content,
@@ -212,7 +214,7 @@ class Upstream {
         ];
 
         $ret = $this->upstreamTbl
-            ->where(['id' => $id])
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->save($data);
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -363,12 +365,12 @@ class Upstream {
     /*
      * 自动变更的入口函数
      */
-    public function addNode($name, $gid, $ips, $port, $weight){
+    public function addNode($name, $gid, $ips, $port, $weight, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ['is_consul' => false]];
 
         $ret = $this->upstreamTbl->field('content,is_consul')
-            ->where(['name' => $name, 'group_id' => $gid])
+            ->where(['name' => $name, 'group_id' => $gid, 'biz_id' => $bid])
             ->find();
 
         if($ret === false){
@@ -390,7 +392,7 @@ class Upstream {
 
         $this->upstreamTbl->startTrans();
         $ret = $this->upstreamTbl
-            ->where(['name' => $name, 'group_id' => $gid])
+            ->where(['name' => $name, 'group_id' => $gid, 'biz_id' => $bid])
             ->save([
                 'content' => implode("\n", $newUpstream),
                 'update_time' => date("Y-m-d H:i:s"),
@@ -407,7 +409,7 @@ class Upstream {
             $return['content']['is_consul'] = true;
 
             $consul = new Consul();
-            $tmp = $consul->addNode($name, $gid, $ips, $port, $weight);
+            $tmp = $consul->addNode($name, $gid, $ips, $port, $weight, $bid);
             if($tmp['code'] != 0) $success = false;
         }
         if($success == false){
@@ -426,12 +428,12 @@ class Upstream {
     }
 
     // 删除节点
-    public function delNode($name, $gid, $ips){
+    public function delNode($name, $gid, $ips, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ['is_consul' => false]];
 
         $ret = $this->upstreamTbl->field('content')
-            ->where(['name' => $name, 'group_id' => $gid])
+            ->where(['name' => $name, 'group_id' => $gid, 'biz_id' => $bid])
             ->find();
 
         if($ret === false){
@@ -456,7 +458,7 @@ class Upstream {
         }
         $this->upstreamTbl->startTrans();
         $ret = $this->upstreamTbl
-            ->where(['name' => $name, 'group_id' => $gid])
+            ->where(['name' => $name, 'group_id' => $gid, 'biz_id' => $bid])
             ->save([
                 'content' => implode("\n", $newUpstream),
                 'update_time' => date("Y-m-d H:i:s"),
@@ -472,7 +474,7 @@ class Upstream {
             $return['content']['is_consul'] = true;
 
             $consul = new Consul();
-            $tmp = $consul->delNode($name, $gid, $ips);
+            $tmp = $consul->delNode($name, $gid, $ips, $bid);
             if($tmp['code'] != 0) $success = false;
         }
 
@@ -492,14 +494,14 @@ class Upstream {
 
     }
 
-    public function getUpstreamNamesByUnitId($id){
+    public function getUpstreamNamesByUnitId($id, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         $mainConfName = "nginx.conf";
 
         $subQuery = "SELECT unit_id,name, max(version) AS mv FROM tbl_hubble_nginx_conf_main ";
-        $subQuery .= "WHERE unit_Id = '$id' AND NAME = '$mainConfName' GROUP BY NAME ";
+        $subQuery .= "WHERE unit_Id = '$id' AND NAME = '$mainConfName' AND biz_id = '$bid' GROUP BY NAME ";
 
         $query  = "SELECT m.id,m.content,m.version FROM tbl_hubble_nginx_conf_main m ";
         $query .= "INNER JOIN ($subQuery) t ON m.name = t.name AND m.version = t.mv AND m.unit_id = t.unit_id";
@@ -529,11 +531,11 @@ class Upstream {
     /*
      * 直接查询数据库unit 和 group 和 conf main
      */
-    public function getUnitNamesByUpstreamId($id){
+    public function getUnitNamesByUpstreamId($id, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
-        $ret = $this->getUpstreamDetail($id);
+        $ret = $this->getUpstreamDetail(['id' => $id ,'biz_id' => $bid]);
         if($ret['code'] != 0) return $ret;
         $groupId = $ret['content']['group_id'];
         $upstreamName = $ret['content']['name'];
@@ -570,14 +572,14 @@ class Upstream {
     /*
      *
      */
-    public function callTunnel($script_id, $filename, $user, $is_group, $group_id, $ids = ''){
+    public function callTunnel($script_id, $filename, $user, $bid, $is_group, $group_id, $ids = ''){
         // 准备脚本内容
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
 
         $shell = new Shell();
-        $ret = $shell->getShellDetail($script_id);
+        $ret = $shell->getShellDetail(['id' => $script_id ,'biz_id' => $bid]);
         if($ret['code'] != 0) return $ret;
         $script = [['action' => [
             "module" => "longscript",
@@ -596,9 +598,9 @@ class Upstream {
         // 获取 reload nginx 的ip 列表
         $node = new NodeModel();
         if($is_group)
-            $ret = $node->getNodeIpsByGroupId($group_id);
+            $ret = $node->getNodeIpsByGroupId($group_id, $bid);
         else
-            $ret = $node->getNodeIpsByUnitIds($ids);
+            $ret = $node->getNodeIpsByUnitIds($ids, $bid);
 
         if ($ret['code'] != 0) return $ret;
 
@@ -613,21 +615,21 @@ class Upstream {
         return $return;
     }
 
-    public function publishManuel($upstream_id, $unit_ids, $script_id, $user, $tunnel = 'ANSIBLE'){
+    public function publishManuel($upstream_id, $unit_ids, $script_id, $user, $bid, $tunnel = 'ANSIBLE'){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
-        $upstream = $this->getUpstreamDetail($upstream_id);
+        $upstream = $this->getUpstreamDetail(['id' => $upstream_id, 'biz_id' => $bid]);
         if($upstream['code']!= 0) return $upstream;
 
         $group_id = $upstream['content']['group_id'];
         $name = $upstream['content']['name'];
 
-        $task =  $this->callTunnel($script_id, $name, $user, false, $group_id, $unit_ids);
+        $task =  $this->callTunnel($script_id, $name, $user, $bid,false, $group_id, $unit_ids);
         if($task['code'] != 0) return $task;
         // 记录变更表
         $task = $task['content'];
         $history = new AlterationHistory();
-        $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user);
+        $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user, $bid);
         if($ret['code'] != 0) return $ret;
         hubble_log(HUBBLE_INFO, 'task already sent, record id: '.json_encode($ret['content']));
 

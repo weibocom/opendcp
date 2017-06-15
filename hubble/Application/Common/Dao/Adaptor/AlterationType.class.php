@@ -50,7 +50,7 @@ class AlterationType {
     ];
 
 
-    public function add($type,$name,$content,$opr_user){
+    public function add($type,$name,$content,$opr_user,$bid){
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         $data = [
@@ -58,6 +58,7 @@ class AlterationType {
             'name' => $name,
             'content' => $content,
             'opr_user' => $opr_user,
+            'biz_id' => $bid,
             'create_time' => date('Y-m-d H:i:s'),
             'update_time' =>  date('Y-m-d H:i:s'),
         ];
@@ -72,9 +73,9 @@ class AlterationType {
         return $return;
     }
 
-    public function remove($id){
+    public function remove($id,$bid){
 
-        $ret = $this->typeTbl->where(['id' => $id])->delete();
+        $ret = $this->typeTbl->where(['id' => $id, 'biz_id' => $bid])->delete();
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->typeTbl->getLastSql().' ERROR: '. $this->typeTbl->getDbError());
             return ['code'=>1 ,'msg'=>"db error: {$this->typeTbl->getDbError()}"] ;
@@ -88,9 +89,9 @@ class AlterationType {
 
     }
 
-    public function update($id,$data){
+    public function update($id,$bid,$data){
 
-        $ret = $this->typeTbl->where(['id' => $id])->save($data);
+        $ret = $this->typeTbl->where(['id' => $id, 'biz_id' => $bid])->save($data);
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->typeTbl->getLastSql().' ERROR: '. $this->typeTbl->getDbError());
             return ['code'=>1 ,'msg'=>"db error: {$this->typeTbl->getDbError()}"] ;
