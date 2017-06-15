@@ -172,10 +172,3 @@ INSERT INTO `zone` VALUES (1,'cn-beijing','cn-beijing-c');
 UNLOCK TABLES;
 
 
-LOCK TABLES `bill` WRITE;
-INSERT INTO `bill` VALUES 
-    (1,1,0,10),
-    (2,2,0,0),
-    (3,3,0,10);
-UNLOCK TABLES;
-

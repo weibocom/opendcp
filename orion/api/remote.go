@@ -418,8 +418,13 @@ func (c *RemoteApi) RemoteStepDelete() {
  */
 func (c *RemoteApi) RemoteActionImplAppend() {
 	req := remoteactionimpl_struct{}
-
-	err := c.Body2Json(&req)
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -461,6 +466,7 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 		Type:     req.Type,
 		Template: string(templatestr),
 		ActionId: req.ActionId,
+		BizId:	  biz_id,
 	}
 	err = service.Cluster.InsertBase(&data)
 
