@@ -42,13 +42,13 @@ class Adaptor {
         $this->alterationTypeTbl = M('AlterationType');
     }
 
-    public function doAddNode($id, $args, $user){
+    public function doAddNode($id, $args, $user, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         // 获取变更的配置信息
         $ret = $this->alterationTypeTbl->field('type,content')
-            ->where("id = '$id'")
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->find();
 
         if($ret === false){
@@ -90,7 +90,7 @@ class Adaptor {
 
                 $ret = $upstream->addNode(
                     $content['name'], $content['group_id'], $content['ips'],
-                    $content['port'], $content['weight']);
+                    $content['port'], $content['weight'], $bid);
 
                 if($ret['code'] != 0) return $ret;
 
@@ -104,14 +104,14 @@ class Adaptor {
                 }
 
                 $task = $upstream->callTunnel(
-                    $content['script_id'], $content['name'], $user, true, $content['group_id']);
+                    $content['script_id'], $content['name'], $user, $bid, true, $content['group_id']);
 
                 if($task['code'] != 0) return $task;
                 $task = $task['content'];
 
                 // 记录变更表
                 $history = new AlterationHistory();
-                $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user);
+                $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user, $bid);
                 if($ret['code'] != 0) return $ret;
 
                 $return['content'] = [
@@ -125,7 +125,7 @@ class Adaptor {
 
                 // 记录变更表
                 $history = new AlterationHistory();
-                $ret = $history->addRecord('sync', 0, 'add slb', 'slb', $user);
+                $ret = $history->addRecord('sync', 0, 'add slb', 'slb', $user, $bid);
                 if($ret['code'] != 0) return $ret;
 
                 hubble_log(HUBBLE_INFO, "adding slb: ID:{$content['slb_id']}, ips:". implode(',', $content['ips']));
@@ -143,12 +143,12 @@ class Adaptor {
         return $return;
     }
 
-    public function doDelNode($id, $args, $user){
+    public function doDelNode($id, $args, $user, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         $ret = $this->alterationTypeTbl->field('type,content')
-            ->where("id = '$id'")
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->find();
 
         if($ret === false){
@@ -179,7 +179,7 @@ class Adaptor {
                 $ret = $upstream->checkArgs($content);
                 if($ret['code'] != 0) return $ret;
 
-                $ret = $upstream->delNode($content['name'], $content['group_id'], $content['ips']);
+                $ret = $upstream->delNode($content['name'], $content['group_id'], $content['ips'], $bid);
                 if($ret['code'] != 0) return $ret;
 
                 // -------- 对 consul 的处理
@@ -192,14 +192,14 @@ class Adaptor {
                 }
                 
                 $task = $upstream->callTunnel(
-                    $content['script_id'], $content['name'], $user, true, $content['group_id']);
+                    $content['script_id'], $content['name'], $user, $bid, true, $content['group_id']);
 
                 if($task['code'] != 0) return $task;
                 $task = $task['content'];
 
                 // 记录变更表
                 $history = new AlterationHistory();
-                $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user);
+                $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user, $bid);
                 if($ret['code'] != 0) return $ret;
 
                 $return['content'] = [
@@ -212,7 +212,7 @@ class Adaptor {
             case 'SLB':
                 // 记录变更表
                 $history = new AlterationHistory();
-                $ret = $history->addRecord('sync', 0, 'delete slb', 'slb', $user);
+                $ret = $history->addRecord('sync', 0, 'delete slb', 'slb', $user, $bid);
                 if($ret['code'] != 0) return $ret;
 
                 hubble_log(HUBBLE_INFO, "delete slb: ID:{$content['slb_id']}, ips:". implode(',', $content['ips']));

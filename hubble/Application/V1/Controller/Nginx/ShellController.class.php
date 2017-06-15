@@ -51,13 +51,17 @@ class ShellController extends RestController{
 
         $page = I('page', 1);
         $limit = I('limit', 20);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         // 参数检查
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         // 设置过滤器
-        $filter     = [];
+        $filter     = ['biz' => $bidArg];
         if(!empty($nameArg))
             $filter['name'] = $nameArg;
 
@@ -96,13 +100,17 @@ class ShellController extends RestController{
 
     public function detail_get(){
         $idArg = I('id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
-
+        
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         $shell = new Shell();
 
-        $ret = $shell->getShellDetail($idArg);
+        $ret = $shell->getShellDetail(['id' => $idArg ,'biz_id' => $bidArg]);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
@@ -116,6 +124,7 @@ class ShellController extends RestController{
         $contentArg = I('content', '', 'unsafe_raw');
         $descArg = I('desc');
         $userArg = I('user');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($nameArg))
             $this->ajaxReturn(std_error('name is empty'));
@@ -126,10 +135,12 @@ class ShellController extends RestController{
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
-
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         $shell = new Shell();
 
-        $ret = $shell->addShell($nameArg, $descArg, $contentArg, $userArg);
+        $ret = $shell->addShell($nameArg, $descArg, $contentArg, $userArg, $bidArg);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'Add shell', I('server.HTTP_APPKEY'), $userArg, "name:$nameArg, desc: $descArg");
@@ -145,6 +156,7 @@ class ShellController extends RestController{
         $descArg = I('desc');
         $contentArg = I('content', '', 'unsafe_raw');
         $userArg = I('user', '');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -155,11 +167,12 @@ class ShellController extends RestController{
         if(empty($contentArg))
             $this->ajaxReturn(std_error('content is empty'));
 
-
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         $shell = new Shell();
-
-
-        $ret = $shell->modifyShell($idArg, $nameArg, $descArg, $contentArg, $userArg);
+        
+        $ret = $shell->modifyShell($idArg, $nameArg, $descArg, $contentArg, $userArg, $bidArg);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'Add upstream', I('server.HTTP_APPKEY'), $userArg, "id:$idArg, content: $contentArg");
@@ -173,6 +186,7 @@ class ShellController extends RestController{
 
         $idArg = I('id');
         $userArg = I('user', '');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -180,10 +194,12 @@ class ShellController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
-
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         $shell = new Shell();
 
-        $ret = $shell->deleteShell($idArg);
+        $ret = $shell->deleteShell($idArg, $bidArg);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'Del Shell', I('server.HTTP_APPKEY'), $userArg, "id:$idArg");

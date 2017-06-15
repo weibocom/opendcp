@@ -58,16 +58,21 @@ class AutoAlterationController extends RestController {
     public function add_post(){
 
         $params = ['type_id', 'ips', 'user', ];
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         foreach ($params as $p){
             if(!isset($this->input[$p]) || empty($this->input[$p]))
                 $this->ajaxReturn(std_error("parameter [$p] is absent or empty, please check and try again."));
         }
+        
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $ipStr = $this->input['ips'];
         $this->input['ips'] = explode(',', $this->input['ips']);
 
         $adaptor = new Adaptor();
-        $ret = $adaptor->doAddNode($this->input['type_id'], $this->input, $this->input['user']);
+        $ret = $adaptor->doAddNode($this->input['type_id'], $this->input, $this->input['user'], $bidArg);
         if($ret['code'] == 0){
             hubble_log(HUBBLE_INFO, 'auto alteration add success'.json_encode($ret['content']));
             hubble_oprlog('Adaptor', 'auto alteration add success',
@@ -83,16 +88,21 @@ class AutoAlterationController extends RestController {
     public function remove_post(){
 
         $params = ['type_id', 'ips', 'user', ];
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         foreach ($params as $p){
             if(!isset($this->input[$p]) || empty($this->input[$p]))
                 $this->ajaxReturn(std_error("parameter [$p] is absent or empty, please check and try again."));
         }
+
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $ipStr = $this->input['ips'];
         $this->input['ips'] = explode(',', $this->input['ips']);
 
         $adaptor = new Adaptor();
-        $ret = $adaptor->doDelNode($this->input['type_id'], $this->input, $this->input['user']);
+        $ret = $adaptor->doDelNode($this->input['type_id'], $this->input, $this->input['user'], $bidArg);
         if($ret['code'] == 0){
             hubble_log(HUBBLE_INFO, 'auto alteration del success'.json_encode($ret['content']));
             hubble_oprlog('Adaptor', 'auto alteration del',
@@ -110,18 +120,23 @@ class AutoAlterationController extends RestController {
 
         $gid = I('server.HTTP_X_CORRELATION_ID');
         $rid = I('release_id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
+        $timeoutArg = I('timeout',120);
 
         if(empty($gid) && empty($rid))
             $this->ajaxReturn(std_error('correlation-id and release_id are both empty'));
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $record =  new AlterationHistory();
 
         if(!empty($rid)){// if there is release_id, use it in first
-            $ret = $record->exist($rid);
+            $ret = $record->exist($rid, $bidArg);
             $gid = $ret['content']['global_id'];
         }
         else
-            $ret = $record->existGid($gid);
+            $ret = $record->existGid($gid, $bidArg);
 
 
         if($ret['code'] == 1){
@@ -131,6 +146,8 @@ class AutoAlterationController extends RestController {
         $ret = $ret['content'];
         if($ret['type'] == 'sync')
             $this->ajaxReturn(std_return(['task_id'=>$ret['task_id']]));
+
+        $create_time = $ret['create_time'];
 
         switch(strtoupper($ret['channel'])){
             case 'ANSIBLE':
@@ -152,13 +169,21 @@ class AutoAlterationController extends RestController {
                 $content = [];
                 $content['state'] = $data['content']['task']['status'];
 
+                
                 if(!empty($data['content']['nodes'])){
                     foreach($data['content']['nodes'] as $v){
+                        $status = $v['status'];
+                        //超时判断
+                        if( time() - strtotime($create_time) >= $timeoutArg)
+                            $status = -1;
+
                         $content['detail'][] = [
                             'ip'=> $v['ip'],
-                            'state'=> $v['status']];
+                            'state'=> $status
+                        ];
                     }
                 }
+                
                 $content['X-CORRELATION-ID'] = $gid;
                 $this->ajaxReturn(std_return($content));
                 break;
@@ -174,7 +199,7 @@ class AutoAlterationController extends RestController {
 
         if(empty($typeArg))
             $this->ajaxReturn(std_error('type is empty'));
-
+                
         $alteration = new AlterationType();
 
         $ret = $alteration->getTypeColumns($typeArg);

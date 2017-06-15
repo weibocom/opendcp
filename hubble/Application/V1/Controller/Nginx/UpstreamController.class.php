@@ -51,21 +51,22 @@ class UpstreamController extends RestController{
         $nameArg = I('name');
         $idArg = I('group_id');
         $likeArg = I('like', true);
-
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page', 1);
         $limit = I('limit', 20);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
-
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         // 参数检查
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
 
         // 设置过滤器
-        $filter     = [];
+        $filter     = ['biz_id' => $bidArg];
         if(!empty($nameArg))
             $filter['name'] = $nameArg;
 
@@ -107,14 +108,18 @@ class UpstreamController extends RestController{
 
     public function detail_get(){
         $idArg = I('id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
-
+        
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
 
         $upstream = new Upstream();
 
-        $ret = $upstream->getUpstreamDetail($idArg);
+        $ret = $upstream->getUpstreamDetail(['id' => $idArg ,'biz_id' => $bidArg]);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
@@ -129,6 +134,7 @@ class UpstreamController extends RestController{
         $groupIdArg = I('group_id');
         $consulArg = I('is_consul');
         $userArg = I('user');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($nameArg))
             $this->ajaxReturn(std_error('name is empty'));
@@ -142,15 +148,18 @@ class UpstreamController extends RestController{
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $consulArg = $consulArg == 0 ? false:true;
 
         $upstream = new Upstream();
 
-        if($upstream->countUpstream(['name' => $nameArg, 'group_id' => $groupIdArg], false) !== 0)
+        if($upstream->countUpstream(['name' => $nameArg, 'group_id' => $groupIdArg, 'biz_id' => $bidArg], false) !== 0)
             $this->ajaxReturn(std_error("name [$nameArg] is exist."));
 
 
-        $ret = $upstream->addUpstream($nameArg, $contentArg, $groupIdArg, $consulArg, $userArg);
+        $ret = $upstream->addUpstream($nameArg, $contentArg, $groupIdArg, $consulArg, $userArg, $bidArg);
 
         if($ret['state'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'Add upstream', I('server.HTTP_APPKEY'), $userArg, "name:$nameArg, group:$groupIdArg, consul:$consulArg");
@@ -164,6 +173,7 @@ class UpstreamController extends RestController{
 
         $idArg = I('id');
         $userArg = I('user', '');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -171,13 +181,16 @@ class UpstreamController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
 
         $upstream = new Upstream();
 
-        $ret = $upstream->deleteUpstream($idArg);
+        $ret = $upstream->deleteUpstream($idArg, $bidArg);
 
         if($ret['state'] == HUBBLE_RET_SUCCESS) {
-            hubble_oprlog('Nginx', 'Add upstream', I('server.HTTP_APPKEY'), $userArg, "id:$idArg");
+            hubble_oprlog('Nginx', 'Delete upstream', I('server.HTTP_APPKEY'), $userArg, "id:$idArg");
             $this->ajaxReturn(std_return($ret['content']));
         } else{
             $this->ajaxReturn(std_error($ret['msg']));
@@ -188,6 +201,7 @@ class UpstreamController extends RestController{
         $idArg = I('id');
         $contentArg = I('content', '', 'unsafe_raw');
         $userArg = I('user', '');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -198,10 +212,13 @@ class UpstreamController extends RestController{
         if(empty($contentArg))
             $this->ajaxReturn(std_error('content is empty'));
 
-
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         $upstream = new Upstream();
 
-        $ret = $upstream->modifyUpstream($idArg, $contentArg);
+        $ret = $upstream->modifyUpstream($idArg, $contentArg, $bidArg);
 
         if($ret['state'] == HUBBLE_RET_SUCCESS) {
             hubble_oprlog('Nginx', 'Add upstream', I('server.HTTP_APPKEY'), $userArg, "id:$idArg, content: $contentArg");
@@ -214,13 +231,17 @@ class UpstreamController extends RestController{
     public function content_get(){
         $nameArg = I('name');
         $groupIdArg = I('group_id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($nameArg) || empty($groupIdArg))
             $this->ajaxReturn(std_error('name or group_id is empty'));
-
+        
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
         $upstream = new Upstream();
 
-        $ret = $upstream->getUpstreamContent($groupIdArg, $nameArg);
+        $ret = $upstream->getUpstreamContent($groupIdArg, $nameArg, $bidArg);
         if($ret['code'] == 1){
             header('HTTP/1.0 404 Not Found');
         } else{
@@ -232,13 +253,18 @@ class UpstreamController extends RestController{
 
     public function unit_list_get(){
         $idArg = I('id');
-
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
+        
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+
         $upstream = new Upstream();
 
-        $ret = $upstream->getUnitNamesByUpstreamId($idArg);
+        $ret = $upstream->getUnitNamesByUpstreamId($idArg, $bidArg);
         if($ret['state'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
         } else{
@@ -248,13 +274,18 @@ class UpstreamController extends RestController{
 
     public function upstream_list_get(){
         $unitIdArg = I('unit_id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_id is empty'));
 
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         $upstream = new Upstream();
 
-        $ret = $upstream->getUpstreamNamesByUnitId($unitIdArg);
+        $ret = $upstream->getUpstreamNamesByUnitId($unitIdArg, $bidArg);
         if($ret['state'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
         } else{
@@ -268,7 +299,7 @@ class UpstreamController extends RestController{
         $tunnelArg = I('tunnel', 'ANSIBLE');
         $scriptIdArg = I('script_id');
         $userArg = I('user');
-
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_ids is empty'));
@@ -286,13 +317,17 @@ class UpstreamController extends RestController{
         if(empty($scriptIdArg))
             $this->ajaxReturn(std_error('script_id is empty'));
 
+        if($bidArg < 1){
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        }
+        
         $shell = new Shell();
-        $ret = $shell->getShellDetail($scriptIdArg);
+        $ret = $shell->getShellDetail(['id' => $scriptIdArg ,'biz_id' => $bidArg]);
         if($ret['code'] == HUBBLE_RET_NULL)
             $this->ajaxReturn(std_error('script id doese not exist'));
 
         $upstream = new Upstream();
-        $ret = $upstream->publishManuel($upstreamIdArg, $unitIdArg, $scriptIdArg, $userArg, $tunnelArg);
+        $ret = $upstream->publishManuel($upstreamIdArg, $unitIdArg, $scriptIdArg, $userArg, $bidArg, $tunnelArg);
 
         if($ret['state'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
