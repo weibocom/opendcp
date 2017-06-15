@@ -35,6 +35,11 @@ func init() {
 				&controllers.SlbController{},
 			),
 		),
+		beego.NSNamespace("/init",
+			beego.NSInclude(
+				&controllers.InitController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
