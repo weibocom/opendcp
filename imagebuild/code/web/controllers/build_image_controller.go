@@ -40,8 +40,9 @@ func (c *BuildImageController) Post() {
 	project := c.GetString("projectName")
 	tag := c.GetString("tag")
 	operator := c.Operator()
+	cluster := c.BizName()
 
-	if project == "" || operator == "" || tag == "" {
+	if project == "" || operator == "" || tag == "" || cluster == ""{
 		log.Error("project,operator,tag should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
@@ -53,7 +54,7 @@ func (c *BuildImageController) Post() {
 		return
 	}
 
-	code, id := models.AppServer.BuildImage(project, tag, operator)
+	code, id := models.AppServer.BuildImage(cluster, project, tag, operator)
 	idStr := strconv.FormatInt(id, 10)
 
 	var resp interface{}

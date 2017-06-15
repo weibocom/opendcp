@@ -38,13 +38,14 @@ type ExtensibleDockerFileGenerator struct {
 	plugins *util.ConcurrentMap
 }
 
-func BuildExtensibleDockerFileGenerator(projectName string,
+func BuildExtensibleDockerFileGenerator(cluster string, projectName string,
 	configRelativeFolder string,
 	plugins *util.ConcurrentMap) *ExtensibleDockerFileGenerator {
 
 	g := &ExtensibleDockerFileGenerator{
 		plugins: plugins}
 
+	g.Cluster = cluster
 	g.ProjectName = projectName
 	g.ConfigRelativeFolder = configRelativeFolder
 
@@ -54,12 +55,13 @@ func BuildExtensibleDockerFileGenerator(projectName string,
 func (generator *ExtensibleDockerFileGenerator) Init() bool {
 
 	generator.pipeline = p.BuildPluginPipeline(
+		generator.Cluster,
 		generator.ProjectName,
 		"Dockerfile Pipeline",
 		"Dockerfile Pipeline")
 
 	// 初始化pipeline
-	generator.initPipeline(generator.ProjectName, generator.plugins)
+	generator.initPipeline(generator.Cluster, generator.ProjectName, generator.plugins)
 
 	return true
 }
@@ -67,7 +69,7 @@ func (generator *ExtensibleDockerFileGenerator) Init() bool {
 func (builder *ExtensibleDockerFileGenerator) Handle() bool {
 	dockerFile := ""
 
-	err, tmp := builder.pipeline.Handle(builder.ProjectName, dockerFile)
+	err, tmp := builder.pipeline.Handle(builder.Cluster, builder.ProjectName, dockerFile)
 	if err != nil {
 		log.Errorf("build dockerfile pipeline error")
 		return false
@@ -111,12 +113,12 @@ func (builder *ExtensibleDockerFileGenerator) Handle() bool {
 		return true
 	}
 
-	tmpPath := env.PROJECT_CONFIG_BASEDIR + builder.GetProjectName() + "/tmp"
+	tmpPath := env.PROJECT_CONFIG_BASEDIR + builder.Cluster + "/" + builder.GetProjectName() + "/tmp"
 	if !util.IsDirExists(tmpPath) {
-		util.NewFile(env.PROJECT_CONFIG_BASEDIR+builder.GetProjectName(), "tmp", true)
+		util.NewFile(env.PROJECT_CONFIG_BASEDIR + builder.Cluster + "/" + builder.GetProjectName(), "tmp", true)
 	}
 
-	dockerfilePath := env.PROJECT_CONFIG_BASEDIR + builder.GetProjectName() + "/tmp/Dockerfile"
+	dockerfilePath := env.PROJECT_CONFIG_BASEDIR + builder.Cluster + "/" + builder.GetProjectName() + "/tmp/Dockerfile"
 	error := ioutil.WriteFile(dockerfilePath, []byte(dockerFile), 0777)
 	if error != nil {
 		log.Errorf("write dockerfile to disk error: %s\n", error)

@@ -38,7 +38,8 @@ var DEFAULT_OFFSET = 10
 
 func (c *BuildHistoriesController) Get() {
 	projectName := c.GetString("projectName", "")
-	if projectName == "" {
+	cluster := c.BizName()
+	if projectName == "" || cluster ==""{
 		log.Errorf("Project name shoud not be empty when quering build histories..")
 		c.Ctx.ResponseWriter.Write([]byte("no"))
 		return
@@ -48,7 +49,7 @@ func (c *BuildHistoriesController) Get() {
 	offset, _ := c.GetInt("offset", DEFAULT_OFFSET)
 
 	log.Infof("Query build histories, project is %s, cursor is %s, offset is %s", projectName, cursor, offset)
-	histories := models.AppServer.GetBuildHistories(cursor, offset, projectName)
+	histories := models.AppServer.GetBuildHistories(cursor, offset, cluster, projectName)
 	bytes, _ := json.Marshal(histories)
 	log.Infof("Query build histories result is %s", string(bytes))
 	c.Ctx.ResponseWriter.Write(bytes)

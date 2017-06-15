@@ -105,7 +105,7 @@ func (p *PluggedProject) View(lang string) string {
 //构建镜像
 func (p *PluggedProject) BuildImage() bool {
 	projectPath := env.PROJECT_CONFIG_BASEDIR
-	dockerFilePath := projectPath + p.Name + "/tmp/"
+	dockerFilePath := projectPath + p.Cluster + "/" + p.Name + "/tmp/"
 	util.ClearFolder(dockerFilePath)
 	// create docker file
 	if !p.DockerFileGenerator.Handle() {
@@ -118,7 +118,7 @@ func (p *PluggedProject) BuildAndPushImage(tag string) bool {
 	registry := env.HARBOR_ADDRESS
 	fullImageName := registry + "/" + p.Cluster + "/" + p.Name + ":" + tag
 
-	projectPath := env.PROJECT_CONFIG_BASEDIR
+	projectPath := env.PROJECT_CONFIG_BASEDIR + p.Cluster + "/"
 	dockerFilePath := projectPath + p.Name + "/tmp/"
 	//第一步创建镜像
 	log.Info(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + " fullImageName:" + fullImageName)
@@ -163,7 +163,7 @@ func (p *PluggedProject) Save(configs []map[string]interface{}) bool {
 //获取构建的镜像信息
 func (p *PluggedProject) readInfo() {
 	// load project info
-	content, error := ioutil.ReadFile(env.PROJECT_CONFIG_BASEDIR + p.Name + "/" + "info")
+	content, error := ioutil.ReadFile(env.PROJECT_CONFIG_BASEDIR + p.Cluster + "/" + p.Name + "/" + "info")
 	if error != nil {
 		log.Error("readfile with error:", error)
 		panic("Init Failed!")
@@ -213,7 +213,7 @@ func BuildPluginProject(projectName string,
 
 	var dockerfileBuilder interfaces.Handler
 
-	dockerfileBuilder = h.BuildExtensibleDockerFileGenerator(projectName,
+	dockerfileBuilder = h.BuildExtensibleDockerFileGenerator(cluster, projectName,
 		"dockerfile",
 		dockerfilePlugins)
 
