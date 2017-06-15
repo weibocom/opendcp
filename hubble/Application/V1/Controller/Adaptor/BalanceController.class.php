@@ -50,6 +50,7 @@ class BalanceController extends RestController{
         $type = I('type','');
         $content = I('content','', 'unsafe_raw');
         $opr_user = I('user','');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($name)){
             $this->ajaxReturn(std_error('name is empty'));
@@ -67,7 +68,10 @@ class BalanceController extends RestController{
             $this->ajaxReturn(std_error('opr_user is empty'));
         }
 
-        $filter = [];
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
+        $filter = ['biz_id' => $bidArg];
         $filter['name'] = $name;
 
         $AlterationType = new AlterationType();
@@ -76,7 +80,7 @@ class BalanceController extends RestController{
             $this->ajaxReturn(std_error($ret['msg']));
         }
 
-        $ret = $AlterationType->add($type,$name,$content,$opr_user);
+        $ret = $AlterationType->add($type,$name,$content,$opr_user,$bidArg);
 
 
         if($ret['code'] == 1) {
@@ -89,12 +93,12 @@ class BalanceController extends RestController{
 
     public function list_get(){
 
-        $filter = [];
         $page = I('page',1);
         $limit = I('limit',20);
         $opr_user = I('user','');
         $name = I('name','');
         $type = I('type','');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $like = I('like',true);
 
         if($page < 0 ){
@@ -104,6 +108,9 @@ class BalanceController extends RestController{
         if($limit < 0){
             $this->ajaxReturn(std_error('limit error'));
         }
+
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         if($like){
             if(!empty($name)){
@@ -128,6 +135,8 @@ class BalanceController extends RestController{
             }
         }
 
+        $filter = ['biz_id' => $bidArg];
+        
         $AlterationType = new AlterationType();
 
         $ret = $AlterationType->getList($filter,$page,$limit);
@@ -142,12 +151,16 @@ class BalanceController extends RestController{
 
     public function detail_get(){
         $id = I('id',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
+
         if($id <= 0){
             $this->ajaxReturn(std_error("id is empty"));
         }
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
-        $filter = [];
-        $filter['id'] = $id;
+        $filter = ['biz_id' => $bidArg, 'id' => $id];
+
         $AlterationType = new AlterationType();
         $ret = $AlterationType->exist($filter);
         if($ret['code'] != 1){
@@ -162,6 +175,7 @@ class BalanceController extends RestController{
 
         $id = I('id',0);
         $opr_user = I('user','');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $name = I('name','');
         $type = I('type','');
         $content = I('content','','unsafe_raw');
@@ -179,6 +193,9 @@ class BalanceController extends RestController{
             $this->ajaxReturn(std_error("modify content is empty"));
         }
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $data = [];
         if(!empty($name)){
             $data['name']  = $name;
@@ -193,7 +210,7 @@ class BalanceController extends RestController{
         $data['update_time'] = date('Y-m-d H:i:s');
 
         $AlterationType = new AlterationType();
-        $ret = $AlterationType->update($id,$data);
+        $ret = $AlterationType->update($id,$bidArg,$data);
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
         }
@@ -206,21 +223,25 @@ class BalanceController extends RestController{
 
         $id = I('id',0);
         $opr_user = I('user','');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
+
         if(empty($opr_user)){
             $this->ajaxReturn(std_error('opr_user is empty'));
         }
         if($id <= 0 ){
             $this->ajaxReturn(std_error('id is empty'));
         }
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         $AlterationType = new AlterationType();
-        $result = $AlterationType->exist($id);
+        $result = $AlterationType->exist(['id' => $id, 'biz_id' => $bidArg]);
 
         if($result['code'] != 1){
             $this->ajaxReturn(std_error($result['msg']));
         }
 
-        $ret = $AlterationType->remove($id);
+        $ret = $AlterationType->remove($id,$bidArg);
         if($ret['code'] == 1){
             $this->ajaxReturn(std_error($ret['msg']));
         }
