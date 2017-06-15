@@ -465,3 +465,123 @@ func ManageDev(ip, password, instanceId, correlationId string, bizId int) (ssh.O
 	return ret, nil
 }
 
+func GetCost (biz_id int, provider string) (int64,error) {
+	account,err := dao.GetAccount(biz_id,provider)
+	if err != nil {
+		beego.Error(err)
+		return 0,err
+	}
+
+	return account.Spent,nil
+
+}
+
+/**
+计算额度算法
+ */
+func ComputeCost (time float64, instance models.Instance) ( float64 ) {
+	cpu := float64(instance.Cpu)
+	mem := float64(instance.Ram)
+
+	cpuWeight:= float64(2.0/3.0)
+	memWeight:= float64(1.0/3.0)
+
+
+	return (cpu*cpuWeight+mem*memWeight)*(time/60)
+
+}
+
+/**
+生成额度信息
+ */
+func GenerateMutliCost() error{
+	instances,err := dao.GetAllBIdInInstance()
+	if err != nil {
+		beego.Error(err)
+		return err
+	}
+
+	bizInInstance := make([]int,len(instances))
+	for i,instance := range instances {
+		bizInInstance[i]= instance.BizId
+	}
+
+	for _,biz_id := range bizInInstance {
+		err := GenerateOneCost(biz_id)
+		if err != nil {
+			beego.Error(err)
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func GenerateOneCost(biz_id int) error {
+	//1、获取此业务方的账户信息
+	accounts,err := dao.GetAllInAccount(biz_id)
+	if err != nil {
+		beego.Error(err)
+		return err
+	}
+
+	//biz_id provider
+	existAccount := make(map[string]interface{})
+	for _,account := range accounts {
+		if account.KeyId != "" || account.KeySecret != ""{
+			existAccount[account.Provider] = account
+		}
+	}
+	//2、获取此业务方的所有实例
+	instances,err := dao.GetAllInstance(biz_id)
+	if err != nil {
+		beego.Error(err)
+		return err
+	}
+
+	//3、计算额度并且更新库表
+	now := time.Now()
+	var duration time.Duration
+
+	spendMap := make(map[string]float64)
+
+	for _,instance := range instances {
+		//3.1去除存在云厂商账户的
+		provider := instance.Provider
+		if _, ok := existAccount[provider]; ok {
+			continue
+		}
+
+		ctime := instance.CreateTime
+		if instance.Status == models.Deleted {
+			rtime := instance.ReturnTime
+			duration = rtime.Sub(ctime)
+		}else{
+			duration = now.Sub(ctime)
+
+		}
+		spendTime := duration.Minutes()
+		cost := ComputeCost(spendTime,instance)
+		if v, ok := spendMap[provider]; ok {
+			spendMap[provider] = v+cost
+		}else{
+			spendMap[provider] = cost
+		}
+
+	}
+
+	//更新account数据库表
+	for k,v := range spendMap {
+		err := dao.UpdateAccount(biz_id,k,int64(v))
+		if err != nil {
+			beego.Error(err)
+			return err
+		}
+
+	}
+
+	return nil
+
+}
+

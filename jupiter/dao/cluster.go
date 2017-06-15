@@ -24,6 +24,7 @@ package dao
 import (
 	"weibo.com/opendcp/jupiter/models"
 	"strconv"
+	"github.com/astaxie/beego/orm"
 )
 
 func GetClusterById(clusterId int64, bizId int) (*models.Cluster, error) {
@@ -114,4 +115,17 @@ func GetClusterBizId(clusterId int64) (string, error) {
 		return "", err
 	}
 	return strconv.Itoa(cluster.BizId), nil
+}
+
+func  OperateBysql (sql string) (lastId int64,err error) {
+	o := orm.NewOrm()
+	result,err := o.Raw(sql).Exec()
+
+	if err != nil {
+		return -1,err
+	}
+
+	lastId,err = result.LastInsertId()
+
+	return lastId,nil
 }

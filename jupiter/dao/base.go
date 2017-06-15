@@ -36,6 +36,7 @@ const CLUSTER_TABLE = "cluster"
 const INSTANCE_ORGANIZATION_TABLE = "instance_organization"
 const NETWORK_TABLE = "network"
 const ZONE_TABLE = "zone"
+const ACCOUNT_TABLE = "account"
 
 var globalOrm orm.Ormer
 var once sync.Once
