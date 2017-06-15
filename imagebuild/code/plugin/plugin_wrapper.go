@@ -112,12 +112,10 @@ func (pw *PluginWrapper) View() string {
 	return htmlContent.String()
 }
 
-func (pw *PluginWrapper) Process(cluster string, project string, input interface{}) (error, interface{}) {
+func (pw *PluginWrapper) Process(project string, input interface{}) (error, interface{}) {
 	params := make(map[string]interface{}, 0)
 
 	params["project"] = project
-
-	params["cluster"] = cluster
 
 	// 系统变量，插件可能会用到
 	util.PackageSystemEnvIntoParam(params)
@@ -131,8 +129,6 @@ func (pw *PluginWrapper) Process(cluster string, project string, input interface
 	pluginName := util.ConvertToHump(pw.Plugin_name+"_plugin")
 	if pw.Plugin_type == DOCKERFILE_PLUGIN {
 		params["input"] = input
-
-
 		log.Infof("call %s.Process", pluginName)
 		error := pw.Plugin.Call(pluginName+".Process", params, &result)
 		log.Infof("%s return is %s", pw.Plugin_name, result)
@@ -182,7 +178,7 @@ func (pw *PluginWrapper) Process(cluster string, project string, input interface
 	}
 }
 
-func (pw *PluginWrapper) Save(cluster string, projectName string, config map[string]interface{}) string {
+func (pw *PluginWrapper) Save(projectName string, config map[string]interface{}) string {
 	pw.Config = config
 
 	// rewrite config file of this plugin
@@ -191,7 +187,7 @@ func (pw *PluginWrapper) Save(cluster string, projectName string, config map[str
 		log.Error(stackError.New(error).ErrorStack())
 		return ""
 	}
-	var configPath string = env.PROJECT_CONFIG_BASEDIR + cluster + "/" + projectName
+	var configPath string = env.PROJECT_CONFIG_BASEDIR + projectName
 	if pw.Plugin_type == BUILD_PLUGIN {
 		configPath += "/build/" + pw.Plugin_name
 	} else {

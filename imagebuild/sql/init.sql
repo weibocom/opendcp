@@ -3,8 +3,7 @@ CREATE database image_build;
 use image_build;
 
 CREATE TABLE `t_build_history` (
-    `id` int(64) NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `cluster` varchar(50) NOT NULL DEFAULT '' COMMENT 'cluster',
+    `id` int(32) NOT NULL AUTO_INCREMENT COMMENT 'id',
     `project` varchar(50) NOT NULL DEFAULT '' COMMENT 'project',
     `operator` varchar(50) NOT NULL DEFAULT '' COMMENT 'people that start the building task',
     `time` datetime NOT NULL COMMENT 'build time' COMMENT 'time',

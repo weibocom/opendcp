@@ -36,8 +36,6 @@ import (
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
 	"strings"
-	"time"
-	"github.com/astaxie/beego"
 )
 
 /**
@@ -65,7 +63,6 @@ func (p *PluggedProject) View(lang string) string {
 
 	dockerfilePlugins := make([]string, 0)
 	for plugin := range p.DockerfilePlugins.Iterator() {
-
 		dockerfilePlugins = append(dockerfilePlugins, plugin.Value.(*plu.PluginWrapper).Plugin_name)
 	}
 	sort.Strings(dockerfilePlugins)
@@ -108,13 +105,10 @@ func (p *PluggedProject) View(lang string) string {
 func (p *PluggedProject) BuildImage() bool {
 
 	projectPath := env.PROJECT_CONFIG_BASEDIR
-	dockerFilePath := projectPath +p.Cluster + "/" + p.Name + "/tmp/"
+	dockerFilePath := projectPath + p.Name + "/tmp/"
 	util.ClearFolder(dockerFilePath)
 
-	beego.Warn("p *PluggedProject BuildImage() ")
-
 	// create docker file
-	beego.Warn("create docker file")
 	if !p.DockerFileGenerator.Handle() {
 		return false
 	}
@@ -123,52 +117,42 @@ func (p *PluggedProject) BuildImage() bool {
 }
 
 func (p *PluggedProject) BuildAndPushImage(tag string) bool {
-
-	beego.Warn("BuildAndPushImage...")
 	registry := env.HARBOR_ADDRESS
 	fullImageName := registry + "/" + p.Cluster + "/" + p.Name + ":" + tag
 
-	projectPath := env.PROJECT_CONFIG_BASEDIR + p.Cluster
-	dockerFilePath := projectPath + "/" + p.Name + "/tmp/"
+	projectPath := env.PROJECT_CONFIG_BASEDIR
+	dockerFilePath := projectPath + p.Name + "/tmp/"
 
-	//第一步创建镜像
-	log.Info(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + " fullImageName:" + fullImageName)
-	p.appendLog(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName)
+	log.Info("BuildImage dockerFilePath:" + dockerFilePath + " fullImageName:" + fullImageName)
+
 	logStr, err := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName)
-	p.logs = append(p.logs, p.timeNow() + "[info]\t" + logStr)
+
+	p.appendLog(logStr)
+
 	if err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Build Image with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Build Image with error:" + err.Error())
+		log.Error("Build Image with error:", err)
+		p.appendLog("Build Image with error:" + err.Error())
 		return false
 	}
 
 	log.Info("Login Harbor")
-	//第二步登录仓库
-	log.Info(p.timeNow() + "[Info]\t"+"Login Harbor")
-	p.appendLog(p.timeNow() + "[Info]\t"+"Login Harbor")
 	if err := service.GetDockerOperatorInstance().LoginHarbor(); err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Login Harbor with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Login Harbor with error:" + err.Error())
+		log.Error("Login Harbor with error:", err)
+		p.appendLog("Login Harbor with error:" + err.Error())
 		return false
 	}
-	p.appendLog("login haror success ...")
-	p.appendLog(p.timeNow() +"login haror success ...")
 
-	//第三步推送镜像到仓库
-	log.Info(p.timeNow() + "[Info]\t"+"Begin push image")
-	p.appendLog(p.timeNow() + "[Info]\t"+"Begin push image")
+	p.appendLog("login haror success ...")
+
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
 
-	p.logs = append(p.logs, p.timeNow() +"[Info]\t" + logStr)
+	p.appendLog(logStr)
 
 	if err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Push Image with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Push Image with error:" + err.Error())
+		log.Error("Push Image with error:", err)
 		return false
 	}
 
-	p.appendLog(p.timeNow() + "[Info]\t"+"push image success...")
-	p.appendLog(p.timeNow() + "[Info]\t"+"Build and Push image success..." + "\n")
 	return true
 }
 
@@ -179,8 +163,7 @@ func (p *PluggedProject) Save(configs []map[string]interface{}) bool {
 
 func (p *PluggedProject) readInfo() {
 	// load project info
-
-	content, error := ioutil.ReadFile(env.PROJECT_CONFIG_BASEDIR + p.Cluster + "/" + p.Name + "/" + "info")
+	content, error := ioutil.ReadFile(env.PROJECT_CONFIG_BASEDIR + p.Name + "/" + "info")
 	if error != nil {
 		log.Error("readfile with error:", error)
 		panic("Init Failed!")
@@ -230,18 +213,13 @@ func BuildPluginProject(projectName string,
 
 	var dockerfileBuilder interfaces.Handler
 
-	dockerfileBuilder = h.BuildExtensibleDockerFileGenerator(cluster, projectName,
+	dockerfileBuilder = h.BuildExtensibleDockerFileGenerator(projectName,
 		"dockerfile",
-		dockerfilePlugins) /// projetc.init()->   handler.init()
+		dockerfilePlugins)
 
 	project.DockerFileGenerator = dockerfileBuilder
 	project.DockerfilePlugins = dockerfilePlugins
 	project.BuildPlugins = buildPlugins
 
 	return project
-}
-
-//获取当前时间
-func (p *PluggedProject) timeNow() string {
-	return time.Now().Format("2006-01-02 15:04:05") + "\t"
 }

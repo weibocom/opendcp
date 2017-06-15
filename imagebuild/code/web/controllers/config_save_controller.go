@@ -28,7 +28,6 @@ import (
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/web/models"
 	"net/url"
-	"github.com/astaxie/beego"
 )
 
 var specialStrings = []string{"!","@","#","$","%","^","&","*","(",")","=","'","\"","/","\\","|","<",">","{","}","[","]"}
@@ -41,9 +40,6 @@ type ConfigSaveController struct {
 }
 
 func (c *ConfigSaveController) Post() {
-
-	beego.Warn("BuildProgressController: ", c.Ctx.Request.Form)
-
 	log.Infof("BuildProgressController: ", c.Ctx.Request.Form)
 
 	// get origin request body
@@ -75,8 +71,8 @@ func (c *ConfigSaveController) Post() {
 			}
 		} else if attributeName == "project" {
 			project = attributeValue
-		} else if attributeName == "cluster" {
-			cluster = attributeValue //此处废掉，从header中取cluster
+		} else if attributeName == "Cluster" {
+			cluster = attributeValue
 		} else if attributeName == "DefineDockerFileType" {
 			defineDockerFileType = attributeValue
 		} else if attributeName == "addOrUpdate" {
@@ -116,11 +112,9 @@ func (c *ConfigSaveController) Post() {
 
 	projectName := project
 
-
 	projectName = strings.ToLower(projectName)
 	for _,spec := range specialStrings {
 		if strings.Contains(projectName, spec) {
-			beego.Error("projectName contains special char:" + spec)
 			var resp = models.BuildResponse(
 				errors.PARAMETER_INVALID,
 				"projectName contains special char:" + spec,
@@ -132,12 +126,8 @@ func (c *ConfigSaveController) Post() {
 	}
 
 	creator := c.Operator()
-	cluster = c.BizName() //从头中取cluster
 
-	beego.Warn("cluster: " + cluster)
-
-	exist := models.AppServer.IsProjectExist(cluster, projectName)
-	beego.Warn("add OR update: "+ addOrUpdate)
+	exist := models.AppServer.IsProjectExist(projectName)
 	if addOrUpdate == "add" && exist{
 		var resp = models.BuildResponse(
 			errors.CREATE_PROJECT_ALREADY_EXIST,
@@ -163,13 +153,11 @@ func (c *ConfigSaveController) Post() {
 		return
 	}
 
-	beego.Warn("models.AppServer.SaveProjectConfig")
-	succ := models.AppServer.SaveProjectConfig(cluster, project, configs)
+	succ := models.AppServer.SaveProjectConfig(project, configs)
 
 	var resp interface{}
 
 	if succ {
-		beego.Warn("models.AppServer.SaveProjectConfig...success!")
 		resp = models.BuildResponse(
 			errors.OK,
 			"",
@@ -180,7 +168,6 @@ func (c *ConfigSaveController) Post() {
 			"",
 			errors.ErrorCodeToMessage(errors.INTERNAL_ERROR))
 	}
-
 
 	c.Data["json"] = resp
 	c.ServeJSON(true)

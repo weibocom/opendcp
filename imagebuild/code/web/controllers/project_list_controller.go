@@ -26,7 +26,6 @@ import (
 	"weibo.com/opendcp/imagebuild/code/errors"
 	pro "weibo.com/opendcp/imagebuild/code/project"
 	"weibo.com/opendcp/imagebuild/code/web/models"
-	"github.com/astaxie/beego"
 )
 /**
 项目列表
@@ -37,7 +36,6 @@ type ProjectListController struct {
 
 func (c *ProjectListController) Get() {
 	projectName := c.GetString("projectName")
-	cluster := c.BizName()
 	page, _ := c.GetInt("page", 1)
 	pageSize, _ := c.GetInt("page_size", 20)
 	if pageSize == 0 {
@@ -61,8 +59,7 @@ func (c *ProjectListController) Get() {
 		return
 	}
 
-	beego.Warn("Get Projects List.....");
-	projects := models.AppServer.GetProjects(cluster, projectName)
+	projects := models.AppServer.GetProjects(projectName)
 
 	totalCount := projects.Len()
 	totalPages := totalCount / pageSize

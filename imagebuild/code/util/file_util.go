@@ -24,27 +24,20 @@ package util
 import (
 	"io/ioutil"
 	"os"
-	"github.com/astaxie/beego"
-	"weibo.com/opendcp/imagebuild/code/env"
 )
 
 /**
 file工具
  */
 func NewFile(baseDir string, name string, isFolder bool) bool {
-	if !IsDirExists(env.PROJECT_CONFIG_BASEDIR) {
-		beego.Warn("here fuck1",baseDir)
+	if !IsDirExists(baseDir) {
 		return false
 	}
 
 	newFilePath := baseDir + "/" + name
-	beego.Warn("here fuck2", newFilePath)
-
 	if isFolder {
-		beego.Warn(newFilePath)
-		error := os.MkdirAll(newFilePath, 0700) // only the owner has permission to access the file
+		error := os.Mkdir(newFilePath, 0700) // only the owner has permission to access the file
 		if error != nil {
-			beego.Error(error)
 			PrintErrorStack(error)
 			return false
 		}

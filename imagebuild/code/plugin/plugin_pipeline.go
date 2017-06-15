@@ -25,7 +25,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"weibo.com/opendcp/imagebuild/code/env"
 	"weibo.com/opendcp/imagebuild/code/util"
-	"github.com/astaxie/beego"
 )
 
 /**
@@ -33,8 +32,6 @@ import (
 插件继续执行。。
 */
 type PluginPipeline struct {
-	//所属集群
-	cluster string
 	// 所属项目平成
 	projectName string
 	// pipeline名称
@@ -45,9 +42,8 @@ type PluginPipeline struct {
 	plugs []*PluginWrapper
 }
 
-func BuildPluginPipeline(cluster string, projectName string, pipelineName string, pipelineDescription string) *PluginPipeline {
+func BuildPluginPipeline(projectName string, pipelineName string, pipelineDescription string) *PluginPipeline {
 	pipeline := &PluginPipeline{
-		cluster: 	     cluster,
 		projectName:         projectName,
 		pipelineName:        pipelineName,
 		pipelineDescription: pipelineDescription,
@@ -56,9 +52,8 @@ func BuildPluginPipeline(cluster string, projectName string, pipelineName string
 	return pipeline
 }
 
-func BuildPluginPipelineWithPlugins(cluster string, projectName string, pipelineName string, pipelineDescription string, plugs []*PluginWrapper) *PluginPipeline {
+func BuildPluginPipelineWithPlugins(projectName string, pipelineName string, pipelineDescription string, plugs []*PluginWrapper) *PluginPipeline {
 	pipeline := &PluginPipeline{
-		cluster:              cluster,
 		projectName:         projectName,
 		pipelineName:        pipelineName,
 		pipelineDescription: pipelineDescription,
@@ -67,9 +62,6 @@ func BuildPluginPipelineWithPlugins(cluster string, projectName string, pipeline
 	return pipeline
 }
 
-func (pp *PluginPipeline) GetCluster() string {
-	return pp.cluster
-}
 func (pp *PluginPipeline) GetProjectName() string {
 	return pp.projectName
 }
@@ -80,10 +72,6 @@ func (pp *PluginPipeline) GetPipelineName() string {
 
 func (pp *PluginPipeline) GetPipelineDescription() string {
 	return pp.pipelineDescription
-}
-
-func (pp *PluginPipeline) SetCluster(cluster string) {
-	pp.cluster = cluster
 }
 
 func (pp *PluginPipeline) SetProjectName(projectName string) {
@@ -129,7 +117,7 @@ func (pp *PluginPipeline) View() PluginPipelineView {
 }
 
 func (pp *PluginPipeline) ClearAllConfig(relativeConfigFolder string) {
-	configFolder := env.PROJECT_CONFIG_BASEDIR + pp.cluster + "/" + pp.projectName + "/" + relativeConfigFolder + "/"
+	configFolder := env.PROJECT_CONFIG_BASEDIR + pp.projectName + "/" + relativeConfigFolder + "/"
 
 	util.ClearFolder(configFolder)
 }
@@ -147,28 +135,22 @@ func (pp *PluginPipeline) PluginList() string {
 	return pluginList
 }
 
-func (pp *PluginPipeline) Handle(cluster string, project string, input interface{}) (error, interface{}) {
-
-	beego.Warn("pp *PluginPipeline) Handle")
-
+func (pp *PluginPipeline) Handle(project string, input interface{}) (error, interface{}) {
 	var response interface{}
 	in := input
 
 	for inx, plug := range pp.plugs {
-		beego.Warn("inx:%d  plug:%s", inx, plug.Plugin_name)
 		log.Infof("inx:%d  plug:%s", inx, plug.Plugin_name)
 	}
 	for _, plug := range pp.plugs {
-		beego.Warn("%s start process..", plug.Plugin_name)
 		log.Infof("%s start process..", plug.Plugin_name)
-		err, ret := plug.Process(cluster, project, in)
+		err, ret := plug.Process(project, in)
 		if err != nil {
 			return err, ""
 		}
 
 		in = ret
 		response = ret
-		log.Infof("%s finish process..", plug.Plugin_name)
 		log.Infof("%s finish process..", plug.Plugin_name)
 	}
 

@@ -25,7 +25,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/web/models"
-	"github.com/astaxie/beego"
 )
 /**
 build image history
@@ -36,15 +35,10 @@ type BuildImageHistoryController struct {
 
 func (c *BuildImageHistoryController) Get() {
 	project := c.GetString("projectName")
-	cluster := c.BizName()
 	operator := c.Operator()
 
-
-	beego.Warn(cluster)
-
-
-	if project == "" || operator == "" || cluster == ""{
-		log.Error("cluster,project,operator should not be empy when get build history!")
+	if project == "" || operator == "" {
+		log.Error("project,operator should not be empy when get build history!")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -55,11 +49,9 @@ func (c *BuildImageHistoryController) Get() {
 		return
 	}
 
-	model := models.AppServer.GetBuildLastHistory(cluster, project)
+	model := models.AppServer.GetBuildLastHistory(project)
 
 	if model == nil {
-
-		beego.Warn("get projectName:%s build history is nil!", project)
 		log.Error("get projectName:%s build history is nil!", project)
 		resp := models.BuildResponse(
 			errors.BUILD_PROJECT_NOT_EXIST,

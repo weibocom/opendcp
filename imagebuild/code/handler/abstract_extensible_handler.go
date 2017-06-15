@@ -49,9 +49,6 @@ func (handler *AbstractExtensibleHandler) SetProjectName(project string) {
 	handler.ProjectName = project
 }
 
-func (handler *AbstractExtensibleHandler) SetCluster(cluster string) {
-	handler.Cluster = cluster
-}
 func (handler *AbstractExtensibleHandler) SetConfigRelativeFolder(folder string) {
 	handler.ConfigRelativeFolder = folder
 }
@@ -61,10 +58,6 @@ func (handler *AbstractExtensibleHandler) GetProjectName() string {
 	return handler.ProjectName
 }
 
-// public function
-func (handler *AbstractExtensibleHandler) GetCluster() string {
-	return handler.Cluster
-}
 func (handler *AbstractExtensibleHandler) View() p.PluginPipelineView {
 
 	// read lock
@@ -84,7 +77,6 @@ func (handler *AbstractExtensibleHandler) Save(configs []map[string]interface{},
 	recordPluginCount := make(map[string]int, 0)
 
 	var pipeline *p.PluginPipeline = p.BuildPluginPipeline(
-		handler.pipeline.GetCluster(),
 		handler.pipeline.GetProjectName(),
 		handler.pipeline.GetPipelineName(),
 		handler.pipeline.GetPipelineDescription())
@@ -111,7 +103,7 @@ func (handler *AbstractExtensibleHandler) Save(configs []map[string]interface{},
 
 		copyPlugin := p.CopyPluginWrapper(plugin)
 		copyPlugin.IndexInPipeline = number
-		copyPlugin.Save(handler.Cluster,handler.ProjectName, config)
+		copyPlugin.Save(handler.ProjectName, config)
 		pipeline.AddPluginToTail(copyPlugin)
 	}
 
@@ -119,14 +111,14 @@ func (handler *AbstractExtensibleHandler) Save(configs []map[string]interface{},
 
 	// 替换项目的插件列表
 	pluginList := handler.pipeline.PluginList()
-	pluginListPath := env.PROJECT_CONFIG_BASEDIR + handler.Cluster + "/" + handler.ProjectName + "/" + handler.ConfigRelativeFolder + "/plug_list"
+	pluginListPath := env.PROJECT_CONFIG_BASEDIR + handler.ProjectName + "/" + handler.ConfigRelativeFolder + "/plug_list"
 	ioutil.WriteFile(pluginListPath, []byte(pluginList), 0777)
 
 	return true
 }
 
-func (handler *AbstractExtensibleHandler) initPipeline(cluster string, projectName string, plugins *util.ConcurrentMap) {
-	pluginListFile := env.PROJECT_CONFIG_BASEDIR + handler.GetCluster() + "/" + handler.GetProjectName() + "/" + handler.ConfigRelativeFolder + "/plug_list"
+func (handler *AbstractExtensibleHandler) initPipeline(projectName string, plugins *util.ConcurrentMap) {
+	pluginListFile := env.PROJECT_CONFIG_BASEDIR + handler.GetProjectName() + "/" + handler.ConfigRelativeFolder + "/plug_list"
 	content, error := ioutil.ReadFile(pluginListFile)
 	if error != nil {
 		log.Error("Load extension plug list from config file failed, config file path: " + pluginListFile)
@@ -167,14 +159,13 @@ func (handler *AbstractExtensibleHandler) initPipeline(cluster string, projectNa
 			handler.pipeline.AddPluginToTail(pluginWrapper)
 		}
 	}
-	handler.pipeline.SetCluster(cluster)
 	handler.pipeline.SetProjectName(projectName)
 }
 
 func (handler *AbstractExtensibleHandler) readConfigByPlug(plugin *p.PluginWrapper) map[string]interface{} {
 
 	// load config
-	configPath := env.PROJECT_CONFIG_BASEDIR + handler.GetCluster() + "/" + handler.GetProjectName() + "/" + handler.ConfigRelativeFolder + "/" + plugin.Plugin_name
+	configPath := env.PROJECT_CONFIG_BASEDIR + handler.GetProjectName() + "/" + handler.ConfigRelativeFolder + "/" + plugin.Plugin_name
 
 	if plugin.IndexInPipeline != 0 {
 		configPath += ("_" + strconv.Itoa(plugin.IndexInPipeline))

@@ -37,9 +37,8 @@ type ProjectCloneController struct {
 func (c *ProjectCloneController) Post() {
 	srcProjectName := c.GetString("srcProjectName")
 	dstProjectName := c.GetString("dstProjectName")
-	cluster := c.BizName()
 	creator := c.Operator()
-	if creator == "" || srcProjectName == "" || dstProjectName == ""|| cluster == ""{
+	if creator == "" || srcProjectName == "" || dstProjectName == "" {
 		log.Error("creator,srcProjectName,dstProjectName should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
@@ -50,9 +49,9 @@ func (c *ProjectCloneController) Post() {
 		c.ServeJSON(true)
 		return
 	}
-	_, projectInfo := models.AppServer.GetProjectInfo(cluster, srcProjectName)
+	_, projectInfo := models.AppServer.GetProjectInfo(srcProjectName)
 
-	_, code := models.AppServer.CloneProject(cluster, srcProjectName, dstProjectName, creator, projectInfo.Cluster, projectInfo.DefineDockerFileType)
+	_, code := models.AppServer.CloneProject(srcProjectName, dstProjectName, creator, projectInfo.Cluster, projectInfo.DefineDockerFileType)
 	response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 	c.Data["json"] = response
 	c.ServeJSON(true)

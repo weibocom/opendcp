@@ -29,7 +29,6 @@ import (
 build 历史记录
  */
 type BuildHistory struct {
-	cluster  string
 	project  string
 	operator string
 	time     time.Time
@@ -45,9 +44,8 @@ func (h *BuildHistory) Logs() string {
 	return h.logs
 }
 
-func GetBuildHistory(cluster string, project string, operator string, time time.Time, state int, logs string) *BuildHistory {
+func GetBuildHistory(project string, operator string, time time.Time, state int, logs string) *BuildHistory {
 	return &BuildHistory{
-		cluster:  cluster,
 		project:  project,
 		operator: operator,
 		time:     time,
