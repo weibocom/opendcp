@@ -95,8 +95,8 @@ func (app *Server) Init(ip string, port string) {
 	log.Info("------finish init server")
 }
 
-func (app *Server) CloneProject(srcProjectName, dstProjectName, creator, cluster, defineDockerFileType string) (bool, int) {
-	project, code := pro.CloneProject(srcProjectName,
+func (app *Server) CloneProject(srcCluster, srcProjectName, dstProjectName, creator, cluster, defineDockerFileType string) (bool, int) {
+	project, code := pro.CloneProject(srcCluster, srcProjectName,
 		dstProjectName,
 		creator,
 		cluster,
@@ -117,7 +117,19 @@ func (app *Server) CloneProject(srcProjectName, dstProjectName, creator, cluster
 	return true, code
 }
 
-func (app *Server) IsProjectExist(projectName string) bool {
+func (app *Server) IsProjectExist(cluster, projectName string) bool {
+
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
+	if project != nil {
+		log.Infof("Project: %s is exist", projectName)
+		return true
+	}
+	return false
+}
+
+func (app *Server) IsDefaultProjectExist(projectName string) bool {
+
 	var project pro.Project = app.getProject(projectName)
 	if project != nil {
 		log.Infof("Project: %s is exist", projectName)
@@ -165,33 +177,36 @@ func (app *Server) NewProject(projectName, creator, cluster, defineDockerFileTyp
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
 
-	app.projects[projectName] = project
+	var projectWholeName = app.getWholeProjectName(cluster, projectName)
+	app.projects[projectWholeName] = project
 	log.Infof("new project: %s success", projectName)
 	return true, code
 }
 
-func (app *Server) DeleteProject(projectName string, operator string) (bool, int) {
+func (app *Server) DeleteProject(cluster, projectName string, operator string) (bool, int) {
 	// write lock
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
-	if _, ok := app.projects[projectName]; !ok {
+	var projectWholeName = app.getWholeProjectName(cluster, projectName)
+	if _, ok := app.projects[projectWholeName]; !ok {
 		log.Errorf("project: %s to delete no exist", projectName)
 		return false, errors.DELETE_PROJECT_NOT_EXIST
 	}
 
-	code := pro.DeleteProject(projectName, operator)
+	code := pro.DeleteProject(cluster, projectName, operator)
 	if code != errors.OK {
 		return false, code
 	}
 
-	delete(app.projects, projectName)
+	delete(app.projects, projectWholeName)
 
 	log.Infof("delete project: %s success", projectName)
 	return true, errors.OK
 }
 
-func (app *Server) SaveProjectConfig(projectName string, configs []map[string]interface{}) bool {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) SaveProjectConfig(cluster, projectName string, configs []map[string]interface{}) bool {
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
 		log.Errorf("Project: %s to save config not exist", projectName)
 		return false
@@ -199,8 +214,9 @@ func (app *Server) SaveProjectConfig(projectName string, configs []map[string]in
 	return project.Save(configs)
 }
 
-func (app *Server) GetProjectConfigView(projectName string) (int, string) {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) GetProjectConfigView(cluster string, projectName string) (int, string) {
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 
 	if project == nil {
 		project = app.getProject(DefaultProjectName)
@@ -229,8 +245,9 @@ func (app *Server) GetDockerfileExtensionPlugins() []string {
 	return dockerfileExtensionPlugins
 }
 
-func (app *Server) GetProjectInfo(projectName string) (int, pro.ProjectInfo) {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) GetProjectInfo(cluster string, projectName string) (int, pro.ProjectInfo) {
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
 		log.Errorf("Project: %s to query info not exist", projectName)
 		return errors.PROJECT_NOT_EXIST, pro.BuildEmptyProjectInfo()
@@ -239,14 +256,15 @@ func (app *Server) GetProjectInfo(projectName string) (int, pro.ProjectInfo) {
 	return errors.OK, project.Info()
 }
 
-func (app *Server) GetProjects(projectName string) pro.ProjectInfoList {
+func (app *Server) GetProjects(cluster, projectName string) pro.ProjectInfoList {
 	app.projectLock.RLock()
 	defer app.projectLock.RUnlock()
 
 	projectInfos := make([]pro.ProjectInfo, 0)
 	for _, project := range app.projects {
 		projectInfo := pro.Project(project).Info()
-		if projectInfo.Name != DefaultProjectName && strings.Contains(projectInfo.Name, projectName) {
+		if projectInfo.Name != DefaultProjectName && strings.Contains(projectInfo.Name, projectName) &&
+			strings.Compare(projectInfo.Cluster, cluster) == 0{
 			projectInfos = append(projectInfos, projectInfo)
 		}
 	}
@@ -257,8 +275,9 @@ func (app *Server) GetProjects(projectName string) pro.ProjectInfoList {
 	return projectInfos
 }
 
-func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
-	var project pro.Project = app.getProject(projectName)
+func (app *Server) BuildImage(cluster string, projectName, tag, operator string) (int, int64) {
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
 		log.Errorf("Project: %s to build not exist, operator", projectName, operator)
 		return errors.BUILD_PROJECT_NOT_EXIST, -1
@@ -269,7 +288,7 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 		return errors.INTERNAL_ERROR, -1
 	}
 
-	id := buildHistoryService.InsertRecord(operator, projectName)
+	id := buildHistoryService.InsertRecord(cluster, operator, projectName)
 
 	// 异步线程处理构建并且进行更新任务状态
 	go func() {
@@ -283,7 +302,7 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 			pushSuccess := project.BuildAndPushImage(tag)
 			if pushSuccess {
 				log.Infof("%s push success id:%d tag:%s", projectName, id, tag)
-				pro.ClearTmp(projectName)
+				pro.ClearTmp(cluster, projectName)
 				if id != -1 {
 					log.Infof("start update project %s state for id:%d", projectName, id)
 					buildHistoryService.UpdateRecord(id, project.GetLog(), service.SUCCESS)
@@ -322,12 +341,12 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 	}
 }
 
-func (app *Server) GetBuildLastHistory(projectName string) *model.BuildHistory {
-	return service.GetBuildHistoryServiceInstance().QueryLastBuildRecord(projectName)
+func (app *Server) GetBuildLastHistory(cluster, projectName string) *model.BuildHistory {
+	return service.GetBuildHistoryServiceInstance().QueryLastBuildRecord(cluster, projectName)
 }
 
-func (app *Server) GetBuildHistories(cursor int, offset int, projectName string) []*model.BuildHistory {
-	return service.GetBuildHistoryServiceInstance().QueryRecordList(cursor, offset, projectName)
+func (app *Server) GetBuildHistories(cursor int, offset int, cluster string, projectName string) []*model.BuildHistory {
+	return service.GetBuildHistoryServiceInstance().QueryRecordList(cursor, offset, cluster, projectName)
 }
 
 func (app *Server) GetBuildHistory(id int) *model.BuildHistory {
@@ -401,7 +420,7 @@ func (app *Server) createDefaultProject() {
 	app.projectLock.RLock()
 	defer app.projectLock.RUnlock()
 
-	exist := app.IsProjectExist(DefaultProjectName)
+	exist := app.IsDefaultProjectExist(DefaultProjectName)
 	if !exist {
 		project, code := pro.NewProject(DefaultProjectName, "", "", "", app.dockerfilePlugins, app.buildPlugins)
 		if code != errors.OK {
@@ -494,3 +513,9 @@ func (app *Server) loadNewPlugin(pluginType int, name string, path string) {
 		app.dockerfilePlugins.Put(name, pluginWrapper)
 	}
 }
+
+//返回完整名称
+func (app *Server) getWholeProjectName(cluster string, projectName string)(string){
+	return cluster + "^" + projectName
+}
+

@@ -71,9 +71,7 @@ func (c *ConfigSaveController) Post() {
 			}
 		} else if attributeName == "project" {
 			project = attributeValue
-		} else if attributeName == "Cluster" {
-			cluster = attributeValue
-		} else if attributeName == "DefineDockerFileType" {
+		}else if attributeName == "DefineDockerFileType" {
 			defineDockerFileType = attributeValue
 		} else if attributeName == "addOrUpdate" {
 			addOrUpdate = attributeValue
@@ -126,8 +124,9 @@ func (c *ConfigSaveController) Post() {
 	}
 
 	creator := c.Operator()
+	cluster = c.BizName()
 
-	exist := models.AppServer.IsProjectExist(projectName)
+	exist := models.AppServer.IsProjectExist(cluster, projectName)
 	if addOrUpdate == "add" && exist{
 		var resp = models.BuildResponse(
 			errors.CREATE_PROJECT_ALREADY_EXIST,
@@ -153,7 +152,7 @@ func (c *ConfigSaveController) Post() {
 		return
 	}
 
-	succ := models.AppServer.SaveProjectConfig(project, configs)
+	succ := models.AppServer.SaveProjectConfig(cluster, project, configs)
 
 	var resp interface{}
 

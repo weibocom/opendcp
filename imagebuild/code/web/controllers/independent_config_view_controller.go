@@ -24,6 +24,7 @@ package controllers
 import (
 	"net/http"
 	"weibo.com/opendcp/imagebuild/code/web/models"
+	"weibo.com/opendcp/jupiter/service/cluster"
 )
 /**
 Independent配置视图
@@ -34,7 +35,8 @@ type IndependentConfigViewController struct {
 
 func (c *IndependentConfigViewController) Get() {
 	project := c.GetString("projectName")
-	_, configView := models.AppServer.GetProjectConfigView(project)
+	cluster := c.BizName()
+	_, configView := models.AppServer.GetProjectConfigView(cluster, project)
 	if configView == "" {
 		c.Ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
 		return

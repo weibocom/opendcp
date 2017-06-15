@@ -37,8 +37,9 @@ func (c *ProjectNewController) Post() {
 	log.Info("ProjectNewController: %s", c.Ctx.Request.Form)
 	projectName := c.GetString("projectName")
 	creator := c.Operator()
-	if creator == "" || projectName == "" {
-		log.Error("creator,projectName should not be empy when building project")
+	cluster := c.BizName()
+	if creator == "" || projectName == "" || cluster == ""{
+		log.Error("cluster, creator,projectName should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -49,7 +50,7 @@ func (c *ProjectNewController) Post() {
 		return
 	}
 
-	_, code := models.AppServer.NewProject(projectName, creator, "", "")
+	_, code := models.AppServer.NewProject(projectName, creator, cluster, "")
 	response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 	c.Data["json"] = response
 	c.ServeJSON(true)

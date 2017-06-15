@@ -59,7 +59,20 @@ func (c *ProjectListController) Get() {
 		return
 	}
 
-	projects := models.AppServer.GetProjects(projectName)
+	cluster := c.BizName()
+	if cluster == "" {
+		log.Error("cluster should not be empy when building project")
+		resp := models.BuildResponse(
+			errors.PARAMETER_INVALID,
+			-1,
+			errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
+
+		c.Data["json"] = resp
+		c.ServeJSON(true)
+		return
+	}
+
+	projects := models.AppServer.GetProjects(cluster, projectName)
 
 	totalCount := projects.Len()
 	totalPages := totalCount / pageSize

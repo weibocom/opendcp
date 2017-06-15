@@ -45,6 +45,15 @@ func (c *BasicController) Operator() string {
 	return operator
 }
 
+func (c *BasicController) BizName() string{
+	bizName := c.GetString("X-Biz-Name")
+	if bizName == "" {
+		bizName = c.Ctx.Request.Header.Get("X-Biz-Name")
+	}
+
+	return bizName
+}
+
 func (c *BasicController) Prepare() {
 	// 1. Check URL arguments.
 	lang := c.Input().Get("lang")
