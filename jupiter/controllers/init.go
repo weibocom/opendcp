@@ -76,36 +76,51 @@ func (initController *InitController) InitDB() {
 	sqlCluster[2] = sql3
 
 
+	sqlBill := "insert into bill(cluster_id,costs,credit) values(%d,0,0)"
+	delBill := "delete from bill where cluster_id=%d"
+
+
 	deleteSql := "delete from %s where biz_id=%d"
 
 
 
-
 	//删除数据
-	err =cluster.OperateBysql(fmt.Sprintf(deleteSql,"cluster",bid))
+	_,err =cluster.OperateBysql(fmt.Sprintf(deleteSql,"cluster",bid))
 	if err != nil {
 		beego.Error("delete data from cluster err: ", err)
 		initController.RespServiceError(err)
 		return
 	}
 
-	err =cluster.OperateBysql(fmt.Sprintf(deleteSql,"account",bid))
+	_,err =cluster.OperateBysql(fmt.Sprintf(deleteSql,"account",bid))
 	if err != nil {
 		beego.Error("delete data from account err: ", err)
 		initController.RespServiceError(err)
 		return
 	}
 
+	//插入数据
 	for _,sql := range sqlCluster {
-		err = cluster.OperateBysql(fmt.Sprintf(sql,bid))
+		id64,err := cluster.OperateBysql(fmt.Sprintf(sql,bid))
 		if err != nil {
 			beego.Error("insert data for cluster err: ", err)
 			initController.RespServiceError(err)
 			return
 		}
+		id := int(id64)
+
+		cluster.OperateBysql(fmt.Sprintf(delBill,id))
+
+		_,err = cluster.OperateBysql(fmt.Sprintf(sqlBill,id))
+		if err != nil {
+			beego.Error("insert data for bill err: ", err)
+			initController.RespServiceError(err)
+			return
+		}
+
 	}
 
-	err = cluster.OperateBysql(fmt.Sprintf(sqlAccount,bid,credit,provider,key_id,key_secret))
+	_,err = cluster.OperateBysql(fmt.Sprintf(sqlAccount,bid,credit,provider,key_id,key_secret))
 	if err != nil {
 		beego.Error("insert data for account err: ", err)
 		initController.RespServiceError(err)

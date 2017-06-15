@@ -154,10 +154,10 @@ func ListClusters(bizId int) ([]models.Cluster, error) {
 	return true, nil
 }*/
 
-func OperateBysql(sql string) error {
-	_, err := dao.OperateBysql(sql)
+func OperateBysql(sql string) (int64,error) {
+	id, err := dao.OperateBysql(sql)
 	if err != nil {
-		return err
+		return -1,err
 	}
-	return nil
+	return id,nil
 }
