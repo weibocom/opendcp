@@ -35,7 +35,7 @@ use Common\Dao\Nginx\UnitModel;
 use Common\Dao\Nginx\Upstream;
 use Think\Controller\RestController;
 
-class GroupController extends RestController{
+class ToolController extends RestController{
 
     public function __construct()
     {
@@ -47,10 +47,10 @@ class GroupController extends RestController{
 
     public function nginx_init_post(){
 
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if($bidArg < 1 )
-            $this->ajaxReturn(std_error('id is empty'));
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         //创建默认分组
         $group = new GroupModel();
@@ -89,7 +89,7 @@ class GroupController extends RestController{
         $main = new Main();
 
         $ret = $main->getMainList(['biz_id' => $bidArg],1, 20);
-
+        
         if($ret['code'] == HUBBLE_DB_ERR)
             $this->ajaxReturn(std_error('get main_conf error: db error'));
 
@@ -100,7 +100,7 @@ class GroupController extends RestController{
         if($ret['code'] != HUBBLE_RET_SUCCESS)
             $this->ajaxReturn(std_error(' get init main_conf '.$ret['msg']));
 
-        $ret = $main->addMain('nginx.conf', $ret['content'], $uid,1, 'system', $bidArg);
+        $ret = $main->addMain('nginx.conf', $ret['content']['content'], $uid,1, 'system', $bidArg);
         if($ret['code'] != HUBBLE_RET_SUCCESS)
             $this->ajaxReturn(std_error(' set init main_conf '.$ret['msg']));
 
@@ -119,7 +119,7 @@ class GroupController extends RestController{
         if($ret['code'] != HUBBLE_RET_SUCCESS)
             $this->ajaxReturn(std_error(' get init upstream_conf '.$ret['msg']));
         
-        $ret = $upstream->addUpstream('default.upstream', $ret['content'], $gid, 0, 'system', $bidArg  );
+        $ret = $upstream->addUpstream('default.upstream', $ret['content']['content'], $gid, 0, 'system', $bidArg  );
         
         if($ret['code'] != HUBBLE_RET_SUCCESS)
             $this->ajaxReturn(std_error(' set init upstream_conf '.$ret['msg']));

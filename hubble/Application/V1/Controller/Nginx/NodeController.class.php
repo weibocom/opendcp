@@ -59,7 +59,7 @@ class NodeController extends RestController
         $ips = I('ips','');
         $unit_id = I('unit_id',0);
         $user = I('user','');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($ips) || !is_string($ips)){
             $this->ajaxReturn(std_error('ips is empty'));
@@ -141,7 +141,7 @@ class NodeController extends RestController
 
     public function detail_get(){
         $id = I('id',0);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if($id <= 0){
             $this->ajaxReturn(std_error('id error'));
@@ -171,7 +171,7 @@ class NodeController extends RestController
         $uid = I('unit_id',0);
         $nodes = I('nodes','');
         $user = I('user','');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if($uid <= 0 ){
             $this->ajaxReturn(std_error('unit_id error'));
@@ -222,7 +222,7 @@ class NodeController extends RestController
         $unit_id = I('unit_id',0 );
         $ip = I('ip','' );
         $like = I('like',true);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $filter = ['biz_id' => $bidArg];
 
         if($page <= 0){

@@ -59,7 +59,7 @@ class UnitController extends RestController
         $name = I('name','');
         $group_id = I('group_id',0);
         $user = I('user','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($group_id <= 0 ){
             $this->ajaxReturn(std_error('group_id error'));
@@ -105,7 +105,7 @@ class UnitController extends RestController
 
     public function detail_get(){
         $id = I('id',0);
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($id <= 0){
             $this->ajaxReturn(std_error('id error'));
@@ -139,7 +139,7 @@ class UnitController extends RestController
         $name = I('name','');
         $group_id = I('group_id',0);
         $user = I('user','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($group_id <=0 ){
             $this->ajaxReturn(std_error('group_id error'));
@@ -200,7 +200,7 @@ class UnitController extends RestController
     public function delete_delete(){
         $unit_id = I('id',0);
         $user = I('user','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($unit_id <=0 ){
             $this->ajaxReturn(std_error('id error'));
@@ -261,7 +261,7 @@ class UnitController extends RestController
         $limit = I('limit',20);
         $group_id = I('group_id',0);
         $uname = I('name','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
         $like  = I('like',true);
 
         if($page <=0 ){

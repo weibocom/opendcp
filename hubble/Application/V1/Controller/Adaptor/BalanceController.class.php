@@ -50,7 +50,7 @@ class BalanceController extends RestController{
         $type = I('type','');
         $content = I('content','', 'unsafe_raw');
         $opr_user = I('user','');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($name)){
             $this->ajaxReturn(std_error('name is empty'));
@@ -98,7 +98,7 @@ class BalanceController extends RestController{
         $opr_user = I('user','');
         $name = I('name','');
         $type = I('type','');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $like = I('like',true);
 
         if($page < 0 ){
@@ -151,7 +151,7 @@ class BalanceController extends RestController{
 
     public function detail_get(){
         $id = I('id',0);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if($id <= 0){
             $this->ajaxReturn(std_error("id is empty"));
@@ -175,7 +175,7 @@ class BalanceController extends RestController{
 
         $id = I('id',0);
         $opr_user = I('user','');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $name = I('name','');
         $type = I('type','');
         $content = I('content','','unsafe_raw');
@@ -223,7 +223,7 @@ class BalanceController extends RestController{
 
         $id = I('id',0);
         $opr_user = I('user','');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($opr_user)){
             $this->ajaxReturn(std_error('opr_user is empty'));

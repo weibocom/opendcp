@@ -52,7 +52,7 @@ class VersionController extends RestController {
         $nameArg = I('name');
         $idArg = I('unit_id');
         $likeArg = I('like', true);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page');
         $limit = I('limit');
 
@@ -107,7 +107,7 @@ class VersionController extends RestController {
 
     public function detail_get(){
         $idArg = I('id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -131,7 +131,7 @@ class VersionController extends RestController {
         $nameArg = I('name');
         $userArg = I('user');
         $typeArg = I('type');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_id is empty'));
@@ -176,7 +176,7 @@ class VersionController extends RestController {
         $nameArg = I('name');
         $userArg = I('user');
         $typeArg = I('type');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         $filesArg = I('files', '','unsafe_raw');
 
@@ -231,7 +231,7 @@ class VersionController extends RestController {
     public function deprecated_post(){
         $idArg = I('id');
         $userArg = I('user');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -261,7 +261,7 @@ class VersionController extends RestController {
         $idArg = I('id');
         $userArg = I('user');
         $shellIdArg = I('shell_id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));

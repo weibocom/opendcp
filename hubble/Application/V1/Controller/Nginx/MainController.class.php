@@ -49,7 +49,7 @@ class MainController extends RestController{
         $nameArg = I('name');
         $idArg = I('unit_id');
         $likeArg = I('like', true);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page', 1);
         $limit = I('limit', 20);
 
@@ -108,7 +108,7 @@ class MainController extends RestController{
         $nameArg = I('name');
         $idArg = I('unit_id');
         $likeArg = I('like', true);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page', 1);
         $limit = I('limit', 20);
 
@@ -164,7 +164,7 @@ class MainController extends RestController{
 
     public function detail_get(){
         $idArg = I('id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -185,7 +185,7 @@ class MainController extends RestController{
 
     public function add_post(){
         $nameArg = I('name');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $contentArg = I('content', '', 'unsafe_raw');
         $unitIdArg = I('unit_id');
         $userArg = I('user');
@@ -226,7 +226,7 @@ class MainController extends RestController{
     public function deprecated_post(){
         $idArg = I('id');
         $userArg = I('user');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));

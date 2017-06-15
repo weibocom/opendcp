@@ -55,7 +55,7 @@ class GroupController extends RestController{
 
         $name = I('name','');
         $user = I('user','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($name)){
             $this->ajaxReturn(std_error('name is empty'));
@@ -94,20 +94,19 @@ class GroupController extends RestController{
 
     public function detail_get(){
         $id = I('id',0);
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($id <= 0){
             $this->ajaxReturn(std_error('id is error'));
         }
 
-        if($bid < 1){
+        if($bid < 1)
             $this->ajaxReturn(std_error('biz_id is empty'));
-        }
 
         $group = new GroupModel() ;
         $ret = $group->getDetail(['id' => $id, 'biz_id' => $bid]);
 
-        if($ret['code'] == 1){
+        if($ret['code'] != HUBBLE_RET_SUCCESS){
             $this->ajaxReturn(std_error($ret['msg']));
         }
         $this->ajaxReturn(std_return($ret['content']));
@@ -127,7 +126,7 @@ class GroupController extends RestController{
         $gid = I('id',0);
         $name = I('name','');
         $user = I('user','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($gid <= 0 ){
             $this->ajaxReturn(std_error('id is error'));
@@ -178,7 +177,7 @@ class GroupController extends RestController{
     public function delete_delete(){
         $gid = I('id',0);
         $user = I('user','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
 
         if($gid <= 0){
             $this->ajaxReturn(std_error('id is error'));
@@ -247,7 +246,7 @@ class GroupController extends RestController{
         $page = I('page',1);
         $limit = I('limit',20);
         $gname = I('name','');
-        $bid = I('server.X-BIZ-ID',0);
+        $bid = I('server.HTTP_X_BIZ_ID',0);
         $like= I('like', true);
 
         if(empty($page) || $page <= 0 ){

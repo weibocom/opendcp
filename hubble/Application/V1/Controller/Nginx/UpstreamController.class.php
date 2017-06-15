@@ -51,7 +51,7 @@ class UpstreamController extends RestController{
         $nameArg = I('name');
         $idArg = I('group_id');
         $likeArg = I('like', true);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page', 1);
         $limit = I('limit', 20);
 
@@ -108,7 +108,7 @@ class UpstreamController extends RestController{
 
     public function detail_get(){
         $idArg = I('id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -134,7 +134,7 @@ class UpstreamController extends RestController{
         $groupIdArg = I('group_id');
         $consulArg = I('is_consul');
         $userArg = I('user');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($nameArg))
             $this->ajaxReturn(std_error('name is empty'));
@@ -173,7 +173,7 @@ class UpstreamController extends RestController{
 
         $idArg = I('id');
         $userArg = I('user', '');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -201,7 +201,7 @@ class UpstreamController extends RestController{
         $idArg = I('id');
         $contentArg = I('content', '', 'unsafe_raw');
         $userArg = I('user', '');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -231,7 +231,7 @@ class UpstreamController extends RestController{
     public function content_get(){
         $nameArg = I('name');
         $groupIdArg = I('group_id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($nameArg) || empty($groupIdArg))
             $this->ajaxReturn(std_error('name or group_id is empty'));
@@ -253,7 +253,7 @@ class UpstreamController extends RestController{
 
     public function unit_list_get(){
         $idArg = I('id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -274,7 +274,7 @@ class UpstreamController extends RestController{
 
     public function upstream_list_get(){
         $unitIdArg = I('unit_id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_id is empty'));
@@ -299,7 +299,7 @@ class UpstreamController extends RestController{
         $tunnelArg = I('tunnel', 'ANSIBLE');
         $scriptIdArg = I('script_id');
         $userArg = I('user');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_ids is empty'));

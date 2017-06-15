@@ -51,7 +51,7 @@ class ShellController extends RestController{
 
         $page = I('page', 1);
         $limit = I('limit', 20);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         // 参数检查
         if($page <= 0 || $limit <= 0)
@@ -100,7 +100,7 @@ class ShellController extends RestController{
 
     public function detail_get(){
         $idArg = I('id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -124,7 +124,7 @@ class ShellController extends RestController{
         $contentArg = I('content', '', 'unsafe_raw');
         $descArg = I('desc');
         $userArg = I('user');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($nameArg))
             $this->ajaxReturn(std_error('name is empty'));
@@ -156,7 +156,7 @@ class ShellController extends RestController{
         $descArg = I('desc');
         $contentArg = I('content', '', 'unsafe_raw');
         $userArg = I('user', '');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
@@ -186,7 +186,7 @@ class ShellController extends RestController{
 
         $idArg = I('id');
         $userArg = I('user', '');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));

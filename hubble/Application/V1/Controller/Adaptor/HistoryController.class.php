@@ -50,7 +50,7 @@ class HistoryController extends RestController {
         $idArg = I('id');
         $taskIdArg = I('task_id');
         $likeArg = I('like', true);
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page');
         $limit = I('limit');
 

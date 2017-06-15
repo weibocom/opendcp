@@ -116,7 +116,7 @@ class GroupModel{
             ->where($where)
             ->find();
 
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
         if($ret === NULL){
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';

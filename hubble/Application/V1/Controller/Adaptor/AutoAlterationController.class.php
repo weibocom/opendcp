@@ -58,7 +58,7 @@ class AutoAlterationController extends RestController {
     public function add_post(){
 
         $params = ['type_id', 'ips', 'user', ];
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         foreach ($params as $p){
             if(!isset($this->input[$p]) || empty($this->input[$p]))
@@ -88,7 +88,7 @@ class AutoAlterationController extends RestController {
     public function remove_post(){
 
         $params = ['type_id', 'ips', 'user', ];
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         foreach ($params as $p){
             if(!isset($this->input[$p]) || empty($this->input[$p]))
@@ -120,7 +120,7 @@ class AutoAlterationController extends RestController {
 
         $gid = I('server.HTTP_X_CORRELATION_ID');
         $rid = I('release_id');
-        $bidArg = I('server.X-BIZ-ID',0);
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $timeoutArg = I('timeout',120);
 
         if(empty($gid) && empty($rid))

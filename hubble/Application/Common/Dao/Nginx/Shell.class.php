@@ -89,7 +89,7 @@ class Shell {
             ->select();
 
         $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
-        if ($ret === NULL) {
+        if (empty($ret)) {
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';
         } elseif ($ret === false) {
