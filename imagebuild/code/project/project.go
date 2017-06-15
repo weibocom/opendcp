@@ -251,7 +251,7 @@ func createProjectFolder(cluster string, projectName string) (code int) {
 		return errors.CREATE_PROJECT_ALREADY_EXIST
 	}
 
-	suc := util.NewFile(env.PROJECT_CONFIG_BASEDIR, projectName, true)
+	suc := util.NewFile(env.PROJECT_CONFIG_BASEDIR + cluster, projectName, true)
 	if !suc {
 		log.Errorf("project %s folder create fail", projectName)
 		return errors.INTERNAL_ERROR
