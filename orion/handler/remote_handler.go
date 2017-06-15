@@ -89,8 +89,12 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 
 	logService.Debug(fid,batchId,corrId,fmt.Sprintf("Handle remote step:",step))
 
-	rstep := models.RemoteStep{Name: step}
-	err := service.Remote.GetBy(&rstep, "Name")
+	rstep := models.RemoteStep{}
+	//err := service.Remote.GetBy(&rstep, "Name")
+	condition := make(map[string]interface{})
+	condition["Name"] = step
+	condition["BizId"] = action.BizId
+	err := service.Remote.GetByMultiFieldValue(&rstep,condition)
 
 	if err != nil {
 		logService.Error(fid,batchId,corrId,fmt.Sprintf("remote step not found step:",step))
