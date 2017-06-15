@@ -178,14 +178,14 @@ class myself{
       $retRepos = $this->initRepos($bizId, $retReg[$regId]['biz'], 0);
       $reInit .= ($retRepos['code'] === 0) ? '2.镜像仓库模块: 成功; <br>' : '2.镜像仓库模块: <span class="text-danger">失败</span>; <br>';
       $ret['init']['repos'] = $retRepos;
-      //通知服务编排模块初始化
-      $retLayout = $this->initLayout($bizId, $retReg[$regId]['biz'], 0);
-      $reInit .= ($retLayout['code'] === 0) ? '3.服务编排模块: 成功; <br>' : '3.服务编排模块: <span class="text-danger">失败</span>; <br>';
-      $ret['init']['layout'] = $retLayout;
       //通知服务发现模块初始化
       $retHubble = $this->initHubble($bizId, $retReg[$regId]['biz'], 0);
-      $reInit .= ($retHubble['code'] === 0) ? '4.服务发现模块: 成功; <br>' : '4.服务发现模块: <span class="text-danger">失败</span>; <br>';
+      $reInit .= ($retHubble['code'] === 0) ? '3.服务发现模块: 成功; <br>' : '3.服务发现模块: <span class="text-danger">失败</span>; <br>';
       $ret['init']['hubble'] = $retHubble;
+      //通知服务编排模块初始化
+      $retLayout = $this->initLayout($bizId, $retReg[$regId]['biz'], 0);
+      $reInit .= ($retLayout['code'] === 0) ? '4.服务编排模块: 成功; <br>' : '4.服务编排模块: <span class="text-danger">失败</span>; <br>';
+      $ret['init']['layout'] = $retLayout;
 
       $ret['code'] = 0;
       $ret['msg'] = '审批操作成功<br>' . $reInit;

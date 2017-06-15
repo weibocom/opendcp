@@ -139,11 +139,11 @@ var processBody = function(data,head,body){
         td = '<td>' + v.mail + '</td>';
         tr.append(td);
         switch(v.status){
-          case '0':
+          case 0:
             td = '<td><div><label class="tooltips" title="点击停用" onclick="return false;"><input type="checkbox" class="js-switch" checked onchange="switchs(\'off\',\'' + v.id + '\')"/> 启用</label></div></td>';
             tr.append(td);
             break;
-          case '1':
+          case 1:
             td = '<td><div><label class="tooltips" title="点击启用" onclick="return false;"><input type="checkbox" class="js-switch" onchange="switchs(\'on\',\'' + v.id + '\')"/> 停用</label></div></td>';
             tr.append(td);
             break;
