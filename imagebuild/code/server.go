@@ -112,7 +112,8 @@ func (app *Server) CloneProject(srcCluster, srcProjectName, dstProjectName, crea
 	app.projectLock.Lock()
 	defer app.projectLock.Unlock()
 
-	app.projects[dstProjectName] = project
+	var dstWholeProjectName = app.getWholeProjectName(cluster, dstProjectName)
+	app.projects[dstWholeProjectName] = project
 	log.Infof("clone project: %s from project: %s success", dstProjectName, srcProjectName)
 	return true, code
 }
@@ -148,7 +149,8 @@ func (app *Server) UpdateProject(projectName, creator, cluster, defineDockerFile
 		return false, code
 	}
 
-	project := app.projects[projectName]
+	projectWholeName := app.getWholeProjectName(cluster, projectName)
+	project := app.projects[projectWholeName]
 	project.(*pro.PluggedProject).LastModifyOperator = infoMap["lastModifyOperator"]
 	project.(*pro.PluggedProject).LastModifyTime = infoMap["lastModifyTime"]
 	project.(*pro.PluggedProject).Creator = infoMap["creator"]
@@ -156,7 +158,7 @@ func (app *Server) UpdateProject(projectName, creator, cluster, defineDockerFile
 	project.(*pro.PluggedProject).DefineDockerFileType = infoMap["defineDockerFileType"]
 	project.(*pro.PluggedProject).Cluster = infoMap["cluster"]
 
-	app.projects[projectName] = project
+	app.projects[projectWholeName] = project
 	log.Infof("update project: %s success", projectName)
 	return true, code
 }
