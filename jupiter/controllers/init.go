@@ -31,6 +31,7 @@ type InitController struct {
 	BaseController
 }
 
+
 // @Title .
 // @Description.
 // @router / [get]
