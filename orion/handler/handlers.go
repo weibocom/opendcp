@@ -64,6 +64,9 @@ func GetAllActionImpl(biz_id int) []ActionImpl {
 	for _, h := range handlers {
 		acts := h.ListAction(biz_id)
 		for _, act := range acts {
+			if act.Name == REQUESTSID || act.Name == RequestVMTypeId {
+				continue
+			}
 			all = append(all, act)
 		}
 	}
