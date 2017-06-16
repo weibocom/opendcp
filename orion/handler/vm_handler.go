@@ -205,7 +205,7 @@ func (v *VMHandler) createVMs(action *models.ActionImpl, params map[string]inter
 
 	url := fmt.Sprintf(apiCreate, jupiterAddr, cluster, num)
 	header := map[string]interface{} {
-		"X-Biz-ID": action.BizId,
+		"X-Biz-ID": strconv.Itoa(action.BizId),
 		"X-CORRELATION-ID": corrId,
 	}
 	resp, hr := v.callAPI("POST", url, nil, &header)
@@ -269,9 +269,12 @@ func (v *VMHandler) createVMs(action *models.ActionImpl, params map[string]inter
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
 		logService.Info(fid,batchId,correlationId,fmt.Sprintf("check result for times %d", i+1))
-
+		header := map[string]interface{} {
+			"X-Biz-ID": strconv.Itoa(action.BizId),
+		}
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
-		msg, err := utils.Http.Get(url, nil)
+
+		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
 			logService.Warn(fid,batchId,correlationId,"check result err: \n")
 			continue
@@ -414,7 +417,7 @@ func (v *VMHandler) returnVMs(action *models.ActionImpl, params map[string]inter
 	url := fmt.Sprintf(apiReturn, jupiterAddr, strings.Join(ids, ","))
 	header := map[string]interface{} {
 		"X-CORRELATION-ID": corrId,
-		"X-Biz-ID": action.BizId,
+		"X-Biz-ID": strconv.Itoa(action.BizId),
 		"APPKEY": SD_APPKEY,
 	}
 	_, hr := v.callAPI("DELETE", url, nil, &header)
@@ -484,12 +487,12 @@ func (v *VMHandler) callAPI(method string, url string,
 	return resp, nil
 }
 
-func (v *VMHandler) GetLog(nodeState *models.NodeState) string {
+func (v *VMHandler) GetLog(nodeState *models.NodeState,biz_id int) string {
 	corrId , instanceId := nodeState.CorrId, nodeState.VmId
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["X-SOURCE"] = "orion"
-
+	header["X-Biz-ID"] = strconv.Itoa(biz_id)
 	beego.Debug("Get log for", instanceId, "...")
 	url := fmt.Sprintf(apiLog, jupiterAddr, corrId, instanceId)
 	msg, err := v.callAPI("GET", url, nil, &header)

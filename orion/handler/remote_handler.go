@@ -405,13 +405,13 @@ type logResp struct {
 	}
 }
 
-func (h *RemoteHandler) GetLog(nodeState *models.NodeState) string {
+func (h *RemoteHandler) GetLog(nodeState *models.NodeState,biz_id int) string {
 	corrId , instanceId := nodeState.CorrId, nodeState.VmId
 
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["X-SOURCE"] = "orion"
-
+	header["X-Biz-ID"] = strconv.Itoa(biz_id)
 	data := make(map[string]interface{})
 	data["host"] = nodeState.Ip
 	data["source"] = "orion"
