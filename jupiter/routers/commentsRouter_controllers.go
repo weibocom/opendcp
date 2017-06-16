@@ -446,5 +446,11 @@ func init() {
 			Router: `/listener/whitelist`,
 			AllowHTTPMethods: []string{"get"},
 			Params: nil})
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InitController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InitController"],
+		beego.ControllerComments{
+			Method: "InitDB",
+			Router: `/`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
 
 }

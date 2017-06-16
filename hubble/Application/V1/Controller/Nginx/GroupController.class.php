@@ -65,7 +65,7 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -100,7 +100,7 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('id is error'));
         }
 
-        if($bid < 1)
+        if($bid < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $group = new GroupModel() ;
@@ -140,7 +140,7 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -187,7 +187,7 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -257,7 +257,7 @@ class GroupController extends RestController{
             $this->ajaxReturn(std_error('limit is error'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         

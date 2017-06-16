@@ -68,7 +68,7 @@ class BalanceController extends RestController{
             $this->ajaxReturn(std_error('opr_user is empty'));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $filter = ['biz_id' => $bidArg];
@@ -109,7 +109,7 @@ class BalanceController extends RestController{
             $this->ajaxReturn(std_error('limit error'));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         if($like){
@@ -156,7 +156,7 @@ class BalanceController extends RestController{
         if($id <= 0){
             $this->ajaxReturn(std_error("id is empty"));
         }
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $filter = ['biz_id' => $bidArg, 'id' => $id];
@@ -193,7 +193,7 @@ class BalanceController extends RestController{
             $this->ajaxReturn(std_error("modify content is empty"));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $data = [];
@@ -231,7 +231,7 @@ class BalanceController extends RestController{
         if($id <= 0 ){
             $this->ajaxReturn(std_error('id is empty'));
         }
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $AlterationType = new AlterationType();

@@ -58,7 +58,7 @@ class UpstreamController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         // 参数检查
@@ -113,7 +113,7 @@ class UpstreamController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
         
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -148,7 +148,7 @@ class UpstreamController extends RestController{
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $consulArg = $consulArg == 0 ? false:true;
@@ -181,7 +181,7 @@ class UpstreamController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -212,7 +212,7 @@ class UpstreamController extends RestController{
         if(empty($contentArg))
             $this->ajaxReturn(std_error('content is empty'));
 
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         
@@ -236,7 +236,7 @@ class UpstreamController extends RestController{
         if(empty($nameArg) || empty($groupIdArg))
             $this->ajaxReturn(std_error('name or group_id is empty'));
         
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         $upstream = new Upstream();
@@ -258,7 +258,7 @@ class UpstreamController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -279,7 +279,7 @@ class UpstreamController extends RestController{
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_id is empty'));
 
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         
@@ -317,7 +317,7 @@ class UpstreamController extends RestController{
         if(empty($scriptIdArg))
             $this->ajaxReturn(std_error('script_id is empty'));
 
-        if($bidArg < 1){
+        if($bidArg < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         

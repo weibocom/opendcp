@@ -103,6 +103,9 @@ class package{
         'accept: application/json',
         'X-HTTP-Method-Override: ' . $method,
         'Authorization: '.$token,
+        'X-Biz-ID: ' . $_SESSION['open_biz_id'],
+        'X-Biz-Name: ' . $_SESSION['open_biz_name'],
+        'X-Biz-Status: ' . $_SESSION['open_biz_status'],
       );
       $url = $this -> domain . '/' . $module . '/' . $action;
       $url.=(is_array($data))?'?'.http_build_query($data):$data;
@@ -151,6 +154,9 @@ class package{
         'accept: application/json',
         'X-HTTP-Method-Override: ' . $method,
         'Authorization: '.$token,
+        'X-Biz-ID: ' . $_SESSION['open_biz_id'],
+        'X-Biz-Name: ' . $_SESSION['open_biz_name'],
+        'X-Biz-Status: ' . $_SESSION['open_biz_status'],
       );
       $url = $this -> domain . $uri;
       if($method == 'GET' || $method == 'DELETE') $url.='?'.$data;
