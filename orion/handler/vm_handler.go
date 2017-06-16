@@ -159,7 +159,7 @@ func (v *VMHandler) requestVMTypeId(action *models.ActionImpl) *HandleResult {
 
 	url := fmt.Sprintf(apiVmTypeId, jupiterAddr)
 	header := map[string]interface{} {
-		"X-Biz-ID": biz_id,
+		"X-Biz-ID":strconv.Itoa(biz_id),
 	}
 	resp, hr := v.callAPI("GET", url, nil, &header)
 	if hr != nil {
