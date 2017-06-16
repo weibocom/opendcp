@@ -60,7 +60,7 @@ class HistoryController extends RestController {
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         // 设置过滤器

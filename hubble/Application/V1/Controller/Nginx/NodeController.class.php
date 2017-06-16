@@ -74,7 +74,7 @@ class NodeController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         //检查是否存在单元
@@ -147,7 +147,7 @@ class NodeController extends RestController
             $this->ajaxReturn(std_error('id error'));
         }
         
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $node = new NodeModel() ;
@@ -185,7 +185,7 @@ class NodeController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $filter = ['biz_id' => $bidArg];
@@ -237,7 +237,7 @@ class NodeController extends RestController
             $this->ajaxReturn(std_error('unit_id error'));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $filter['unit_id'] = $unit_id;

@@ -57,7 +57,7 @@ class ShellController extends RestController{
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         // 设置过滤器
@@ -105,7 +105,7 @@ class ShellController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
         
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         $shell = new Shell();
@@ -135,7 +135,7 @@ class ShellController extends RestController{
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         $shell = new Shell();
@@ -167,7 +167,7 @@ class ShellController extends RestController{
         if(empty($contentArg))
             $this->ajaxReturn(std_error('content is empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         $shell = new Shell();
@@ -194,7 +194,7 @@ class ShellController extends RestController{
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         $shell = new Shell();
