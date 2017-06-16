@@ -57,7 +57,6 @@
         - ./conf/jupiter.json:/go/src/weibo.com/opendcp/jupiter/conf/jupiter.json
         - ./conf/jupiter.conf:/go/src/weibo.com/opendcp/jupiter/conf/app.conf
         - ./logs:/go/src/weibo.com/opendcp/jupiter/logs
-        - /root/yifeng/opendcp/jupiter:/go/src/weibo.com/opendcp/jupiter
      ports:
         - "8083:8080"
      depends_on:
