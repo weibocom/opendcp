@@ -65,7 +65,7 @@ class AutoAlterationController extends RestController {
                 $this->ajaxReturn(std_error("parameter [$p] is absent or empty, please check and try again."));
         }
         
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $ipStr = $this->input['ips'];
@@ -95,7 +95,7 @@ class AutoAlterationController extends RestController {
                 $this->ajaxReturn(std_error("parameter [$p] is absent or empty, please check and try again."));
         }
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $ipStr = $this->input['ips'];
@@ -126,7 +126,7 @@ class AutoAlterationController extends RestController {
         if(empty($gid) && empty($rid))
             $this->ajaxReturn(std_error('correlation-id and release_id are both empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $record =  new AlterationHistory();
@@ -196,6 +196,10 @@ class AutoAlterationController extends RestController {
 
     public function type_param_get(){
         $typeArg = I('type');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
+        
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         if(empty($typeArg))
             $this->ajaxReturn(std_error('type is empty'));

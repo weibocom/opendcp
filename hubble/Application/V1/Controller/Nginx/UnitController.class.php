@@ -73,7 +73,7 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -111,7 +111,7 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('id error'));
         }
         
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -156,7 +156,7 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         //检查ID是否存在
@@ -210,7 +210,7 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('user is empty'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
 
@@ -272,7 +272,7 @@ class UnitController extends RestController
             $this->ajaxReturn(std_error('limit error'));
         }
 
-        if($bid < 1){
+        if($bid < 0){
             $this->ajaxReturn(std_error('biz_id is empty'));
         }
         
