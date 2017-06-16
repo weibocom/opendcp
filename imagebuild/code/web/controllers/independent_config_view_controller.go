@@ -24,7 +24,6 @@ package controllers
 import (
 	"net/http"
 	"weibo.com/opendcp/imagebuild/code/web/models"
-	"weibo.com/opendcp/jupiter/service/cluster"
 )
 /**
 Independent配置视图
