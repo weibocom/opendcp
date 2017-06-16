@@ -125,7 +125,7 @@ class OprlogController extends RestController{
         if(empty($ipArg))
             $this->ajaxReturn(std_error('ip is empty'));
 
-        if($bidArg < 1)
+        if($bidArg < 0)
             $this->ajaxReturn(std_error('biz_id is empty'));
 
         $logDb = new LogDb();
