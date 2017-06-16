@@ -64,23 +64,25 @@ $arrJson=($myJson)?json_decode($myJson,true):array();
 $logJson=$arrJson;
 if(isset($logJson['pass'])) $logJson['pass']=md5('z_'+$logJson['pw']);
 
-if(isset($arrJson) && !empty($arrJson)){
-  //校验验证码
-  if(!isset($arrJson['verification_code']) || $arrJson['verification_code']!==$_SESSION['verification_code']){
+if($myAction=='login'){
+  if(isset($arrJson) && !empty($arrJson)){
+    //校验验证码
+    if(!isset($arrJson['verification_code']) || $arrJson['verification_code']!==$_SESSION['verification_code']){
+      $retArr = array(
+        'code' => 1,
+        'msg' => '验证码错误',
+      );
+      echo json_encode($retArr, JSON_UNESCAPED_UNICODE);
+      exit;
+    }
+  }else{
     $retArr = array(
       'code' => 1,
-      'msg' => '验证码错误',
+      'msg' => '非法请求'
     );
     echo json_encode($retArr, JSON_UNESCAPED_UNICODE);
     exit;
   }
-}else{
-  $retArr = array(
-    'code' => 1,
-    'msg' => '非法请求'
-  );
-  echo json_encode($retArr, JSON_UNESCAPED_UNICODE);
-  exit;
 }
 
 //记录操作日志
