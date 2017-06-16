@@ -614,6 +614,12 @@ func (f *FlowApi) GetFlowLogById() {
 
 // GetLog get log using nodeState Id
 func (f *FlowApi) GetLog() {
+	biz := f.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
 	idStr := f.Ctx.Input.Param(":nsid")
 	nodeStateId, err:= strconv.Atoi(idStr)
 	if err != nil {
@@ -628,7 +634,7 @@ func (f *FlowApi) GetLog() {
 		return
 	}
 
-	logs, err := getLog(nodeState)
+	logs, err := getLog(nodeState,biz_id)
 	if err != nil {
 		f.ReturnFailed(err.Error(), 400)
 		return
@@ -638,7 +644,7 @@ func (f *FlowApi) GetLog() {
 }
 
 var handlers = make(map[string]*handler.Handler)
-func getLog(nodeState *NodeState) ([]map[string]string, error) {
+func getLog(nodeState *NodeState,biz_id int) ([]map[string]string, error) {
 	logs := make([]map[string]string, 0)
 
 	// load flow definition
@@ -674,7 +680,7 @@ func getLog(nodeState *NodeState) ([]map[string]string, error) {
 			handlers[step.Type] = hdl
 		}
 
-		log := (*hdl).GetLog(nodeState)
+		log := (*hdl).GetLog(nodeState,biz_id)
 		stepLog := map[string]string {
 			step.Name: log,
 		}

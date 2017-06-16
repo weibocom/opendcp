@@ -198,6 +198,13 @@ func (h *ServiceDiscoveryHandler) requestSID(action *models.ActionImpl) *HandleR
 
 	data := resp["data"].(map[string]interface{})
 	content := data["content"].([]interface{})
+
+	if content == nil || len(content) ==0 {
+		beego.Error("content is null")
+		return Err("content is null")
+
+	}
+
 	first := content[0].(map[string]interface{})
 
 	id := (first["id"].(string))
@@ -344,12 +351,13 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 	return nil
 }
 
-func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
+func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState,biz_id int) string {
 	corrId , instanceId := nodeState.CorrId, nodeState.VmId
 
 	header:= make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
+	header["X-Biz-ID"] = strconv.Itoa(biz_id)
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
