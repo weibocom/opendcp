@@ -181,7 +181,7 @@ func (app *Server) NewProject(projectName, creator, cluster, defineDockerFileTyp
 
 	var projectWholeName = app.getWholeProjectName(cluster, projectName)
 	app.projects[projectWholeName] = project
-	log.Infof("new project: %s success", projectName)
+	log.Infof("new project: %s success", projectWholeName)
 	return true, code
 }
 
@@ -191,7 +191,7 @@ func (app *Server) DeleteProject(cluster, projectName string, operator string) (
 	defer app.projectLock.Unlock()
 	var projectWholeName = app.getWholeProjectName(cluster, projectName)
 	if _, ok := app.projects[projectWholeName]; !ok {
-		log.Errorf("project: %s to delete no exist", projectName)
+		log.Errorf("project: %s to delete no exist", projectWholeName)
 		return false, errors.DELETE_PROJECT_NOT_EXIST
 	}
 
@@ -210,7 +210,7 @@ func (app *Server) SaveProjectConfig(cluster, projectName string, configs []map[
 	projectWholeName := app.getWholeProjectName(cluster, projectName)
 	var project pro.Project = app.getProject(projectWholeName)
 	if project == nil {
-		log.Errorf("Project: %s to save config not exist", projectName)
+		log.Errorf("Project: %s %s to save config not exist", cluster, projectName)
 		return false
 	}
 	return project.Save(configs)
@@ -221,6 +221,7 @@ func (app *Server) GetProjectConfigView(cluster string, projectName string) (int
 	var project pro.Project = app.getProject(projectWholeName)
 
 	if project == nil {
+		log.Infof("Project: %s %s config not exist", cluster, projectName)
 		project = app.getProject(DefaultProjectName)
 	}
 
@@ -296,14 +297,18 @@ func (app *Server) BuildImage(cluster string, projectName, tag, operator string)
 	go func() {
 		//清空日志
 		project.ClearLog()
-
+		project.AppendLog(fmt.Sprintf("%s\t[%s]\t%s begin generate dockerfile",app.timeNow(),"Info",projectName))
+		buildHistoryService.UpdateRecord(id, project.GetLog(), service.BUILDING)
 		success := project.BuildImage()
 		if success {
 			log.Infof("%s build dockerfile success id:%d", projectName, id)
+			project.AppendLog(fmt.Sprintf("%s\t[%s]\t%s build dockerfile success id:%d",app.timeNow(),"Info",projectName, id))
+			buildHistoryService.UpdateRecord(id, project.GetLog(), service.BUILDING)
 			log.Infof("start build and push image with project:%s state for build id:%d", projectName, id)
-			pushSuccess := project.BuildAndPushImage(tag)
+			pushSuccess := project.BuildAndPushImage(id, tag)
 			if pushSuccess {
 				log.Infof("%s push success id:%d tag:%s", projectName, id, tag)
+				project.AppendLog(fmt.Sprintf("%s\t[%s]\t%s push success id:%d tag:%s",app.timeNow(),"Info", projectName, id, tag))
 				pro.ClearTmp(cluster, projectName)
 				if id != -1 {
 					log.Infof("start update project %s state for id:%d", projectName, id)
@@ -321,6 +326,7 @@ func (app *Server) BuildImage(cluster string, projectName, tag, operator string)
 		} else {
 			log.Errorf("%s build fail id:%d", projectName, id)
 			if id != -1 {
+				project.AppendLog(fmt.Sprintf("%s\t[%s]\t%s build dockerfile failure id:%d",app.timeNow(),"Error",projectName, id))
 				log.Infof("start update project %s state for build id:%d", projectName, id)
 				buildHistoryService.UpdateRecord(id, project.GetLog(), service.FAIL)
 				log.Infof("finish update project %s state for build id:%d", projectName, id)
@@ -518,6 +524,12 @@ func (app *Server) loadNewPlugin(pluginType int, name string, path string) {
 
 //返回完整名称
 func (app *Server) getWholeProjectName(cluster string, projectName string)(string){
+	projectName = strings.ToLower(projectName)
 	return cluster + "^" + projectName
+}
+
+//获取当前时间
+func (app *Server) timeNow() string {
+	return time.Now().Format("2006-01-02 15:04:05") + "\t"
 }
 
