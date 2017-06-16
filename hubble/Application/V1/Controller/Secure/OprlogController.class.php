@@ -50,6 +50,7 @@ class OprlogController extends RestController{
     public function list_get(){
 
         // 参数获取
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $fileArg    = I('operation', '');
         $page       = I('page', 1);
         $limit      = I('limit', 20);
@@ -58,9 +59,11 @@ class OprlogController extends RestController{
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('wrong page or limit'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         // 设置过滤器
-        $filter     = [];
+        $filter     = ['biz_id' => $bidArg];
         if(!empty($fileArg))
             $filter['operation'] = $fileArg;
 
@@ -94,13 +97,16 @@ class OprlogController extends RestController{
     public function log_get(){
 
         $gidArg = I('correlation_id', '');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($gidArg))
             $this->ajaxReturn(std_error('correlation_id is empty'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         $logDb = new LogDb();
-        $ret =  $logDb->getAllLog($gidArg);
+        $ret =  $logDb->getAllLog($gidArg,$bidArg);
 
         if($ret['code'] != 0)
             $this->ajaxReturn(std_error('get log from db:'.$ret['msg']));
@@ -111,6 +117,7 @@ class OprlogController extends RestController{
     public function iplog_get(){
         $gidArg = I('correlation_id', '');
         $ipArg = I('ip');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($gidArg))
             $this->ajaxReturn(std_error('correlation_id is empty'));
@@ -118,8 +125,11 @@ class OprlogController extends RestController{
         if(empty($ipArg))
             $this->ajaxReturn(std_error('ip is empty'));
 
+        if($bidArg < 1)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $logDb = new LogDb();
-        $ret =  $logDb->getOctanLog($gidArg, $ipArg);
+        $ret =  $logDb->getOctanLog($gidArg, $bidArg,$ipArg);
 
         $this->ajaxReturn(std_return(implode('\n', $ret)));
     }
