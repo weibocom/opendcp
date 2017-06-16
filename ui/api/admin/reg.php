@@ -138,7 +138,7 @@ class myself{
         return $ret;
       }
       //注册公司名称
-      $retBiz = $biz->add(['name' => $retReg[$regId]['biz']]);
+      $retBiz = $biz->add(['name' => $retReg[$regId]['biz'], 'status' => 0]);
       $bizId = (isset($retBiz['content'])&&!empty($retBiz['content'])) ? $retBiz['content'] : 0;
       if(empty($bizId)){
         $ret['msg'] = '公司名称注册失败';
