@@ -82,6 +82,7 @@ func (c *ConfigSaveController) Post() {
 			}
 			pluginName := tmp[0]
 			attributeName := tmp[1]
+			log.Infof("pluginName: %s",pluginName)
 			if _, ok := pluginMap[pluginName]; !ok {
 				pluginConfig = make(map[string]interface{}, 0)
 				pluginConfig["$$plugin"] = pluginName
@@ -113,6 +114,7 @@ func (c *ConfigSaveController) Post() {
 	projectName = strings.ToLower(projectName)
 	for _,spec := range specialStrings {
 		if strings.Contains(projectName, spec) {
+			log.Errorf("projectName contains special char:" + spec)
 			var resp = models.BuildResponse(
 				errors.PARAMETER_INVALID,
 				"projectName contains special char:" + spec,
@@ -128,6 +130,7 @@ func (c *ConfigSaveController) Post() {
 
 	exist := models.AppServer.IsProjectExist(cluster, projectName)
 	if addOrUpdate == "add" && exist{
+		log.Errorf("project is already exist")
 		var resp = models.BuildResponse(
 			errors.CREATE_PROJECT_ALREADY_EXIST,
 			"project:" + projectName + " already exist",
@@ -140,12 +143,15 @@ func (c *ConfigSaveController) Post() {
 	var ok bool
 	var code int
 	if exist {
+		log.Infof("UpdateProject: %s %s", cluster, projectName)
 		ok, code = models.AppServer.UpdateProject(projectName, creator, cluster, defineDockerFileType)
 	} else {
+		log.Infof("NewProject: %s %s", cluster, projectName)
 		ok, code = models.AppServer.NewProject(projectName, creator, cluster, defineDockerFileType)
 	}
 
 	if !ok {
+		log.Errorf("fail: %s %s", cluster, projectName)
 		response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 		c.Data["json"] = response
 		c.ServeJSON(true)
@@ -157,11 +163,13 @@ func (c *ConfigSaveController) Post() {
 	var resp interface{}
 
 	if succ {
+		log.Errorf("save config success!")
 		resp = models.BuildResponse(
 			errors.OK,
 			"",
 			errors.ErrorCodeToMessage(errors.OK))
 	} else {
+		log.Errorf("save config failue!")
 		resp = models.BuildResponse(
 			errors.INTERNAL_ERROR,
 			"",

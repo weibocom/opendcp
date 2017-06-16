@@ -42,11 +42,12 @@ type Project interface {
 	View(lang string) string // 返回project的页面数据
 	Info() ProjectInfo
 	BuildImage() bool                           // 构建镜像
-	BuildAndPushImage(tag string) bool          // push镜像
+	BuildAndPushImage(logId int64, tag string) bool          // push镜像
 	Save(configs []map[string]interface{}) bool // 保存配置
 
 	ClearLog()
 	GetLog() string
+	AppendLog(line string)
 }
 
 func NewProject(projectName string,

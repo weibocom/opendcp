@@ -34,7 +34,7 @@ type ProjectNewController struct {
 }
 
 func (c *ProjectNewController) Post() {
-	log.Info("ProjectNewController: %s", c.Ctx.Request.Form)
+	log.Infof("ProjectNewController: %s", c.Ctx.Request.Form)
 	projectName := c.GetString("projectName")
 	creator := c.Operator()
 	cluster := c.BizName()
