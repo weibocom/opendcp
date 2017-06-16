@@ -318,7 +318,7 @@ class myself{
     $header = array(
       'accept: application/json',
       'Content-Type: application/json',
-      'X-HTTP-Method-Override: POST',
+      'X-HTTP-Method-Override: GET',
       'Authorization: '.$myUser,
       'X-CORRELATION-ID: ' . str_replace(array('0.',' '),'',microtime()),
       'X-Biz-ID: ' . $id,
@@ -331,8 +331,7 @@ class myself{
     curl_setopt($handle, CURLOPT_HTTPHEADER, $header);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($handle, CURLOPT_TIMEOUT, 10);
-    curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'POST');
-    curl_setopt($handle, CURLOPT_POST, 1);
+    curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'GET');
     $result = curl_exec($handle);
     $arrRecodeLog['t_code'] .= '服务编排接口：' . $url . "\n";
     $arrRecodeLog['t_code'] .= '服务编排返回：' . str_replace(array("\n", "\r"), '', $result) . "\n\n";
@@ -377,7 +376,7 @@ class myself{
       'X-Biz-Name: ' . $name,
       'X-Biz-Status: ' . $status,
     );
-    $url = HUBBLE_DOMAIN . '/v1/tools/tool/nginx_init';
+    $url = HUBBLE_DOMAIN . '/v1/tools/tool/nginx_init/';
     $handle = curl_init();
     curl_setopt($handle, CURLOPT_URL, $url);
     curl_setopt($handle, CURLOPT_HTTPHEADER, $header);
