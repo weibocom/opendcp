@@ -524,6 +524,7 @@ func (app *Server) loadNewPlugin(pluginType int, name string, path string) {
 
 //返回完整名称
 func (app *Server) getWholeProjectName(cluster string, projectName string)(string){
+	projectName = strings.ToLower(projectName)
 	return cluster + "^" + projectName
 }
 
