@@ -14,8 +14,6 @@ import (
 	"sync"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 	"weibo.com/opendcp/jupiter/models"
-
-	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/flavors"
 )
 
