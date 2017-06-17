@@ -32,9 +32,10 @@ func init(){
 }
 
 
-var instanceTypesInOpenStack map[string]string
+var instanceTypesInOpenStack = map[string]string{}
+
 var instanceTypesList []string
-var networksInOpenStack map[string]string
+var networksInOpenStack = map[string]string{}
 var networksList []string
 
 //列出所有server
