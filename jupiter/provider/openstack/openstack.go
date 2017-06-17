@@ -33,7 +33,10 @@ func init(){
 }
 
 
-var instanceTypesInOpenStack []string
+var instanceTypesInOpenStack map[string]string
+var instanceTypesList []string
+var networksInOpenStack map[string]string
+var networksList []string
 
 //列出所有server
 //openstack不需要提供pageNumber和pageSize,该如何处理
@@ -80,8 +83,10 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 //将instanceType对应OpenStack中的flavor
 //openstack中的获取InstanceType方法待做，需要与创建机型模板那边联动
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
+
+	
 	if instanceTypesInOpenStack != nil{
-		return instanceTypesInOpenStack, nil
+		return instanceTypesList, nil
 	}
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(driver.client, opts)
@@ -89,13 +94,14 @@ func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
 		flavorList, err := flavors.ExtractFlavors(page)
 		for _, flavor := range flavorList {
-			instanceTypesInOpenStack = append(instanceTypesInOpenStack, flavor.Name)
+			instanceTypesList = append(instanceTypesList, flavor.Name)
+			instanceTypesInOpenStack[flavor.Name] = flavor.ID
 		}
 		return true, err
 	})
 
 
-	return instanceTypesInOpenStack, err
+	return instanceTypesList, err
 }
 
 func (driver openstackProvider) ListSecurityGroup(regionId string, vpcId string) (*models.SecurityGroupsResp, error){
@@ -229,6 +235,7 @@ func (driver openstackProvider) ListImages(regionId string, snapshotId string, p
 		imageList, err := images.ExtractImages(page)
 		for _, imageOp := range imageList {
 			image := models.Image{
+
 				//Architecture: imageOp.
 				CreationDate: imageOp.Created,
 				//Description: imageOp.
@@ -357,13 +364,13 @@ func (driver openstackProvider) ListNetworks() (networks.Network, error){
 	// Retrieve a pager (i.e. a paginated collection)
 	pager := networks.List(client, opts1)
 
-	netList := make([]networks.Network,0)
+	netList := make([]string,0)
 
 	err = pager.EachPage(func(page pagination.Page) (bool, error) {
 		networkList, err := networks.ExtractNetworks(page)
-		for _, n := range networkList {
+		for _, network := range networkList {
 			// "n" will be a networks.Network
-			netList = append(netList, n)
+			netList = append(netList, network.ID)
 		}
 
 		return true, err
