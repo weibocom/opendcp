@@ -530,7 +530,7 @@ func (aliyunProvider) AttachGateway(input *models.AttachGateway) (bool, error) {
 	return true, nil
 }
 
-func (aliyunProvider) ListNetworks(input *models.Cluster){
+func (aliyunProvider) ListNetworks()([]string, error){
 	return nil, nil
 }
 
