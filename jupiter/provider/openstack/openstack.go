@@ -15,6 +15,7 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
 	"weibo.com/opendcp/jupiter/models"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/flavors"
+	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -344,7 +345,7 @@ func waitForSpecific(f func() bool, maxAttempts int, waitInterval time.Duration)
 	return fmt.Errorf("Maximum number of retries (%d) exceeded", maxAttempts)
 }
 
-func (driver openstackProvider) ListNetworks() (networks.Network, error){
+func (driver openstackProvider) ListNetworks() ([]string, error){
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: "http://10.39.59.27:5000/v3",
 		Username: "admin",
@@ -368,7 +369,7 @@ func (driver openstackProvider) ListNetworks() (networks.Network, error){
 		networkList, err := networks.ExtractNetworks(page)
 		for _, network := range networkList {
 			// "n" will be a networks.Network
-			netList = append(netList, network.ID)
+			netList = append(netList, network.Name)
 		}
 
 		return true, err
