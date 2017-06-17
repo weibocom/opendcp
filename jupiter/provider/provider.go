@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"weibo.com/opendcp/jupiter/models"
-	"github.com/rackspace/gophercloud/rackspace/compute/v2/networks"
+
 )
 
 type ProviderDriver interface {
