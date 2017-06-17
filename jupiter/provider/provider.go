@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"weibo.com/opendcp/jupiter/models"
+	"github.com/rackspace/gophercloud/rackspace/compute/v2/networks"
 )
 
 type ProviderDriver interface {
@@ -49,6 +50,7 @@ type ProviderDriver interface {
 	ListDiskCategory() []string
 	ListInternetChargeType() []string
 	AllocatePublicIpAddress(instanceId string) (string, error)
+	ListNetworks() (networks.Network, error)
 }
 
 type ProviderDriverFunc func() (ProviderDriver, error)
