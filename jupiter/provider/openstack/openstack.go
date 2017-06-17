@@ -85,9 +85,9 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
 	
-	if instanceTypesInOpenStack != nil{
-		return instanceTypesList, nil
-	}
+	//if instanceTypesInOpenStack != nil{
+	//	return instanceTypesList, nil
+	//}
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(driver.client, opts)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
