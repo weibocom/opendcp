@@ -450,7 +450,7 @@ func init() {
 		beego.ControllerComments{
 			Method: "InitDB",
 			Router: `/`,
-			AllowHTTPMethods: []string{"get"},
+			AllowHTTPMethods: []string{"get","post"},
 			Params: nil})
 
 }
