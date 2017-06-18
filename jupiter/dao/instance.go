@@ -29,7 +29,8 @@ import (
 func GetInstance(instanceId string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).Filter("biz_id", bizId).
+	//err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).Filter("biz_id", bizId).
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("instance_id", instanceId).
 		Exclude("status", models.Deleted).One(&instance)
 	if err != nil {
 		return nil, err
@@ -86,7 +87,8 @@ func UpdateDeletingStatus(instanceId string, bizId int) error {
 func GetInstanceByPrivateIp(ip string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("private_ip_address", ip).
+	//err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("private_ip_address", ip).
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("private_ip_address", ip).
 		Exclude("status", models.Deleted).One(&instance)
 	if err != nil {
 		return nil, err
@@ -97,7 +99,8 @@ func GetInstanceByPrivateIp(ip string, bizId int) (*models.Instance, error) {
 func GetInstanceByPublicIp(ip string, bizId int) (*models.Instance, error) {
 	o := GetOrmer()
 	var instance models.Instance
-	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("public_ip_address", ip).
+	//err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("public_ip_address", ip).
+	err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("public_ip_address", ip).
 		Exclude("status", models.Deleted).One(&instance)
 	if err != nil {
 		return nil, err

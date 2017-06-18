@@ -26,6 +26,7 @@ import (
 	"weibo.com/opendcp/orion/utils"
 	"weibo.com/opendcp/orion/handler"
 	"strconv"
+	"strings"
 )
 
 type InitApi struct {
@@ -70,7 +71,7 @@ func (c *InitApi) InitDB() {
 
 
 	//2、调用hubble接口， 获取sid
-	service_discovery_id := -1
+	service_discovery_id := 9
 
 	actionImpl = handler.GetActionImpl(biz_id,handler.REQUESTSID)
 
@@ -157,8 +158,10 @@ func (c *InitApi) CreateCSP(vm_type_id int, service_discovery_id int, biz_id int
 	flowImpls := content["flow_impl"]
 	flowIds := make([]int,len(flowImpls))
 	for index,sql := range flowImpls {
-		if index >=0 && index <=3{
+		if index >=0 && index <=1{
 			sql = fmt.Sprintf(sql,vm_type_id,biz_id)
+		}else if index ==3 {
+			sql = fmt.Sprintf(sql,vm_type_id,service_discovery_id,biz_id)
 		}else if index ==4 {
 			sql = fmt.Sprintf(sql,service_discovery_id,vm_type_id,biz_id)
 		}else{
@@ -265,13 +268,18 @@ func (c *InitApi) CreateRemoteAction(biz_id int, content map[string][]string) (e
 		if err != nil {
 			return err
 		}
-		fmt.Println(id64)
 		id := int(id64)
 
 
 		//插入RemoteActionImpl
 		sql = actionImpls[index]
-		sql = fmt.Sprintf(sql,id,biz_id)
+		if index == 5{
+			sql = strings.Replace(sql,"action_id_value",strconv.Itoa(id),-1)
+			sql = strings.Replace(sql,"biz_id_value",strconv.Itoa(biz_id),-1)
+		}else{
+			sql = fmt.Sprintf(sql,id,biz_id)
+		}
+
 
 		fmt.Println(sql)
 

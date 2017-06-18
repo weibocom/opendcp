@@ -261,7 +261,7 @@ func (h *ServiceDiscoveryHandler) do(actionImpl *models.ActionImpl, action strin
 
 	header:= make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
-	header["X-Biz-ID"] = actionImpl.BizId
+	header["X-Biz-ID"] = strconv.Itoa(actionImpl.BizId)
 	header["APPKEY"] = SD_APPKEY
 
 	resp := &sdCmdResp{}
