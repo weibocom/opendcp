@@ -171,12 +171,10 @@ LOCK TABLES `tbl_hubble_nginx_conf_upstream` WRITE;
 INSERT INTO `tbl_hubble_nginx_conf_upstream` (`id`, `name`, `content`, `group_id`, `is_consul`, `deprecated`, `release_id`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
 	(1,'default.upstream','upstream default_upstream{
-		keepalive 3;
+	keepalive 4;
         server 127.0.0.1:8080 max_fails=0 fail_timeout=30s weight=20;
-        server 60.205.149.54:9999 max_fails=0 fail_timeout=30s weight=20;
-	server 101.201.226.198:8080 max_fails=0 fail_timeout=30s weight=20;
         check interval=1000 rise=3 fall=2 timeout=3000 type=http default_down=false;
-        check_http_send "GET / HTTP/1.0\r\n\r\n";
+        check_http_send "GET / HTTP/1.0";
         check_http_expect_alive http_2xx;
 }',1,0,0,0,'2016-11-15 22:11:23','2016-11-15 22:11:23','system',0);
 
@@ -338,7 +336,7 @@ for i in `echo "$HUBBLE_FILE_NAMES" | tr '','' ''\n''`; do
            fi
 done
 for i in `find . -name *.upstream.new`; do
-           mv "$i" "`echo $i | sed ''s/\(.*\)\.new/\1/g''`"
+           mv "$i" "`echo ${i%.*}`"
 done
 ng_conf_ok=`docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t 2>&1 |grep successful |wc -l`
 ng_conf_error=`docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t 2>&1|grep failed -A 1`
