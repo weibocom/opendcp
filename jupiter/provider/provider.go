@@ -51,7 +51,7 @@ type ProviderDriver interface {
 	AllocatePublicIpAddress(instanceId string) (string, error)
 }
 
-type ProviderDriverFunc func() (ProviderDriver, error)
+type ProviderDriverFunc func(int, string) (ProviderDriver, error)
 
 var registeredPlugins = map[string](ProviderDriverFunc){}
 
@@ -59,15 +59,15 @@ func RegisterProviderDriver(name string, f ProviderDriverFunc) {
 	registeredPlugins[name] = f
 }
 
-func New(name string) (ProviderDriver, error) {
-	if name == "" {
+func New(bizId int, provider string) (ProviderDriver, error) {
+	if provider == "" {
 		return nil, fmt.Errorf("the provider cannot be null.")
 	}
-	f, ok := registeredPlugins[name]
+	f, ok := registeredPlugins[provider]
 	if !ok {
-		return nil, fmt.Errorf("unknown backend provider driver: %s", name)
+		return nil, fmt.Errorf("unknown backend provider driver: %s", provider)
 	}
-	return f()
+	return f(bizId, provider)
 }
 
 func ListDrivers() []string {

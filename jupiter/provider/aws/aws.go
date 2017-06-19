@@ -544,11 +544,11 @@ func (driver awsProvider) WaitToStartInstance(instanceId string) bool {
 	return false
 }
 
-func new() (provider.ProviderDriver, error) {
-	return newProvider()
+func new(bizId int, provider string) (provider.ProviderDriver, error) {
+	return newProvider(bizId, provider)
 }
 
-func newProvider() (provider.ProviderDriver, error) {
+func newProvider(bizId int, provider string) (provider.ProviderDriver, error) {
 	client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
 	ret := awsProvider{
 		client: client,

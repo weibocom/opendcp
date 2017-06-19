@@ -39,10 +39,11 @@ import (
 const PhyDev = "phydev"
 
 func CreateOne(cluster *models.Cluster) (string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	providerDriver, err := provider.New(cluster.BizId, cluster.Provider)
 	if err != nil {
 		return "", err
 	}
+
 	instanceIds, errs := providerDriver.Create(cluster, 1)
 	if errs != nil {
 		return "", errs[0]
@@ -63,7 +64,7 @@ func StartOne(instanceId string, bizId int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+	providerDriver, err := provider.New(ins.BizId, ins.Provider)
 	if err != nil {
 		return false, err
 	}
@@ -79,7 +80,7 @@ func StopOne(instanceId string, bizId int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+	providerDriver, err := provider.New(ins.BizId, ins.Provider)
 	if err != nil {
 		return false, err
 	}
@@ -102,7 +103,7 @@ func DeleteOne(instanceId, correlationId string, bizId int) error {
 		return err
 	}
 	if ins.Provider != PhyDev {
-		providerDriver, err := provider.New(ins.Provider)
+		providerDriver, err := provider.New(ins.BizId, ins.Provider)
 		if err != nil {
 			logstore.Error(correlationId, instanceId, err)
 			return err
@@ -195,8 +196,8 @@ func GetProviders() ([]string, error) {
 	return provider.ListDrivers(), nil
 }
 
-func GetRegions(providerName string) ([]models.Region, error) {
-	providerDriver, err := provider.New(providerName)
+func GetRegions(bizId int, providerName string) ([]models.Region, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
@@ -207,8 +208,8 @@ func GetRegions(providerName string) ([]models.Region, error) {
 	return ret.Regions, nil
 }
 
-func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, error) {
-	providerDriver, err := provider.New(providerName)
+func GetZones(bizId int, providerName ,regionId string) ([]models.AvailabilityZone, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +220,8 @@ func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, 
 	return ret.AvailabilityZones, nil
 }
 
-func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int) ([]models.Vpc, error) {
-	providerDriver, err := provider.New(providerName)
+func GetVpcs(bizId, pageNumber ,pageSize int, providerName ,regionId string) ([]models.Vpc, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +232,8 @@ func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int)
 	return ret.Vpcs, nil
 }
 
-func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subnet, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSubnets(bizId int, providerName, zoneId, vpcId string) ([]models.Subnet, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
@@ -243,8 +244,8 @@ func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subn
 	return ret.Subnets, nil
 }
 
-func GetImages(providerName string, regionId string) ([]models.Image, error) {
-	providerDriver, err := provider.New(providerName)
+func GetImages(bizId int, providerName, regionId string) ([]models.Image, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
@@ -255,8 +256,8 @@ func GetImages(providerName string, regionId string) ([]models.Image, error) {
 	return ret.Images, nil
 }
 
-func ListInstanceTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListInstanceTypes(bizId int, providerName string) ([]string, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
@@ -267,24 +268,24 @@ func ListInstanceTypes(providerName string) ([]string, error) {
 	return ret, nil
 }
 
-func ListInternetChargeTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListInternetChargeTypes(bizId int, providerName string) ([]string, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListInternetChargeType(), nil
 }
 
-func ListDiskCategory(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListDiskCategory(bizId int, providerName string) ([]string, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListDiskCategory(), nil
 }
 
-func GetSecurityGroup(providerName string, regionId string, vpcId string) ([]models.SecurityGroup, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSecurityGroup(bizId int, providerName, regionId, vpcId string) ([]models.SecurityGroup, error) {
+	providerDriver, err := provider.New(bizId, providerName)
 	if err != nil {
 		return nil, err
 	}

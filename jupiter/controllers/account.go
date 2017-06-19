@@ -69,7 +69,6 @@ func (accountController *AccountController) GetAccountInfo()  {
 // @Description Create account.
 // @router / [post]
 func (accountController *AccountController) CreateAccount() {
-
 	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId == "" || err != nil {

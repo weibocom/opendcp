@@ -6,6 +6,34 @@ import (
 
 func init() {
 
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"],
+		beego.ControllerComments{
+			Method: "GetAllAccounts",
+			Router: `/`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"],
+		beego.ControllerComments{
+			Method: "GetAccountInfo",
+			Router: `/:provider`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"],
+		beego.ControllerComments{
+			Method: "CreateAccount",
+			Router: `/`,
+			AllowHTTPMethods: []string{"post"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"],
+		beego.ControllerComments{
+			Method: "DeleteAccount",
+			Router: `/:provider`,
+			AllowHTTPMethods: []string{"delete"},
+			Params: nil})
+
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
 		beego.ControllerComments{
 			Method: "GetClusters",

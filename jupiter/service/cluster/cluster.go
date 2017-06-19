@@ -46,7 +46,7 @@ func GetCluster(clusterId int64, bizId int) (*models.Cluster, error) {
 
 func CreateCluster(cluster *models.Cluster) (int64, error) {
 	cluster.CreateTime = time.Now()
-	providerDriver, err := provider.New(cluster.Provider)
+	providerDriver, err := provider.New(cluster.BizId ,cluster.Provider)
 	if err != nil {
 		return 0, err
 	}
@@ -77,7 +77,7 @@ func DeleteCluster(clusterId int64, bizId int) (bool, error) {
 }
 
 func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	providerDriver, err := provider.New(cluster.BizId, cluster.Provider)
 	if err != nil {
 		return nil, err
 	}

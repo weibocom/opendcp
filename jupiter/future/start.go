@@ -50,7 +50,7 @@ func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, c
 }
 
 func (sf *StartFuture) Run() error {
-	providerDriver, err := provider.New(sf.ProviderName)
+	providerDriver, err := provider.New(sf.BizId, sf.ProviderName)
 	if err != nil {
 		return err
 	}

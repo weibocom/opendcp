@@ -32,6 +32,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"weibo.com/opendcp/jupiter/service/account"
 )
 
 func init() {
@@ -530,14 +531,23 @@ func (aliyunProvider) AttachGateway(input *models.AttachGateway) (bool, error) {
 	return true, nil
 }
 
-func new() (provider.ProviderDriver, error) {
-	return newProvider()
+func new(bizId int, provider string) (provider.ProviderDriver, error) {
+	return newProvider(bizId, provider)
 }
 
-func newProvider() (provider.ProviderDriver, error) {
-	client := ecs.NewClient(
+func newProvider(bizId int, provider string) (provider.ProviderDriver, error) {
+	theAccount, err := account.GetAccount(bizId, provider)
+	if err != nil {
+		return nil, err
+	}
+	/*client := ecs.NewClient(
 		conf.Config.KeyId,
 		conf.Config.KeySecret,
+		"",
+	)*/
+	client := ecs.NewClient(
+		theAccount.KeyId,
+		theAccount.KeySecret,
 		"",
 	)
 	ret := aliyunProvider{
