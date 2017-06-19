@@ -54,6 +54,7 @@ class myself{
                foreach($v as $key => $value){
                    $tArr[$key] = $value;
                }
+               $tArr['name'] = (string)$_SESSION['open_biz_name'];
                $ret['content'][] = $tArr;
                break;
            }
