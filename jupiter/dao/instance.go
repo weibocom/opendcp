@@ -145,7 +145,7 @@ func UpdateInstancePublicIp(instanceId, public_ip_address string, bizId int) err
 func ListInstances(bizId int) ([]models.Instance, error) {
 	o := GetOrmer()
 	var instances []models.Instance
-	_, err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Exclude("status", models.Deleted).OrderBy("-id").All(&instances)
+	_, err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("biz_id", bizId).Exclude("status", models.Deleted).OrderBy("-id").All(&instances)
 	if err != nil {
 		return nil, err
 	}
