@@ -167,6 +167,11 @@ func (v *VMHandler) requestVMTypeId(action *models.ActionImpl) *HandleResult {
 	}
 
 	data := resp["content"].([]interface{})
+	if data == nil || len(data) ==0 {
+		beego.Error("content is null")
+		return Err("content is null")
+
+	}
 	first := data[0].(map[string]interface{})
 
 	id64 := (first["Id"].(float64))
