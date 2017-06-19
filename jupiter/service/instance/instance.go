@@ -53,6 +53,7 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		return "", err
 	}
 	ins.BizId = cluster.BizId
+	ins.CreateTime = time.Now()
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}

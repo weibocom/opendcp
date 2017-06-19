@@ -24,6 +24,7 @@ package dao
 import (
 	"weibo.com/opendcp/jupiter/models"
 	"errors"
+	"time"
 )
 
 func GetInstance(instanceId string, bizId int) (*models.Instance, error) {
@@ -63,6 +64,7 @@ func UpdateDeletedStatus(instanceId string, bizId int) error {
 		return err
 	}
 	instance.Status = models.Deleted
+	instance.ReturnTime = time.Now()
 	_, err = o.Update(instance)
 	if err != nil {
 		return err
