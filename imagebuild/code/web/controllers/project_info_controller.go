@@ -38,7 +38,7 @@ func (c *ProjectInfoController) Get() {
 
 	project := c.GetString("projectName")
 	creator := c.Operator()
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 
 	if creator == "" || project == "" || cluster == ""{
 		log.Error("cluster, creator,projectName should not be empy when building project")

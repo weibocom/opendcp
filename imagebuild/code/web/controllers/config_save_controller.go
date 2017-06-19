@@ -29,9 +29,6 @@ import (
 	"weibo.com/opendcp/imagebuild/code/web/models"
 	"net/url"
 )
-
-var specialStrings = []string{"!","@","#","$","%","^","&","*","(",")","=","'","\"","/","\\","|","<",">","{","}","[","]"}
-
 /**
 保存Dockerfile配置
  */
@@ -112,21 +109,19 @@ func (c *ConfigSaveController) Post() {
 	projectName := project
 
 	projectName = strings.ToLower(projectName)
-	for _,spec := range specialStrings {
-		if strings.Contains(projectName, spec) {
-			log.Errorf("projectName contains special char:" + spec)
-			var resp = models.BuildResponse(
-				errors.PARAMETER_INVALID,
-				"projectName contains special char:" + spec,
-				errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
-			c.Data["json"] = resp
-			c.ServeJSON(true)
-			return
-		}
+	isvalidate, spec := models.AppServer.ValidateProjectName(projectName)
+	if !isvalidate {
+		var resp = models.BuildResponse(
+			errors.PARAMETER_INVALID,
+			"projectName: "+ projectName + "contains special char:" + spec,
+			errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
+		c.Data["json"] = resp
+		c.ServeJSON(true)
+		return
 	}
 
 	creator := c.Operator()
-	cluster = c.BizName()
+	cluster = c.HarborProjectName()
 
 	exist := models.AppServer.IsProjectExist(cluster, projectName)
 	if addOrUpdate == "add" && exist{

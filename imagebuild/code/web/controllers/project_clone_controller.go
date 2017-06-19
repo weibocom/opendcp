@@ -25,6 +25,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/web/models"
+	"strings"
 )
 
 /**
@@ -35,7 +36,7 @@ type ProjectCloneController struct {
 }
 
 func (c *ProjectCloneController) Post() {
-	srcCluster := c.BizName()
+	srcCluster := c.HarborProjectName()
 	srcProjectName := c.GetString("srcProjectName")
 	dstProjectName := c.GetString("dstProjectName")
 	creator := c.Operator()
@@ -50,6 +51,19 @@ func (c *ProjectCloneController) Post() {
 		c.ServeJSON(true)
 		return
 	}
+
+	dstProjectName = strings.ToLower(dstProjectName)
+	isvalidate, spec := models.AppServer.ValidateProjectName(dstProjectName)
+	if !isvalidate {
+		var resp = models.BuildResponse(
+			errors.PARAMETER_INVALID,
+			"projectName: "+ dstProjectName + "contains special char:" + spec,
+			errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
+		c.Data["json"] = resp
+		c.ServeJSON(true)
+		return
+	}
+
 	_, projectInfo := models.AppServer.GetProjectInfo(srcCluster, srcProjectName)
 
 	_, code := models.AppServer.CloneProject(srcCluster, srcProjectName, dstProjectName, creator, projectInfo.Cluster, projectInfo.DefineDockerFileType)

@@ -27,6 +27,7 @@ import (
 	"github.com/beego/i18n"
 	"weibo.com/opendcp/imagebuild/code/util"
 	"weibo.com/opendcp/imagebuild/code/web/models"
+	"strings"
 )
 
 /**
@@ -41,17 +42,26 @@ func (c *BasicController) Operator() string {
 	if operator == "" {
 		operator = c.Ctx.Request.Header.Get("Authorization")
 	}
-
 	return operator
 }
 
-func (c *BasicController) BizName() string{
-	bizName := c.GetString("X-Biz-Name")
-	if bizName == "" {
-		bizName = c.Ctx.Request.Header.Get("X-Biz-Name")
+func (c *BasicController) HarborProjectName() string{
+	harborProjectName := c.GetString("X-Biz-ID")
+	if harborProjectName == "" {
+		harborProjectName = c.Ctx.Request.Header.Get("X-Biz-ID")
 	}
-
-	return bizName
+	if strings.Compare(harborProjectName, "0") == 0{
+		return "default_cluster"
+	}else if harborProjectName != "" {
+		for{
+			if len(harborProjectName) < 4{
+				harborProjectName = "0" + harborProjectName
+			}else{
+				break
+			}
+		}
+	}
+	return harborProjectName
 }
 
 func (c *BasicController) Prepare() {
