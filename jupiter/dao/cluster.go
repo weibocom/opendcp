@@ -23,7 +23,6 @@ package dao
 
 import (
 	"weibo.com/opendcp/jupiter/models"
-	"strconv"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -105,16 +104,6 @@ func GetClustersByProvider(providerName string) ([]models.Cluster, error) {
 		return nil, err
 	}
 	return clusters, nil
-}
-
-func GetClusterBizId(clusterId int64) (string, error) {
-	o := GetOrmer()
-	var cluster models.Cluster
-	err := o.QueryTable(CLUSTER_TABLE).Filter("id", clusterId).One(&cluster, "biz_id")
-	if err != nil {
-		return "", err
-	}
-	return strconv.Itoa(cluster.BizId), nil
 }
 
 func  OperateBysql (sql string) (lastId int64,err error) {
