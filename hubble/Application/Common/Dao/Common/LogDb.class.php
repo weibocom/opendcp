@@ -45,6 +45,7 @@ class LogDb {
             'log_info'  => $log_info,
             'level'     => $level,
             'url'       => I('server.REQUEST_URI'),
+            'biz_id'    => I('server.HTTP_X_BIZ_ID'),
             'create_time' => date('Y-m-d H:i:s'),
         ];
 
@@ -52,7 +53,7 @@ class LogDb {
         return true;
     }
 
-    public function getOctanLog($gid, $ip = ''){
+    public function getOctanLog($gid,$bidArg, $ip = ''){
 
         $url = C('HUBBLE_ANSIBLE_HTTP') .'/api/getlog';
 
@@ -80,13 +81,14 @@ class LogDb {
         return empty($response['content']['log'])? ['ansible return empty log']:$response['content']['log'];
     }
 
-    public function getAllLog($gid){
+    public function getAllLog($gid,$bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         $ret = $this->log->field('log_info')
             ->where(['global_id' => $gid])
             ->where(['module' => ['NOT IN', 'GET,POST,PUT,DELETE']])
+            ->where(['biz_id' => $bid])
             ->select();
 
         if($ret === false) {
@@ -97,7 +99,7 @@ class LogDb {
 
         $return['content'] = array_map(function($i){return $i['log_info']; }, $ret);
         $return['content'][] = '----------------------reload server process log ------------------------';
-        $return['content'] = array_merge($return['content'], $this->getOctanLog($gid));
+        $return['content'] = array_merge($return['content'], $this->getOctanLog($gid,$bid));
         $return['content'] = implode("\n", $return['content']);
 
         return $return;

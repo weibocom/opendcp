@@ -88,8 +88,8 @@ class Shell {
             ->page($page, $limit)
             ->select();
 
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
-        if ($ret === NULL) {
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
+        if (empty($ret)) {
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';
         } elseif ($ret === false) {
@@ -105,11 +105,11 @@ class Shell {
     /*
      * 获取一个main conf 的具体信息
      */
-    public function getShellDetail($id)
+    public function getShellDetail($where)
     {
 
         $ret = $this->shellTbl
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -130,7 +130,7 @@ class Shell {
     /*
      * 添加一个main conf ,或者添加一个新版本的main conf
      */
-    public function addShell($name, $desc, $content, $user){
+    public function addShell($name, $desc, $content, $user, $bid){
 
         $data = [
             'name' => $name,
@@ -139,6 +139,7 @@ class Shell {
             'create_time' => date("Y-m-d H:i:s"),
             'update_time' => date("Y-m-d H:i:s"),
             'opr_user' => $user,
+            'biz_id'   => $bid
         ];
 
         $ret = $this->shellTbl->add($data);
@@ -158,9 +159,9 @@ class Shell {
         return $return;
     }
 
-    public function deleteShell($id){
+    public function deleteShell($id, $bid){
         $ret = $this->shellTbl
-            ->where(['id' => $id])
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->delete();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -175,7 +176,7 @@ class Shell {
         return $return;
     }
 
-    public function modifyShell($id, $name, $desc, $content, $user){
+    public function modifyShell($id, $name, $desc, $content, $user, $bid){
 
         $data = [
             'desc' => $desc,
@@ -184,7 +185,7 @@ class Shell {
         ];
 
         $ret = $this->shellTbl
-            ->where(['id' => $id])
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->save($data);
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];

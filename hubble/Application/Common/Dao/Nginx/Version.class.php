@@ -40,10 +40,10 @@ class Version {
         $this->versionTbl = M('NginxVersion');
     }
 
-    public function isExist($id){
+    public function isExist($where){
 
         $ret = $this->versionTbl->field('id')
-            ->where("id = '$id'")
+            ->where($where)
             ->find();
 
         if($ret === false) return false;
@@ -107,11 +107,11 @@ class Version {
         return $return;
     }
 
-    public function getVersionDetail($id)
+    public function getVersionDetail($where)
     {
 
         $ret = $this->versionTbl
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -128,7 +128,7 @@ class Version {
         return $return;
     }
 
-    public function createVersion($uid, $name, $files, $type, $user){
+    public function createVersion($uid, $name, $files, $type, $user, $bid){
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         $lastVersion = $this->getLastVersionNumber($uid);
@@ -146,6 +146,7 @@ class Version {
             'deprecated' => 0,
             'create_time' => date("Y-m-d H:i:s"),
             'opr_user'    => $user,
+            'biz_id'      => $bid,
             'is_release'  => false,
             'type'        => $type,
             'release_id'  => 0,
@@ -160,7 +161,7 @@ class Version {
         return $return;
     }
 
-    public function generateVersion($uid, $name, $type, $user){
+    public function generateVersion($uid, $name, $type, $user, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
         $ret = $this->_generateVersionContent($uid);
@@ -175,6 +176,7 @@ class Version {
             'deprecated' => 0,
             'create_time' => date("Y-m-d H:i:s"),
             'opr_user'    => $user,
+            'biz_id'      => $bid,
             'type'        => $type,
             'is_release'  => false,
             'release_id'  => 0,
@@ -246,11 +248,11 @@ class Version {
         return $ret['version'];
     }
 
-    public function setDeprecated($id)
+    public function setDeprecated($id, $bid)
     {
 
         $ret = $this->versionTbl
-            ->where(['id' => $id])
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->setField('deprecated', 1);
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -265,12 +267,12 @@ class Version {
         return $return;
     }
 
-    public function prepareReleaseFiles($id){
+    public function prepareReleaseFiles($id, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         $version = $this->versionTbl
-            ->where("id = '$id'")
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->find();
 
         if ($version === false) {
@@ -367,11 +369,11 @@ class Version {
 
     }
 
-    public function releaseVersion($id, $shellId, $user){
+    public function releaseVersion($id, $shellId, $user, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
-        $ret = $this->versionTbl->where("id = '$id'")->find();
+        $ret = $this->versionTbl->where(['id' => $id ,'biz_id' => $bid])->find();
         if($ret === false){
             $return['code'] = 1;
             $return['msg'] = $this->versionTbl->getDbError();
@@ -385,7 +387,7 @@ class Version {
         $ver = $ret;
         $alterType = $ver['type'];
 
-        $ret = $this->prepareReleaseFiles($id);
+        $ret = $this->prepareReleaseFiles($id, $bid);
         if($ret['code'] != 0) return $ret;
 
         hubble_log(HUBBLE_INFO, "file update success, ready to start alteration");
@@ -397,7 +399,7 @@ class Version {
             case 'ANSIBLE':
                 // 准备脚本内容
                 $shell = new Shell();
-                $ret = $shell->getShellDetail($shellId);
+                $ret = $shell->getShellDetail(['id' => $shellId ,'biz_id' => 0]);
                 if($ret['code'] != 0) return $ret;
                 $script = [['action' => [
                     "module" => "longscript",
@@ -412,7 +414,7 @@ class Version {
 
                 // 获取 reload nginx 的ip 列表
                 $node = new NodeModel();
-                $ret = $node->getNodeIpsByGroupId($groupId);
+                $ret = $node->getNodeIpsByGroupId($groupId, $bid);
                 if($ret['code'] != 0) {
                     if($ret['code'] == 2)
                         $ret['msg'] = 'there is no ip under unit';
@@ -429,7 +431,7 @@ class Version {
 
                 // 记录变更表
                 $history = new AlterationHistory();
-                $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user);
+                $ret = $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $user, $bid);
                 if($ret['code'] != 0) return $ret;
 
                 $return['content'] = [
