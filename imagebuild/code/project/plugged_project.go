@@ -147,7 +147,7 @@ func (p *PluggedProject) BuildAndPushImage(logId int64, tag string) bool {
 		p.AppendLog(p.timeNow() + "[Error]\t"+"Login Harbor with error:" + err.Error())
 		return false
 	}
-	p.AppendLog(p.timeNow() +"login haror success ...")
+	p.AppendLog(p.timeNow() +"[Info]\tlogin haror success ...")
 	//第三步推送镜像到仓库
 	p.AppendLog(p.timeNow() + "[Info]\t"+"Begin push image")
 	//更新数据库日志和状态
