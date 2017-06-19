@@ -45,6 +45,7 @@ class LogDb {
             'log_info'  => $log_info,
             'level'     => $level,
             'url'       => I('server.REQUEST_URI'),
+            'biz_id'    => I('server.HTTP_X_BIZ_ID'),
             'create_time' => date('Y-m-d H:i:s'),
         ];
 
