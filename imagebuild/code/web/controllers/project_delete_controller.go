@@ -36,7 +36,7 @@ type ProjectDeleteController struct {
 
 func (c *ProjectDeleteController) Post() {
 	projectName := c.GetString("projectName")
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 	operator := c.Operator()
 	if operator == "" || projectName == "" || cluster == ""{
 		log.Error("cluster, operator,projectName should not be empy when building project")

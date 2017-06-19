@@ -41,6 +41,7 @@ import (
 )
 
 var DefaultProjectName = "DefaultProjectName"
+var specialStrings = []string{"!","@","#","$","%","^","&","*","(",")","=","'","\"","/","\\","|","<",">","{","}","[","]"}
 
 type Server struct {
 	// app version
@@ -410,7 +411,16 @@ func (app *Server) CallExtensionInterface(pluginName string, method string, para
 
 	return errors.OK, result
 }
-
+//验证项目名称是否合法
+func (app *Server) ValidateProjectName(projectName string) (bool, string){
+	for _,spec := range specialStrings {
+		if strings.Contains(projectName, spec) {
+			log.Errorf("projectName: %s contains special char: %s", projectName, spec)
+			return false, spec
+		}
+	}
+	return true, ""
+}
 // ===================== private function ======================
 func (app *Server) getProject(projectName string) pro.Project {
 	// read lock

@@ -33,7 +33,7 @@ type InfoViewController struct {
 
 func (c *InfoViewController) Get() {
 	project := c.GetString("projectName")
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 	c.Layout = "project.tpl"
 	c.TplName = "info.tpl"
 	// TODO check code

@@ -38,7 +38,7 @@ var DEFAULT_OFFSET = 10
 
 func (c *BuildHistoriesController) Get() {
 	projectName := c.GetString("projectName", "")
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 	if projectName == "" || cluster ==""{
 		log.Errorf("Project name shoud not be empty when quering build histories..")
 		c.Ctx.ResponseWriter.Write([]byte("no"))

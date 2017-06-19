@@ -40,7 +40,7 @@ func (c *BuildImageController) Post() {
 	project := c.GetString("projectName")
 	tag := c.GetString("tag")
 	operator := c.Operator()
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 
 	if project == "" || operator == "" || tag == "" || cluster == ""{
 		log.Error("project,operator,tag should not be empy when building project")

@@ -34,7 +34,7 @@ type ConfigViewController struct {
 
 func (c *ConfigViewController) Get() {
 	project := c.GetString("projectName")
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 	_, configView := models.AppServer.GetProjectConfigView(cluster, project)
 	if configView == "" {
 		c.Ctx.ResponseWriter.WriteHeader(http.StatusNotFound)

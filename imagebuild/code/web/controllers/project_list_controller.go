@@ -59,7 +59,7 @@ func (c *ProjectListController) Get() {
 		return
 	}
 
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 	if cluster == "" {
 		log.Error("cluster should not be empy when building project")
 		resp := models.BuildResponse(

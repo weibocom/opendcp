@@ -36,7 +36,7 @@ type BuildImageHistoryController struct {
 func (c *BuildImageHistoryController) Get() {
 	project := c.GetString("projectName")
 	operator := c.Operator()
-	cluster := c.BizName()
+	cluster := c.HarborProjectName()
 
 	if project == "" || operator == "" || cluster == ""{
 		log.Error("project,operator should not be empy when get build history!")
