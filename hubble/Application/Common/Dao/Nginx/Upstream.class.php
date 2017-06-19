@@ -592,7 +592,8 @@ class Upstream {
             'HUBBLE_FILE_COUNT' => 1,
             'HUBBLE_GROUP_ID'   => $group_id,
             'HUBBLE_FILE_NAMES' => $filename,
-            'HUBBLE_HOST'       => $host
+            'HUBBLE_HOST'       => $host,
+            'HUBBLE_BIZ'        => $bid,
         ];
 
         // 获取 reload nginx 的ip 列表
