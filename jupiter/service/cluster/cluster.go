@@ -143,17 +143,6 @@ func ListClusters(bizId int) ([]models.Cluster, error) {
 	return clusters, nil
 }
 
-/*func CheckClusterBizId(clusterId int64, bizId string) (bool, error){
-	bizIdDb, err := dao.GetClusterBizId(clusterId)
-	if err != nil {
-		return false, err
-	}
-	if !strings.EqualFold(bizId, bizIdDb) {
-		return  false, errors.New("The cluster doesn't match bizId!")
-	}
-	return true, nil
-}*/
-
 func OperateBysql(sql string) (int64,error) {
 	id, err := dao.OperateBysql(sql)
 	if err != nil {
