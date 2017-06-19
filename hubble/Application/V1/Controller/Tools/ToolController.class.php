@@ -125,31 +125,6 @@ class ToolController extends RestController{
         if($ret['code'] != HUBBLE_RET_SUCCESS)
             $this->ajaxReturn(std_error(' set init upstream_conf '.$ret['msg']));
 
-        //服务注册
-
-        $AlterationType = new AlterationType();
-
-        $ret = $AlterationType->exist(['biz_id' => $bidArg]);
-        if($ret['code'] == 1)
-            $this->ajaxReturn(std_error("get init Alteration_Type of $bidArg exist"));
-
-        if($ret['code'] == 2)
-            $this->ajaxReturn(std_error("get init Alteration_Type error: db error"));
-
-        $ret = $AlterationType->exist(['id' => 1, 'biz_id' => 0]) ;
-        if($ret['code'] != 1)
-            $this->ajaxReturn(std_error(' get init Alteration_Type '.$ret['msg']));
-
-        $content = json_decode($ret['content'],true);
-        $content['group_id'] = $gid;
-        $content['script_id'] = $uid;
-
-        $data = $ret['content'];
-        $ret = $AlterationType->add($data['type'],$data['name'],json_encode($content),'system', $bidArg);
-
-        if($ret['code'] == 1)
-            $this->ajaxReturn(std_error($ret['msg']));
-
         //创建shell
         $shell = new Shell();
 
