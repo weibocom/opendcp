@@ -100,6 +100,7 @@ class myself{
         case 'add':
           $param['status'] = 99;
           $param['reg_time'] = date('Y-m-d H:i:s');
+          $param['audit_time'] = '';
           $ret = $thisClass->add($param);
           break;
         case 'update':

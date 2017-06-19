@@ -79,7 +79,7 @@ func (v *MockH) GetType() string {
 	return "vm"
 }
 
-func (v *MockH) GetLog(nodeState *NodeState) string {
+func (v *MockH) GetLog(nodeState *NodeState,biz_id int) string {
 	return ""
 }
 

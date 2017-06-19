@@ -55,6 +55,13 @@ func init() {
 			AllowHTTPMethods: []string{"post"},
 			Params: nil})
 
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InitController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InitController"],
+		beego.ControllerComments{
+			Method: "InitDB",
+			Router: `/`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
 		beego.ControllerComments{
 			Method: "CreateInstance",
@@ -444,12 +451,6 @@ func init() {
 		beego.ControllerComments{
 			Method: "DescribeListenerAccessControlAttribute",
 			Router: `/listener/whitelist`,
-			AllowHTTPMethods: []string{"get"},
-			Params: nil})
-	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InitController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InitController"],
-		beego.ControllerComments{
-			Method: "InitDB",
-			Router: `/`,
 			AllowHTTPMethods: []string{"get"},
 			Params: nil})
 

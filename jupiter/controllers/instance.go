@@ -163,16 +163,16 @@ func (ic *InstanceController) GetInstancesStatus() {
 // @Description Update machine status
 // @router /status [post]
 func (ic *InstanceController) UpdateInstanceStatus() {
-	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	/*bizId := ic.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
-		beego.Error("Get X-Biz-ID err!")
+			beego.Error("Get X-Biz-ID err!")
 		ic.RespInputError()
 		return
-	}
+	}*/
 
 	var insStat models.InstanceIdStatus
-	err = json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
 	if err != nil {
 		beego.Error("Could parase request before crate instance: ", err)
 		ic.RespInputError()
@@ -180,7 +180,7 @@ func (ic *InstanceController) UpdateInstanceStatus() {
 	}
 
 
-	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status, bid)
+	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status, -1)
 	if err != nil {
 		beego.Error("update instance status err: ", err)
 		ic.RespServiceError(err)
@@ -231,14 +231,14 @@ func (ic *InstanceController) DownloadKey() {
 		return
 	}
 
-	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	/*bizId := ic.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
 		beego.Error("Get X-Biz-ID err!")
 		ic.RespInputError()
 		return
-	}
-
+	}*/
+	bid :=-1
 	dir := conf.Config.KeyDir
 	res, err := instance.GetInstanceByIp(ip, bid)
 	if err != nil {
