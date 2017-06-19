@@ -268,7 +268,12 @@ class myself{
     curl_setopt($handle, CURLOPT_HEADER, 1);
     curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($handle, CURLOPT_POST, 1);
-    $data = [ 'public' => 1, 'project_name' => $name ];
+    //传入的镜像名称改变为业务方ID
+    $the_projec_name = (string)$id;
+    while(!isset($the_projec_name{3})){
+        $the_projec_name = '0'.$the_projec_name;
+    }
+    $data = [ 'public' => 1, 'project_name' => $the_projec_name ];
     curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_UNICODE));
     $result = curl_exec($handle);
     $arrRecodeLog['t_code'] .= '镜像仓库接口：' . $url . "\n";
