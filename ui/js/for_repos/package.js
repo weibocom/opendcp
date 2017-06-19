@@ -20,6 +20,7 @@ var isJson = function(str) {
 }
 
 var getDate = function(t){
+  if(!+[1,]) return t;
   if(!t) t='';
   var d=new Date(t);
   var month=d.getMonth()+1;
