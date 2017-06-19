@@ -61,7 +61,7 @@ class ShellController extends RestController{
             $this->ajaxReturn(std_error('biz_id is empty'));
         
         // 设置过滤器
-        $filter     = ['biz' => $bidArg];
+        $filter     = ['biz_id' => $bidArg];
         if(!empty($nameArg))
             $filter['name'] = $nameArg;
 

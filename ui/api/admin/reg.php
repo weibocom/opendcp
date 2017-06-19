@@ -159,7 +159,7 @@ class myself{
         'pw' => $retReg[$regId]['pw'],
         'biz_id' => $bizId,
       ];
-      $retUser = $user->add($paramUser);
+      $retUser = $user->add($paramUser, false);
       $userId = (isset($retUser['content'])&&!empty($retUser['content'])) ? $retUser['content'] : 0;
       if(empty($userId)){
         $ret['msg'] = '用户信息写入失败';

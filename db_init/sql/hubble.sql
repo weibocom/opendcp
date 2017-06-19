@@ -64,7 +64,7 @@ LOCK TABLES `tbl_hubble_alteration_type` WRITE;
 
 INSERT INTO `tbl_hubble_alteration_type` (`id`, `name`, `type`, `content`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
-	(1,'default_service_name','NGINX','{\"group_id\":\"1\",\"name\":\"default.upstream\",\"port\":\"80\",\"weight\":\"20\",\"script_id\":\"2\"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system',0);
+	(1,'default_service_name','NGINX','{"group_id":"1","name":"default.upstream","port":"8080","weight":"20","script_id":"2"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system',0);
 
 /*!40000 ALTER TABLE `tbl_hubble_alteration_type` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -112,7 +112,34 @@ LOCK TABLES `tbl_hubble_nginx_conf_main` WRITE;
 
 INSERT INTO `tbl_hubble_nginx_conf_main` (`id`, `name`, `version`, `content`, `unit_id`, `deprecated`, `create_time`, `opr_user`, `biz_id`)
 VALUES
-	(1,'nginx.conf',1,'#DEFAULT MAIN CONFIG FILE: nginx.conf\nerror_log /usr/local/nginx/logs/error.log notice;\npid /usr/local/nginx/logs/nginx.pid;\nevents {\n    worker_connections 1024;\n    use   epoll;\n}\nhttp {\n    default_type  application/octet-stream;\n    log_format  main  \'$remote_addr - $remote_user [$time_local] \"$request\" \'\n                      \'$status $body_bytes_sent \"$http_referer\" \'\n					  \'\"$http_user_agent\" \"$http_x_forwarded_for\" $request_time\';\n    include upstream/*.upstream;\n    #DEFAULT VHOST\n    server {\n        listen       80;\n        server_name  0.0.0.0:80;\n        location / {\n            proxy_pass http://default_upstream;\n        }\n        location /status {\n            check_status;\n            access_log on;\n        }\n        access_log  logs/default_vhost.log main;\n    }\n    access_log logs/access.log  main;\n}\n',1,0,'2016-11-15 22:10:25','system',0);
+	(1,'nginx.conf',1,'#DEFAULT MAIN CONFIG FILE: nginx.conf
+error_log /usr/local/nginx/logs/error.log notice;
+pid /usr/local/nginx/logs/nginx.pid;
+events {
+    worker_connections 1024;
+    use   epoll;
+}
+http {
+    default_type  application/octet-stream;
+    log_format  main  ''$remote_addr - $remote_user [$time_local] "$request" ''
+                      ''$status $body_bytes_sent "$http_referer" ''
+					  ''"$http_user_agent" "$http_x_forwarded_for" $request_time'';
+    include upstream/*.upstream;
+    #DEFAULT VHOST
+    server {
+        listen       80;
+        server_name  0.0.0.0:80;
+        location / {
+            proxy_pass http://default_upstream;
+        }
+        location /status {
+            check_status;
+            access_log on;
+        }
+        access_log  logs/default_vhost.log main;
+    }
+    access_log logs/access.log  main;
+}',1,0,'2016-11-15 22:10:25','system',0);
 
 /*!40000 ALTER TABLE `tbl_hubble_nginx_conf_main` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -143,7 +170,15 @@ LOCK TABLES `tbl_hubble_nginx_conf_upstream` WRITE;
 
 INSERT INTO `tbl_hubble_nginx_conf_upstream` (`id`, `name`, `content`, `group_id`, `is_consul`, `deprecated`, `release_id`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
-	(1,'default.upstream','upstream default_upstream{\n        keepalive 1;\n        server 127.0.0.1:8080 max_fails=0 fail_timeout=30s weight=20;\n        check interval=1000 rise=3 fall=2 timeout=3000 type=http default_down=false;\n        check_http_send \"GET / HTTP/1.0\\r\\n\\r\\n\";\n        check_http_expect_alive http_2xx;\n}\n',1,0,0,0,'2016-11-15 22:11:23','2016-11-15 22:11:23','system',0);
+	(1,'default.upstream','upstream default_upstream{
+		keepalive 3;
+        server 127.0.0.1:8080 max_fails=0 fail_timeout=30s weight=20;
+        server 60.205.149.54:9999 max_fails=0 fail_timeout=30s weight=20;
+	server 101.201.226.198:8080 max_fails=0 fail_timeout=30s weight=20;
+        check interval=1000 rise=3 fall=2 timeout=3000 type=http default_down=false;
+        check_http_send "GET / HTTP/1.0\r\n\r\n";
+        check_http_expect_alive http_2xx;
+}',1,0,0,0,'2016-11-15 22:11:23','2016-11-15 22:11:23','system',0);
 
 /*!40000 ALTER TABLE `tbl_hubble_nginx_conf_upstream` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -215,8 +250,108 @@ LOCK TABLES `tbl_hubble_nginx_shell` WRITE;
 
 INSERT INTO `tbl_hubble_nginx_shell` (`id`, `name`, `desc`, `content`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
-	(1,'updateMainConf.sh','更新主配置脚本','#!/bin/bash\\nHUBBLE_UNIT_ID=\\\"{{HUBBLE_UNIT_ID}}\\\"\\nHUBBLE_GROUP_ID=\\\"{{HUBBLE_GROUP_ID}}\\\"\\nHUBBLE_RSYNC_HOST=\\\"{{HUBBLE_RSYNC_HOST}}\\\"\\n\\nHUBBLE_OUTFILE=\\\"/tmp/alterationMainConf.out\\\"\\ncat > $HUBBLE_OUTFILE<< EOF\\nEOF\\n\\nexec 1> $HUBBLE_OUTFILE  2> $HUBBLE_OUTFILE\\n\\nconfdir=\\\"/usr/local/nginx_conf\\\"\\ntime_echo(){\\n    echo `date +%F\\\"-\\\"%T`\\\" \\\"$*\\n}\\n#RSYNC MAIN CONFIG FILE nginx.conf FROM HUBBLE SERVER\\n\\ntime_echo rsync -argtv \\\"${HUBBLE_RSYNC_HOST}/group_${HUBBLE_GROUP_ID}/unit_${HUBBLE_UNIT_ID}/current/main/\\\" $confdir/\\nrsync -argtv \\\"${HUBBLE_RSYNC_HOST}/group_${HUBBLE_GROUP_ID}/unit_${HUBBLE_UNIT_ID}/current/main/\\\" $confdir/ \\n\\nif [ $? -ne 0 ]; then\\n    time_echo \\\"rsync file fail\\\" && exit 1\\nfi\\n\\ntime_echo rsync nginx_conf successful...\\n#CONFIGRATION CHECK AND RELOAD\\ndocker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t\\ntime_echo docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t\\nif [ $? -eq 0 ];then\\n    docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -s reload\\n    if [ $? -ne 0 ]; then\\n        time_echo \\\"reload nginx failed\\\" && exit 1\\n    fi\\n    time_echo docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -s reload\\n    exit 0\\nfi\\ntime_echo \\\"check nginx_conf failed…\\\" && exit 1','1970-01-01 00:00:00','1970-01-01 00:00:00','system',0),
-	(2,'updateUpstreamConf.sh','更新upstream配置脚本','#!/bin/bash\\n\\nHUBBLE_OUTFILE=\\\"/tmp/alterationUpstream.out\\\"\\n\\nexec 1> $HUBBLE_OUTFILE  2> $HUBBLE_OUTFILE\\n\\nHUBBLE_FILE_COUNT=\\\"{{HUBBLE_FILE_COUNT}}\\\"\\nHUBBLE_FILE_NAMES=\\\"{{HUBBLE_FILE_NAMES}}\\\"\\nHUBBLE_GROUP_ID=\\\"{{HUBBLE_GROUP_ID}}\\\"\\nHUBBLE_HOST=\\\"{{HUBBLE_HOST}}\\\"\\ncat > $HUBBLE_OUTFILE<< EOF\\nEOF\\ntime_echo(){\\n    echo `date +%F\\\"-\\\"%T`\\\" \\\"$*\\n}\\n\\ntime_echo \\\"HUBBLE_FILE_COUNT: $HUBBLE_FILE_COUNT\\\"\\ntime_echo \\\"HUBBLE_FILE_NAMES: $HUBBLE_FILE_NAMES\\\"\\ntime_echo \\\"HUBBLE_GROUP_ID: $HUBBLE_GROUP_ID\\\"\\ntime_echo \\\"HUBBLE_HOST: $HUBBLE_HOST\\\"\\n\\n\\n# nginx upstream dir\\nconf_dir=\\\"/usr/local/nginx_conf/upstream\\\"\\npgrep nginx\\nrs=`echo $?`\\nif [ $rs -ne 0 ];then\\n  time_echo \\\"The nginx process is not exist!\\\"\\n  exit 1\\nfi\\nif [ ! -d $conf_dir ];then\\n  time_echo \\\"This server is not nginx server!\\\"\\n  exit 1\\nfi\\ncd $conf_dir\\npwd\\nfor i in `echo \\\"$HUBBLE_FILE_NAMES\\\" | tr \\\',\\\' \\\'\\\\n\\\'`; do\\n           time_echo \\\"deal with $i\\\"\\n           url=\\\"${HUBBLE_HOST}&group_id=${HUBBLE_GROUP_ID}&name=$i\\\"\\n           time_echo \\\"wget $url\\\" -O \\\"${i}.new\\\"\\n           wget \\\"$url\\\" -O \\\"${i}.new\\\"\\n           if [ $? -ne 0 ]; then\\n               rm -f \\\"*.upstream.new\\\"\\n               exit 1\\n           fi\\ndone\\nfor i in `find . -name *.upstream.new`; do\\n           mv \\\"$i\\\" \\\"`echo $i | sed \\\'s/\\\\(.*\\\\)\\\\.new/\\\\1/g\\\'`\\\"\\ndone\\nng_conf_ok=`docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t 2>&1 |grep successful |wc -l`\\nng_conf_error=`docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t 2>&1|grep failed -A 1`\\nsystem_version=`cat /etc/redhat-release | awk \\\'{print $(NF-1)}\\\'`\\nif [[ $ng_conf_ok -eq 1 ]];then\\n    time_echo \\\"--------begin to start Nginx————\\\"\\n    docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -s reload\\n    result=`echo $?`\\n    time_echo \\\"--------Reload Nginx Finish--------\\\" && exit 0\\nelse\\n    time_echo \\\"----Nginx config file wrong----\\\"\\n    time_echo \\\"$ng_conf_error\\\" && exit 1\\nfi','1970-01-01 00:00:00','1970-01-01 00:00:00','system',0);
+	(1,'updateMainConf.sh','更新主配置脚本','#!/bin/bash
+HUBBLE_UNIT_ID="{{HUBBLE_UNIT_ID}}"
+HUBBLE_GROUP_ID="{{HUBBLE_GROUP_ID}}"
+HUBBLE_RSYNC_HOST="{{HUBBLE_RSYNC_HOST}}"
+
+HUBBLE_OUTFILE="/tmp/alterationMainConf.out"
+cat > $HUBBLE_OUTFILE<< EOF
+EOF
+
+exec 1> $HUBBLE_OUTFILE  2> $HUBBLE_OUTFILE
+
+confdir="/usr/local/nginx_conf"
+time_echo(){
+    echo `date +%F"-"%T`" "$*
+}
+#RSYNC MAIN CONFIG FILE nginx.conf FROM HUBBLE SERVER
+
+time_echo rsync -argtv "${HUBBLE_RSYNC_HOST}/group_${HUBBLE_GROUP_ID}/unit_${HUBBLE_UNIT_ID}/current/main/" $confdir/
+rsync -argtv "${HUBBLE_RSYNC_HOST}/group_${HUBBLE_GROUP_ID}/unit_${HUBBLE_UNIT_ID}/current/main/" $confdir/
+
+if [ $? -ne 0 ]; then
+    time_echo "rsync file fail" && exit 1
+fi
+
+time_echo rsync nginx_conf successful...
+#CONFIGRATION CHECK AND RELOAD
+docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t
+time_echo docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t
+if [ $? -eq 0 ];then
+    docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -s reload
+    if [ $? -ne 0 ]; then
+        time_echo "reload nginx failed" && exit 1
+    fi
+    time_echo docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -s reload
+    exit 0
+fi
+time_echo "check nginx_conf failed…" && exit 1','1970-01-01 00:00:00','1970-01-01 00:00:00','system',0),
+	(2,'updateUpstreamConf.sh','更新upstream配置脚本','#!/bin/bash
+
+HUBBLE_OUTFILE="/tmp/alterationUpstream.out"
+
+exec 1> $HUBBLE_OUTFILE  2> $HUBBLE_OUTFILE
+
+HUBBLE_FILE_COUNT="{{HUBBLE_FILE_COUNT}}"
+HUBBLE_FILE_NAMES="{{HUBBLE_FILE_NAMES}}"
+HUBBLE_GROUP_ID="{{HUBBLE_GROUP_ID}}"
+HUBBLE_HOST="{{HUBBLE_HOST}}"
+HUBBLE_BIZ="{{HUBBLE_BIZ}}"
+
+cat > $HUBBLE_OUTFILE<< EOF
+EOF
+time_echo(){
+    echo `date +%F"-"%T`" "$*
+}
+
+time_echo "HUBBLE_FILE_COUNT: $HUBBLE_FILE_COUNT"
+time_echo "HUBBLE_FILE_NAMES: $HUBBLE_FILE_NAMES"
+time_echo "HUBBLE_GROUP_ID: $HUBBLE_GROUP_ID"
+time_echo "HUBBLE_HOST: $HUBBLE_HOST"
+time_echo "HUBBLE_HOST:$HUBBLE_BIZ"
+
+
+# nginx upstream dir
+conf_dir="/usr/local/nginx_conf/upstream"
+pgrep nginx
+rs=`echo $?`
+if [ $rs -ne 0 ];then
+  time_echo "The nginx process is not exist!"
+  exit 1
+fi
+if [ ! -d $conf_dir ];then
+  time_echo "This server is not nginx server!"
+  exit 1
+fi
+cd $conf_dir
+pwd
+for i in `echo "$HUBBLE_FILE_NAMES" | tr '','' ''\n''`; do
+           time_echo "deal with $i"
+           url="${HUBBLE_HOST}&group_id=${HUBBLE_GROUP_ID}&name=$i"
+           header="x-biz-id:${HUBBLE_BIZ}"
+           time_echo "wget --header=$header $url" -O "${i}.new"
+           wget --header="$header" "$url" -O "${i}.new"
+           if [ $? -ne 0 ]; then
+               rm -f "*.upstream.new"
+               exit 1
+           fi
+done
+for i in `find . -name *.upstream.new`; do
+           mv "$i" "`echo $i | sed ''s/\(.*\)\.new/\1/g''`"
+done
+ng_conf_ok=`docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t 2>&1 |grep successful |wc -l`
+ng_conf_error=`docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -t 2>&1|grep failed -A 1`
+system_version=`cat /etc/redhat-release | awk ''{print $(NF-1)}''`
+if [[ $ng_conf_ok -eq 1 ]];then
+    time_echo "--------begin to start Nginx————"
+    docker exec opendcp_lb_ngx_ctn /usr/local/nginx/sbin/nginx -s reload
+    result=`echo $?`
+    time_echo "--------Reload Nginx Finish--------" && exit 0
+else
+    time_echo "----Nginx config file wrong----"
+    time_echo "$ng_conf_error" && exit 1
+fi','1970-01-01 00:00:00','1970-01-01 00:00:00','system',0);
 
 /*!40000 ALTER TABLE `tbl_hubble_nginx_shell` ENABLE KEYS */;
 UNLOCK TABLES;
