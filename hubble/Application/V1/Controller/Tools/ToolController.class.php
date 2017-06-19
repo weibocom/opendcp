@@ -172,7 +172,7 @@ class ToolController extends RestController{
         if($ret['code'] != 1)
             $this->ajaxReturn(std_error(' get init Alteration_Type '.$ret['msg']));
 
-        $content = json_decode($ret['content'],true);
+        $content = json_decode($ret['content']['content'],true);
         $content['group_id'] = $gid;
         $content['script_id'] = $sid;
 
