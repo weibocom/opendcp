@@ -329,7 +329,7 @@ class UpstreamController extends RestController{
         $upstream = new Upstream();
         $ret = $upstream->publishManuel($upstreamIdArg, $unitIdArg, $scriptIdArg, $userArg, $bidArg, $tunnelArg);
 
-        if($ret['state'] == HUBBLE_RET_SUCCESS) {
+        if($ret['code'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
         } else{
             $this->ajaxReturn(std_error($ret['msg']));
