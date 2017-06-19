@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `account` (
   `spent` bigint(20) NOT NULL DEFAULT '0',
   `credit` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 # Dump of table bill
 # ------------------------------------------------------------
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `cluster` (
   `data_disk_size` int(11) NOT NULL DEFAULT '0',
   `data_disk_num` int(11) NOT NULL DEFAULT '0',
   `data_disk_category` varchar(255) NOT NULL DEFAULT '',
-  `biz_id` integer NOT NULL DEFAULT -1
+  `biz_id` integer NOT NULL DEFAULT -1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `public_key` longtext,
   `private_key` longtext,
   `return_time` datetime,
-  `biz_id` integer NOT NULL DEFAULT -1
+  `biz_id` integer NOT NULL DEFAULT -1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
