@@ -47,15 +47,16 @@ class myself{
           ),
           'content' => array(),
         );
-        $i=0;
         foreach($arrList['content'] as $k => $v){
-          $i++;
-          $tArr = array();
-          $tArr['i'] = $i;
-          foreach($v as $key => $value){
-            $tArr[$key] = $value;
-          }
-          $ret['content'][] = $tArr;
+           if(strcmp($v['name'], $param['project_name']) == 0){
+               $tArr = array();
+               $tArr['i'] = 1;
+               foreach($v as $key => $value){
+                   $tArr[$key] = $value;
+               }
+               $ret['content'][] = $tArr;
+               break;
+           }
         }
         $ret['count'] = (isset($arrList['header']['X-Total-Count'])) ? (int)$arrList['header']['X-Total-Count'] : count($ret['content']);
         $ret['page'] = (isset($arrList['pageNumber'])) ? $arrList['pageNumber'] : 1;
@@ -154,10 +155,15 @@ if($hasLimit){
   switch($myAction){
     case 'list':
       $logFlag = false;//本操作不记录日志
+      //从session中获取用户的业务方名称
+        $the_projec_name = (string)$_SESSION['open_biz_id'];
+        while(!isset($the_projec_name{3})){
+            $the_projec_name = '0'.$the_projec_name;
+        }
       $arrJson = array(
         'page' => $myPage,
         'pagesize' => $myPageSize,
-        'project_name' => $fIdx,
+        'project_name' => $the_projec_name,
       );
       $retArr = $mySelf->getList($myUser, $arrJson , $fProject);
       $retArr['page'] = $myPage;
