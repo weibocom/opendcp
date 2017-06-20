@@ -27,6 +27,7 @@ import (
 	"weibo.com/opendcp/orion/handler"
 	"strconv"
 	"strings"
+	"github.com/astaxie/beego"
 )
 
 type InitApi struct {
@@ -145,10 +146,9 @@ func (c *InitApi) DeleteALl (biz_id int, content map[string][]string) (err error
 	deleteSql := "delete from %s where biz_id=%d"
 
 	for table,_:= range content {
-		fmt.Println(table)
 		service.Init.DeleteBysql(fmt.Sprintf(deleteSql,table,biz_id))
 	}
-
+	service.Init.DeleteBysql(fmt.Sprintf("delete from flow where biz_id=%d",biz_id))
 	return nil
 
 }
@@ -160,6 +160,7 @@ func (c *InitApi) CreateCSP(vm_type_id int, service_discovery_id int, biz_id int
 	for index,sql := range flowImpls {
 		if index >=0 && index <=1{
 			sql = fmt.Sprintf(sql,vm_type_id,biz_id)
+			sql = strings.Replace(sql,"host_ip",beego.AppConfig.String("octans_host"),-1)
 		}else if index ==3 {
 			sql = fmt.Sprintf(sql,vm_type_id,service_discovery_id,biz_id)
 		}else if index ==4 {

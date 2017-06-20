@@ -53,3 +53,6 @@ fi
 
 sed -i "s/your_key_id/$ali_key/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 sed -i "s/your_secret/$ali_secret/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
+
+ORION_FILE="conf/orion.conf"
+sed -i "s#octans_host = .*#octans_host = ${host_ip}#g" ${DEPLOY_DIR}/${ORION_FILE}
