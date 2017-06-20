@@ -145,10 +145,9 @@ func (c *InitApi) DeleteALl (biz_id int, content map[string][]string) (err error
 	deleteSql := "delete from %s where biz_id=%d"
 
 	for table,_:= range content {
-		fmt.Println(table)
 		service.Init.DeleteBysql(fmt.Sprintf(deleteSql,table,biz_id))
 	}
-
+	service.Init.DeleteBysql(fmt.Sprintf("delete from flow where biz_id=%d",biz_id))
 	return nil
 
 }
