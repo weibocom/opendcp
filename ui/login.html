@@ -125,7 +125,8 @@
               }
               setTimeout("window.parent.location.href='/'",1000);
             }else{
-              pageNotify('error','操作失败！','错误信息：'+data.msg);
+              pageNotify('error','操作失败！','错误信息：'+data.msg, false);
+              updateValidate();
             }
           },
           error: function (){
@@ -135,7 +136,7 @@
       }
 
       var updateValidate = function(){
-        $('#reg_validate').attr('src', 'verification.php?' + Math.random());
+        $('#login_validate').attr('src', 'verification.php?' + Math.random());
       }
     </script>
 </body>

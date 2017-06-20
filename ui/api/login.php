@@ -41,7 +41,7 @@ class myself{
         $ret = array(
           'code' => 1,
           'msg' => '账号已停用',
-          'content' => $arrList,
+          'content' => $arrList['en'],
         );
         $thisClass->userLogout();
       }

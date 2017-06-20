@@ -208,13 +208,16 @@
               pageNotify('success','申请成功！', '请等待审核', false);
               $("#btnCommit").html('已提交申请，请联系XXX审批！');
               $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
+              updateValidate();
             }else{
               pageNotify('error','操作失败！','错误信息：'+data.msg, false);
+              updateValidate();
             }
             NProgress.done();
           },
           error: function (){
             pageNotify('error','操作失败！','错误信息：接口不可用', false);
+            updateValidate();
             NProgress.done();
           }
         });
