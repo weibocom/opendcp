@@ -171,7 +171,7 @@ class user{
     return false;
   }
 
-  function add($arr){
+  function add($arr, $flag = true){
     global $db;
     $ret = array('code' => 1, 'msg' => 'param error', 'content' => '');
     if($arr){
@@ -185,7 +185,9 @@ class user{
       $stmt = $db->prepare($sql);
       foreach($arr as $k=>$v){
         if($k=='pw'&&$v==='') continue;
-        if($k=='pw') $v=md5($v);
+        if($k=='pw'){
+          if($flag) $v=md5($v);
+        }
         $stmt->mbind_param('s', $v);
       }
       if($stmt->execute()){

@@ -29,9 +29,6 @@ import (
 	"weibo.com/opendcp/imagebuild/code/web/models"
 	"net/url"
 )
-
-var specialStrings = []string{"!","@","#","$","%","^","&","*","(",")","=","'","\"","/","\\","|","<",">","{","}","[","]"}
-
 /**
 保存Dockerfile配置
  */
@@ -71,9 +68,7 @@ func (c *ConfigSaveController) Post() {
 			}
 		} else if attributeName == "project" {
 			project = attributeValue
-		} else if attributeName == "Cluster" {
-			cluster = attributeValue
-		} else if attributeName == "DefineDockerFileType" {
+		}else if attributeName == "DefineDockerFileType" {
 			defineDockerFileType = attributeValue
 		} else if attributeName == "addOrUpdate" {
 			addOrUpdate = attributeValue
@@ -84,6 +79,7 @@ func (c *ConfigSaveController) Post() {
 			}
 			pluginName := tmp[0]
 			attributeName := tmp[1]
+			log.Infof("pluginName: %s",pluginName)
 			if _, ok := pluginMap[pluginName]; !ok {
 				pluginConfig = make(map[string]interface{}, 0)
 				pluginConfig["$$plugin"] = pluginName
@@ -113,22 +109,23 @@ func (c *ConfigSaveController) Post() {
 	projectName := project
 
 	projectName = strings.ToLower(projectName)
-	for _,spec := range specialStrings {
-		if strings.Contains(projectName, spec) {
-			var resp = models.BuildResponse(
-				errors.PARAMETER_INVALID,
-				"projectName contains special char:" + spec,
-				errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
-			c.Data["json"] = resp
-			c.ServeJSON(true)
-			return
-		}
+	isvalidate, spec := models.AppServer.ValidateProjectName(projectName)
+	if !isvalidate {
+		var resp = models.BuildResponse(
+			errors.PARAMETER_INVALID,
+			"projectName: "+ projectName + "contains special char:" + spec,
+			errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
+		c.Data["json"] = resp
+		c.ServeJSON(true)
+		return
 	}
 
 	creator := c.Operator()
+	cluster = c.HarborProjectName()
 
-	exist := models.AppServer.IsProjectExist(projectName)
+	exist := models.AppServer.IsProjectExist(cluster, projectName)
 	if addOrUpdate == "add" && exist{
+		log.Errorf("project is already exist")
 		var resp = models.BuildResponse(
 			errors.CREATE_PROJECT_ALREADY_EXIST,
 			"project:" + projectName + " already exist",
@@ -141,28 +138,33 @@ func (c *ConfigSaveController) Post() {
 	var ok bool
 	var code int
 	if exist {
+		log.Infof("UpdateProject: %s %s", cluster, projectName)
 		ok, code = models.AppServer.UpdateProject(projectName, creator, cluster, defineDockerFileType)
 	} else {
+		log.Infof("NewProject: %s %s", cluster, projectName)
 		ok, code = models.AppServer.NewProject(projectName, creator, cluster, defineDockerFileType)
 	}
 
 	if !ok {
+		log.Errorf("fail: %s %s", cluster, projectName)
 		response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 		c.Data["json"] = response
 		c.ServeJSON(true)
 		return
 	}
 
-	succ := models.AppServer.SaveProjectConfig(project, configs)
+	succ := models.AppServer.SaveProjectConfig(cluster, project, configs)
 
 	var resp interface{}
 
 	if succ {
+		log.Errorf("save config success!")
 		resp = models.BuildResponse(
 			errors.OK,
 			"",
 			errors.ErrorCodeToMessage(errors.OK))
 	} else {
+		log.Errorf("save config failue!")
 		resp = models.BuildResponse(
 			errors.INTERNAL_ERROR,
 			"",

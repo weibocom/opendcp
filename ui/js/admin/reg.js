@@ -216,6 +216,8 @@ var change=function(){
       break;
     case 'delete':
       actionDesc='删除';
+    case 'audit':
+      actionDesc='审核';
       break;
     default:
       actionDesc=action;
@@ -228,10 +230,18 @@ var change=function(){
     dataType: "json",
     success: function (data) {
       //执行结果提示
-      if(data.code==0){
-        pageNotify('success','【'+actionDesc+'】操作成功！');
+      if(action=='audit'){
+        if(data.code==0){
+          pageNotify('success','【'+actionDesc+'】操作成功！',data.msg, false);
+        }else{
+          pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg, false);
+        }
       }else{
-        pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+        if(data.code==0){
+          pageNotify('success','【'+actionDesc+'】操作成功！');
+        }else{
+          pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+        }
       }
       //重载列表
       list();
