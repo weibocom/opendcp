@@ -97,7 +97,7 @@
                   </div>
 
                   <div class="form-group has-feedback">
-                    <img name="validate" onclick="validate.src+='?' + Math.random();" src="verification.php"  alt="点击刷新">
+                    <img id="reg_validate" name="validate" onclick="updateValidate()" src="verification.php"  alt="点击刷新">
                     <span>点击图片刷新</span>
                   </div>
 
@@ -242,6 +242,10 @@
           }
         }
         return ret;
+      }
+
+      var updateValidate = function(){
+        $('#reg_validate').attr('src', 'verification.php?' + Math.random());
       }
     </script>
 </body>

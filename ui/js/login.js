@@ -25,14 +25,25 @@ var login=function(action){
     success: function (data) {
       //执行结果提示
       if(data.code==0){
-        pageNotify('success','您已成功登录系统！');
+        switch(action) {
+          case 'login':
+            pageNotify('success','您已成功登录系统！');
+            break;
+          case 'logout':
+            pageNotify('success','您已成功登出系统！');
+            break;
+        }
         setTimeout("window.parent.location.href='/'",1000);
       }else{
-        pageNotify('error','操作失败！','错误信息：'+data.msg);
+        pageNotify('error','操作失败！','错误信息：'+data.msg, false);
       }
     },
     error: function (){
       pageNotify('error','操作失败！','错误信息：接口不可用');
     }
   });
+}
+
+var updateValidate = function(){
+  $('#login_validate').attr(src, 'verification.php' + Math.random());
 }

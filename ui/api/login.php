@@ -31,11 +31,20 @@ class myself{
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
     if($arrList = $thisClass->userAuth($param)){
+      if($arrList['status'] === 0) {
         $ret = array(
           'code' => 0,
           'msg' => 'success',
           'content' => $arrList,
         );
+      }else{
+        $ret = array(
+          'code' => 1,
+          'msg' => '账号已停用',
+          'content' => $arrList,
+        );
+        $thisClass->userLogout();
+      }
     }else{
       $ret['msg']='auth failed';
       $ret['content']=$arrList;
