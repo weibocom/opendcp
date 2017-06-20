@@ -65,11 +65,11 @@
                   </div>
 
                   <div class="form-group has-feedback">
-                    <input type="password" class="form-control" id="pw" name="pw" onkeyup="check()" placeholder="输入6-16位密码">
+                    <input type="password" class="form-control" id="pw" name="pw" onkeyup="check()" placeholder="请输入6-16位数字或英文字符密码">
                     <span class="fa fa-circle form-control-feedback right" aria-hidden="true"></span>
                   </div>
                     <div class="form-group has-feedback">
-                        <input type="password" class="form-control" id="repw" name="repw" onkeyup="check()" placeholder="确认密码">
+                        <input type="password" class="form-control" id="repw" name="repw" onkeyup="check()" placeholder="请确认密码">
                         <span class="fa fa-circle form-control-feedback right" aria-hidden="true"></span>
                     </div>
 
@@ -164,6 +164,13 @@
 
         if($('#biz').val()=='') disabled=true;
         if(!checkParam('passward', 'pw')) disabled=true;
+        if($('#pw').val() != $('#repw').val()){
+            $('#repw').parent().css('border','1px solid #CE5454');
+            disabled=true;
+        }else{
+            $('#repw').parent().css('border','0px none rgb(115, 135, 156)');
+        }
+        if($("#btnCommit").html() == '已提交申请，请联系管理员审批！')disabled=true;
         if($('#verification_code').val()=='') disabled=true;
         $("#btnCommit").attr('disabled',disabled);
       }
@@ -189,15 +196,19 @@
             //执行结果提示
             if(data.code==0){
               pageNotify('success','申请成功！', '请等待审核', false);
-              $("#btnCommit").html('已提交申请，请联系XXX审批！');
+              $("#btnCommit").html('已提交申请，请联系管理员审批！');
               $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
+              $("#btnCommit").attr('disabled',true)
             }else{
+              $("#btnCommit").attr('disabled',true).html('同意协议并提交');
               pageNotify('error','操作失败！','错误信息：'+data.msg, false);
             }
             NProgress.done();
           },
           error: function (){
+            $("#btnCommit").attr('disabled',true).html('同意协议并提交');
             pageNotify('error','操作失败！','错误信息：接口不可用', false);
+
             NProgress.done();
           }
         });
