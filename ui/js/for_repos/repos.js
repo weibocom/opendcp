@@ -214,8 +214,10 @@ var processBodyImages = function(data,body){
       for (var i = 0; i < data.content.length; i++) {
         var v = data.content[i];
         var tr = $('<div class="panel"></div>');
+        var nameArray = v.name.split("/");
+        var showName = nameArray.pop();
         str='<a class="panel-heading collapsed" role="tab" id="heading_'+i+'" data-toggle="collapse" data-parent="#accordion" href="#collapse'+i+'" aria-expanded="false" aria-controls="collapse'+i+'">' +
-          '<h4 class="panel-title"><i class="fa fa-book"></i> '+ v.name.replace(p+'/','') +' <i class="badge bg-green" id="tagsNum_'+i+'">0</i></h4></a>' +
+          '<h4 class="panel-title"><i class="fa fa-book"></i> '+ showName+' <i class="badge bg-green" id="tagsNum_'+i+'">0</i></h4></a>' +
           /*
           '<div class="panel-heading" role="tab">' +
           '<h4 class="panel-title">' +
