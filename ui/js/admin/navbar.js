@@ -116,17 +116,17 @@ var processBody = function(data,head,body){
         td = '<td>' + v.nb_fid + '</td>';
         tr.append(td);
         switch(v.nb_status){
-          case '0':
+          case 0:
             td = '<td><div><label class="tooltips" title="点击停用" onclick="return false;"><input type="checkbox" class="js-switch" checked onchange="switchs(\'off\',\'' + v.nb_id + '\')"/> 启用</label></div></td>';
             //td = '<td><a class="btn btn-round btn-warning btn-xs tooltips" onclick="switchs(\'on\',\'' + v.nb_id + '\')" title="点击停用">启用</a></td>';
             tr.append(td);
             break;
-          case '1':
+          case 1:
             td = '<td><div><label class="tooltips" title="点击启用" onclick="return false;"><input type="checkbox" class="js-switch" onchange="switchs(\'on\',\'' + v.nb_id + '\')"/> 停用</label></div></td>';
             //td = '<td><a class="btn btn-round btn-warning btn-xs tooltips" onclick="switchs(\'on\',\'' + v.nb_id + '\')" title="点击启用">停用</a></td>';
             tr.append(td);
             break;
-          case '2':
+          case 2:
             td = '<td><span class="btn btn-round btn-danger btn-sm btn-xs">Hidden</span></td>';
             tr.append(td);
             break;

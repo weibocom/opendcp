@@ -97,7 +97,7 @@
                   </div>
 
                   <div class="form-group has-feedback">
-                    <img name="validate" onclick="validate.src+='?' + Math.random();" src="verification.php"  alt="点击刷新">
+                    <img id="reg_validate" name="validate" onclick="updateValidate()" src="verification.php"  alt="点击刷新">
                     <span>点击图片刷新</span>
                   </div>
 
@@ -125,7 +125,29 @@
                 </div>
                 <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
                   <div class="col-sm-12">
-                    <textarea rows="16" class="form-control" placeholder="服务协议"></textarea>
+                    <textarea rows="16" class="form-control" placeholder="服务协议" readonly>一、关于OpenDCP
+
+　　(1)   本产品基于OpenDCP开源项目搭建的体验版本，与产品所属公司无直接利益和法律关系。
+
+       (2)   访问者在从事与本产品相关的所有行为（包括但不限于访问、账号管理、使用、部署、宣传）时，必须以善意且谨慎的态度行事。
+
+       (3)　本产品的服务内容的版权仅归原作者所有。
+
+　　(4)　由于用户将个人密码告知他人或与他人共享注册帐户，由此导致的任何个人资料泄露，本网站不负任何责任。
+
+　　(5)　当政府司法机关依照法定程序要求本产品披露个人资料时，我们将根据执法单位之要求或为公共安全之目的提供个人资料。在此情况下之任何披露，本产品均得免责。
+
+　　(6)　访问者不得故意或者过失的损害或者弱化本产品的各类合法权利与利益，不得利用本产品以任何方式直接或者间接的从事违反中华人民共和国法律、国际公约以及社会公德的行为。
+
+　　(7)  本产品之声明以及其修改权、更新权及最终解释权均属OpenDCP团队所有。
+
+二、关于法律责任
+
+　　1 本产品使用者因为违反本声明的规定而触犯中华人民共和国法律的，一切后果自己负责，本网站不承担任何责任。
+
+　　2 凡以任何方式登陆本产品或直接、间接使用本产品服务，视为自愿接受本网站声明的约束
+
+　　3 本声明未涉及的问题参见国家有关法律法规，当本声明与国家法律法规冲突时，以国家法律法规为准。</textarea>
                   </div>
                 </div>
                 <div class="modal-footer">
@@ -186,13 +208,16 @@
               pageNotify('success','申请成功！', '请等待审核', false);
               $("#btnCommit").html('已提交申请，请联系XXX审批！');
               $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
+              updateValidate();
             }else{
               pageNotify('error','操作失败！','错误信息：'+data.msg, false);
+              updateValidate();
             }
             NProgress.done();
           },
           error: function (){
             pageNotify('error','操作失败！','错误信息：接口不可用', false);
+            updateValidate();
             NProgress.done();
           }
         });
@@ -220,6 +245,10 @@
           }
         }
         return ret;
+      }
+
+      var updateValidate = function(){
+        $('#reg_validate').attr('src', 'verification.php?' + Math.random());
       }
     </script>
 </body>
