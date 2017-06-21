@@ -101,7 +101,7 @@ func init() {
 		beego.ControllerComments{
 			Method: "InitDB",
 			Router: `/`,
-			AllowHTTPMethods: []string{"get", "post"},
+			AllowHTTPMethods: []string{"get"},
 			Params: nil})
 
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
