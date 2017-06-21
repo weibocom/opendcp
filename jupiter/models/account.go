@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 type Account struct {
 	Id   		int64 `orm:"pk;auto"`
 	BizId 		int

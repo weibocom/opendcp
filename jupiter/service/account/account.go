@@ -51,7 +51,6 @@ func ListAccounts(bizId int) ([]models.Account, error) {
 
 func CreateAccount(account *models.Account) (int64, error) {
 	account.KeySecret = Encode(account.KeySecret)
-	account.CreateTime = time.Now()
 	id, err := dao.InsertAccount(account)
 	if err != nil {
 		return 0, err
