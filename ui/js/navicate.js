@@ -57,9 +57,9 @@ var showQuota = function(datalist){
         var spent = datalist[i].Spent;
         var credit = datalist[i].Credit;
         var provider = datalist[i].Provider;
-        result += '<a href="javascript:;"><i class="fa fa-cubes"></i> 总额度:'+ credit +
+        result += '<li><a href="javascript:;"><i class="fa fa-cubes"></i> 总额度:'+ credit +
             ' <i class="fa fa-cube"></i> 使用额度:' + spent +
-            ' <i class="fa fa-cloud"></i> 云厂商:'+ provider +'</a>';
+            ' <i class="fa fa-cloud"></i> 云厂商:'+ provider +'</a> </li>';
     }
     $("#auotaCloud").html(result);
 }
