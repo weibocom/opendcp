@@ -118,13 +118,13 @@ require_once('include/navbar.php');
                   </a>
                   <ul id = "auotaCloud" class="dropdown-menu dropdown-usermenu pull-right">
                       <li>
-                          <a href="javascript:;"><i class="fa fa-cubes"></i> 总额度:23 <i class="fa fa-cube"></i> 使用额度:23 <i class="fa fa-cloud"></i> 云厂商：阿里云</a>
+                          Loading...
                       </li>
                   </ul>
               </li>
               <li class="">
                   <a href="javascript:;" aria-expanded="false">
-                      <span id = "currentTime">2017/6/21 11:39:05<span>
+                      <span id = "currentTime">2017/06/21 11:39:05<span>
                   </a>
               </li>
           </ul>
