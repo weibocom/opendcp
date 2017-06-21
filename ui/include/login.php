@@ -107,16 +107,27 @@ class login{
       case 'ldap':
         $ldapArr=$this->ldapAuth($useren,$userpass);
         if($ldapArr){
-          $sql='SELECT * FROM '.$this->authtable." WHERE en='{$useren}';";
-          if($query=$db->query($sql)){
-            if(!$arr=$query->fetch_array(MYSQL_ASSOC)){
+          $sql='SELECT * FROM '.$this->authtable." WHERE en=?;";
+          $stmt = $db->prepare($sql);
+          $stmt->bind_param('s', $useren);
+
+          if($stmt->execute()){
+            $result = $stmt->get_result();
+            if(!$arr=$result->fetch_array(MYSQLI_ASSOC)){
               $ldapuser=$ldapArr['samaccountname'];
               $ldapcn=$ldapArr['cn'];
               $ldapmail=$ldapArr['mail'];
-              $sql="INSERT INTO ".$this->authtable." (en,cn,type,mail,status) VALUES('{$ldapuser}','{$ldapcn}','ldap','{$ldapmail}',1);";
-              $query=$db->query($sql);
-              $sql='SELECT * FROM '.$this->authtable." WHERE en='{$useren}';";
-              if($query=$db->query($sql)) $arr=$query->fetch_array(MYSQL_ASSOC);
+              $sql="INSERT INTO ".$this->authtable." (`en`, `cn`, `mobile`, `type`, `mail`, `status`) VALUES(?, ?, '', 'ldap', ?, 1);";
+              $stmt = $db->prepare($sql);
+              $stmt->bind_param('sss', $ldapuser, $ldapcn, $ldapmail);
+              $stmt->execute();
+              $sql='SELECT * FROM '.$this->authtable." WHERE en=?;";
+              $stmt = $db->prepare($sql);
+              $stmt->bind_param('s', $useren);
+              if($stmt->execute()){
+                $result = $stmt->get_result();
+                $arr=$result->fetch_array(MYSQLI_ASSOC);
+              }
             }
           }
           unset($arr['pw']);
@@ -133,9 +144,13 @@ class login{
         break;
       case 'local':
         $password=md5($userpass);
-        $sql="SELECT * FROM ".$this->authtable." WHERE en='{$useren}' AND type='local' AND pw='{$password}';";
-        if($query=$db->query($sql)){
-          if($arr=$query->fetch_array(MYSQL_ASSOC)){
+        $sql="SELECT * FROM ".$this->authtable." WHERE en=? AND type='local' AND pw=?;";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param('ss', $useren, $password);
+
+        if($stmt->execute()) {
+          $result = $stmt->get_result();
+          if($arr=$result->fetch_array(MYSQLI_ASSOC)){
             $this->userid=$arr['id'];
             $this->useren=$arr['en'];
             $this->usercn=$arr['cn'];

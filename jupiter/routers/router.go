@@ -35,6 +35,11 @@ func init() {
 				&controllers.SlbController{},
 			),
 		),
+		beego.NSNamespace("/account",
+			beego.NSInclude(
+				&controllers.AccountController{},
+			),
+		),
 		beego.NSNamespace("/init",
 			beego.NSInclude(
 				&controllers.InitController{},

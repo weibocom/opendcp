@@ -55,6 +55,9 @@ class myself{
                    $tArr[$key] = $value;
                }
                $tArr['name'] = (string)$_SESSION['open_biz_name'];
+               if(strcmp($param['project_name'], "default_cluster") == 0){
+                   $tArr['name'] = "default_cluster";
+               }
                $ret['content'][] = $tArr;
                break;
            }
@@ -157,10 +160,14 @@ if($hasLimit){
     case 'list':
       $logFlag = false;//本操作不记录日志
       //从session中获取用户的业务方名称
-        $the_projec_name = (string)$_SESSION['open_biz_id'];
-        while(!isset($the_projec_name{3})){
-            $the_projec_name = '0'.$the_projec_name;
-        }
+      $the_projec_name = (string)$_SESSION['open_biz_id'];
+      while(!isset($the_projec_name{3})){
+         $the_projec_name = '0'.$the_projec_name;
+      }
+      //如果为root
+      if(strcmp($the_projec_name, '0000') == 0){
+          $the_projec_name = "default_cluster";
+      }
       $arrJson = array(
         'page' => $myPage,
         'pagesize' => $myPageSize,

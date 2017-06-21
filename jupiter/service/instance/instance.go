@@ -34,15 +34,23 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+	"weibo.com/opendcp/jupiter/service/account"
 )
 
 const PhyDev = "phydev"
 
 func CreateOne(cluster *models.Cluster) (string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
+		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+	} else {
+		providerDriver, err = provider.New(cluster.Provider)
+	}
 	if err != nil {
 		return "", err
 	}
+
 	instanceIds, errs := providerDriver.Create(cluster, 1)
 	if errs != nil {
 		return "", errs[0]
@@ -52,6 +60,7 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		return "", err
 	}
 	ins.BizId = cluster.BizId
+	ins.CreateTime = time.Now()
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
@@ -63,7 +72,12 @@ func StartOne(instanceId string, bizId int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+	var providerDriver provider.ProviderDriver
+	if account.IsAccountExist(bizId, ins.Provider) {
+		providerDriver, err = provider.NewByAccount(bizId, ins.Provider)
+	} else {
+		providerDriver, err = provider.New(ins.Provider)
+	}
 	if err != nil {
 		return false, err
 	}
@@ -79,10 +93,17 @@ func StopOne(instanceId string, bizId int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+
+	var providerDriver provider.ProviderDriver
+	if account.IsAccountExist(ins.BizId, ins.Provider) {
+		providerDriver, err = provider.NewByAccount(ins.BizId, ins.Provider)
+	} else {
+		providerDriver, err = provider.New(ins.Provider)
+	}
 	if err != nil {
 		return false, err
 	}
+
 	isStop, err := providerDriver.Stop(ins.InstanceId)
 	if err != nil {
 		return false, err
@@ -102,7 +123,13 @@ func DeleteOne(instanceId, correlationId string, bizId int) error {
 		return err
 	}
 	if ins.Provider != PhyDev {
-		providerDriver, err := provider.New(ins.Provider)
+		var providerDriver provider.ProviderDriver
+		if account.IsAccountExist(ins.BizId, ins.Provider) {
+			providerDriver, err = provider.NewByAccount(ins.BizId, ins.Provider)
+		} else {
+			providerDriver, err = provider.New(ins.Provider)
+		}
+
 		if err != nil {
 			logstore.Error(correlationId, instanceId, err)
 			return err
@@ -195,8 +222,14 @@ func GetProviders() ([]string, error) {
 	return provider.ListDrivers(), nil
 }
 
-func GetRegions(providerName string) ([]models.Region, error) {
-	providerDriver, err := provider.New(providerName)
+func GetRegions(bizId int, providerName string) ([]models.Region, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -207,8 +240,14 @@ func GetRegions(providerName string) ([]models.Region, error) {
 	return ret.Regions, nil
 }
 
-func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, error) {
-	providerDriver, err := provider.New(providerName)
+func GetZones(bizId int, providerName ,regionId string) ([]models.AvailabilityZone, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +258,14 @@ func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, 
 	return ret.AvailabilityZones, nil
 }
 
-func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int) ([]models.Vpc, error) {
-	providerDriver, err := provider.New(providerName)
+func GetVpcs(bizId, pageNumber ,pageSize int, providerName ,regionId string) ([]models.Vpc, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +276,14 @@ func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int)
 	return ret.Vpcs, nil
 }
 
-func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subnet, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSubnets(bizId int, providerName, zoneId, vpcId string) ([]models.Subnet, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -243,8 +294,14 @@ func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subn
 	return ret.Subnets, nil
 }
 
-func GetImages(providerName string, regionId string) ([]models.Image, error) {
-	providerDriver, err := provider.New(providerName)
+func GetImages(bizId int, providerName, regionId string) ([]models.Image, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -255,8 +312,14 @@ func GetImages(providerName string, regionId string) ([]models.Image, error) {
 	return ret.Images, nil
 }
 
-func ListInstanceTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListInstanceTypes(bizId int, providerName string) ([]string, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -267,24 +330,42 @@ func ListInstanceTypes(providerName string) ([]string, error) {
 	return ret, nil
 }
 
-func ListInternetChargeTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListInternetChargeTypes(bizId int, providerName string) ([]string, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListInternetChargeType(), nil
 }
 
-func ListDiskCategory(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListDiskCategory(bizId int, providerName string) ([]string, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListDiskCategory(), nil
 }
 
-func GetSecurityGroup(providerName string, regionId string, vpcId string) ([]models.SecurityGroup, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSecurityGroup(bizId int, providerName, regionId, vpcId string) ([]models.SecurityGroup, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -464,124 +545,3 @@ func ManageDev(ip, password, instanceId, correlationId string, bizId int) (ssh.O
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
 }
-
-func GetCost (biz_id int, provider string) (int64,error) {
-	account,err := dao.GetAccount(biz_id,provider)
-	if err != nil {
-		beego.Error(err)
-		return 0,err
-	}
-
-	return account.Spent,nil
-
-}
-
-/**
-计算额度算法
- */
-func ComputeCost (time float64, instance models.Instance) ( float64 ) {
-	cpu := float64(instance.Cpu)
-	mem := float64(instance.Ram)
-
-	cpuWeight:= float64(2.0/3.0)
-	memWeight:= float64(1.0/3.0)
-
-
-	return (cpu*cpuWeight+mem*memWeight)*(time/60)
-
-}
-
-/**
-生成额度信息
- */
-func GenerateMutliCost() error{
-	instances,err := dao.GetAllBIdInInstance()
-	if err != nil {
-		beego.Error(err)
-		return err
-	}
-
-	bizInInstance := make([]int,len(instances))
-	for i,instance := range instances {
-		bizInInstance[i]= instance.BizId
-	}
-
-	for _,biz_id := range bizInInstance {
-		err := GenerateOneCost(biz_id)
-		if err != nil {
-			beego.Error(err)
-			return err
-		}
-	}
-
-	return nil
-
-}
-
-func GenerateOneCost(biz_id int) error {
-	//1、获取此业务方的账户信息
-	accounts,err := dao.GetAllInAccount(biz_id)
-	if err != nil {
-		beego.Error(err)
-		return err
-	}
-
-	//biz_id provider
-	existAccount := make(map[string]interface{})
-	for _,account := range accounts {
-		if account.KeyId != "" || account.KeySecret != ""{
-			existAccount[account.Provider] = account
-		}
-	}
-	//2、获取此业务方的所有实例
-	instances,err := dao.GetAllInstance(biz_id)
-	if err != nil {
-		beego.Error(err)
-		return err
-	}
-
-	//3、计算额度并且更新库表
-	now := time.Now()
-	var duration time.Duration
-
-	spendMap := make(map[string]float64)
-
-	for _,instance := range instances {
-		//3.1去除存在云厂商账户的
-		provider := instance.Provider
-		if _, ok := existAccount[provider]; ok {
-			continue
-		}
-
-		ctime := instance.CreateTime
-		if instance.Status == models.Deleted {
-			rtime := instance.ReturnTime
-			duration = rtime.Sub(ctime)
-		}else{
-			duration = now.Sub(ctime)
-
-		}
-		spendTime := duration.Minutes()
-		cost := ComputeCost(spendTime,instance)
-		if v, ok := spendMap[provider]; ok {
-			spendMap[provider] = v+cost
-		}else{
-			spendMap[provider] = cost
-		}
-
-	}
-
-	//更新account数据库表
-	for k,v := range spendMap {
-		err := dao.UpdateAccount(biz_id,k,int64(v))
-		if err != nil {
-			beego.Error(err)
-			return err
-		}
-
-	}
-
-	return nil
-
-}
-

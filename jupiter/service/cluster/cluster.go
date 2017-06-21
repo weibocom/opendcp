@@ -34,6 +34,7 @@ import (
 	"github.com/astaxie/beego"
 	"regexp"
 	"strconv"
+	"weibo.com/opendcp/jupiter/service/account"
 )
 
 func GetCluster(clusterId int64, bizId int) (*models.Cluster, error) {
@@ -46,7 +47,13 @@ func GetCluster(clusterId int64, bizId int) (*models.Cluster, error) {
 
 func CreateCluster(cluster *models.Cluster) (int64, error) {
 	cluster.CreateTime = time.Now()
-	providerDriver, err := provider.New(cluster.Provider)
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
+		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+	} else {
+		providerDriver, err = provider.New(cluster.Provider)
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -77,7 +84,13 @@ func DeleteCluster(clusterId int64, bizId int) (bool, error) {
 }
 
 func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
+		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+	} else {
+		providerDriver, err = provider.New(cluster.Provider)
+	}
 	if err != nil {
 		return nil, err
 	}
