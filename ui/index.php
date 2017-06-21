@@ -100,6 +100,7 @@ require_once('include/navbar.php');
           </div>
 
           <ul class="nav navbar-nav navbar-right">
+
             <li class="">
               <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                 <?php echo $myCn;?>
@@ -110,6 +111,22 @@ require_once('include/navbar.php');
                 <li><a onclick="login('logout')"><i class="fa fa-sign-out"></i> 退出</a></li>
               </ul>
             </li>
+              <li class="">
+                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                      额度
+                      <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul id = "auotaCloud" class="dropdown-menu dropdown-usermenu pull-right">
+                      <li>
+                          <a href="javascript:;"><i class="fa fa-cubes"></i> 总额度:23 <i class="fa fa-cube"></i> 使用额度:23 <i class="fa fa-cloud"></i> 云厂商：阿里云</a>
+                      </li>
+                  </ul>
+              </li>
+              <li class="">
+                  <a href="javascript:;" aria-expanded="false">
+                      <span id = "currentTime">2017/6/21 11:39:05<span>
+                  </a>
+              </li>
           </ul>
         </nav>
       </div>
@@ -564,6 +581,7 @@ require_once('include/navbar.php');
 <script src="js/pnotify.js"></script>
 <script src="js/login.js"></script>
 <script src="js/pagewalkthrough.js?_t=<?php echo date('U');?>"></script>
+<script src="js/navicate.js?_t=<?php echo date('U');?>"></script>
 <!-- Custom Notification -->
 
 <!-- jQuery Sparklines -->
