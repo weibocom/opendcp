@@ -64,7 +64,7 @@ LOCK TABLES `tbl_hubble_alteration_type` WRITE;
 
 INSERT INTO `tbl_hubble_alteration_type` (`id`, `name`, `type`, `content`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
-	(1,'default_service_name','NGINX','{"group_id":"1","name":"default.upstream","port":"8080","weight":"20","script_id":"2"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system',0);
+	(1,'default_service_name','NGINX','{"group_id":"1","name":"default.upstream","port":"80","weight":"20","script_id":"2"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system',0);
 
 /*!40000 ALTER TABLE `tbl_hubble_alteration_type` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -171,10 +171,10 @@ LOCK TABLES `tbl_hubble_nginx_conf_upstream` WRITE;
 INSERT INTO `tbl_hubble_nginx_conf_upstream` (`id`, `name`, `content`, `group_id`, `is_consul`, `deprecated`, `release_id`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
 	(1,'default.upstream','upstream default_upstream{
-	keepalive 4;
+	keepalive 1;
         server 127.0.0.1:8080 max_fails=0 fail_timeout=30s weight=20;
         check interval=1000 rise=3 fall=2 timeout=3000 type=http default_down=false;
-        check_http_send "GET / HTTP/1.0";
+        check_http_send "GET / HTTP/1.0\\r\\n\\r\\n";
         check_http_expect_alive http_2xx;
 }',1,0,0,0,'2016-11-15 22:11:23','2016-11-15 22:11:23','system',0);
 
