@@ -10,6 +10,5 @@ type Account struct {
 	KeySecret       string
 	Spent		int64
 	Credit		int64
-	CreateTime	time.Time `orm:"type(datetime)"`
 }
 
