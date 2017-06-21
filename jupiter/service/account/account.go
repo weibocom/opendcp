@@ -7,7 +7,7 @@ import (
 	"unsafe"
 	"encoding/base64"
 	"time"
-	"github.com/syndtr/goleveldb/leveldb/errors"
+	"errors"
 	"github.com/astaxie/beego"
 )
 
