@@ -373,6 +373,7 @@ require_once('../include/navbar.php');
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
 <script src="../js/for_cloud/ecs.js?_t=<?php echo date('U');?>"></script>
+<script src="../js/navicate.js?_t=<?php echo date('U');?>"></script>
 
 <!-- Custom Notification -->
 <script>
