@@ -32,10 +32,12 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"weibo.com/opendcp/jupiter/service/account"
 )
 
 func init() {
 	provider.RegisterProviderDriver("aliyun", new)
+	provider.RegisterAccountDriver("aliyun",newByAccount)
 }
 
 const (
@@ -538,6 +540,26 @@ func newProvider() (provider.ProviderDriver, error) {
 	client := ecs.NewClient(
 		conf.Config.KeyId,
 		conf.Config.KeySecret,
+		"",
+	)
+	ret := aliyunProvider{
+		client: client,
+	}
+	return ret, nil
+}
+
+func newByAccount(bizId int, provider string) (provider.ProviderDriver, error) {
+	return newProviderByAccount(bizId, provider)
+}
+
+func newProviderByAccount(bizId int, provider string) (provider.ProviderDriver, error) {
+	theAccount, err := account.GetAccount(bizId, provider)
+	if err != nil {
+		return nil, err
+	}
+	client := ecs.NewClient(
+		theAccount.KeyId,
+		theAccount.KeySecret,
 		"",
 	)
 	ret := aliyunProvider{

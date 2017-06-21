@@ -46,7 +46,6 @@ func (ic *InstanceController) CreateInstance() {
 		return
 	}
 
-
 	bizId := ic.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
@@ -322,8 +321,15 @@ func (ic *InstanceController) GetProviders() {
 // @Description Get region in provider
 // @router /regions/:provider [get]
 func (ic *InstanceController) GetRegionIds() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	regions, err := instance.GetRegions(provider)
+	regions, err := instance.GetRegions(bid, provider)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -340,9 +346,16 @@ func (ic *InstanceController) GetRegionIds() {
 // @Description Get available zone in provider
 // @router /zones/:provider/:regionId [get]
 func (ic *InstanceController) GetZones() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
-	zones, err := instance.GetZones(provider, regionId)
+	zones, err := instance.GetZones(bid, provider, regionId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -359,10 +372,17 @@ func (ic *InstanceController) GetZones() {
 // @Description Get VPCs in provider
 // @router /vpc/:provider/:regionId [get]
 func (ic *InstanceController) GetVpcs() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
 	// pageNumber 起始值为1，pageSize 最大值为50
-	vpcs, err := instance.GetVpcs(provider, regionId, 1, 50)
+	vpcs, err := instance.GetVpcs(bid, 1, 50, provider, regionId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -379,10 +399,17 @@ func (ic *InstanceController) GetVpcs() {
 // @Description Get subnets in provider
 // @router /subnet/:provider/:zoneId/:vpcId [get]
 func (ic *InstanceController) GetSubnets() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	zoneId := ic.GetString(":zoneId")
 	vpcId := ic.GetString(":vpcId")
-	subnets, err := instance.GetSubnets(provider, zoneId, vpcId)
+	subnets, err := instance.GetSubnets(bid, provider, zoneId, vpcId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -399,8 +426,15 @@ func (ic *InstanceController) GetSubnets() {
 // @Description List all instance types
 // @router /type/:provider [get]
 func (ic *InstanceController) ListInstanceTypes() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	instanceType, err := instance.ListInstanceTypes(provider)
+	instanceType, err := instance.ListInstanceTypes(bid, provider)
 	if err != nil {
 		beego.Error("get all instance type error: ", err)
 		ic.RespServiceError(err)
@@ -416,8 +450,15 @@ func (ic *InstanceController) ListInstanceTypes() {
 // @Description List all instance internet charge type
 // @router /charge/:provider [get]
 func (ic *InstanceController) ListInternetChargeType() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	chargeType, err := instance.ListInternetChargeTypes(provider)
+	chargeType, err := instance.ListInternetChargeTypes(bid, provider)
 	if err != nil {
 		beego.Error("get all internet charge type error: ", err)
 		ic.RespServiceError(err)
@@ -433,8 +474,15 @@ func (ic *InstanceController) ListInternetChargeType() {
 // @Description List disk category in provider
 // @router /disk_category/:provider [get]
 func (ic *InstanceController) ListDiskCategory() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	dataCategory, err := instance.ListDiskCategory(provider)
+	dataCategory, err := instance.ListDiskCategory(bid, provider)
 	if err != nil {
 		ic.RespServiceError(err)
 	}
@@ -449,9 +497,16 @@ func (ic *InstanceController) ListDiskCategory() {
 // @Description Get all images in provider
 // @router /image/:provider/:regionId [get]
 func (ic *InstanceController) GetImages() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
-	images, err := instance.GetImages(provider, regionId)
+	images, err := instance.GetImages(bid, provider, regionId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -468,10 +523,17 @@ func (ic *InstanceController) GetImages() {
 // @Description Get all security groups in provider
 // @router /security_group/:provider/:regionId [get]
 func (ic *InstanceController) GetSecurityGroup() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
 	vpcId := ic.GetString("vpcId")
-	securityGroup, err := instance.GetSecurityGroup(provider, regionId, vpcId)
+	securityGroup, err := instance.GetSecurityGroup(bid, provider, regionId, vpcId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)

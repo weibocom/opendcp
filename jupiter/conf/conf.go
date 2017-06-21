@@ -48,6 +48,7 @@ type Configuration struct {
 	BufferSize int
 	Ansible    *Ansible
 	KeyDir     string
+	Schedule    string
 }
 
 type Ansible struct {
