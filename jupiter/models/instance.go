@@ -93,8 +93,8 @@ type ListInstancesResponse struct {
 }
 
 type Instance struct {
-	Id                 int      `orm:"pk;auto"`
-	Cluster            *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
+	Id                 int       `orm:"pk;auto"`
+	Cluster            *Cluster  `orm:"rel(fk);on_delte(do_nothing)"`
 	Provider           string
 	CreateTime         time.Time `orm:"auto_now_add;type(datetime)"`
 	Cpu                int
