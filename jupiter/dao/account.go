@@ -49,7 +49,7 @@ func GetAccountByProvider(biz_id int, provider string) (*models.Account, error) 
 
 }
 
-func UpdateAccount(biz_id int, provider string, spent int64) error {
+func UpdateAccount(biz_id int, provider string, spent float64) error {
 	o := GetOrmer()
 	account,err := GetAccountByProvider(biz_id,provider)
 	if err != nil {
