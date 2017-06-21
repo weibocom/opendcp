@@ -112,7 +112,7 @@ require_once('include/navbar.php');
               </ul>
             </li>
               <li class="">
-                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  <a onclick="getColudList()" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                       额度
                       <span class=" fa fa-angle-down"></span>
                   </a>
