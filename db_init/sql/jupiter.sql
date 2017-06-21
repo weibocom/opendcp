@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS `account` (
   `provider` varchar(255) NOT NULL DEFAULT '',
   `key_id` varchar(255) NOT NULL DEFAULT '',
   `key_secret` varchar(255) NOT NULL DEFAULT '',
-  `spent` bigint(20) NOT NULL DEFAULT '0',
-  `credit` bigint(20) NOT NULL DEFAULT '0',
+  `spent`  DOUBLE NOT NULL DEFAULT '0',
+  `credit` DOUBLE NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 

@@ -79,13 +79,13 @@ func Decode(data string) (string, error)  {
 }
 
 
-func GetCost (biz_id int, provider string) (map[string] int64, error) {
+func GetCost (biz_id int, provider string) (map[string] float64, error) {
 	account,err := dao.GetAccount(biz_id,provider)
 	if err != nil {
 		beego.Error(err)
 		return nil, err
 	}
-	cost := make(map[string] int64)
+	cost := make(map[string] float64)
 	cost["spent"] = account.Spent
 	cost["credit"] = account.Credit
 	return cost, nil
@@ -103,7 +103,7 @@ func ComputeCost (time float64, instance models.Instance) ( float64 ) {
 	memWeight:= float64(1.0/3.0)
 
 
-	return (cpu*cpuWeight+mem*memWeight)*(time/60)
+	return (cpu*cpuWeight+mem*memWeight)*(time/60.0)
 
 }
 
@@ -188,13 +188,14 @@ func GenerateOneCost(biz_id int) error {
 
 	//更新account数据库表
 	for k,v := range spendMap {
-		err := dao.UpdateAccount(biz_id,k,int64(v))
+		err := dao.UpdateAccount(biz_id,k,v)
 		if err != nil {
 			beego.Error(err)
 			return err
 		}
 
 	}
+	beego.Info(spendMap)
 
 	return nil
 
