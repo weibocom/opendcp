@@ -121,6 +121,22 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
                 <li><a onclick="login('logout')"><i class="fa fa-sign-out"></i> 退出</a></li>
               </ul>
             </li>
+              <li class="">
+                  <a onclick="getColudList()" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                      额度
+                      <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul id = "auotaCloud" class="dropdown-menu dropdown-usermenu pull-right">
+                      <li>
+                          <a href="javascript:;"><i class="fa fa-cubes"></i> 总额度:23 <i class="fa fa-cube"></i> 使用额度:23 <i class="fa fa-cloud"></i> 云厂商：阿里云</a>
+                      </li>
+                  </ul>
+              </li>
+              <li class="">
+                  <a href="javascript:;" aria-expanded="false">
+                      <span id = "currentTime">2017/6/21 11:39:05<span>
+                  </a>
+              </li>
           </ul>
         </nav>
       </div>
@@ -389,7 +405,7 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
 <script src="../js/for_hubble/nginx_unit.js?_t=<?php echo date('U');?>"></script>
-
+<script src="../js/navicate.js?_t=<?php echo date('U');?>"></script>
 
 <!-- Custom Notification -->
 <script>
