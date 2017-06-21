@@ -46,12 +46,17 @@ func (initController *InitController) InitDB() {
 		return
 	}
 
-	credit,_ := beego.AppConfig.Int("credit")
+	//credit,_ := beego.AppConfig.Int("credit")
+	credit,err := beego.AppConfig.Float("credit")
+	if err != nil {
+		credit = 100;
+	}
+
 	provider := "'aliyun'"
 	key_id := "''"
 	key_secret := "''"
 
-	sqlAccount := "insert into account(biz_id,credit,provider,key_id,key_secret) values(%d,%d,%s,%s,%s)"
+	sqlAccount := "insert into account(biz_id,credit,provider,key_id,key_secret) values(%d,%f,%s,%s,%s)"
 
 	sql3 :=
 		"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +

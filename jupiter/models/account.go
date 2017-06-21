@@ -7,7 +7,7 @@ type Account struct {
 	Provider        string
 	KeyId     	string
 	KeySecret       string
-	Spent		int64
-	Credit		int64
+	Spent		float64
+	Credit		float64
 }
 
