@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"time"
 	"regexp"
-	"github.com/syndtr/goleveldb/leveldb/errors"
+	"errors"
 	"strconv"
 	"weibo.com/opendcp/jupiter/conf"
 )
