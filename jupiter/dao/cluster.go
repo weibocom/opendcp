@@ -89,7 +89,7 @@ func DeleteCluster(clusterId int64, bizId int) (bool, error) {
 func GetClusters(bizId int) ([]models.Cluster, error) {
 	o := GetOrmer()
 	var clusters []models.Cluster
-	_, err := o.QueryTable(CLUSTER_TABLE).RelatedSel().Filter("biz_id", bizId).OrderBy("-id").All(&clusters)
+	_, err := o.QueryTable(CLUSTER_TABLE).RelatedSel().Filter("biz_id", bizId).OrderBy("id").All(&clusters)
 	if err != nil {
 		return nil, err
 	}
