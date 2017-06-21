@@ -157,4 +157,26 @@ CREATE TABLE IF NOT EXISTS `logs` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='日志信息表' AUTO_INCREMENT=1 ;
 
+# ------------------------------------------------------------
+# DELETE DATA
+# ------------------------------------------------------------
+LOCK TABLES `logs` WRITE;
+DELETE FROM  `logs` where 1=1 ;
+UNLOCK TABLES;
 
+LOCK TABLES `node` WRITE;
+DELETE FROM  `node` where 1=1 ;
+UNLOCK TABLES;
+
+LOCK TABLES `node_state` WRITE;
+DELETE FROM  `node_state` where 1=1 ;
+UNLOCK TABLES;
+
+
+LOCK TABLES `flow_batch` WRITE;
+DELETE FROM  `flow_batch` where 1=1 ;
+UNLOCK TABLES;
+
+LOCK TABLES `flow` WRITE;
+DELETE FROM  `flow` where 1=1 ;
+UNLOCK TABLES;
