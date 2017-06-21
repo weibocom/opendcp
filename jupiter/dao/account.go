@@ -2,7 +2,7 @@ package dao
 
 import (
 	"weibo.com/opendcp/jupiter/models"
-	"github.com/syndtr/goleveldb/leveldb/errors"
+	"errors"
 )
 
 
