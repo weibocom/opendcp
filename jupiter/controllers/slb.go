@@ -273,15 +273,8 @@ func (sc *SlbController) DescribeHealthStatus() {
 		sc.RespServiceError(err)
 		return
 	}
-	bizId := sc.Ctx.Input.Header("X-Biz-ID")
-	bid, err := strconv.Atoi(bizId)
-	if bizId=="" || err != nil {
-		beego.Error("Get X-Biz-ID err!")
-		sc.RespInputError()
-		return
-	}
 	servers := make([]models.BackendServer, 0)
-	providerDriver, _ := provider.New(bid, "aliyun")
+	providerDriver, _ := provider.New("aliyun")
 	for _, v := range r.BackendServers.BackendServer {
 		ins, _ := providerDriver.GetInstance(v.ServerId)
 		var ip string = ""

@@ -51,19 +51,36 @@ type ProviderDriver interface {
 	AllocatePublicIpAddress(instanceId string) (string, error)
 }
 
-type ProviderDriverFunc func(int, string) (ProviderDriver, error)
+type ProviderDriverFunc func() (ProviderDriver, error)
+type AccountDriverFunc func(int, string) (ProviderDriver, error)
 
-var registeredPlugins = map[string](ProviderDriverFunc){}
+var registeredDefaultPlugins = map[string](ProviderDriverFunc){}
+var registeredAccountPlugins = map[string](AccountDriverFunc){}
 
 func RegisterProviderDriver(name string, f ProviderDriverFunc) {
-	registeredPlugins[name] = f
+	registeredDefaultPlugins[name] = f
 }
 
-func New(bizId int, provider string) (ProviderDriver, error) {
+func RegisterAccountDriver(name string, f AccountDriverFunc)  {
+	registeredAccountPlugins[name] = f
+}
+
+func New(name string) (ProviderDriver, error) {
+	if name == "" {
+		return nil, fmt.Errorf("the provider cannot be null.")
+	}
+	f, ok := registeredDefaultPlugins[name]
+	if !ok {
+		return nil, fmt.Errorf("unknown backend provider driver: %s", name)
+	}
+	return f()
+}
+
+func NewByAccount(bizId int, provider string) (ProviderDriver, error) {
 	if provider == "" {
 		return nil, fmt.Errorf("the provider cannot be null.")
 	}
-	f, ok := registeredPlugins[provider]
+	f, ok := registeredAccountPlugins[provider]
 	if !ok {
 		return nil, fmt.Errorf("unknown backend provider driver: %s", provider)
 	}
@@ -71,8 +88,8 @@ func New(bizId int, provider string) (ProviderDriver, error) {
 }
 
 func ListDrivers() []string {
-	drivers := make([]string, 0, len(registeredPlugins))
-	for name := range registeredPlugins {
+	drivers := make([]string, 0, len(registeredDefaultPlugins))
+	for name := range registeredDefaultPlugins {
 		drivers = append(drivers, name)
 	}
 	sort.Strings(drivers)

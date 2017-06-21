@@ -37,6 +37,7 @@ import (
 
 func init() {
 	provider.RegisterProviderDriver("aliyun", new)
+	provider.RegisterAccountDriver("aliyun",newByAccount)
 }
 
 const (
@@ -531,20 +532,31 @@ func (aliyunProvider) AttachGateway(input *models.AttachGateway) (bool, error) {
 	return true, nil
 }
 
-func new(bizId int, provider string) (provider.ProviderDriver, error) {
-	return newProvider(bizId, provider)
+func new() (provider.ProviderDriver, error) {
+	return newProvider()
 }
 
-func newProvider(bizId int, provider string) (provider.ProviderDriver, error) {
+func newProvider() (provider.ProviderDriver, error) {
+	client := ecs.NewClient(
+		conf.Config.KeyId,
+		conf.Config.KeySecret,
+		"",
+	)
+	ret := aliyunProvider{
+		client: client,
+	}
+	return ret, nil
+}
+
+func newByAccount(bizId int, provider string) (provider.ProviderDriver, error) {
+	return newProviderByAccount(bizId, provider)
+}
+
+func newProviderByAccount(bizId int, provider string) (provider.ProviderDriver, error) {
 	theAccount, err := account.GetAccount(bizId, provider)
 	if err != nil {
 		return nil, err
 	}
-	/*client := ecs.NewClient(
-		conf.Config.KeyId,
-		conf.Config.KeySecret,
-		"",
-	)*/
 	client := ecs.NewClient(
 		theAccount.KeyId,
 		theAccount.KeySecret,

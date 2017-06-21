@@ -126,3 +126,54 @@ func (accountController *AccountController) DeleteAccount()  {
 	accountController.Status = SERVICE_SUCCESS
 	accountController.RespJsonWithStatus()
 }
+
+
+// @Title get cost
+// @Description Get cost info
+// @router /cost [get]
+func (ac *AccountController) GetCost() {
+	bizId := ac.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ac.RespInputError()
+		return
+	}
+
+	provider := ac.GetString("provider")
+
+	cost, err := account.GetCost(bid, provider)
+	if err != nil {
+		beego.Error("Get cost err: ", err)
+		ac.RespServiceError(err)
+		return
+	}
+
+	resp := ApiResponse{}
+	resp.Content = cost
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
+}
+
+// @Title get cost
+// @Description Get cost info
+// @router /exist [get]
+func (ac *AccountController) IsExist() {
+	bizId := ac.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ac.RespInputError()
+		return
+	}
+
+	provider := ac.GetString("provider")
+	isExist := account.IsAccountExist(bid, provider)
+
+	resp := ApiResponse{}
+	resp.Content = isExist
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
+}

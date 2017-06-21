@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"strconv"
+	"weibo.com/opendcp/jupiter/conf"
 )
 
 type Handle func() error
@@ -62,10 +63,11 @@ func (cf *CronFuture)UpdateTicker()  {
 	cf.Ticker = ticker
 }
 
-func NewCronbFuture(detail string, handle Handle) (*CronFuture, error) {
+func NewCronbFuture(detail string, handle Handle) *CronFuture {
 	ticker, err := NewTicker()
 	if err != nil {
-		return nil, err
+		beego.Error("Create ticker err: ", err)
+		return nil
 	}
 
 	cron := &CronFuture{
@@ -75,7 +77,7 @@ func NewCronbFuture(detail string, handle Handle) (*CronFuture, error) {
 	cron.Stop = false
 	cron.Ticker = ticker
 
-	return cron, nil
+	return cron
 }
 
 func getNextTickDuration(hour, minute,interval int ) time.Duration {
@@ -99,7 +101,7 @@ func NewTicker() (*time.Ticker, error) {
 
 //从配置文件读取定时任务的参数
 func GetConfig() ([]int, error) {
-	scheduleConf := beego.AppConfig.String("schedule")
+	scheduleConf := conf.Config.Schedule
 	time_arr := make([]int, 10)
 	var err error
 	timeNumber := regexp.MustCompile("[0-9]+")

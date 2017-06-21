@@ -20,7 +20,7 @@ func GetAccount (biz_id int, provider string) (*models.Account, error) {
 func GetAllInAccount (biz_id int) ([]models.Account,error) {
 	o := GetOrmer()
 	var accounts []models.Account
-	_,err := o.QueryTable(ACCOUNT_TABLE).Filter("biz_id",biz_id).All(&accounts,"id","biz_id","provider","key_id","key_secret", "create_time")
+	_,err := o.QueryTable(ACCOUNT_TABLE).Filter("biz_id",biz_id).All(&accounts)
 	if err != nil {
 		return nil, err
 	}
