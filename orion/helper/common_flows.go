@@ -128,8 +128,13 @@ func Shrink(poolId int, nodeIps []string, opUser string, biz_id int) error {
 
 	nodes := make([]*models.Node, 0)
 	for _, ip := range nodeIps {
-		n := &models.Node{Ip: ip}
-		err := service.Cluster.GetBy(n, "Ip")
+		//n := &models.Node{Ip: ip}
+		//err := service.Cluster.GetBy(n, "Ip")
+		n := &models.Node{}
+		condition := make(map[string]interface{})
+		condition["Ip"] = ip
+		condition["Pool"] = poolId
+		err := service.Remote.GetByMultiFieldValue(n,condition)
 		if err != nil {
 			beego.Error("Node with IP ", ip, "not foud, ignore")
 			continue
