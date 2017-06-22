@@ -63,6 +63,11 @@ func DeleteAccount(bizId int, provider string) (bool, error) {
 	return result, err
 }
 
+func UpdateAccountInfo(obj interface{}, column []string) (err error) {
+	err = dao.UpdateAccountInfo(obj ,column)
+	return  err
+}
+
 func Encode(data string) string {
 	content := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&data))))
 	coder := base64.NewEncoding(BASE64Table)
