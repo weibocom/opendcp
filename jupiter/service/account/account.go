@@ -193,5 +193,9 @@ func GenerateOneCost(biz_id int) error {
 
 }
 
+func UpdateAccountInfo(obj interface{}, column []string) (err error) {
+	err = dao.UpdateAccountInfo(obj ,column)
+	return  err
+}
 
 
