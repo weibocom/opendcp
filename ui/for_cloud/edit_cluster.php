@@ -72,7 +72,7 @@
                 <div class="form-group hidden">
                     <label for="AvabilityZone" class="col-sm-2 control-label">可用域</label>
                     <div class="col-sm-10">
-                        <select class="form-control" id="AvabilityZone" name="AvabilityZone" onchange="" >
+                        <select class="form-control" id="AvabilityZone" name="AvabilityZone" onchange="check()" >
                             <option value="">请选择</option>
                             <option value="nova:75-29-208-yf-core.jpool.sinaimg.cn">nova</option>
                         </select>
@@ -166,7 +166,7 @@
                 <div class="form-group hidden">
                     <label for="DiskType" class="col-sm-2 control-label">磁盘规格</label>
                     <div class="col-sm-10">
-                        <select class="form-control" id="DiskType" name="DiskType" onchange="" disabled>
+                        <select class="form-control" id="DiskType" name="DiskType" onchange="check()" disabled>
                             <option value="">请选择</option>
                         </select>
                     </div>
