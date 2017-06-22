@@ -4,7 +4,7 @@
     "KeySecret": "your_secret",
     "BufferSize": 40,
     "KeyDir": "./keys",
-    "Schedule":"00点00分开始间隔1小时",
+    "Schedule":"00点00分开始间隔10分钟",
     "Ansible": {
         "Url": "http://octans:8000",
         "GetOctansUrl": "http://opendcp.oss-cn-shanghai.aliyuncs.com/manage_device.sh",
