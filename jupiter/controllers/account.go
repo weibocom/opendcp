@@ -6,6 +6,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/account"
 	"weibo.com/opendcp/jupiter/models"
 	"encoding/json"
+	"io/ioutil"
 )
 
 type AccountController struct {
@@ -122,6 +123,51 @@ func (accountController *AccountController) DeleteAccount()  {
 
 	resp := ApiResponse{}
 	resp.Content = isDeleted
+	accountController.ApiResponse = resp
+	accountController.Status = SERVICE_SUCCESS
+	accountController.RespJsonWithStatus()
+}
+
+// @Title update account
+// @Description update account.
+// @router /update
+func (accountController *AccountController) UpdateAccount()  {
+	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		accountController.RespInputError()
+		return
+	}
+	bytes, err := ioutil.ReadAll(accountController.Ctx.Request.Body)
+	if err != nil {
+		beego.Error("Get Request Body err: ", err)
+		accountController.RespServiceError(err)
+		return
+	}
+	obj := &models.Account{}
+	err = json.Unmarshal(bytes, obj)
+	if err != nil {
+		beego.Error("Unmarshal bytes to account err: ", err)
+		accountController.RespServiceError(err)
+		return
+	}
+	obj.BizId = bid
+	obj.KeySecret = account.Encode(obj.KeySecret)
+	fields  := []string{
+		"KeyId",
+		"KeySecret",
+	}
+
+	err = account.UpdateAccountInfo(obj,fields)
+	if err != nil {
+		beego.Error("Get account info err: ", err)
+		accountController.RespServiceError(err)
+		return
+	}
+
+	resp := ApiResponse{}
+	resp.Content = true
 	accountController.ApiResponse = resp
 	accountController.Status = SERVICE_SUCCESS
 	accountController.RespJsonWithStatus()
