@@ -532,6 +532,7 @@ var twiceCheck=function(action,idx,desc){
 //*********
 var updateSelect=function(name,idx){
     var tSelect=$('#'+name),data='';
+    console.log(tSelect+'is current select')
     switch(name){
         case 'Provider':
             data=cache.provider;
