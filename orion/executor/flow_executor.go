@@ -71,10 +71,10 @@ type FlowExecutor struct {
 
 // Run creates a flow instance from the given template id, and nodes, and
 // starts the flow instance.
-func (exec *FlowExecutor) Run(tplID int, name string, option *ExecOption,
+func (exec *FlowExecutor) Run(tplID int, name string, biz_id int, option *ExecOption,
 	nodes []*models.Node,context map[string]interface{}) error {
 
-	fis, err := exec.Create(tplID, name, option, nodes, context)
+	fis, err := exec.Create(tplID, name, biz_id, option, nodes, context)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (exec *FlowExecutor) Run(tplID int, name string, option *ExecOption,
 }
 
 // Create creates a flow instance with given template id, and nodes.
-func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
+func (exec *FlowExecutor) Create(tplID int, name string, biz_id int, option *ExecOption,
 	nodes []*models.Node, context map[string]interface{}) ([]*models.Flow, error) {
 
 	beego.Info("Create new task from template[", tplID, "]")
@@ -153,7 +153,7 @@ func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
 	for pid, node := range nodesarray{
 		poolID := pid
 		poolNode := node
-		instance, err := exec.createFlowInstance(name, flow, &models.Pool{Id: poolID}, stepOps, option, opUser)
+		instance, err := exec.createFlowInstance(name, flow, biz_id, &models.Pool{Id: poolID}, stepOps, option, opUser)
 		if err != nil {
 			beego.Error("Fail to create flow instance", err)
 			return nil, err
@@ -165,7 +165,7 @@ func (exec *FlowExecutor) Create(tplID int, name string, option *ExecOption,
 			return nil, err
 		}
 		// create batches
-		err = exec.createBatches(instance, states, option.MaxNum)
+		err = exec.createBatches(instance, states, biz_id, option.MaxNum)
 		if err != nil {
 			beego.Error("Fail to create batches for flow: ", instance.Name, err)
 			flowService.DeleteBase(instance)
@@ -567,7 +567,7 @@ func (exec *FlowExecutor) getSteps(flow *models.Flow) ([]*models.ActionImpl, []*
 
 	for _, stepOption := range stepOptions {
 		name := stepOption.Name
-		step := handler.GetActionImpl(name)
+		step := handler.GetActionImpl(flow.BizId,name)
 		if step == nil {
 			beego.Error("Step [", name, "] not found")
 			return nil, nil, errors.New("step [" + name + "] not found")
@@ -662,7 +662,7 @@ func (exec *FlowExecutor) getBatchNodeStates(batch *models.FlowBatch,
 /*
  * Create a flow instance in DB, set its state to INIT
  */
-func (exec *FlowExecutor) createFlowInstance(name string, flow *models.FlowImpl, pool *models.Pool,
+func (exec *FlowExecutor) createFlowInstance(name string, flow *models.FlowImpl, biz_id int, pool *models.Pool,
 	stepOps []*models.StepOption, option *ExecOption,opUser string) (*models.Flow, error) {
 
 	bytes, err := json.Marshal(stepOps)
@@ -675,6 +675,7 @@ func (exec *FlowExecutor) createFlowInstance(name string, flow *models.FlowImpl,
 	fi := &models.Flow{
 		Name: name,
 		//Params:      params,
+		BizId:	     biz_id,
 		Options:     optionValues,
 		Status:      models.STATUS_INIT,
 		Impl:        flow,
@@ -718,7 +719,7 @@ func (exec *FlowExecutor) createNodeStates(flow *models.Flow, nodes []*models.No
 }
 
 // Create batches for the given task.
-func (exec *FlowExecutor) createBatches(instance *models.Flow, states []*models.NodeState, max int) error {
+func (exec *FlowExecutor) createBatches(instance *models.Flow, states []*models.NodeState,biz_id int, max int) error {
 	total := len(states)
 	if max < 1 {
 		max = 1
@@ -746,6 +747,7 @@ func (exec *FlowExecutor) createBatches(instance *models.Flow, states []*models.
 
 		batch := &models.FlowBatch{
 			Flow:        instance,
+			BizId:       biz_id,
 			Status:      models.STATUS_INIT,
 			Step:        -1, // not started
 			Nodes:       idsStr,

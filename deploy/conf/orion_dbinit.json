@@ -1,0 +1,75 @@
+[
+  {
+    "Table": "remote_action",
+    "Records":
+    [
+      "INSERT INTO remote_action(name,`desc`,params,biz_id) VALUES('start_docker','启动docker','{\"host\":\"string\",\"name\":\"string\",\"tag\":\"string\"}',%d)",
+      "INSERT INTO remote_action(name,`desc`,params,biz_id) VALUES('check_port','检查端口','{\"check_port\":\"integer\",\"check_times\":\"integer\"}',%d)",
+      "INSERT INTO remote_action(name,`desc`,params,biz_id) VALUES('check_url','检测URL','{\"check_keyword\":\"string\",\"check_url\":\"string\"}',%d)",
+      "INSERT INTO remote_action(name,`desc`,params,biz_id) VALUES('stop_docker','停止Docker容器','{\"name\":\"string\"}',%d)",
+      "INSERT INTO remote_action(name,`desc`,params,biz_id) VALUES('echo','echo','{\"echo_word\":\"string\"}',%d)",
+      "INSERT INTO remote_action(name,`desc`,params,biz_id) VALUES('install_nginx','安装nginx','{\"eth\":\"string\",\"octans_host\":\"string\"}',%d)"
+    ]
+  },
+  {
+    "Table": "remote_action_impl",
+    "Records":
+    [
+      "INSERT INTO remote_action_impl(`type`,`template`,action_id,biz_id) VALUES('ansible','{\"action\":{\"content\":\"docker run -d --net=\\\\\"{{host}}\\\\\" --name {{name}} {{tag}} \",\"module\":\"longscript\"}}',%d,%d)",
+      "INSERT INTO remote_action_impl(`type`,`template`,action_id,biz_id) VALUES('ansible','{\"action\":{\"content\":\"# check port\\\\nTIMES={{check_times}}\\\\nPORT={{check_port}}\\\\nfor((i=0;i\\\\u003c$TIMES;i++));\\\\ndo\\\\n\\\\techo\\\\\"check $PORT time $i ...\\\\\"\\\\n\\\\tres=`netstat -an | grep LISTEN | grep -e \\\\\"\\\\\\\\b$PORT\\\\\\\\b\\\\\"`\\\\n\\\\tif [ \\\\\"\\\\\" != \\\\\"$res\\\\\" ]; then\\\\n\\\\t\\\\techo \\\\\"OK\\\\\"\\\\n\\\\t\\\\texit 0\\\\n\\\\tfi\\\\n\\\\tsleep 5\\\\ndone\\\\necho \\\\\"error\\\\\" \\\\nexit 1\",\"module\":\"longscript\"}}',%d,%d)",
+      "INSERT INTO remote_action_impl(`type`,`template`,action_id,biz_id) VALUES('ansible','{\"action\":{\"content\":\"sleep 20\\\\nres=`curl -m 400 {{check_url}} | grep {{check_keyword}}`\\\\nif [ \\\\\"\\\\\" != \\\\\"$res\\\\\" ]; then\\\\n    echo \\\\\"OK\\\\\"\\\\n    exit 0\\\\nfi\\\\n\\\\necho \\\\\"check fails\\\\\"\\\\nexit 1\\\\n\",\"module\":\"longscript\"}}',%d,%d)",
+      "INSERT INTO remote_action_impl(`type`,`template`,action_id,biz_id) VALUES('ansible','{\"action\":{\"content\":\"cname={{name}}\\\\ncontainer=`docker ps|grep -w $cname`\\\\nif [ \\\\\"\\\\\" != \\\\\"$container\\\\\" ];then\\\\n    docker stop $cname\\\\nfi\\\\nsleep 5\\\\ncontainer=`docker ps -af status=exited|grep -w  $cname`\\\\n\\\\nif [ \\\\\"\\\\\" != \\\\\"$container\\\\\" ];then\\\\n        docker rm $cname\\\\nfi\\\\n\\\\nexit 0\",\"module\":\"longscript\"}}',%d,%d)",
+      "INSERT INTO remote_action_impl(`type`,`template`,action_id,biz_id) VALUES('ansible','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',%d,%d)",
+      "INSERT INTO remote_action_impl(`type`,`template`,action_id,biz_id) VALUES('ansible','{\"action\":{\"content\":\"#!/bin/sh\\\\n\\\\n# get ip address\\\\nIP=`ifconfig {{eth}} | grep inet | awk \\'{print $2}\\'` \\\\necho \\\\\"IP is $IP\\\\\"\\\\n\\\\n# run role\\\\necho \\\\\"Deploy nginx on $IP ...\\\\\"\\\\nNOW=`date +\\\\\"%Y%m%d-%H%M%S\\\\\"`\\\\ncurl -l -H \\\\\"Content-type: application/json\\\\\" -H \\\\\"X-CORRELATION-ID: $NOW\\\\\" -H \\\\\"X-SOURCE: orion\\\\\" -X POST \\\\\\\\\\\\n    -d  \\\\\"{\\\\\\\\\\\\\"tasks\\\\\\\\\\\\\": [\\\\\\\\\\\\\"hubble-nginx\\\\\\\\\\\\\"], \\\\\\\\\\\\\"name\\\\\\\\\\\\\": \\\\\\\\\\\\\"$IP_$NOW\\\\\\\\\\\\\", \\\\\\\\\\\\\"fork_num\\\\\\\\\\\\\":5, \\\\\\\\\\\\\"tasktype\\\\\\\\\\\\\": \\\\\\\\\\\\\"ansible_role\\\\\\\\\\\\\", \\\\\\\\\\\\\"nodes\\\\\\\\\\\\\": [\\\\\\\\\\\\\"$IP\\\\\\\\\\\\\"], \\\\\\\\\\\\\"user\\\\\\\\\\\\\": \\\\\\\\\\\\\"root\\\\\\\\\\\\\"}\\\\\" \\\\\\\\\\\\n    http://{{octans_host}}:8082/api/parallel_run\\\\n \",\"module\":\"longscript\"}}',action_id_value,biz_id_value)"
+    ]
+  },
+  {
+    "Table": "remote_step",
+    "Records":
+    [
+      "INSERT INTO remote_step(name,`desc`,actions,biz_id) VALUES('echo','echo','[\"echo\"]',%d)",
+      "INSERT INTO remote_step(name,`desc`,actions,biz_id) VALUES('install_nginx','安装nginx','[\"install_nginx\",\"check_port\"]',%d)",
+      "INSERT INTO remote_step(name,`desc`,actions,biz_id) VALUES('start_service','启动服务','[\"start_docker\"]',%d)",
+      "INSERT INTO remote_step(name,`desc`,actions,biz_id) VALUES('stop_service','停止服务','[\"stop_docker\"]',%d)"
+
+    ]
+  },
+  {
+    "Table": "flow_impl",
+    "Records":
+    [
+      "INSERT INTO flow_impl(name,`desc`,steps,biz_id) VALUES('expand_nginx','扩容nginx服务','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":%d},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"install_nginx\",\"param_values\":{\"check_port\":80,\"check_times\":30,\"eth\":\"eth1\",\"octans_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]',%d)",
+      "INSERT INTO flow_impl(name,`desc`,steps,biz_id) VALUES('unexpand_nginx','缩容nginx服务','[{\"name\":\"return_vm\",\"param_values\":{\"vm_type_id\":%d},\"retry\":{\"retry_times\":2,\"ignore_error\":false}}]',%d)",
+      "INSERT INTO flow_impl(name,`desc`,steps,biz_id) VALUES('noop','No op','[{\"name\":\"echo\",\"param_values\":{\"echo_word\":\"noop\"},\"retry\":{\"retry_times\":0,\"ignore_error\":true}}]',%d)",
+      "INSERT INTO flow_impl(name,`desc`,steps,biz_id) VALUES('expand_my_server','扩容my_server','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":%d},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"harbor_ip:12380/base/nginx_base:v1 \"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"register\",\"param_values\":{\"service_discovery_id\":%d},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]',%d)",
+      "INSERT INTO flow_impl(name,`desc`,steps,biz_id) VALUES('unexpand_my_server','缩容my_server','[{\"name\":\"unregister\",\"param_values\":{\"service_discovery_id\":%d},\"retry\":{\"retry_times\":0,\"ignore_error\":true}},{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":true}},{\"name\":\"return_vm\",\"param_values\":{\"vm_type_id\":%d},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]',%d)",
+      "INSERT INTO flow_impl(name,`desc`,steps,biz_id) VALUES('upgrade_my_server','上线my_server','[{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"registry.cn-beijing.aliyuncs.com/opendcp/nginx\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]',%d)"
+    ]
+  },
+  {
+    "Table": "cluster",
+    "Records":
+    [
+      "INSERT INTO cluster(name,`desc`,biz,biz_id) VALUES('default_cluster','默认集群','%s',%d)"
+
+    ]
+  },
+  {
+    "Table": "service",
+    "Records":
+    [
+      "INSERT INTO service(name,`desc`,service_type,docker_image,cluster_id) VALUES('sd-nginx','服务发现-Nginx服务','nginx','-',%d)",
+      "INSERT INTO service(name,`desc`,service_type,docker_image,cluster_id) VALUES('my_server','my_server','php','registry.cn-beijing.aliyuncs.com/opendcp/nginx',%d)"
+
+    ]
+  },
+  {
+    "Table": "pool",
+    "Records":
+    [
+      "INSERT INTO pool(name,`desc`,vm_type,sd_id,tasks,service_id) VALUES('sd-nginx-aliyun','服务发现nginx',%d,%d,'{\"deploy\":%d,\"expand\":%d,\"shrink\":%d}',%d)",
+      "INSERT INTO pool(name,`desc`,vm_type,sd_id,tasks,service_id) VALUES('my_server_nginx','使用nginx服务发现',%d,%d,'{\"deploy\":%d,\"expand\":%d,\"shrink\":%d}',%d)"
+    ]
+  }
+]
+

@@ -24,19 +24,20 @@ package util
 import (
 	"io/ioutil"
 	"os"
+	"weibo.com/opendcp/imagebuild/code/env"
 )
 
 /**
 file工具
  */
 func NewFile(baseDir string, name string, isFolder bool) bool {
-	if !IsDirExists(baseDir) {
+	if !IsDirExists(env.PROJECT_CONFIG_BASEDIR) {
 		return false
 	}
 
 	newFilePath := baseDir + "/" + name
 	if isFolder {
-		error := os.Mkdir(newFilePath, 0700) // only the owner has permission to access the file
+		error := os.MkdirAll(newFilePath, 0700) // only the owner has permission to access the file
 		if error != nil {
 			PrintErrorStack(error)
 			return false

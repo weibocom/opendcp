@@ -13,6 +13,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
+	"strconv"
 )
 
 const DEFAULT_CPU = 1
@@ -30,7 +31,7 @@ type AppendPhyDevRequest struct {
 type AppendPhyDevResponse struct {
 	Success int                `json:"success"`
 	Failed  int                `json:"failed"`
-	Errors  []string        `json:"errors"`
+	Errors  []string       	   `json:"errors"`
 }
 
 // @Title create instance
@@ -42,7 +43,18 @@ func (ic *InstanceController) CreateInstance() {
 	if err != nil {
 		beego.Error("Could parase request before crate instance: ", err)
 		ic.RespInputError()
+		return
 	}
+
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+	ob.BizId = bid
+
 	ip, err := instance.CreateOne(&ob)
 	if err != nil {
 		beego.Error("Create instance error:", err)
@@ -65,7 +77,16 @@ func (ic *InstanceController) StartInstance() {
 		ic.RespMissingParams("instanceId")
 		return
 	}
-	isStart, err := instance.StartOne(instanceId)
+
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
+	isStart, err := instance.StartOne(instanceId, bid)
 	if err != nil {
 		beego.Error("Could not start instances", err)
 		ic.RespServiceError(err)
@@ -86,7 +107,15 @@ func (ic *InstanceController) GetInstance() {
 		beego.Error("Could parse request before get instance")
 		ic.RespMissingParams("instanceId")
 	}
-	ins, err := instance.GetInstanceById(instanceId)
+
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+	ins, err := instance.GetInstanceById(instanceId, bid)
 	if err != nil {
 		beego.Error("get one instance err: ", err)
 		ic.RespServiceError(err)
@@ -102,13 +131,22 @@ func (ic *InstanceController) GetInstance() {
 // @Description check instances status
 // @router status/:instanceIds [get]
 func (ic *InstanceController) GetInstancesStatus() {
+
 	instanceIds := ic.GetString(":instanceIds")
 	if instanceIds == "" {
 		beego.Error("Could parse request before get instance")
 		ic.RespMissingParams("instanceId")
 	}
 	instanceIdSlice := strings.Split(instanceIds, ",")
-	ins, err := instance.GetInstancesStatus(instanceIdSlice)
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
+	ins, err := instance.GetInstancesStatus(instanceIdSlice, bid)
 	if err != nil {
 		beego.Error("get multi instance err: ", err)
 		ic.RespServiceError(err)
@@ -124,6 +162,14 @@ func (ic *InstanceController) GetInstancesStatus() {
 // @Description Update machine status
 // @router /status [post]
 func (ic *InstanceController) UpdateInstanceStatus() {
+	/*bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+			beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}*/
+
 	var insStat models.InstanceIdStatus
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
 	if err != nil {
@@ -131,7 +177,9 @@ func (ic *InstanceController) UpdateInstanceStatus() {
 		ic.RespInputError()
 		return
 	}
-	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status)
+
+
+	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status, -1)
 	if err != nil {
 		beego.Error("update instance status err: ", err)
 		ic.RespServiceError(err)
@@ -153,10 +201,18 @@ func (ic *InstanceController) DeleteMulti() {
 		ic.RespMissingParams("X-CORRELATION-ID")
 		return
 	}
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
 	instanceIds := ic.GetString(":instanceIds")
 	instanceIdsArray := strings.Split(instanceIds, ",")
 	for i := 0; i < len(instanceIdsArray); i++ {
-		go instance.DeleteOne(instanceIdsArray[i], correlationId)
+		go instance.DeleteOne(instanceIdsArray[i], correlationId, bid)
 	}
 	resp := ApiResponse{}
 	ic.ApiResponse = resp
@@ -173,8 +229,17 @@ func (ic *InstanceController) DownloadKey() {
 		ic.RespMissingParams("ip")
 		return
 	}
+
+	/*bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}*/
+	bid :=-1
 	dir := conf.Config.KeyDir
-	res, err := instance.GetInstanceByIp(ip)
+	res, err := instance.GetInstanceByIp(ip, bid)
 	if err != nil {
 		beego.Error(err)
 		return
@@ -207,15 +272,24 @@ func (ic *InstanceController) UploadKey() {
 		ic.RespMissingParams("instanceId")
 		return
 	}
+
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
 	var sshKey models.SshKey
-	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &sshKey)
+	err = json.Unmarshal(ic.Ctx.Input.RequestBody, &sshKey)
 	if err != nil {
 		beego.Error("Could parase request before upload ssh key: ", err)
 		ic.RespInputError()
 		return
 	}
 	resp := ApiResponse{}
-	result, err := instance.UploadSshKey(instanceId, sshKey)
+	result, err := instance.UploadSshKey(instanceId, sshKey, bid)
 	if err != nil {
 		beego.Error("input phy dev error:", err)
 		ic.RespServiceError(err)
@@ -247,8 +321,15 @@ func (ic *InstanceController) GetProviders() {
 // @Description Get region in provider
 // @router /regions/:provider [get]
 func (ic *InstanceController) GetRegionIds() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	regions, err := instance.GetRegions(provider)
+	regions, err := instance.GetRegions(bid, provider)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -265,9 +346,16 @@ func (ic *InstanceController) GetRegionIds() {
 // @Description Get available zone in provider
 // @router /zones/:provider/:regionId [get]
 func (ic *InstanceController) GetZones() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
-	zones, err := instance.GetZones(provider, regionId)
+	zones, err := instance.GetZones(bid, provider, regionId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -284,10 +372,17 @@ func (ic *InstanceController) GetZones() {
 // @Description Get VPCs in provider
 // @router /vpc/:provider/:regionId [get]
 func (ic *InstanceController) GetVpcs() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
 	// pageNumber 起始值为1，pageSize 最大值为50
-	vpcs, err := instance.GetVpcs(provider, regionId, 1, 50)
+	vpcs, err := instance.GetVpcs(bid, 1, 50, provider, regionId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -304,10 +399,17 @@ func (ic *InstanceController) GetVpcs() {
 // @Description Get subnets in provider
 // @router /subnet/:provider/:zoneId/:vpcId [get]
 func (ic *InstanceController) GetSubnets() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	zoneId := ic.GetString(":zoneId")
 	vpcId := ic.GetString(":vpcId")
-	subnets, err := instance.GetSubnets(provider, zoneId, vpcId)
+	subnets, err := instance.GetSubnets(bid, provider, zoneId, vpcId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -324,8 +426,15 @@ func (ic *InstanceController) GetSubnets() {
 // @Description List all instance types
 // @router /type/:provider [get]
 func (ic *InstanceController) ListInstanceTypes() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	instanceType, err := instance.ListInstanceTypes(provider)
+	instanceType, err := instance.ListInstanceTypes(bid, provider)
 	if err != nil {
 		beego.Error("get all instance type error: ", err)
 		ic.RespServiceError(err)
@@ -341,8 +450,15 @@ func (ic *InstanceController) ListInstanceTypes() {
 // @Description List all instance internet charge type
 // @router /charge/:provider [get]
 func (ic *InstanceController) ListInternetChargeType() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	chargeType, err := instance.ListInternetChargeTypes(provider)
+	chargeType, err := instance.ListInternetChargeTypes(bid, provider)
 	if err != nil {
 		beego.Error("get all internet charge type error: ", err)
 		ic.RespServiceError(err)
@@ -358,8 +474,15 @@ func (ic *InstanceController) ListInternetChargeType() {
 // @Description List disk category in provider
 // @router /disk_category/:provider [get]
 func (ic *InstanceController) ListDiskCategory() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
-	dataCategory, err := instance.ListDiskCategory(provider)
+	dataCategory, err := instance.ListDiskCategory(bid, provider)
 	if err != nil {
 		ic.RespServiceError(err)
 	}
@@ -374,9 +497,16 @@ func (ic *InstanceController) ListDiskCategory() {
 // @Description Get all images in provider
 // @router /image/:provider/:regionId [get]
 func (ic *InstanceController) GetImages() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
-	images, err := instance.GetImages(provider, regionId)
+	images, err := instance.GetImages(bid, provider, regionId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -393,10 +523,17 @@ func (ic *InstanceController) GetImages() {
 // @Description Get all security groups in provider
 // @router /security_group/:provider/:regionId [get]
 func (ic *InstanceController) GetSecurityGroup() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
 	vpcId := ic.GetString("vpcId")
-	securityGroup, err := instance.GetSecurityGroup(provider, regionId, vpcId)
+	securityGroup, err := instance.GetSecurityGroup(bid, provider, regionId, vpcId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -413,7 +550,15 @@ func (ic *InstanceController) GetSecurityGroup() {
 // @Description List all instances.
 // @router /list [get]
 func (ic *InstanceController) ListAllInstances() {
-	instances, err := instance.ListInstances()
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
+	instances, err := instance.ListInstances(bid)
 	if err != nil {
 		beego.Error("get all instances error: ", err)
 		ic.RespServiceError(err)
@@ -429,12 +574,20 @@ func (ic *InstanceController) ListAllInstances() {
 // @Description List all instances in someone cluster
 // @router /cluster/:clusterId [get]
 func (ic *InstanceController) ListInstancesByClusterId() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
 	clusterId, err := ic.GetInt64(":clusterId")
 	if err != nil {
 		beego.Error("Could parase cluster id: ", err)
 		ic.RespInputError()
 	}
-	instances, err := instance.ListInstancesByClusterId(clusterId)
+	instances, err := instance.ListInstancesByClusterId(clusterId, bid)
 	if err != nil {
 		beego.Error("List instaces in cluster error:", err)
 		ic.RespServiceError(err)
@@ -450,6 +603,14 @@ func (ic *InstanceController) ListInstancesByClusterId() {
 // @Description Query log by correlation id and instance id
 // @router /log/:correlationId/:instanceId [get]
 func (ic *InstanceController) QueryLogByCorrelationIdAndInstanceId() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
 	correlationId := ic.GetString(":correlationId")
 	if len(correlationId) <= 0 {
 		beego.Error("correlationId is empty!")
@@ -463,7 +624,7 @@ func (ic *InstanceController) QueryLogByCorrelationIdAndInstanceId() {
 		return
 	}
 	resp := ApiResponse{}
-	data, err := instance.QueryLogByCorrelationIdAndInstanceId(instanceId, correlationId)
+	data, err := instance.QueryLogByCorrelationIdAndInstanceId(instanceId, correlationId, bid)
 	if err != nil {
 		beego.Error("[ResourceLogApi] getResourceLog result json error!", err)
 		resp.Msg = "result to json error"
@@ -506,15 +667,23 @@ func (ic *InstanceController) QueryLogByInstanceId() {
 // @Description Upload machine information to DB
 // @router /phydev [put]
 func (ic *InstanceController) UploadPhyDevInfo() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
 	var ins models.Instance
-	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &ins)
+	err = json.Unmarshal(ic.Ctx.Input.RequestBody, &ins)
 	if err != nil {
 		beego.Error("Could parase request before input instance: ", err)
 		ic.RespInputError()
 		return
 	}
 	resp := ApiResponse{}
-	result, err := instance.InputPhyDev(ins)
+	result, err := instance.InputPhyDev(ins, bid)
 	if err != nil {
 		beego.Error("input phy dev error:", err)
 		ic.RespServiceError(err)
@@ -530,6 +699,14 @@ func (ic *InstanceController) UploadPhyDevInfo() {
 // @Description manage physical device
 // @router /phydev [post]
 func (ic *InstanceController) ManagePhyDev() {
+	bizId := ic.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		ic.RespInputError()
+		return
+	}
+
 	correlationId := ic.Ctx.Input.Header("X-CORRELATION-ID")
 	if len(correlationId) <= 0 {
 		ic.RespMissingParams("X-CORRELATION-ID")
@@ -537,7 +714,7 @@ func (ic *InstanceController) ManagePhyDev() {
 	}
 
 	var request AppendPhyDevRequest
-	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &request)
+	err = json.Unmarshal(ic.Ctx.Input.RequestBody, &request)
 	if err != nil {
 		beego.Error("Could parase request before input instance: ", err)
 		ic.RespInputError()
@@ -563,7 +740,7 @@ func (ic *InstanceController) ManagePhyDev() {
 			ip = info.PrivateIp
 		}
 		// already in database, skip
-		inst, _ := instance.GetInstanceByIp(ip)
+		inst, _ := instance.GetInstanceByIp(ip, bid)
 		if inst != nil {
 			failedCount++
 			errList = append(errList, "Instance: "+ip+" is already in DB")
@@ -575,7 +752,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		ins.PublicIpAddress = info.PublicIp
 		ins.PrivateIpAddress = info.PrivateIp
 
-		ins, err = instance.InputPhyDev(ins)
+		ins, err = instance.InputPhyDev(ins, bid)
 
 		if err != nil {
 			failedCount++
@@ -583,7 +760,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		} else {
 			successCount++
 			// asynchronous manage
-			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
+			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId, bid)
 		}
 	}
 

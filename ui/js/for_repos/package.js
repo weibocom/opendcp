@@ -1,10 +1,14 @@
 cache = {
-  page: 1,
-  projects: [],
-  tags:{},
-  autocomplete:[],
-  state: {},
+    page: 1,
+    projects: [],
+    tags:{},
+    autocomplete:[],
+    state: {},
+    currentProjectLogId: 0,  //保存当前项目的ID
+    currentProjectName: ""  //保存当前项目的名称
 }
+//自动刷新
+var autoRefresh = null;
 
 var isJson = function(str) {
   try {
@@ -16,6 +20,7 @@ var isJson = function(str) {
 }
 
 var getDate = function(t){
+  if(!+[1,]) return t;
   if(!t) t='';
   var d=new Date(t);
   var month=d.getMonth()+1;
@@ -597,7 +602,7 @@ var getState=function(i,o){
               str = '<span class="badge">未知状态</span>';
               break;
           }
-          str += '<a class="pull-right" data-toggle="modal" data-target="#myViewModal" title="查看日志" onclick="showLog('+i+')"><i class="fa fa-history"></i></a>';
+          str += '<a class="pull-right" data-toggle="modal" data-target="#myViewModal" title="查看日志" onclick="showLog(' + i + ',\''+ o +'\')"><i class="fa fa-history"></i></a>';
           $('#state_'+i).html(str);
         }
       }
@@ -605,38 +610,62 @@ var getState=function(i,o){
   });
 }
 
-var showLog = function (i){
-  NProgress.start();
-  var title='查看构建日志',text='';
-  if(typeof i != 'undefined'){
-    if(typeof cache.state[i] != 'undefined'){
-      if(typeof cache.state[i].content != 'undefined'){
-        cache.state[i].content.logs.replace('\n', '<br/>');
-        text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
-
-        // if (isJson(cache.state[i].content.logs)){
-        //   if($.isPlainObject(JSON.parse(cache.state[i].content.logs))){
-        //     text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">';
-        //     $.each(JSON.parse(cache.state[i].content.logs),function(k,v){
-        //       text += v.replace(/\n/, '<br/>') + '<br/>';
-        //     });
-        //     text+='</span>';
-        //   }else{
-        //     text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
-        //   }
-        // }else{
-        //   text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ cache.state[i].content.logs +'</span>';
-        // }
-      }else{
-        text='<div class="note note-danger">'+JSON.stringify(cache.state[i])+'</div>';
-      }
-    } else {
-      text='<div class="note note-danger">加载失败：未找到对应日志</div>';
+//关闭自动刷新
+var closeRefresh = function(){
+    if(autoRefresh){
+        clearInterval(autoRefresh);
     }
-  }else{
-    text='<div class="note note-danger">加载失败：参数错误</div>';
-  }
-  $('#myViewModalLabel').html(title);
-  $('#myViewModalBody').html(text);
-  NProgress.done();
+}
+//显示日志
+var showLog = function (i, o){
+    cache.currentProjectLogId = i;
+    cache.currentProjectName = o;
+    refreshLog();
+    autoRefresh = setInterval(refreshLog,5000);//5秒刷新一次
+}
+//刷新日志
+var refreshLog = function (){
+    var index = cache.currentProjectLogId;
+    var name =  cache.currentProjectName;
+    NProgress.start();
+    var title='查看构建日志',text='';
+    if(typeof index != 'undefined'){
+        if(typeof cache.state[index] != 'undefined'){
+            if(typeof cache.state[index].content != 'undefined'){
+                var result = cache.state[index].content.logs.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+                text ='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ result +'</span>';
+            }else{
+                text='<div class="note note-danger">'+JSON.stringify(cache.state[index])+'</div>';
+            }
+        } else {
+            text='<div class="note note-danger">加载失败：未找到对应日志</div>';
+        }
+    }else{
+        text='<div class="note note-danger">加载失败：参数错误</div>';
+    }
+    text += '<span class="pull-right text-danger">Updated:'+getCurrentDate(new Date(),'time')+'</span>';
+    $('#myViewModalLabel').html(title);
+    $('#myViewModalBody').html(text);
+    getState(index,name);
+    NProgress.done();
+}
+//获取当前时间
+var getCurrentDate = function(t,type){
+    if(!t) t='';
+    var d= new Date(t);
+    var M= (d.getMonth()+1);
+    var D= d.getDate();
+    var h= d.getHours();
+    var i= d.getMinutes();
+    var s= d.getSeconds();
+    var ret='';
+    switch (type){
+        case 'time':
+            ret=((h<10)?'0'+h:h) +':'+ ((i<10)?'0'+i:i) +':'+ ((s<10)?'0'+s:s);
+            break;
+        default:
+            ret=d.getFullYear()+'.'+ ((M<10)?'0'+M:M) +'.'+ ((D<10)?'0'+D:D) +' '+ ((h<10)?'0'+h:h) +':'+ ((i<10)?'0'+i:i) +':'+ ((s<10)?'0'+s:s);
+            break;
+    }
+    return ret;
 }

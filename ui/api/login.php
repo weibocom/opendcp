@@ -18,7 +18,7 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
+session_start();
 header('Content-type: application/json');
 include_once('../include/config.inc.php');
 include_once('../include/function.php');
@@ -31,11 +31,20 @@ class myself{
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
     if($arrList = $thisClass->userAuth($param)){
+      if($arrList['status'] === 0) {
         $ret = array(
           'code' => 0,
           'msg' => 'success',
           'content' => $arrList,
         );
+      }else{
+        $ret = array(
+          'code' => 1,
+          'msg' => '账号已停用',
+          'content' => $arrList['en'],
+        );
+        $thisClass->userLogout();
+      }
     }else{
       $ret['msg']='auth failed';
       $ret['content']=$arrList;
@@ -63,6 +72,27 @@ $myJson=(isset($_POST['data'])&&!empty($_POST['data']))?trim($_POST['data']):((i
 $arrJson=($myJson)?json_decode($myJson,true):array();
 $logJson=$arrJson;
 if(isset($logJson['pass'])) $logJson['pass']=md5('z_'+$logJson['pw']);
+
+if($myAction=='login'){
+  if(isset($arrJson) && !empty($arrJson)){
+    //校验验证码
+    if(!isset($arrJson['verification_code']) || $arrJson['verification_code']!==$_SESSION['verification_code']){
+      $retArr = array(
+        'code' => 1,
+        'msg' => '验证码错误',
+      );
+      echo json_encode($retArr, JSON_UNESCAPED_UNICODE);
+      exit;
+    }
+  }else{
+    $retArr = array(
+      'code' => 1,
+      'msg' => '非法请求'
+    );
+    echo json_encode($retArr, JSON_UNESCAPED_UNICODE);
+    exit;
+  }
+}
 
 //记录操作日志
 $logFlag = true;

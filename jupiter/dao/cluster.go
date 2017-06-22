@@ -23,12 +23,13 @@ package dao
 
 import (
 	"weibo.com/opendcp/jupiter/models"
+	"github.com/astaxie/beego/orm"
 )
 
-func GetClusterById(clusterId int64) (*models.Cluster, error) {
+func GetClusterById(clusterId int64, bizId int) (*models.Cluster, error) {
 	o := GetOrmer()
 	var cluster models.Cluster
-	err := o.QueryTable(CLUSTER_TABLE).RelatedSel().Filter("id", clusterId).One(&cluster)
+	err := o.QueryTable(CLUSTER_TABLE).RelatedSel().Filter("biz_id", bizId).Filter("id", clusterId).One(&cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -76,19 +77,19 @@ func InsertZone(zone *models.Zone) (int64, error) {
 	return id, nil
 }
 
-func DeleteCluster(clusterId int64) (bool, error) {
+func DeleteCluster(clusterId int64, bizId int) (bool, error) {
 	o := GetOrmer()
-	_, err := o.QueryTable(CLUSTER_TABLE).Filter("id", clusterId).Delete()
+	_, err := o.QueryTable(CLUSTER_TABLE).Filter("biz_id", bizId).Filter("id", clusterId).Delete()
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func GetClusters() ([]models.Cluster, error) {
+func GetClusters(bizId int) ([]models.Cluster, error) {
 	o := GetOrmer()
 	var clusters []models.Cluster
-	_, err := o.QueryTable(CLUSTER_TABLE).RelatedSel().OrderBy("-id").All(&clusters)
+	_, err := o.QueryTable(CLUSTER_TABLE).RelatedSel().Filter("biz_id", bizId).OrderBy("id").All(&clusters)
 	if err != nil {
 		return nil, err
 	}
@@ -103,4 +104,17 @@ func GetClustersByProvider(providerName string) ([]models.Cluster, error) {
 		return nil, err
 	}
 	return clusters, nil
+}
+
+func  OperateBysql (sql string) (lastId int64,err error) {
+	o := orm.NewOrm()
+	result,err := o.Raw(sql).Exec()
+
+	if err != nil {
+		return -1,err
+	}
+
+	lastId,err = result.LastInsertId()
+
+	return lastId,nil
 }

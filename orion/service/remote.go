@@ -75,7 +75,7 @@ func (f *RemoteStepService) CheckActionDelete(id int) error {
 	//check Step
 	o := orm.NewOrm()
 	stepItem := &models.RemoteStep{}
-	err = o.QueryTable(stepItem).Filter("actions__icontains","\""+objItem.Name+"\"").One(stepItem)
+	err = o.QueryTable(stepItem).Filter("BizId",objItem.BizId).Filter("actions__icontains","\""+objItem.Name+"\"").One(stepItem)
 
 	if(len(stepItem.Name) > 0) {
 		return errors.New(fmt.Sprintf("action is using ! step id:%v,step name:%v",stepItem.Id,stepItem.Name))
@@ -101,7 +101,7 @@ func (f *RemoteStepService) CheckStepDelete(id int) error {
 	orm.Debug = true
 	o := orm.NewOrm()
 	flowItem := &models.FlowImpl{}
-	err = o.QueryTable(flowItem).Filter("steps__icontains","\"name\":\""+stepItem.Name+"\"").One(flowItem)
+	err = o.QueryTable(flowItem).Filter("BizId",stepItem.BizId).Filter("steps__icontains","\"name\":\""+stepItem.Name+"\"").One(flowItem)
 
 	if(len(flowItem.Name) > 0) {
 		return errors.New(fmt.Sprintf("step is using ! template id:%v,template name:%v",flowItem.Id,flowItem.Name))

@@ -28,6 +28,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"strconv"
 )
 
 // Operations about cluster
@@ -40,7 +41,16 @@ type ClusterController struct {
 // @router / [get]
 func (clusterController *ClusterController) GetClusters() {
 	resp := ApiResponse{}
-	theCluster, err := cluster.ListClusters()
+
+	bizId := clusterController.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		clusterController.RespInputError()
+		return
+	}
+
+	theCluster, err := cluster.ListClusters(bid)
 	if err != nil {
 		beego.Error("get one cluster err: ", err)
 		clusterController.RespServiceError(err)
@@ -64,8 +74,17 @@ func (clusterController *ClusterController) GetClusterInfo() {
 		clusterController.RespInputError()
 		return
 	}
+
+	bizId := clusterController.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		clusterController.RespInputError()
+		return
+	}
+
 	resp := ApiResponse{}
-	theCluster, err := cluster.GetCluster(clusterId)
+	theCluster, err := cluster.GetCluster(clusterId, bid)
 	if err != nil {
 		beego.Error("get one cluster err: ", err)
 		clusterController.RespServiceError(err)
@@ -89,6 +108,15 @@ func (clusterController *ClusterController) CreateCluster() {
 		clusterController.RespInputError()
 		return
 	}
+	bizId := clusterController.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		clusterController.RespInputError()
+		return
+	}
+	theCluster.BizId = bid
+
 	if theCluster.Provider == "aliyun" {
 		if theCluster.DataDiskNum > 4 || theCluster.DataDiskNum < 0 {
 			clusterController.RespInputOverLimited("DataDiskNum", "larger than 0 and less equal 4.")
@@ -131,7 +159,7 @@ func (clusterController *ClusterController) CreateCluster() {
 	}
 	id, err := cluster.CreateCluster(&theCluster)
 	if err != nil {
-		beego.Error("Ceate cluster err: ", err)
+		beego.Error("Create cluster err: ", err)
 		clusterController.RespServiceError(err)
 		return
 	}
@@ -152,7 +180,15 @@ func (clusterController *ClusterController) DeleteCluster() {
 		clusterController.RespInputError()
 		return
 	}
-	isDeleted, err := cluster.DeleteCluster(clusterId)
+
+	bizId := clusterController.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		clusterController.RespInputError()
+		return
+	}
+	isDeleted, err := cluster.DeleteCluster(clusterId, bid)
 	if err != nil {
 		beego.Error("Delete cluster err: ", err)
 		clusterController.RespServiceError(err)
@@ -184,6 +220,8 @@ func (clusterController *ClusterController) ExpandInstances() {
 		clusterController.RespInputError()
 		return
 	}
+
+
 	expandNumber, err := clusterController.GetInt(":number")
 	if err != nil {
 		beego.Error("Need to pass vaild expand number: ", err)
@@ -195,7 +233,15 @@ func (clusterController *ClusterController) ExpandInstances() {
 		clusterController.ApiResponse = InputParseFaildResp
 		return
 	}
-	theCluster, err := cluster.GetCluster(clusterId)
+
+	bizId := clusterController.Ctx.Input.Header("X-Biz-ID")
+	bid, err := strconv.Atoi(bizId)
+	if bizId=="" || err != nil {
+		beego.Error("Get X-Biz-ID err!")
+		clusterController.RespInputError()
+		return
+	}
+	theCluster, err := cluster.GetCluster(clusterId, bid)
 	if err != nil {
 		beego.Error("Get cluster error:", err)
 		clusterController.RespServiceError(err)

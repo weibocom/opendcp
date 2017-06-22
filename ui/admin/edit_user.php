@@ -63,6 +63,12 @@ switch($myAction){
     </div>
   </div>
   <div class="form-group">
+    <label for="mobile" class="col-sm-2 control-label">手机</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="mobile" name="mobile" onkeyup="check()" placeholder="eg:13812345678">
+    </div>
+  </div>
+  <div class="form-group">
     <label for="mail" class="col-sm-2 control-label">邮箱</label>
     <div class="col-sm-10">
       <input type="text" class="form-control" id="mail" name="mail" onkeyup="check()" placeholder="eg:admin@xxx.com">
@@ -75,7 +81,7 @@ switch($myAction){
     </div>
   </div>
   <div class="form-group">
-    <label for="status" class="col-sm-2 control-label">用户类型</label>
+    <label for="status" class="col-sm-2 control-label">用户状态</label>
     <div class="col-sm-10">
       <select class="form-control" id="status" name="status" onchange="check()">
         <option value="0">启用</option>

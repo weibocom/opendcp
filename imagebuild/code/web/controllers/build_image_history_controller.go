@@ -36,8 +36,9 @@ type BuildImageHistoryController struct {
 func (c *BuildImageHistoryController) Get() {
 	project := c.GetString("projectName")
 	operator := c.Operator()
+	cluster := c.HarborProjectName()
 
-	if project == "" || operator == "" {
+	if project == "" || operator == "" || cluster == ""{
 		log.Error("project,operator should not be empy when get build history!")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
@@ -49,7 +50,7 @@ func (c *BuildImageHistoryController) Get() {
 		return
 	}
 
-	model := models.AppServer.GetBuildLastHistory(project)
+	model := models.AppServer.GetBuildLastHistory(cluster, project)
 
 	if model == nil {
 		log.Error("get projectName:%s build history is nil!", project)

@@ -214,8 +214,10 @@ var processBodyImages = function(data,body){
       for (var i = 0; i < data.content.length; i++) {
         var v = data.content[i];
         var tr = $('<div class="panel"></div>');
+        var nameArray = v.name.split("/");
+        var showName = nameArray.pop();
         str='<a class="panel-heading collapsed" role="tab" id="heading_'+i+'" data-toggle="collapse" data-parent="#accordion" href="#collapse'+i+'" aria-expanded="false" aria-controls="collapse'+i+'">' +
-          '<h4 class="panel-title"><i class="fa fa-book"></i> '+ v.name.replace(p+'/','') +' <i class="badge bg-green" id="tagsNum_'+i+'">0</i></h4></a>' +
+          '<h4 class="panel-title"><i class="fa fa-book"></i> '+ showName+' <i class="badge bg-green" id="tagsNum_'+i+'">0</i></h4></a>' +
           /*
           '<div class="panel-heading" role="tab">' +
           '<h4 class="panel-title">' +
@@ -233,7 +235,7 @@ var processBodyImages = function(data,body){
           */
           '<div id="collapse'+i+'" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading'+i+'" aria-expanded="false">' +
           '<div class="panel-body" style="padding-top: 2px;padding-bottom: 2px;">' +
-          '<table class="table table-hover" style="margin-bottom: 0px;"><thead><tr><td>#</td><td>标签</td><td>#</td></tr></thead><tbody id="tags_'+i+'"></tbody></table>' +
+          '<table class="table table-hover" style="margin-bottom: 0px;"><thead><tr><td>序号</td><td>标签</td><td>操作</td></tr></thead><tbody id="tags_'+i+'"></tbody></table>' +
           '<div class="row">' +
           '<div class="col-md-5 col-sm-5"><div class="dataTables_info" id="tags_'+i+'-pageinfo" role="status" aria-live="polite">Showing 1 to 0 of 0 entries</div></div>' +
           '<div class="col-md-7 col-sm-7">' +
@@ -312,7 +314,8 @@ var processBodyTags = function(data,body,id, fRepos){
         var btnDel='';
         td = '<td><a class="tooltips" title="查看镜像详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'tags\',\''+fRepos+'\',\''+v.name+'\')">' + v.name + '</a></td>';
         tr.append(td);
-        btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'delTag\',\''+fRepos+'\',\''+v.name+'\')"><i class="fa fa-trash-o"></i></a>';
+        btnDel = '<a class="text-success tooltips" title="" data-original-title="查看镜像" data-toggle="modal" data-target="#myViewModal" onclick="showDetailImage(\''+data.imageAddress+'\',\''+fRepos+'\',\''+v.name+'\')"><i class="fa fa-history"></i></a>&nbsp;&nbsp;';
+        btnDel += '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'delTag\',\''+fRepos+'\',\''+v.name+'\')"><i class="fa fa-trash-o"></i></a>';
         td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnDel + '</div></td>';
         tr.append(td);
         body.append(tr);
@@ -741,4 +744,14 @@ var getConfigDep=function(idx){
     }
   });
   return ret;
+}
+//查看镜像全称
+var showDetailImage = function(address, idx,desc){
+    var myaddresslist = address.split("/");
+    var myaddress =  address.split("/")[myaddresslist.length - 1];
+    var myidx = idx;
+    text = "<div class='note note-danger'>" + myaddress + "/"+ myidx +":"+desc+"</div>";
+    $('#myViewModalLabel').html("镜像全称");
+    $('#myViewModalBody').html(text);
+
 }

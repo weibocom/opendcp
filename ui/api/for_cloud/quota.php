@@ -29,6 +29,37 @@ $thisClass = $cloud;
 class myself{
   private $module = 'organization';
 
+    function getList($myUser = '', $action='list', $param = '', $id=''){
+        global $thisClass;
+        $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if($strList = $thisClass->get($myUser, $action, 'GET', $param ,$id)){
+            $arrList = json_decode($strList,true);
+            if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['content'])){
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'content' => array(),
+                );
+                $i=0;
+                foreach($arrList['content'] as $k => $v){
+                    $i++;
+                    $tArr = array();
+                    $tArr['i'] = $i;
+                    foreach($v as $key => $value){
+                        $tArr[$key] = $value;
+                    }
+                    $ret['content'][] = $tArr;
+                }
+            }else{
+                $ret['code'] = 1;
+                $arrList = json_decode($strList,true);
+                $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+                $ret['remote'] = $strList;
+            }
+        }
+        $ret['ret'] = $strList;
+        return $ret;
+    }
   function getInfo($myUser = '', $idx = ''){
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
@@ -129,6 +160,10 @@ if($hasLimit){
         $retArr = $mySelf->update($myUser,'POST', $arrJson);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
+      break;
+      case 'list':
+          $logFlag = false;//本操作不记录日志
+          $retArr = $mySelf->getList($myUser, 'account');
       break;
   }
 }else{

@@ -87,9 +87,9 @@ class Main
 
         $ret = $this->mainTbl
             ->where($where)->page($page, $limit)->select();
-
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
-        if ($ret === NULL) {
+        
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
+        if (empty($ret)) {
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';
         } elseif ($ret === false) {
@@ -180,14 +180,14 @@ class Main
     /*
      * 获取一个main conf 的具体信息
      */
-    public function getMainDetail($id)
+    public function getMainDetail($where)
     {
 
         $ret = $this->mainTbl
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
         if ($ret === NULL) {
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';
@@ -204,7 +204,7 @@ class Main
     /*
      * 添加一个main conf ,或者添加一个新版本的main conf
      */
-    public function addMain($name, $content, $unitId, $version, $user)
+    public function addMain($name, $content, $unitId, $version, $user, $bid)
     {
 
         $data = [
@@ -216,11 +216,12 @@ class Main
             'create_time' => date("Y-m-d H:i:s"),
             'update_time' => date("Y-m-d H:i:s"),
             'opr_user' => $user,
+            'biz_id' => $bid
         ];
 
         $ret = $this->mainTbl->add($data);
 
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
 
         if ($ret === NULL) {
             $return['code'] = HUBBLE_RET_NULL;
@@ -240,11 +241,11 @@ class Main
     /*
      * 获取当前name 和 group的 conf 的下一个 version 数值
      */
-    public function getNextVersion($name, $unit_id){
+    public function getNextVersion($name, $unit_id, $bid){
 
         $ret = $this->mainTbl
             ->field('version')
-            ->where(['name' => $name, 'unit_id' => $unit_id])
+            ->where(['name' => $name, 'unit_id' => $unit_id, 'biz_id' => $bid])
             ->order('version desc')
             ->find();
 
@@ -265,11 +266,11 @@ class Main
     /*
      * 设置conf 为 废弃状态
      */
-    public function setDeprecated($id)
+    public function setDeprecated($id, $bid)
     {
 
         $ret = $this->mainTbl
-            ->where(['id' => $id])
+            ->where(['id' => $id, 'biz_id' => $bid])
             ->setField('deprecated', 1);
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];

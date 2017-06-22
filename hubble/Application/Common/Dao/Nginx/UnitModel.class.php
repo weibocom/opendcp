@@ -37,22 +37,23 @@ class UnitModel{
     }
 
     //添加单元
-    public function addUnit($name,$gid,$user){
+    public function addUnit($name,$gid,$user,$bid){
 
         $data = [
             'name' => $name,
             'group_id' =>$gid,
             'opr_user' => $user,
+            'biz_id'  => $bid,
             'create_time' => date("Y-m-d H:i:s"),
         ];
         $ret = $this->table->where(['group_id'=>$gid])->add($data);
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->table->getLastSql().' ERROR: '. $this->table->getDbError());
-            return array('code'=>1 ,'msg'=>"db error: {$this->table->getDbError()}") ;
+            return array('code'=>HUBBLE_RET_SUCCESS ,'msg'=>"db error: {$this->table->getDbError()}") ;
         }
         //创建
 
-        return array('code'=>0,'msg'=>"success",'content'=>array('uid'=>$ret));
+        return array('code'=>HUBBLE_RET_SUCCESS,'msg'=>"success",'content'=>array('uid'=>$ret));
 
 
     }
@@ -69,9 +70,9 @@ class UnitModel{
 
     }
     //获取GID
-    public function getGid($uid){
+    public function getGid($uid,$bid){
 
-        $ret = $this->table->where(['id'=>$uid])->select();
+        $ret = $this->table->where(['id'=>$uid,'biz_id'=>$bid])->select();
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->table->getLastSql().' ERROR: '. $this->table->getDbError());
             return array('code'=>2 ,'msg'=>"db error: {$this->table->getDbError()}") ;
@@ -92,13 +93,13 @@ class UnitModel{
         return array('code'=>0,'msg'=>"success");
     }
 
-    public function getDetail($id){
+    public function getDetail($where){
 
         $ret = $this->table
-            ->where(['id' => $id])
+            ->where($where)
             ->find();
 
-        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
+        $return = ['code' => HUBBLE_RET_SUCCESS, 'msg' => 'success', 'content' => ''];
         if($ret === NULL){
             $return['code'] = HUBBLE_RET_NULL;
             $return['msg'] = 'no such content';
@@ -129,8 +130,8 @@ class UnitModel{
 
     }
 
-    public function  existsUnitName($name,$gid){
-        $ret = $this->table->where(['group_id'=>$gid,'name'=>$name])->select();
+    public function  existsUnitName($name,$gid,$bid){
+        $ret = $this->table->where(['group_id'=>$gid,'name'=>$name,'biz_id'=>$bid])->select();
 
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->table->getLastSql().' ERROR: '. $this->table->getDbError());
@@ -204,10 +205,10 @@ class UnitModel{
     }
 
 
-    public function isExist($unitId){
+    public function isExist($unitId, $bid){
 
         $ret = $this->table->field('id')
-            ->where("id = '$unitId'")
+            ->where(['id' => $unitId, 'biz_id' => $bid])
             ->find();
 
         if($ret === false) return false;

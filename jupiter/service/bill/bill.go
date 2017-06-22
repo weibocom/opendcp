@@ -52,8 +52,8 @@ func CanCreate(cluster *models.Cluster) bool {
 	return true
 }
 
-func GetUsageHours(instanceId string) (int, error) {
-	instance, err := dao.GetInstance(instanceId)
+func GetUsageHours(instanceId string, bizId int) (int, error) {
+	instance, err := dao.GetInstance(instanceId, bizId)
 	if err != nil {
 		return 0, err
 	}

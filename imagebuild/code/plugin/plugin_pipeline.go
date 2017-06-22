@@ -32,6 +32,8 @@ import (
 插件继续执行。。
 */
 type PluginPipeline struct {
+	//所属集群
+	cluster string
 	// 所属项目平成
 	projectName string
 	// pipeline名称
@@ -42,8 +44,9 @@ type PluginPipeline struct {
 	plugs []*PluginWrapper
 }
 
-func BuildPluginPipeline(projectName string, pipelineName string, pipelineDescription string) *PluginPipeline {
+func BuildPluginPipeline(cluster string, projectName string, pipelineName string, pipelineDescription string) *PluginPipeline {
 	pipeline := &PluginPipeline{
+		cluster:	     cluster,
 		projectName:         projectName,
 		pipelineName:        pipelineName,
 		pipelineDescription: pipelineDescription,
@@ -52,8 +55,9 @@ func BuildPluginPipeline(projectName string, pipelineName string, pipelineDescri
 	return pipeline
 }
 
-func BuildPluginPipelineWithPlugins(projectName string, pipelineName string, pipelineDescription string, plugs []*PluginWrapper) *PluginPipeline {
+func BuildPluginPipelineWithPlugins(cluster string, projectName string, pipelineName string, pipelineDescription string, plugs []*PluginWrapper) *PluginPipeline {
 	pipeline := &PluginPipeline{
+		cluster:  	     cluster,
 		projectName:         projectName,
 		pipelineName:        pipelineName,
 		pipelineDescription: pipelineDescription,
@@ -66,6 +70,10 @@ func (pp *PluginPipeline) GetProjectName() string {
 	return pp.projectName
 }
 
+func (pp *PluginPipeline) GetCluster() string {
+	return pp.cluster
+}
+
 func (pp *PluginPipeline) GetPipelineName() string {
 	return pp.pipelineName
 }
@@ -76,6 +84,10 @@ func (pp *PluginPipeline) GetPipelineDescription() string {
 
 func (pp *PluginPipeline) SetProjectName(projectName string) {
 	pp.projectName = projectName
+}
+
+func (pp *PluginPipeline) SetCluster(cluster string) {
+	pp.cluster = cluster
 }
 
 func (pp *PluginPipeline) SetPipelineName(pipelineName string) {
@@ -117,7 +129,7 @@ func (pp *PluginPipeline) View() PluginPipelineView {
 }
 
 func (pp *PluginPipeline) ClearAllConfig(relativeConfigFolder string) {
-	configFolder := env.PROJECT_CONFIG_BASEDIR + pp.projectName + "/" + relativeConfigFolder + "/"
+	configFolder := env.PROJECT_CONFIG_BASEDIR + pp.GetCluster() + "/" + pp.projectName + "/" + relativeConfigFolder + "/"
 
 	util.ClearFolder(configFolder)
 }
@@ -135,7 +147,7 @@ func (pp *PluginPipeline) PluginList() string {
 	return pluginList
 }
 
-func (pp *PluginPipeline) Handle(project string, input interface{}) (error, interface{}) {
+func (pp *PluginPipeline) Handle(cluster string, project string, input interface{}) (error, interface{}) {
 	var response interface{}
 	in := input
 
@@ -144,7 +156,7 @@ func (pp *PluginPipeline) Handle(project string, input interface{}) (error, inte
 	}
 	for _, plug := range pp.plugs {
 		log.Infof("%s start process..", plug.Plugin_name)
-		err, ret := plug.Process(project, in)
+		err, ret := plug.Process(cluster, project, in)
 		if err != nil {
 			return err, ""
 		}

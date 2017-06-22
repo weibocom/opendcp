@@ -1,6 +1,20 @@
 CREATE DATABASE IF NOT EXISTS jupiter CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE jupiter;
 
+# Dump of table account
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `account` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `biz_id` int(11) NOT NULL DEFAULT '0',
+  `provider` varchar(255) NOT NULL DEFAULT '',
+  `key_id` varchar(255) NOT NULL DEFAULT '',
+  `key_secret` varchar(255) NOT NULL DEFAULT '',
+  `spent`  DOUBLE NOT NULL DEFAULT '0',
+  `credit` DOUBLE NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
 # Dump of table bill
 # ------------------------------------------------------------
 
@@ -37,6 +51,7 @@ CREATE TABLE IF NOT EXISTS `cluster` (
   `data_disk_size` int(11) NOT NULL DEFAULT '0',
   `data_disk_num` int(11) NOT NULL DEFAULT '0',
   `data_disk_category` varchar(255) NOT NULL DEFAULT '',
+  `biz_id` integer NOT NULL DEFAULT -1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -87,6 +102,8 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `status` int(11) NOT NULL DEFAULT '0',
   `public_key` longtext,
   `private_key` longtext,
+  `return_time` datetime,
+  `biz_id` integer NOT NULL DEFAULT -1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -154,18 +171,4 @@ LOCK TABLES `zone` WRITE;
 INSERT INTO `zone` VALUES (1,'cn-beijing','cn-beijing-c');
 UNLOCK TABLES;
 
-LOCK TABLES `cluster` WRITE;
-INSERT INTO `cluster` VALUES 
-    (1,'16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
-    (2,'4Core8G经典网',  'aliyun',0,'',NOW(),NULL,4, 8, 'ecs.n2.large', 'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
-    (3,'1Core1G经典网',  'aliyun',0,'',NOW(),NULL,1, 1, 'ecs.n1.tiny',  'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency')
-    ;
-UNLOCK TABLES;
-
-LOCK TABLES `bill` WRITE;
-INSERT INTO `bill` VALUES 
-    (1,1,0,10),
-    (2,2,0,0),
-    (3,3,0,10);
-UNLOCK TABLES;
 

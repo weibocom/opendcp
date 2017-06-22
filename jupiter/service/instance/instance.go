@@ -34,15 +34,23 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+	"weibo.com/opendcp/jupiter/service/account"
 )
 
 const PhyDev = "phydev"
 
 func CreateOne(cluster *models.Cluster) (string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
+		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+	} else {
+		providerDriver, err = provider.New(cluster.Provider)
+	}
 	if err != nil {
 		return "", err
 	}
+
 	instanceIds, errs := providerDriver.Create(cluster, 1)
 	if errs != nil {
 		return "", errs[0]
@@ -51,18 +59,25 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	ins.BizId = cluster.BizId
+	ins.CreateTime = time.Now()
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
 	return instanceIds[0], nil
 }
 
-func StartOne(instanceId string) (bool, error) {
-	ins, err := GetInstanceById(instanceId)
+func StartOne(instanceId string, bizId int) (bool, error) {
+	ins, err := GetInstanceById(instanceId, bizId)
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+	var providerDriver provider.ProviderDriver
+	if account.IsAccountExist(bizId, ins.Provider) {
+		providerDriver, err = provider.NewByAccount(bizId, ins.Provider)
+	} else {
+		providerDriver, err = provider.New(ins.Provider)
+	}
 	if err != nil {
 		return false, err
 	}
@@ -73,15 +88,22 @@ func StartOne(instanceId string) (bool, error) {
 	return isStart, nil
 }
 
-func StopOne(instanceId string) (bool, error) {
-	ins, err := GetInstanceById(instanceId)
+func StopOne(instanceId string, bizId int) (bool, error) {
+	ins, err := GetInstanceById(instanceId, bizId)
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+
+	var providerDriver provider.ProviderDriver
+	if account.IsAccountExist(ins.BizId, ins.Provider) {
+		providerDriver, err = provider.NewByAccount(ins.BizId, ins.Provider)
+	} else {
+		providerDriver, err = provider.New(ins.Provider)
+	}
 	if err != nil {
 		return false, err
 	}
+
 	isStop, err := providerDriver.Stop(ins.InstanceId)
 	if err != nil {
 		return false, err
@@ -89,19 +111,25 @@ func StopOne(instanceId string) (bool, error) {
 	return isStop, nil
 }
 
-func DeleteOne(instanceId, correlationId string) error {
-	err := dao.UpdateDeletingStatus(instanceId)
+func DeleteOne(instanceId, correlationId string, bizId int) error {
+	err := dao.UpdateDeletingStatus(instanceId, bizId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleting status err:", err)
 		return err
 	}
-	ins, err := dao.GetInstance(instanceId)
+	ins, err := dao.GetInstance(instanceId, bizId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
 	if ins.Provider != PhyDev {
-		providerDriver, err := provider.New(ins.Provider)
+		var providerDriver provider.ProviderDriver
+		if account.IsAccountExist(ins.BizId, ins.Provider) {
+			providerDriver, err = provider.NewByAccount(ins.BizId, ins.Provider)
+		} else {
+			providerDriver, err = provider.New(ins.Provider)
+		}
+
 		if err != nil {
 			logstore.Error(correlationId, instanceId, err)
 			return err
@@ -117,8 +145,8 @@ func DeleteOne(instanceId, correlationId string) error {
 			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
 		}
 		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
-		usageHours, err := bill.GetUsageHours(instanceId)
-		cluster, err := GetCluster(instanceId)
+		usageHours, err := bill.GetUsageHours(instanceId, bizId)
+		cluster, err := GetCluster(instanceId, bizId)
 		if err != nil {
 			logstore.Error(correlationId, instanceId, "get cluster, err:", err)
 			return err
@@ -129,7 +157,7 @@ func DeleteOne(instanceId, correlationId string) error {
 			return err
 		}
 	}
-	err = dao.UpdateDeletedStatus(instanceId)
+	err = dao.UpdateDeletedStatus(instanceId, bizId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleted status, err:", err)
 		return err
@@ -138,19 +166,19 @@ func DeleteOne(instanceId, correlationId string) error {
 	return nil
 }
 
-func GetCluster(instanceId string) (*models.Cluster, error) {
-	cluster, err := dao.GetClusterByInstanceId(instanceId)
+func GetCluster(instanceId string, bizId int) (*models.Cluster, error) {
+	cluster, err := dao.GetClusterByInstanceId(instanceId, bizId)
 	if err != nil {
 		return nil, err
 	}
 	return cluster, nil
 }
 
-func GetInstanceByIp(ip string) (*models.Instance, error) {
+func GetInstanceByIp(ip string, bizId int) (*models.Instance, error) {
 	var instance *models.Instance
-	instance, err := dao.GetInstanceByPrivateIp(ip)
+	instance, err := dao.GetInstanceByPrivateIp(ip, bizId)
 	if err != nil {
-		instance, err = dao.GetInstanceByPublicIp(ip)
+		instance, err = dao.GetInstanceByPublicIp(ip, bizId)
 		if err != nil {
 			return nil, err
 		}
@@ -158,18 +186,18 @@ func GetInstanceByIp(ip string) (*models.Instance, error) {
 	return instance, nil
 }
 
-func GetInstanceById(instanceId string) (*models.Instance, error) {
-	instance, err := dao.GetInstance(instanceId)
+func GetInstanceById(instanceId string, bizId int) (*models.Instance, error) {
+	instance, err := dao.GetInstance(instanceId, bizId)
 	if err != nil {
 		return nil, err
 	}
 	return instance, nil
 }
 
-func GetInstancesStatus(instancesIds []string) ([]models.StatusResp, error) {
+func GetInstancesStatus(instancesIds []string, bizId int) ([]models.StatusResp, error) {
 	var results []models.StatusResp
 	for i := 0; i < len(instancesIds); i++ {
-		instance, err := GetInstanceById(instancesIds[i])
+		instance, err := GetInstanceById(instancesIds[i], bizId)
 		var tmpInstance models.StatusResp
 		tmpInstance.InstanceId = instancesIds[i]
 		if err != nil {
@@ -194,8 +222,14 @@ func GetProviders() ([]string, error) {
 	return provider.ListDrivers(), nil
 }
 
-func GetRegions(providerName string) ([]models.Region, error) {
-	providerDriver, err := provider.New(providerName)
+func GetRegions(bizId int, providerName string) ([]models.Region, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -206,8 +240,14 @@ func GetRegions(providerName string) ([]models.Region, error) {
 	return ret.Regions, nil
 }
 
-func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, error) {
-	providerDriver, err := provider.New(providerName)
+func GetZones(bizId int, providerName ,regionId string) ([]models.AvailabilityZone, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -218,8 +258,14 @@ func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, 
 	return ret.AvailabilityZones, nil
 }
 
-func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int) ([]models.Vpc, error) {
-	providerDriver, err := provider.New(providerName)
+func GetVpcs(bizId, pageNumber ,pageSize int, providerName ,regionId string) ([]models.Vpc, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -230,8 +276,14 @@ func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int)
 	return ret.Vpcs, nil
 }
 
-func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subnet, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSubnets(bizId int, providerName, zoneId, vpcId string) ([]models.Subnet, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -242,8 +294,14 @@ func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subn
 	return ret.Subnets, nil
 }
 
-func GetImages(providerName string, regionId string) ([]models.Image, error) {
-	providerDriver, err := provider.New(providerName)
+func GetImages(bizId int, providerName, regionId string) ([]models.Image, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -254,8 +312,14 @@ func GetImages(providerName string, regionId string) ([]models.Image, error) {
 	return ret.Images, nil
 }
 
-func ListInstanceTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListInstanceTypes(bizId int, providerName string) ([]string, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -266,24 +330,42 @@ func ListInstanceTypes(providerName string) ([]string, error) {
 	return ret, nil
 }
 
-func ListInternetChargeTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListInternetChargeTypes(bizId int, providerName string) ([]string, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListInternetChargeType(), nil
 }
 
-func ListDiskCategory(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+func ListDiskCategory(bizId int, providerName string) ([]string, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListDiskCategory(), nil
 }
 
-func GetSecurityGroup(providerName string, regionId string, vpcId string) ([]models.SecurityGroup, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSecurityGroup(bizId int, providerName, regionId, vpcId string) ([]models.SecurityGroup, error) {
+	var providerDriver provider.ProviderDriver
+	var err error
+	if account.IsAccountExist(bizId, providerName) {
+		providerDriver, err = provider.NewByAccount(bizId, providerName)
+	} else {
+		providerDriver, err = provider.New(providerName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -294,16 +376,16 @@ func GetSecurityGroup(providerName string, regionId string, vpcId string) ([]mod
 	return ret.SecurityGroups, nil
 }
 
-func ListInstances() ([]models.Instance, error) {
-	instances, err := dao.ListInstances()
+func ListInstances(bizId int) ([]models.Instance, error) {
+	instances, err := dao.ListInstances(bizId)
 	if err != nil {
 		return nil, err
 	}
 	return instances, nil
 }
 
-func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
-	instances, err := dao.ListInstancesByClusterId(clusterId)
+func ListInstancesByClusterId(clusterId int64, bizId int) ([]models.Instance, error) {
+	instances, err := dao.ListInstancesByClusterId(clusterId, bizId)
 	if err != nil {
 		return nil, err
 	}
@@ -342,12 +424,12 @@ func getSSHClient(ip string, path string, password string) (*ssh.Client, error) 
 	return sshCli, nil
 }
 
-func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId string) (string, error) {
+func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId string, bizId int) (string, error) {
 	store := logstore.Store{}
 	logInfo := store.QueryLogByCorrelationIdAndInstanceId(instanceId, correlationId)
 	jupiterLog := logInfo.Message
 	url := conf.Config.Ansible.Url + "/api/getlog"
-	ip, err := dao.GetIpByInstanceId(instanceId)
+	ip, err := dao.GetIpByInstanceId(instanceId, bizId)
 	if err != nil {
 		return "", err
 	}
@@ -379,7 +461,7 @@ func QueryLogByInstanceId(instanceId string) (string, error) {
 	return jupiterLog, nil
 }
 
-func InputPhyDev(ins models.Instance) (models.Instance, error) {
+func InputPhyDev(ins models.Instance, bizId int) (models.Instance, error) {
 	clusters, err := dao.GetClustersByProvider(PhyDev)
 	if err != nil {
 		return ins, err
@@ -393,6 +475,7 @@ func InputPhyDev(ins models.Instance) (models.Instance, error) {
 			CreateTime: time.Now(),
 			Network:    &models.Network{},
 			Zone:       &models.Zone{},
+			BizId: 	    bizId,
 		}
 		dao.InsertCluster(&cluster)
 		_, err = bill.InsertBill(&cluster)
@@ -408,47 +491,55 @@ func InputPhyDev(ins models.Instance) (models.Instance, error) {
 	ins.InstanceId = instanceId
 	ins.Provider = PhyDev
 	ins.Status = models.Initing
+	ins.BizId = bizId
 	if err := dao.InsertInstance(&ins); err != nil {
 		return ins, err
 	}
 	return ins, nil
 }
 
-func UploadSshKey(instanceId string, sshKey models.SshKey) (models.SshKey, error) {
-	err := dao.UpdateSshKey(instanceId, sshKey.PublicKey, sshKey.PrivateKey)
+func UploadSshKey(instanceId string, sshKey models.SshKey, bizId int) (models.SshKey, error) {
+	err := dao.UpdateSshKey(instanceId, sshKey.PublicKey, sshKey.PrivateKey, bizId)
 	return sshKey, err
 }
 
-func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (models.InstanceStatus, error) {
-	err := dao.UpdateInstanceStatusByInstanceId(instanceId, status)
+func UpdateInstanceStatus(instanceId string, status models.InstanceStatus, bizId int) (models.InstanceStatus, error) {
+	err := dao.UpdateInstanceStatusByInstanceId(instanceId, status, bizId)
 	if err != nil {
 		return status, err
 	}
 	return status, nil
 }
 
-func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+func ManageDev(ip, password, instanceId, correlationId string, bizId int) (ssh.Output, error) {
 	sshErr := StartSshService(instanceId, ip, password, correlationId)
 	if sshErr != nil {
 		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
-		dao.UpdateInstanceStatus(ip, models.InitTimeout)
+		dao.UpdateInstanceStatus(ip, models.InitTimeout, bizId)
 		return ssh.Output{}, sshErr
 	}
 	cli, err := getSSHClient(ip, "", password)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
 	ret, err := cli.Run(cmd)
 	if err != nil {
-		dao.UpdateInstanceStatus(ip, models.StatusError)
+		dao.UpdateInstanceStatus(ip, models.StatusError, bizId)
+		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err)
+		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
-	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
-		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
-	logstore.Info(correlationId, instanceId, cmd)
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	cmdOut := fmt.Sprintf("sh /root/manage_device.sh mysql://****:****@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
+		  dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	logstore.Info(correlationId, instanceId, "###Third### Exec init operaration："+cmdOut)
 	ret, err = cli.Run(cmd)
 	if err != nil {
-		dao.UpdateInstanceStatus(ip, models.StatusError)
+		dao.UpdateInstanceStatus(ip, models.StatusError, bizId)
+		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err)
+		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
 	logstore.Info(correlationId, instanceId, ret)

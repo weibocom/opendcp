@@ -38,9 +38,10 @@ func (c *ProjectInfoController) Get() {
 
 	project := c.GetString("projectName")
 	creator := c.Operator()
+	cluster := c.HarborProjectName()
 
-	if creator == "" || project == "" {
-		log.Error("creator,projectName should not be empy when building project")
+	if creator == "" || project == "" || cluster == ""{
+		log.Error("cluster, creator,projectName should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -53,7 +54,7 @@ func (c *ProjectInfoController) Get() {
 
 	c.Layout = "project.tpl"
 	c.TplName = "info.tpl"
-	code, info := models.AppServer.GetProjectInfo(project)
+	code, info := models.AppServer.GetProjectInfo(cluster, project)
 	resp := models.BuildResponse(
 		code,
 		info,

@@ -120,6 +120,22 @@ require_once('../include/navbar.php');
                 <li><a onclick="login('logout')"><i class="fa fa-sign-out"></i> 退出</a></li>
               </ul>
             </li>
+              <li class="">
+                  <a onclick="getColudList()" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                      额度
+                      <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul id = "auotaCloud" class="dropdown-menu dropdown-usermenu pull-right">
+                      <li>
+                          Loading...
+                      </li>
+                  </ul>
+              </li>
+              <li class="">
+                  <a href="javascript:;" aria-expanded="false">
+                      <span id = "currentTime">2017/06/21 11:39:05<span>
+                  </a>
+              </li>
           </ul>
         </nav>
       </div>
@@ -355,7 +371,7 @@ require_once('../include/navbar.php');
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
 <script src="../js/for_cloud/org.js?_t=<?php echo date('U');?>"></script>
-
+<script src="../js/navicate.js?_t=<?php echo date('U');?>"></script>
 
 <!-- Custom Notification -->
 <script>
