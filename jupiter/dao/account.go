@@ -85,3 +85,17 @@ func DeleteAccountByProvider(bizId int, provider string) (bool, error) {
 	}
 	return true, nil
 }
+
+func  UpdateAccountInfo(obj interface{}, column []string) (err error) {
+	o := GetOrmer()
+	switch len(column) {
+	case 1:
+		_, err = o.Update(obj, column[0])
+	case 2:
+		_, err = o.Update(obj, column[0], column[1])
+	case 3:
+		_, err = o.Update(obj, column[0], column[1], column[2])
+
+	}
+	return err
+}
