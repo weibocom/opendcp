@@ -911,7 +911,7 @@ var getInstanceType=function(){
     var actionDesc="机器规格";
     var idx=$('#RegionName').val();
     var provider=$('#Provider').val();
-    var tSelect;
+    var tSelect = 'InstanceType';
     if(provider == 'aliyun'){
         tSelect = 'InstanceType';
         if(!provider||!idx) return false;
