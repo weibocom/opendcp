@@ -230,6 +230,30 @@ func GetAllInstance (biz_id int) (instances []models.Instance,err error) {
 	return instances, nil
 }
 
+func GetTestingInstances(biz_id int, provider string) (instances []models.Instance,err error) {
+	o := GetOrmer()
+	_,err = o.QueryTable(INSTANCE_TABLE).Filter("biz_id",biz_id).Filter("provider", provider).
+		Filter("is_test", 1).Exclude("status", models.Deleted).All(&instances)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
+
+func GetAllInstancesByProvider(bizId int, provider string) (instances []models.Instance, err error) {
+	o := GetOrmer()
+	_,err = o.QueryTable(INSTANCE_TABLE).Filter("biz_id",bizId).Filter("provider", provider).
+		Filter("is_test", 0).Exclude("status", models.Deleted).All(&instances)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
+
 func GetAllBIdInInstance () (instances []models.Instance,err error) {
 	o := GetOrmer()
 

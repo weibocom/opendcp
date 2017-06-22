@@ -35,7 +35,7 @@ var login=function(action){
         }
         setTimeout("window.parent.location.href='/'",1000);
       }else{
-        pageNotify('error','操作失败！','错误信息：'+data.msg, false);
+        pageNotify('error','操作失败！','错误信息：'+data.msg);
       }
     },
     error: function (){

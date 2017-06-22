@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `private_key` longtext,
   `return_time` datetime,
   `biz_id` integer NOT NULL DEFAULT -1,
+  `is_test` int(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
