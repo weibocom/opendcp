@@ -147,7 +147,7 @@ func (ac *AccountController) DeleteAccount()  {
 
 // @Title update account
 // @Description update account.
-// @router /update
+// @router /update [post]
 func (accountController *AccountController) UpdateAccount()  {
 	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
