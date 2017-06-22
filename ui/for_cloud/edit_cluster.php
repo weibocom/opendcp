@@ -166,7 +166,7 @@
                 <div class="form-group hidden">
                     <label for="DiskType" class="col-sm-2 control-label">磁盘规格</label>
                     <div class="col-sm-10">
-                        <select class="form-control" id="DiskType" name="DiskType" onchange="" disabled>
+                        <select class="form-control" id="DiskType" name="DiskType" onchange="" >
                             <option value="">请选择</option>
                             <option value="">4G-10G-10G</option>
                             <option value="">1G-4G-4G</option>
