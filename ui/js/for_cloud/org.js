@@ -915,6 +915,7 @@ var getInstanceType=function(){
         if(!provider||!idx) return false;
     }else if(provider == 'openstack'){
         tSelect = 'DiskType';
+        console.log("start define select");
     }
     var url='/api/for_cloud/ecs_type.php?action=list';
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
@@ -926,6 +927,7 @@ var getInstanceType=function(){
         dataType: "json",
         success: function (data) {
             if (typeof data.content != 'undefined') cache.ecs_type = data.content;
+            console.log("start change select");
             updateSelect(tSelect);
             if(data.code!=0){
                 pageNotify('error','获取'+actionDesc+'失败！','错误信息：'+data.msg);
@@ -960,7 +962,6 @@ var getImage=function(){
         dataType: "json",
         success: function (data) {
             if (typeof data.content != 'undefined') cache.image = data.content;
-            console.log("start change select");
             updateSelect(tSelect);
             if(data.code!=0){
                 pageNotify('error','获取'+actionDesc+'失败！','错误信息：'+data.msg);
