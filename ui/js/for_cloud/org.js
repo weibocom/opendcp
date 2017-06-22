@@ -562,6 +562,7 @@ var updateSelect=function(name,idx){
             break;
         case 'DiskType':
             data=cache.ecs_type;
+            console.log('get data');
             break;
         case 'ImageId':
             data=cache.image;
@@ -625,6 +626,7 @@ var updateSelect=function(name,idx){
                 break;
             case 'DiskType':
                 tSelect.removeAttr("disabled");
+                console.log('append data');
                 $.each(data,function(k,v){
                     tSelect.append('<option value="' + v.name + '">' + v.name + '</option>');
                 })
@@ -958,6 +960,7 @@ var getImage=function(){
         dataType: "json",
         success: function (data) {
             if (typeof data.content != 'undefined') cache.image = data.content;
+            console.log("start change select");
             updateSelect(tSelect);
             if(data.code!=0){
                 pageNotify('error','获取'+actionDesc+'失败！','错误信息：'+data.msg);
