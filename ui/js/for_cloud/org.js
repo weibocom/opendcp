@@ -908,13 +908,14 @@ var getInstanceType=function(){
     var actionDesc="机器规格";
     if($('#Provider').val() == 'aliyun') {
         tSelect = 'InstanceType';
+        if(!provider||!idx) return false;
     }else if($('#Provider').val() == 'openstack'){
         tSelect = 'DiskType';
     }
     var url='/api/for_cloud/ecs_type.php?action=list';
     var provider=$('#Provider').val();
     var idx=$('#RegionName').val();
-    if(!provider||!idx) return false;
+
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
     cache.ecs_type = [];
     $.ajax({
@@ -943,7 +944,9 @@ var getImage=function(){
     var url='/api/for_cloud/image.php?action=list';
     var provider=$('#Provider').val();
     var idx=$('#RegionName').val();
-    if(!provider||!idx) return false;
+    if($('#Provider').val()=='aliyun') {
+        if (!provider || !idx) return false;
+    }
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
     cache.image = [];
     $.ajax({
