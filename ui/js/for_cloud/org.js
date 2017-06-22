@@ -425,33 +425,41 @@ var check=function(tab){
             var DataDiskNum=$('#DataDiskNum').val();
             if($('#Name').val()=='') disabled=true;
             if($('#Provider').val()=='') disabled=true;
-            if(network=='') disabled=true;
-            switch(network){
-                case 'common':
-                    if(InternetChargeType=='') disabled=true;
-                    if(InternetMaxBandwidthOut=='') disabled=true;
-                    switch (InternetChargeType){
-                        case 'PayByBandwidth':
-                            if(InternetMaxBandwidthOut<1||InternetMaxBandwidthOut>100) $('#InternetMaxBandwidthOut').val(1);
-                            break;
-                        case 'PayByTraffic':
-                            if(InternetMaxBandwidthOut<0||InternetMaxBandwidthOut>100) $('#InternetMaxBandwidthOut').val(0);
-                            break;
-                    }
-                    break;
-                case 'custom':
-                    if($('#VpcId').val()=='') disabled=true;
-                    if($('#SubnetId').val()=='') disabled=true;
-                    break;
+            if($('#Provider').val()=='aliyun') {
+                if (network == '') disabled = true;
+                switch (network) {
+                    case 'common':
+                        if (InternetChargeType == '') disabled = true;
+                        if (InternetMaxBandwidthOut == '') disabled = true;
+                        switch (InternetChargeType) {
+                            case 'PayByBandwidth':
+                                if (InternetMaxBandwidthOut < 1 || InternetMaxBandwidthOut > 100) $('#InternetMaxBandwidthOut').val(1);
+                                break;
+                            case 'PayByTraffic':
+                                if (InternetMaxBandwidthOut < 0 || InternetMaxBandwidthOut > 100) $('#InternetMaxBandwidthOut').val(0);
+                                break;
+                        }
+                        break;
+                    case 'custom':
+                        if ($('#VpcId').val() == '') disabled = true;
+                        if ($('#SubnetId').val() == '') disabled = true;
+                        break;
+                }
+                if ($('#RegionName').val() == '') disabled = true;
+                if ($('#ZoneName').val() == '') disabled = true;
+                if ($('#InstanceType').val() == '') disabled = true;
+                if ($('#ImageId').val() == '') disabled = true;
+                if ($('#SystemDiskCategory').val() == '') disabled = true;
+                if (DataDiskSize == '' || DataDiskSize < 5 || DataDiskSize > 32768) disabled = true;
+                if (DataDiskNum == '' || DataDiskNum < 1 || DataDiskNum > 4) disabled = true;
+                if ($('#DataDiskCategory').val() == '') disabled = true;
+            }else if($('#Provider').val()=='openstack'){
+                console.log('check openstack')
+                if($('#Network').val() == '') disabled =true;
+                if($('#AvabilityZone').val() == '') disabled=true
+                if($('#ImageId').val()=='') disabled=true
+                if($('#DiskType').val()=='') disabled=true
             }
-            if($('#RegionName').val()=='') disabled=true;
-            if($('#ZoneName').val()=='') disabled=true;
-            if($('#InstanceType').val()=='') disabled=true;
-            if($('#ImageId').val()=='') disabled=true;
-            if($('#SystemDiskCategory').val()=='') disabled=true;
-            if(DataDiskSize==''||DataDiskSize<5||DataDiskSize>32768) disabled=true;
-            if(DataDiskNum==''||DataDiskNum<1||DataDiskNum>4) disabled=true;
-            if($('#DataDiskCategory').val()=='') disabled=true;
             $("#btnStepCommit").attr('disabled',disabled);
             break;
         case 'quota':
@@ -532,7 +540,6 @@ var twiceCheck=function(action,idx,desc){
 //*********
 var updateSelect=function(name,idx){
     var tSelect=$('#'+name),data='';
-    console.log(name+'is current select')
     switch(name){
         case 'Provider':
             data=cache.provider;
@@ -627,7 +634,6 @@ var updateSelect=function(name,idx){
                 break;
             case 'DiskType':
                 tSelect.removeAttr("disabled");
-                console.log('append data');
                 $.each(data,function(k,v){
                     tSelect.append('<option value="' + v.name + '">' + v.name + '</option>');
                 })
@@ -913,11 +919,9 @@ var getInstanceType=function(){
     var provider=$('#Provider').val();
     var tSelect = 'InstanceType';
     if(provider == 'aliyun'){
-        tSelect = 'InstanceType';
         if(!provider||!idx) return false;
     }else if(provider == 'openstack'){
         tSelect = 'DiskType';
-        console.log("start define select");
     }
     var url='/api/for_cloud/ecs_type.php?action=list';
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
@@ -929,7 +933,6 @@ var getInstanceType=function(){
         dataType: "json",
         success: function (data) {
             if (typeof data.content != 'undefined') cache.ecs_type = data.content;
-            console.log("start change select");
             updateSelect(tSelect);
             if(data.code!=0){
                 pageNotify('error','获取'+actionDesc+'失败！','错误信息：'+data.msg);
