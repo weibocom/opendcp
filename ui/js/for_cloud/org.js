@@ -561,7 +561,7 @@ var updateSelect=function(name,idx){
             data=cache.ecs_type;
             break;
         case 'DiskType':
-            date=cache.ecs_type;
+            data=cache.ecs_type;
             break;
         case 'ImageId':
             data=cache.image;
