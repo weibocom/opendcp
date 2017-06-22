@@ -47,6 +47,13 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	var err error
 	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
 		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+		costs, err := account.GetCost(cluster.BizId, cluster.Provider)
+		if err != nil {
+			return "", err
+		}
+		if costs["credit"] <= 0 {
+			return "", errors.New("The credit of account has over!")
+		}
 		isTest = 0
 	} else {
 		providerDriver, err = provider.New(cluster.Provider)
