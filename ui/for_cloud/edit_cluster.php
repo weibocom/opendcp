@@ -43,8 +43,6 @@
                     <div class="col-sm-10">
                         <select class="form-control" id="Provider" name="Provider" onchange="selectProvider()">
                             <option value="default">请选择</option>
-                            <option value="aliyun">阿里云</option>
-                            <option value="openstack">openstack</option>
                         </select>
 
                     </div>
