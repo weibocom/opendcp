@@ -162,7 +162,7 @@ class myself{
           );
         }else{
           $ret['code'] = 1;
-          $ret['msg'] = (isset($arrList['content']))?$arrList['content']:$strList;
+          $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
           $ret['remote'] = $strList;
         }
       }
