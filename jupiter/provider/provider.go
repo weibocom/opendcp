@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"sort"
 	"time"
-
 	"weibo.com/opendcp/jupiter/models"
 
 )
@@ -50,7 +49,7 @@ type ProviderDriver interface {
 	ListDiskCategory() []string
 	ListInternetChargeType() []string
 	AllocatePublicIpAddress(instanceId string) (string, error)
-	ListNetworks() ([]string, error)
+
 }
 
 type ProviderDriverFunc func() (ProviderDriver, error)

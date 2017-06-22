@@ -117,7 +117,41 @@ func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
 }
 
 func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
-	return nil, nil
+	opts := gophercloud.AuthOptions{
+		IdentityEndpoint: "http://10.39.59.27:5000/v3",
+		Username: "admin",
+		Password: "ZYGL32NDG7JS8IGC",
+		DomainName: "default",
+	}
+
+	provider, err := openstack.AuthenticatedClient(opts)
+
+	if(err != nil){
+		return nil, err
+	}
+	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
+		Name:   "neutron",
+		Region: "RegionOne",
+	})
+	opts1 := networks.ListOpts{}
+	// Retrieve a pager (i.e. a paginated collection)
+	pager := networks.List(client, opts1)
+
+	var vpcsResp models.VpcsResp
+
+	err = pager.EachPage(func(page pagination.Page) (bool, error) {
+		networkList, err := networks.ExtractNetworks(page)
+		for _, network := range networkList {
+			// "n" will be a networks.Network
+			var vpc models.Vpc
+			vpc.VpcId = network.ID
+			vpc.State = network.Name
+			vpcsResp.Vpcs = append(vpcsResp.Vpcs, vpc)
+		}
+
+		return true, err
+	})
+	return vpcsResp, err
 }
 
 func (driver openstackProvider) ListSubnets(zoneId string, vpcId string) (*models.SubnetsResp, error){
@@ -238,7 +272,7 @@ func (driver openstackProvider) ListImages(regionId string, snapshotId string, p
 
 				//Architecture: imageOp.
 				CreationDate: imageOp.Created,
-				//Description: imageOp.
+				Description: imageOp.Name,
 				ImageId: imageOp.ID,
 				Name: imageOp.Name,
 				//OwnerId: imageOp.
@@ -346,37 +380,7 @@ func waitForSpecific(f func() bool, maxAttempts int, waitInterval time.Duration)
 	return fmt.Errorf("Maximum number of retries (%d) exceeded", maxAttempts)
 }
 
-func (driver openstackProvider) ListNetworks() ([]string, error){
-	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "http://10.39.59.27:5000/v3",
-		Username: "admin",
-		Password: "ZYGL32NDG7JS8IGC",
-		DomainName: "default",
-	}
 
-	provider, err := openstack.AuthenticatedClient(opts)
-
-	client, err := openstack.NewNetworkV2(provider, gophercloud.EndpointOpts{
-		Name:   "neutron",
-		Region: "RegionOne",
-	})
-	opts1 := networks.ListOpts{}
-	// Retrieve a pager (i.e. a paginated collection)
-	pager := networks.List(client, opts1)
-
-	netList := make([]string,0)
-
-	err = pager.EachPage(func(page pagination.Page) (bool, error) {
-		networkList, err := networks.ExtractNetworks(page)
-		for _, network := range networkList {
-			// "n" will be a networks.Network
-			netList = append(netList, network.Name)
-		}
-
-		return true, err
-	})
-	return netList, err
-}
 
 func new() (provider.ProviderDriver, error){
 

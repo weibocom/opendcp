@@ -532,9 +532,6 @@ func (driver awsProvider) AttachGateway(input *models.AttachGateway) (bool, erro
 	return true, nil
 }
 
-func (awsProvider) ListNetworks()([]string, error){
-	return nil, nil
-}
 
 func (driver awsProvider) AllocatePublicIpAddress(instanceId string) (string, error) {
 	return "", nil
