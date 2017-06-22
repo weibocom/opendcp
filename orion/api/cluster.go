@@ -361,6 +361,18 @@ func (c *ClusterApi) ServiceAppend() {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
+	params := make(map[string]interface{},2)
+	params["Cluster"] = req.ClusterId
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.Service{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
+		return
+	}
 
 	data := models.Service{
 		Name:        req.Name,
@@ -554,6 +566,18 @@ func (c *ClusterApi) PoolAppend() {
 	err := c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	params := make(map[string]interface{},2)
+	params["Service"] = req.ServiceId
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.Pool{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
 		return
 	}
 	taskbytes, _ := json.Marshal(req.Tasks)
