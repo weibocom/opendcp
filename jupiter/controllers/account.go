@@ -148,25 +148,25 @@ func (ac *AccountController) DeleteAccount()  {
 // @Title update account
 // @Description update account.
 // @router /update
-func (ac *AccountController) UpdateAccount()  {
-	bizId := ac.Ctx.Input.Header("X-Biz-ID")
+func (accountController *AccountController) UpdateAccount()  {
+	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
 		beego.Error("Get X-Biz-ID err!")
-		ac.RespInputError()
+		accountController.RespInputError()
 		return
 	}
-	bytes, err := ioutil.ReadAll(ac.Ctx.Request.Body)
+	bytes, err := ioutil.ReadAll(accountController.Ctx.Request.Body)
 	if err != nil {
 		beego.Error("Get Request Body err: ", err)
-		ac.RespServiceError(err)
+		accountController.RespServiceError(err)
 		return
 	}
 	obj := &models.Account{}
 	err = json.Unmarshal(bytes, obj)
 	if err != nil {
 		beego.Error("Unmarshal bytes to account err: ", err)
-		ac.RespServiceError(err)
+		accountController.RespServiceError(err)
 		return
 	}
 	obj.BizId = bid
@@ -179,15 +179,15 @@ func (ac *AccountController) UpdateAccount()  {
 	err = account.UpdateAccountInfo(obj,fields)
 	if err != nil {
 		beego.Error("Get account info err: ", err)
-		ac.RespServiceError(err)
+		accountController.RespServiceError(err)
 		return
 	}
 
 	resp := ApiResponse{}
 	resp.Content = true
-	ac.ApiResponse = resp
-	ac.Status = SERVICE_SUCCESS
-	ac.RespJsonWithStatus()
+	accountController.ApiResponse = resp
+	accountController.Status = SERVICE_SUCCESS
+	accountController.RespJsonWithStatus()
 }
 
 
