@@ -168,8 +168,6 @@
                     <div class="col-sm-10">
                         <select class="form-control" id="DiskType" name="DiskType" onchange="" >
                             <option value="">请选择</option>
-                            <option value="">4G-10G-10G</option>
-                            <option value="">1G-4G-4G</option>
                         </select>
                     </div>
                 </div>
