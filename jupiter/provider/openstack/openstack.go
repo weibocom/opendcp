@@ -151,7 +151,7 @@ func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSi
 
 		return true, err
 	})
-	return vpcsResp, err
+	return &vpcsResp, err
 }
 
 func (driver openstackProvider) ListSubnets(zoneId string, vpcId string) (*models.SubnetsResp, error){
