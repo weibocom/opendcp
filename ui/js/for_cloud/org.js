@@ -946,6 +946,9 @@ var getImage=function(){
     var idx=$('#RegionName').val();
     if($('#Provider').val()=='aliyun') {
         if (!provider || !idx) return false;
+    }else if($('#Provider').val()=='openstack'){
+        //openstack未对idx作要求，此处是象征性地传递
+        idx=1;
     }
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
     cache.image = [];
@@ -1000,6 +1003,7 @@ var getZoneId=function(){
 //******对openstack的情况有所修改
 var getVpcId=function(){
     var actionDesc="可用区";
+    var provider=$('#Provider').val();
     var url='/api/for_cloud/vpc.php?action=list';
     if($('#Provider').val()=="aliyun") {
         tSelect='VpcId';
@@ -1009,7 +1013,7 @@ var getVpcId=function(){
         tSelect='Network'
         var idx=1;
     }
-    var postData={"pagesize":1000,"fIdx":idx};
+    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
     $.ajax({
         type: "POST",
         url: url,
