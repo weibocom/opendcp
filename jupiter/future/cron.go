@@ -46,6 +46,7 @@ func (cf *CronFuture) Success() {
 
 func (cf *CronFuture) Failure(err error) {
 	beego.Error("Cron task execute failed: ", err)
+	Exec.Submit(cf)
 }
 
 func (cf *CronFuture) ShutDown() {

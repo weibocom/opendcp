@@ -35,17 +35,29 @@ import (
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
 	"weibo.com/opendcp/jupiter/service/account"
+	"errors"
 )
 
 const PhyDev = "phydev"
+const RETRYTIMES int = 1
 
 func CreateOne(cluster *models.Cluster) (string, error) {
+	var isTest int
 	var providerDriver provider.ProviderDriver
 	var err error
 	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
 		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+		costs, err := account.GetCost(cluster.BizId, cluster.Provider)
+		if err != nil {
+			return "", err
+		}
+		if costs["credit"] <= 0 {
+			return "", errors.New("The credit of account has over!")
+		}
+		isTest = 0
 	} else {
 		providerDriver, err = provider.New(cluster.Provider)
+		isTest = 1
 	}
 	if err != nil {
 		return "", err
@@ -59,8 +71,10 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	ins.BizId = cluster.BizId
 	ins.CreateTime = time.Now()
+	ins.IsTest = isTest
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
@@ -384,6 +398,14 @@ func ListInstances(bizId int) ([]models.Instance, error) {
 	return instances, nil
 }
 
+func ListTestingInstances(bizId int, provider string) ([]models.Instance, error) {
+	instances, err := dao.GetTestingInstances(bizId, provider)
+	if err != nil {
+		return nil,err
+	}
+	return instances, nil
+}
+
 func ListInstancesByClusterId(clusterId int64, bizId int) ([]models.Instance, error) {
 	instances, err := dao.ListInstancesByClusterId(clusterId, bizId)
 	if err != nil {
@@ -544,4 +566,38 @@ func ManageDev(ip, password, instanceId, correlationId string, bizId int) (ssh.O
 	}
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
+}
+
+func DeleteInstances(instances []models.Instance, bizId int) error  {
+	var err error
+	correlationId := time.Now().Format("0102-030405")
+	done := make(chan struct{})
+	for _, v := range instances {
+		ins := v
+		go func() {
+			times := RETRYTIMES
+			REDO:
+			err = DeleteOne(ins.InstanceId, correlationId, bizId)
+			times--
+			if err != nil  {
+				if times>0 {
+					time.Sleep(time.Millisecond*500)
+					goto REDO
+				}
+				logstore.Error(correlationId, ins.InstanceId, "deleted failed!")
+			}
+			done <- struct{}{}
+		}()
+	}
+
+	for i:=0; i<len(instances); i++ {
+		select {
+		case <-done:
+		}
+	}
+
+	if err != nil {
+		return errors.New("Some instances maybe deleted failed!")
+	}
+	return nil
 }
