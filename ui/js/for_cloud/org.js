@@ -906,16 +906,15 @@ var getZoneAndVpcAndETypeAndImage=function(){
 
 var getInstanceType=function(){
     var actionDesc="机器规格";
-    if($('#Provider').val() == 'aliyun') {
+    var idx=$('#RegionName').val();
+    var provider=$('#Provider').val();
+    if(provider == 'aliyun'){
         tSelect = 'InstanceType';
         if(!provider||!idx) return false;
-    }else if($('#Provider').val() == 'openstack'){
+    }else if(provider == 'openstack'){
         tSelect = 'DiskType';
     }
     var url='/api/for_cloud/ecs_type.php?action=list';
-    var provider=$('#Provider').val();
-    var idx=$('#RegionName').val();
-
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
     cache.ecs_type = [];
     $.ajax({

@@ -164,7 +164,7 @@
                     </div>
                 </div>
                 <div class="form-group hidden">
-                    <label for="DiskType" class="col-sm-2 control-label">磁盘规格</label >
+                    <label for="DiskType" class="col-sm-2 control-label">磁盘规格</label>
                     <div class="col-sm-10">
                         <select class="form-control" id="DiskType" name="DiskType" onchange="" disabled>
                             <option value="">请选择</option>
