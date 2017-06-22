@@ -9,6 +9,7 @@ import (
 	"time"
 	"errors"
 	"github.com/astaxie/beego"
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 const BASE64Table = "IJjkKLMNO567PQX12RVW3YZaDEFGbcdefghiABCHlSTUmnopqrxyz04stuvw89+/"
@@ -26,14 +27,6 @@ func GetAccount(bizId int, provider string)  (*models.Account, error){
 	return theAccount, nil
 }
 
-func IsAccountExist(bizId int, provider string) bool {
-	_, err := dao.GetAccountByProvider(bizId, provider)
-	if err != nil {
-		beego.Error(err)
-		return false
-	}
-	return true
-}
 
 func ListAccounts(bizId int) ([]models.Account, error) {
 	accounts, err := dao.GetAllInAccount(bizId)
@@ -79,18 +72,6 @@ func Decode(data string) (string, error)  {
 }
 
 
-func GetCost (biz_id int, provider string) (map[string] float64, error) {
-	account,err := dao.GetAccount(biz_id,provider)
-	if err != nil {
-		beego.Error(err)
-		return nil, err
-	}
-	cost := make(map[string] float64)
-	cost["spent"] = account.Spent
-	cost["credit"] = account.Credit
-	return cost, nil
-
-}
 
 /**
 计算额度算法
@@ -193,10 +174,24 @@ func GenerateOneCost(biz_id int) error {
 			beego.Error(err)
 			return err
 		}
+		//重新检查账户的额度，额度不足时删除机器
+		costs, err := instance.GetCost(biz_id, k)
+		if err != nil {
+			return  err
+		}
+		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
+			instances, err := dao.GetTestingInstances(biz_id, k)
+			if err != nil {
+				return  err
+			}
+			go instance.DeleteInstances(instances, biz_id)
+		}
 
 	}
 	beego.Info(spendMap)
-
 	return nil
 
 }
+
+
+

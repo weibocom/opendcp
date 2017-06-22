@@ -34,8 +34,8 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
-	"weibo.com/opendcp/jupiter/service/account"
 	"errors"
+	"math"
 )
 
 const PhyDev = "phydev"
@@ -45,13 +45,13 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	var isTest int
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(cluster.BizId, cluster.Provider) {
+	if IsAccountExist(cluster.BizId, cluster.Provider) {
 		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
-		costs, err := account.GetCost(cluster.BizId, cluster.Provider)
+		costs, err := GetCost(cluster.BizId, cluster.Provider)
 		if err != nil {
 			return "", err
 		}
-		if costs["credit"] <= 0 {
+		if GreaterOrEqual(costs["spent"], costs["credit"]) {
 			return "", errors.New("The credit of account has over!")
 		}
 		isTest = 0
@@ -87,7 +87,7 @@ func StartOne(instanceId string, bizId int) (bool, error) {
 		return false, err
 	}
 	var providerDriver provider.ProviderDriver
-	if account.IsAccountExist(bizId, ins.Provider) {
+	if IsAccountExist(bizId, ins.Provider) {
 		providerDriver, err = provider.NewByAccount(bizId, ins.Provider)
 	} else {
 		providerDriver, err = provider.New(ins.Provider)
@@ -109,7 +109,7 @@ func StopOne(instanceId string, bizId int) (bool, error) {
 	}
 
 	var providerDriver provider.ProviderDriver
-	if account.IsAccountExist(ins.BizId, ins.Provider) {
+	if IsAccountExist(ins.BizId, ins.Provider) {
 		providerDriver, err = provider.NewByAccount(ins.BizId, ins.Provider)
 	} else {
 		providerDriver, err = provider.New(ins.Provider)
@@ -138,7 +138,7 @@ func DeleteOne(instanceId, correlationId string, bizId int) error {
 	}
 	if ins.Provider != PhyDev {
 		var providerDriver provider.ProviderDriver
-		if account.IsAccountExist(ins.BizId, ins.Provider) {
+		if IsAccountExist(ins.BizId, ins.Provider) {
 			providerDriver, err = provider.NewByAccount(ins.BizId, ins.Provider)
 		} else {
 			providerDriver, err = provider.New(ins.Provider)
@@ -239,7 +239,7 @@ func GetProviders() ([]string, error) {
 func GetRegions(bizId int, providerName string) ([]models.Region, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -257,7 +257,7 @@ func GetRegions(bizId int, providerName string) ([]models.Region, error) {
 func GetZones(bizId int, providerName ,regionId string) ([]models.AvailabilityZone, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -275,7 +275,7 @@ func GetZones(bizId int, providerName ,regionId string) ([]models.AvailabilityZo
 func GetVpcs(bizId, pageNumber ,pageSize int, providerName ,regionId string) ([]models.Vpc, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -293,7 +293,7 @@ func GetVpcs(bizId, pageNumber ,pageSize int, providerName ,regionId string) ([]
 func GetSubnets(bizId int, providerName, zoneId, vpcId string) ([]models.Subnet, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -311,7 +311,7 @@ func GetSubnets(bizId int, providerName, zoneId, vpcId string) ([]models.Subnet,
 func GetImages(bizId int, providerName, regionId string) ([]models.Image, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -329,7 +329,7 @@ func GetImages(bizId int, providerName, regionId string) ([]models.Image, error)
 func ListInstanceTypes(bizId int, providerName string) ([]string, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -347,7 +347,7 @@ func ListInstanceTypes(bizId int, providerName string) ([]string, error) {
 func ListInternetChargeTypes(bizId int, providerName string) ([]string, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -361,7 +361,7 @@ func ListInternetChargeTypes(bizId int, providerName string) ([]string, error) {
 func ListDiskCategory(bizId int, providerName string) ([]string, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -375,7 +375,7 @@ func ListDiskCategory(bizId int, providerName string) ([]string, error) {
 func GetSecurityGroup(bizId int, providerName, regionId, vpcId string) ([]models.SecurityGroup, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(bizId, providerName) {
+	if IsAccountExist(bizId, providerName) {
 		providerDriver, err = provider.NewByAccount(bizId, providerName)
 	} else {
 		providerDriver, err = provider.New(providerName)
@@ -399,6 +399,13 @@ func ListInstances(bizId int) ([]models.Instance, error) {
 }
 
 func ListTestingInstances(bizId int, provider string) ([]models.Instance, error) {
+	instances, err := dao.GetTestingInstances(bizId, provider)
+	if err != nil {
+		return nil,err
+	}
+	return instances, nil
+}
+func ListInstancesByProvider(bizId int, provider string) ([]models.Instance, error) {
 	instances, err := dao.GetTestingInstances(bizId, provider)
 	if err != nil {
 		return nil,err
@@ -568,8 +575,9 @@ func ManageDev(ip, password, instanceId, correlationId string, bizId int) (ssh.O
 	return ret, nil
 }
 
-func DeleteInstances(instances []models.Instance, bizId int) error  {
-	var err error
+func DeleteInstances(instances []models.Instance, bizId int) (err error)  {
+	var sucessInstances []string
+	var failedInstances []string
 	correlationId := time.Now().Format("0102-030405")
 	done := make(chan struct{})
 	for _, v := range instances {
@@ -584,8 +592,11 @@ func DeleteInstances(instances []models.Instance, bizId int) error  {
 					time.Sleep(time.Millisecond*500)
 					goto REDO
 				}
+				sucessInstances = append(failedInstances, ins.InstanceId)
 				logstore.Error(correlationId, ins.InstanceId, "deleted failed!")
+				return
 			}
+			sucessInstances = append(sucessInstances, ins.InstanceId)
 			done <- struct{}{}
 		}()
 	}
@@ -597,7 +608,37 @@ func DeleteInstances(instances []models.Instance, bizId int) error  {
 	}
 
 	if err != nil {
-		return errors.New("Some instances maybe deleted failed!")
+		beego.Info(len(sucessInstances),"instances deleted successfully:",sucessInstances)
+		beego.Info(len(failedInstances),"instances deleted failed:",failedInstances)
+		return errors.New("Some instances deleted failed!")
 	}
 	return nil
+}
+
+
+func IsAccountExist(bizId int, provider string) bool {
+	_, err := dao.GetAccountByProvider(bizId, provider)
+	if err != nil {
+		beego.Error(err)
+		return false
+	}
+	return true
+}
+
+func  GreaterOrEqual(a, b float64) bool {
+	return math.Max(a, b) == a || math.Abs(a-b) < 0.00001
+}
+
+
+func GetCost (biz_id int, provider string) (map[string] float64, error) {
+	account,err := dao.GetAccount(biz_id,provider)
+	if err != nil {
+		beego.Error(err)
+		return nil, err
+	}
+	cost := make(map[string] float64)
+	cost["spent"] = account.Spent
+	cost["credit"] = account.Credit
+	return cost, nil
+
 }

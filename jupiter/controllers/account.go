@@ -159,7 +159,7 @@ func (ac *AccountController) GetCost() {
 
 	provider := ac.GetString("provider")
 
-	cost, err := account.GetCost(bid, provider)
+	cost, err := instance.GetCost(bid, provider)
 	if err != nil {
 		beego.Error("Get cost err: ", err)
 		ac.RespServiceError(err)
@@ -186,7 +186,7 @@ func (ac *AccountController) IsExist() {
 	}
 
 	provider := ac.GetString("provider")
-	isExist := account.IsAccountExist(bid, provider)
+	isExist := instance.IsAccountExist(bid, provider)
 
 	resp := ApiResponse{}
 	resp.Content = isExist
