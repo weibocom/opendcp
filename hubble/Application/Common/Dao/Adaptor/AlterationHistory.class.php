@@ -37,7 +37,7 @@ class AlterationHistory {
         $this->historyTbl = M('AlterationHistory');
     }
 
-    public function addRecord($type, $task_id, $task_name, $channel, $user){
+    public function addRecord($type, $task_id, $task_name, $channel, $user, $bid){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
@@ -49,6 +49,7 @@ class AlterationHistory {
             'global_id'   => I('server.HTTP_X_CORRELATION_ID'),
             'create_time' => date("Y-m-d H:i:s"),
             'opr_user'    => $user,
+            'biz_id'      => $bid
         ];
 
         $ret = $this->historyTbl->add($data);
@@ -62,8 +63,8 @@ class AlterationHistory {
         return $return;
     }
 
-    public function exist($id){
-        $ret = $this->historyTbl->where(['id'=>$id])->find();
+    public function exist($id, $bid){
+        $ret = $this->historyTbl->where(['id' => $id, 'biz_id' => $bid])->find();
 
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->historyTbl->getLastSql().' ERROR: '. $this->historyTbl->getDbError());
@@ -78,8 +79,8 @@ class AlterationHistory {
 
     }
 
-    public function existGid($gid){
-        $ret = $this->historyTbl->where(['global_id'=>$gid])->find();
+    public function existGid($gid, $bid){
+        $ret = $this->historyTbl->where(['global_id'=>$gid, 'biz_id' => $bid])->find();
 
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->historyTbl->getLastSql().' ERROR: '. $this->historyTbl->getDbError());

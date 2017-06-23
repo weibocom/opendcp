@@ -105,14 +105,20 @@ func (c *ClusterApi) URLMapping() {
 
 //集群管理
 func (c *ClusterApi) ClusterInfo() {
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	idInt := c.clusterCheckId();
 	if (idInt < 1) {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
 
-	obj := &models.Cluster{Id: idInt}
-	err := service.Cluster.GetBase(obj)
+	obj := &models.Cluster{Id: idInt, BizId: biz_id}
+	err = service.Cluster.GetBase(obj)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 404)
 		return
@@ -124,12 +130,17 @@ func (c *ClusterApi) ClusterInfo() {
 func (c *ClusterApi) ClusterList() {
 	page := c.Query2Int("page", 1)
 	pageSize := c.Query2Int("page_size", 10)
-
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	c.CheckPage(&page, &pageSize)
 
 	list := make([]models.Cluster, 0, pageSize)
 
-	count, err := service.Cluster.ListByPageWithSort(page, pageSize, &models.Cluster{}, &list,"-id")
+	count, err := service.Cluster.ListByPageWithSort(page, pageSize, biz_id, &models.Cluster{}, &list,"-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -141,16 +152,39 @@ func (c *ClusterApi) ClusterList() {
 
 func (c *ClusterApi) ClusterAppend() {
 	req := cluster_struct{}
-	err := c.clusterCheckParam(&req)
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_name := c.Ctx.Input.Header("X-Biz-Name")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	err = c.clusterCheckParam(&req)
 	if err != nil{
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 
+	params := make(map[string]interface{},2)
+	params["BizId"] = biz_id
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.Cluster{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	if count >=1 {
+		c.ReturnFailed("Name duplicate!", 400)
+		return
+	}
+
+
 	data := models.Cluster{
 		Name: req.Name,
 		Desc: req.Desc,
-		Biz:  req.Biz,
+		Biz:  biz_name,
+		BizId:biz_id,
 	}
 	err = service.Cluster.InsertBase(&data)
 	if err != nil {
@@ -325,6 +359,18 @@ func (c *ClusterApi) ServiceAppend() {
 	err := c.serviceCheckParam(&req)
 	if err != nil{
 		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	params := make(map[string]interface{},2)
+	params["Cluster"] = req.ClusterId
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.Service{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
 		return
 	}
 
@@ -520,6 +566,18 @@ func (c *ClusterApi) PoolAppend() {
 	err := c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	params := make(map[string]interface{},2)
+	params["Service"] = req.ServiceId
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&models.Pool{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
 		return
 	}
 	taskbytes, _ := json.Marshal(req.Tasks)

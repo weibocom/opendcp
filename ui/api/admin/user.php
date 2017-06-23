@@ -46,13 +46,14 @@ class myself{
           '账号',
           '姓名',
           '类型',
+          '手机',
           '邮箱',
           '状态',
           '#',
         ),
         'content' => array(),
       );
-      $ret['count'] = (int)$thisClass->getCount('',$fIdx);
+      $ret['count'] = (int)$thisClass->getCount($fIdx);
       $ret['pageCount']=($ret['count']>0)?ceil($ret['count']/$ret['pageSize']):1;
       if($ret['page']>$ret['pageCount']) $ret['page']=1;
       $i=0;

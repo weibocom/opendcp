@@ -39,7 +39,7 @@ class myself{
           'code' => 0,
           'msg' => 'success',
           'title' => array(
-            '#',
+            '序号',
             '项目名称',
             '创建人',
             '最近更新',
@@ -162,7 +162,7 @@ class myself{
           );
         }else{
           $ret['code'] = 1;
-          $ret['msg'] = (isset($arrList['content']))?$arrList['content']:$strList;
+          $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
           $ret['remote'] = $strList;
         }
       }

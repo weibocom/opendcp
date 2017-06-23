@@ -70,3 +70,18 @@ CREATE TABLE `chan_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+# ------------------------------------------------------------
+# DELETE DATA
+# ------------------------------------------------------------
+LOCK TABLES `chan_node` WRITE;
+DELETE FROM  `chan_node` where 1=1 ;
+UNLOCK TABLES;
+
+LOCK TABLES `chan_task` WRITE;
+DELETE FROM  `chan_task` where 1=1 ;
+UNLOCK TABLES;
+
+LOCK TABLES `chan_log` WRITE;
+DELETE FROM  `chan_log` where 1=1 ;
+UNLOCK TABLES;

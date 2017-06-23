@@ -36,13 +36,13 @@ class Consul {
         $this->url = C('NGINX_CONSUL_ADDRESS');
     }
 
-    public function addNode($name, $groupId, $ips, $port, $weight){
+    public function addNode($name, $groupId, $ips, $port, $weight, $bid){
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         return $return;
     }
 
-    public function delNode($name, $groupId, $ips){
+    public function delNode($name, $groupId, $ips, $bid){
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
         return $return;

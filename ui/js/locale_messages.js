@@ -81,7 +81,7 @@ locale_messages = {
     createTime: '创建时间',
     lastModifyTime: '修改时间',
     lastModifyOperator: '操作用户',
-    Cluster: '隶属集群',
+    Cluster: '业务方',
     DefineDockerFileType: '定义方式'
   },
   repos: {},

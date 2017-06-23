@@ -40,14 +40,16 @@ type AnsibleTaskFuture struct {
 	Ip    string
 	Roles []string
 	CorrelationId string
+	BizId int
 }
 
-func NewAnsibleTaskFuture(instanceId, ip string, roles []string, correlationId string) *AnsibleTaskFuture {
+func NewAnsibleTaskFuture(instanceId, ip string, roles []string, correlationId string, bizId int) *AnsibleTaskFuture {
 	return &AnsibleTaskFuture{
 		InstanceId: instanceId,
 		Ip:    ip,
 		Roles: roles,
 		CorrelationId: correlationId,
+		BizId: bizId,
 	}
 }
 
@@ -85,10 +87,10 @@ func (atf *AnsibleTaskFuture) Run() error {
 	content := respMap["content"].(map[string]interface{})
 	taskId := int(content["id"].(float64))
 	// 添加重试
-	err = checkTaskState(taskId, atf.Ip, atf.InstanceId, atf.CorrelationId)
+	err = checkTaskState(taskId, atf.Ip, atf.InstanceId, atf.CorrelationId, atf.BizId)
 	if err != nil {
 		for i := 0; i < 3; i++ {
-			err = checkTaskState(taskId, atf.Ip, atf.InstanceId, atf.CorrelationId)
+			err = checkTaskState(taskId, atf.Ip, atf.InstanceId, atf.CorrelationId, atf.BizId)
 			if err == nil {
 				return nil
 			}
@@ -101,14 +103,14 @@ func (atf *AnsibleTaskFuture) Run() error {
 }
 
 func (atf *AnsibleTaskFuture) Success() {
-	if err := dao.UpdateInstanceStatus(atf.Ip, models.Success); err != nil {
+	if err := dao.UpdateInstanceStatus(atf.Ip, models.Success, atf.BizId); err != nil {
 		logstore.Error(atf.CorrelationId, atf.InstanceId, "update db err: ", err)
 	}
 	logstore.Info(atf.CorrelationId, atf.InstanceId, "init finished: ", atf.Ip)
 }
 
 func (atf *AnsibleTaskFuture) Failure(err error) {
-	if err := dao.UpdateInstanceStatus(atf.Ip, models.Uninit); err != nil {
+	if err := dao.UpdateInstanceStatus(atf.Ip, models.Uninit, atf.BizId); err != nil {
 		logstore.Error(atf.CorrelationId, atf.InstanceId, "update db err: ", err)
 	}
 	logstore.Error(atf.CorrelationId, atf.InstanceId, "init err: ", err)
@@ -117,7 +119,7 @@ func (atf *AnsibleTaskFuture) Failure(err error) {
 func (atf *AnsibleTaskFuture) ShutDown() {
 }
 
-func checkTaskState(taskId int, ip string, instanceId, correlationId string) error {
+func checkTaskState(taskId int, ip string, instanceId, correlationId string, bizId int) error {
 	body := "{\"id\": %d}"
 	body = fmt.Sprintf(body, taskId)
 	logstore.Info(correlationId, instanceId, "check cotans http api request body")
@@ -156,6 +158,6 @@ func checkTaskState(taskId int, ip string, instanceId, correlationId string) err
 			return errors.New(errMsg)
 		}
 	}
-	dao.UpdateInstanceStatus(ip, models.InitTimeout)
+	dao.UpdateInstanceStatus(ip, models.InitTimeout, bizId)
 	return errors.New("Wait octans return success timeout")
 }

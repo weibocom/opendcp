@@ -134,14 +134,16 @@ var processBody = function(data,head,body){
         tr.append(td);
         td = '<td>' + ((v.type=='local')?'本地用户':v.type) + '</td>';
         tr.append(td);
+        td = '<td>' + v.mobile + '</td>';
+        tr.append(td);
         td = '<td>' + v.mail + '</td>';
         tr.append(td);
         switch(v.status){
-          case '0':
+          case 0:
             td = '<td><div><label class="tooltips" title="点击停用" onclick="return false;"><input type="checkbox" class="js-switch" checked onchange="switchs(\'off\',\'' + v.id + '\')"/> 启用</label></div></td>';
             tr.append(td);
             break;
-          case '1':
+          case 1:
             td = '<td><div><label class="tooltips" title="点击启用" onclick="return false;"><input type="checkbox" class="js-switch" onchange="switchs(\'on\',\'' + v.id + '\')"/> 停用</label></div></td>';
             tr.append(td);
             break;
@@ -339,6 +341,7 @@ var check=function(tab){
       }
       if($('#en').val()=='') disabled=true;
       if($('#cn').val()=='') disabled=true;
+      if($('#mobile').val()=='') disabled=true;
       if($('#mail').val()=='') disabled=true;
       if($('#status').val()=='') disabled=true;
       $("#btnCommit").attr('disabled',disabled);

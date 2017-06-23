@@ -33,6 +33,7 @@ const (
 //任务流
 type Flow struct {
 	Id     int    `json:"id" orm:"pk;auto"`
+	BizId  int    `json:"id""`
 	Name   string `json:"task_name" orm:"size(50);null"`
 	Status int    `json:"state"`
 	Pool   *Pool  `json:"pool_id" orm:"rel(fk);null;on_delete(set_null)"`
@@ -47,6 +48,7 @@ type Flow struct {
 
 type FlowBatch struct {
 	Id          int       `json:"id" orm:"pk;auto"`
+	BizId       int       `json:"id""`
 	Flow        *Flow     `json:"-" orm:"rel(fk);on_delete(cascade)"`
 	Status      int       `json:"status"`
 	Step        int       `json:"step"`

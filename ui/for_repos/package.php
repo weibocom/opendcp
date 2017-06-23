@@ -100,10 +100,21 @@ require_once('../include/navbar.php');
         <!-- /menu footer buttons -->
       </div>
     </div>
+    <!-- Tips navigation -->
+    <div class="top_nav">
 
+             <div class="nav_menu">
+                 <nav class="" role="navigation">
+                     <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;}">
+                         <div id="scroll_begin" style ="display: inline;"></div>
+                         <div id="scroll_end" style ="display: inline;"></div>
+                      <div>
+                 </nav>
+             </div>
+         </div>
     <!-- top navigation -->
     <div class="top_nav">
-      <div class="nav_menu">
+      <div class="nav_menu" style="margin-top: -10px">
         <nav class="" role="navigation">
           <div class="nav toggle">
             <a id="menu_toggle"><i class="fa fa-bars"></i></a>
@@ -209,7 +220,7 @@ require_once('../include/navbar.php');
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="myModalLabel">Loading ...</h4>
                           </div>
-                          <div class="modal-body" style="overflow:auto;" id="myModalBody">
+                          <div class="modal-body" style="overflow:auto;line-height:200%" id="myModalBody">
                             <p> </p>
                           </div>
                           <div class="modal-footer">
@@ -240,18 +251,18 @@ require_once('../include/navbar.php');
                     </div>
                   </form>
                   <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true">
+                    <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true" onclick ="closeRefresh()">
                       <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick ="closeRefresh()"><span aria-hidden="true">&times;</span></button>
                             <h4 class="modal-title" id="myViewModalLabel">Loading ...</h4>
                           </div>
                           <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
                             <p> </p>
                           </div>
                           <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick ="closeRefresh()">关闭</button>
                           </div>
                         </div>
                       </div>

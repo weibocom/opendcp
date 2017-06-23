@@ -33,12 +33,14 @@ type InfoViewController struct {
 
 func (c *InfoViewController) Get() {
 	project := c.GetString("projectName")
+	cluster := c.HarborProjectName()
 	c.Layout = "project.tpl"
 	c.TplName = "info.tpl"
 	// TODO check code
-	_, info := models.AppServer.GetProjectInfo(project)
+	_, info := models.AppServer.GetProjectInfo(cluster, project)
 
 	c.Data["project"] = project
+	c.Data["cluster"] = cluster
 	c.Data["name"] = info.Name
 	c.Data["createTime"] = info.CreateTime
 	c.Data["creator"] = info.Creator

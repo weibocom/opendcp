@@ -101,10 +101,21 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
         <!-- /menu footer buttons -->
       </div>
     </div>
+    <!-- Tips navigation -->
+                          <div class="top_nav">
 
+                              <div class="nav_menu">
+                                  <nav class="" role="navigation">
+                                      <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;}">
+                                          <div id="scroll_begin" style ="display: inline;"></div>
+                                          <div id="scroll_end" style ="display: inline;"></div>
+                                       <div>
+                                  </nav>
+                              </div>
+                          </div>
     <!-- top navigation -->
     <div class="top_nav">
-      <div class="nav_menu">
+      <div class="nav_menu" style="margin-top: -10px">
         <nav class="" role="navigation">
           <div class="nav toggle">
             <a id="menu_toggle"><i class="fa fa-bars"></i></a>
@@ -121,6 +132,22 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
                 <li><a onclick="login('logout')"><i class="fa fa-sign-out"></i> 退出</a></li>
               </ul>
             </li>
+              <li class="">
+                  <a onclick="getColudList()" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                      额度
+                      <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul id = "auotaCloud" class="dropdown-menu dropdown-usermenu pull-right">
+                      <li>
+                          Loading...
+                      </li>
+                  </ul>
+              </li>
+              <li class="">
+                  <a href="javascript:;" aria-expanded="false">
+                      <span id = "currentTime">2017/06/21 11:39:05<span>
+                  </a>
+              </li>
           </ul>
         </nav>
       </div>
@@ -389,7 +416,7 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
 <script src="../js/for_hubble/nginx_unit.js?_t=<?php echo date('U');?>"></script>
-
+<script src="../js/navicate.js?_t=<?php echo date('U');?>"></script>
 
 <!-- Custom Notification -->
 <script>
