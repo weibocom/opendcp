@@ -11,6 +11,7 @@ import (
 	"github.com/astaxie/beego"
 	"weibo.com/opendcp/jupiter/service/instance"
 	"fmt"
+	"strconv"
 )
 
 const BASE64Table = "IJjkKLMNO567PQX12RVW3YZaDEFGbcdefghiABCHlSTUmnopqrxyz04stuvw89+/"
@@ -94,6 +95,42 @@ func ComputeCost (time float64, instance models.Instance) ( float64 ) {
 
 }
 
+func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (float64) {
+	var rt1 time.Time = begin;
+	var rt2 time.Time = end;
+	var totalHour int = 0;
+	if begin.Minute() !=0 || begin.Second() !=0  {
+		totalHour ++
+		m1 := begin.Minute()
+		s1 := begin.Second()
+		cm1 := 59-m1
+		cs1 := 60-s1
+		var totalS int = cm1*60 + cs1
+		str := strconv.Itoa(totalS)+"s"
+		d,_ := time.ParseDuration(str)
+		rt1 =begin.Add(d)
+
+	}
+	if end.Minute() !=0 || end.Second() !=0  {
+		totalHour++
+		m2 := end.Minute()
+		s2 := end.Second()
+		var totalS int = m2*60 + s2
+		str := "-"+strconv.Itoa(totalS)+"s"
+		d,_ := time.ParseDuration(str)
+		rt2 =end.Add(d)
+
+	}
+	durationH := rt2.Sub(rt1).Hours()
+	totalHour = totalHour+int(durationH)
+
+	cpuNum := instance.Cpu
+	if cpuNum == 0 {
+		cpuNum = 1
+	}
+	return float64(totalHour*cpuNum)
+}
+
 /**
 生成额度信息
  */
@@ -148,7 +185,7 @@ func GenerateOneCost(biz_id int) error {
 
 	//3、计算额度并且更新库表
 	now := time.Now()
-	var duration time.Duration
+	//var duration time.Duration
 
 	spendMap := make(map[string]float64)
 
@@ -160,7 +197,8 @@ func GenerateOneCost(biz_id int) error {
 		}
 
 		ctime := instance.CreateTime
-		if instance.Status == models.Deleted {
+		var rtime time.Time
+		/*if instance.Status == models.Deleted {
 			rtime := instance.ReturnTime
 			duration = rtime.Sub(ctime)
 		}else{
@@ -168,7 +206,14 @@ func GenerateOneCost(biz_id int) error {
 
 		}
 		spendTime := duration.Minutes()
-		cost := ComputeCost(spendTime,instance)
+		cost := ComputeCost(spendTime,instance)*/
+		if instance.Status == models.Deleted {
+			rtime = instance.ReturnTime
+		}else {
+			rtime = now
+		}
+		cost := ComputeCostNew(ctime,rtime,instance)
+
 		if v, ok := spendMap[provider]; ok {
 			spendMap[provider] = v+cost
 		}else{
