@@ -81,7 +81,7 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 
 
 //将instanceType对应OpenStack中的flavor
-//openstack中的获取InstanceType方法待做，需要与创建机型模板那边联动
+//openstack中的获取InstanceType方法待做，需要与创建机型模板那边联动【已解决】
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
 	
@@ -104,6 +104,10 @@ func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 	return instanceTypesList, err
 }
 
+func (driver openstackProvider) GetInstanceType(key string) string{
+
+	return instanceTypesInOpenStack[key]
+}
 func (driver openstackProvider) ListSecurityGroup(regionId string, vpcId string) (*models.SecurityGroupsResp, error){
 	return nil, nil
 }
@@ -158,9 +162,7 @@ func (driver openstackProvider) ListSubnets(zoneId string, vpcId string) (*model
 	return nil, nil
 }
 
-func (driver openstackProvider) GetInstanceType(key string) string{
-	return ""
-}
+
 
 func (driver openstackProvider) ListDiskCategory() []string{
 	return nil
