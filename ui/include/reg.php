@@ -58,7 +58,7 @@ class reg{
           $sqlWhere.=($sqlWhere)?" OR {$field} LIKE ?":" WHERE {$field} LIKE ?";
         }
       }
-      $sql='SELECT * FROM ' . $this->table . $sqlWhere.' ORDER BY id LIMIT '.$pageBegin.','.$myPageSize.';';
+      $sql='SELECT * FROM ' . $this->table . $sqlWhere.' ORDER BY id DESC LIMIT '.$pageBegin.','.$myPageSize.';';
     }
     $stmt = $db->prepare($sql);
     if($id){
