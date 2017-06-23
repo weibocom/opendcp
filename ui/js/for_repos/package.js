@@ -463,7 +463,7 @@ var twiceCheck=function(action,idx,desc){
             modalTitle=(idx)?'项目配置 - '+idx:'创建项目';
             modalBody=getConfigDep(idx);
             modalBody+='<input type="hidden" id="page_action" name="page_action" value="update">';
-            btnDisable=true;
+            //btnDisable=true;
             break;
           case 'del':
             modalTitle='删除项目';
