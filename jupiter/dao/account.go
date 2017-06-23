@@ -41,8 +41,7 @@ func GetAccountById(biz_id int, id int64) (*models.Account, error) {
 func GetAccountByProvider(biz_id int, provider string) (*models.Account, error) {
 	o := GetOrmer()
 	var account models.Account
-	err := o.QueryTable(ACCOUNT_TABLE).Filter("biz_id",biz_id).Filter("provider",provider).
-		Filter("keyid__isnull", false).Exclude("keyid","").One(&account)
+	err := o.QueryTable(ACCOUNT_TABLE).Filter("biz_id",biz_id).Filter("provider",provider).One(&account)
 	if err != nil {
 		return nil, err
 	}
