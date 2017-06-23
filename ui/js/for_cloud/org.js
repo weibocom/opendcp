@@ -1175,9 +1175,9 @@ var switchToAliyun=function () {
     if($('#DataDiskSize').parent().parent().attr('class').indexOf('hidden')!=-1) $('#DataDiskSize').parent().parent().removeClass('hidden');
     if($('#DataDiskNum').parent().parent().attr('class').indexOf('hidden')!=-1) $('#DataDiskNum').parent().parent().removeClass('hidden');
     //隐藏
-    if($('select[name="NetworkOP"]').parent().parent().attr('class').indexOf('hidden')==-1) $('select[name="NetworkOP"]').parent().parent().addClass('hidden');
-    if($('select[name="AvabilityZone"]').parent().parent().attr('class').indexOf('hidden')==-1) $('select[name="AvabilityZone"]').parent().parent().addClass('hidden');
-    if($('select[name="DiskType"]').parent().parent().attr('class').indexOf('hidden')==-1) $('select[name="DiskType"]').parent().parent().addClass('hidden');
+    if($('#NetworkOP').parent().parent().attr('class').indexOf('hidden')==-1) $('#NetworkOP').parent().parent().addClass('hidden');
+    if($('#AvalibilityZone').parent().parent().attr('class').indexOf('hidden')==-1) $('#AvalibilityZone').parent().parent().addClass('hidden');
+    if($('#DiskType').parent().parent().attr('class').indexOf('hidden')==-1) $('#DiskType').parent().parent().addClass('hidden');
 }
 
 var switchToOpenStack=function () {
@@ -1197,8 +1197,8 @@ var switchToOpenStack=function () {
     if($('#DataDiskNum').parent().parent().attr('class').indexOf('hidden')==-1) $('#DataDiskNum').parent().parent().addClass('hidden');
     //显示
 
-    if($('select[name="NetworkOP"]').parent().parent().attr('class').indexOf('hidden')!=-1) $('select[name="NetworkOP"]').parent().parent().removeClass('hidden');
-    if($('select[name="AvabilityZone"]').parent().parent().attr('class').indexOf('hidden')!=-1) $('select[name="AvabilityZone"]').parent().parent().removeClass('hidden');
-    if($('select[name="DiskType"]').parent().parent().attr('class').indexOf('hidden')!=-1) $('select[name="DiskType"]').parent().parent().removeClass('hidden');
+    if($('#NetworkOP').parent().parent().attr('class').indexOf('hidden')!=-1) $('#NetworkOP').parent().parent().removeClass('hidden');
+    if($('#AvalibilityZone').parent().parent().attr('class').indexOf('hidden')!=-1) $('#AvalibilityZone').parent().parent().removeClass('hidden');
+    if($('#DiskType').parent().parent().attr('class').indexOf('hidden')!=-1) $('#DiskType').parent().parent().removeClass('hidden');
 
 }
