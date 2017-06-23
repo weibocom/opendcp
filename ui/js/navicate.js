@@ -6,8 +6,9 @@ var usedRate = 0.9;
 var scrollTips = null;
 
 $(document).ready(function() {
-    //动态刷新时间
-    setInterval(getDate,1000);
+    //动态刷新时间getCurrentDate
+    getCurrentDate();
+    setInterval(getCurrentDate,1000);
     getColudList();
     //每小时更新一下列表
     setInterval(getColudList,1000*60*60);
@@ -38,7 +39,7 @@ var ScrollTextLeft = function(){
     }
 };
 //获取当前时间
-var getDate = function(){
+var getCurrentDate = function(){
     var d=new Date();
     var month=d.getMonth()+1;
     var day=d.getDate();
