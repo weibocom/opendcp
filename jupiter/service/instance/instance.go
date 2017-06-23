@@ -617,10 +617,17 @@ func DeleteInstances(instances []models.Instance, bizId int) (err error)  {
 
 
 func IsAccountExist(bizId int, provider string) bool {
-	_, err := dao.GetAccountByProvider(bizId, provider)
+	account, err := dao.GetAccountByProvider(bizId, provider)
 	if err != nil {
 		beego.Error(err)
 		return false
+	}
+	if account == nil {
+		return false
+	}else{
+		if account.KeyId == ""  || account.KeySecret == "" {
+			return false
+		}
 	}
 	return true
 }
