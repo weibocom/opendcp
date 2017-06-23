@@ -102,17 +102,17 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
       </div>
     </div>
     <!-- Tips navigation -->
-                              <div class="top_nav">
+    <div class="top_nav">
 
-                                  <div class="nav_menu">
-                                      <nav class="" role="navigation">
-                                          <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;}">
-                                              <div id="scroll_begin" style ="display: inline;"></div>
-                                              <div id="scroll_end" style ="display: inline;"></div>
-                                           <div>
-                                      </nav>
-                                  </div>
-                              </div>
+       <div class="nav_menu">
+          <nav class="" role="navigation">
+             <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;">
+                <div id="scroll_begin" style ="display: inline;"></div>
+                <div id="scroll_end" style ="display: inline;"></div>
+             </div>
+          </nav>
+       </div>
+    </div>
     <!-- top navigation -->
     <div class="top_nav">
       <div class="nav_menu" style="margin-top: -10px">
