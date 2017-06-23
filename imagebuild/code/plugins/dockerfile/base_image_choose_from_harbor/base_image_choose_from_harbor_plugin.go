@@ -57,6 +57,7 @@ func (p *BaseImageChooseFromHarborPlugin) Process(params map[string]interface{},
 }
 
 func (p *BaseImageChooseFromHarborPlugin) BaseImageList(params map[string]interface{}, resp *interface{}) error {
+	var cluster string = params["cluster"].(string)
 	allImages := make([]string, 0)
 	harborAddress := util.DefaultValue(params, "harborAddress").(string)
 	if harborAddress == "" {
@@ -102,11 +103,16 @@ func (p *BaseImageChooseFromHarborPlugin) BaseImageList(params map[string]interf
 		return errors.New("login harbor error")
 	}
 
-	projects := p.projects(harborAddress, sessionId)
+	projects := p.projects(harborAddress, sessionId, cluster)
 
 	// 查询每个project中的image
 	util.LogInit("/tmp/imagebuild.log")
 	for _, project := range projects {
+		log.Info("Form harbor get projectName: "+string(project["name"].(string)))
+		if strings.Compare(string(project["name"].(string)), cluster) != 0{
+			continue
+		}
+		log.Info("Form harbor get projectName:"+string(project["name"].(string))+ " == cluster: " + cluster)
 		id := strconv.Itoa(int(project["project_id"].(float64)))
 		images := p.images(harborAddress, id, sessionId)
 		for _, image := range images {
@@ -142,11 +148,11 @@ func (p *BaseImageChooseFromHarborPlugin) doLogin(harborAddress string, user str
 	return ""
 }
 
-func (p *BaseImageChooseFromHarborPlugin) projects(harborAddress string, sessionId string) []map[string]interface{} {
+func (p *BaseImageChooseFromHarborPlugin) projects(harborAddress string, sessionId string, cluster string) []map[string]interface{} {
 
 	//　查询harbor中的project
 	projects := make([]map[string]interface{}, 0)
-	urlToGetProjectsInHarbor := harborAddress + "/api/projects?is_public=0&project_name=base"
+	urlToGetProjectsInHarbor := harborAddress + "/api/projects?is_public=0&project_name=" + url.QueryEscape(cluster)
 
 	client := http.Client{}
 	req, error := http.NewRequest("GET", urlToGetProjectsInHarbor, nil)
