@@ -111,7 +111,7 @@ require_once('../include/navbar.php');
                   </div>
               </nav>
           </div>
-          <    /div>
+      </div>
     <!-- top navigation -->
     <div class="top_nav">
       <div class="nav_menu" style="margin-top: -10px">
