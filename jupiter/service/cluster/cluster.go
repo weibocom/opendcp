@@ -53,7 +53,12 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 	instanceTypeModel := cluster.InstanceType
 	validNumber := regexp.MustCompile("[0-9]")
 	cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
-	cluster.InstanceType = providerDriver.GetInstanceType(instanceTypeModel)
+	//在openstack中，Flavor的名称就是对应的类型，不需要再进行转换
+	if(cluster.Provider == "aliyun") {
+		cluster.InstanceType = providerDriver.GetInstanceType(instanceTypeModel)
+	}else if(cluster.Provider == "openstack"){
+		cluster.FlavorId = providerDriver.GetInstanceType(instanceTypeModel)
+	}
 	cpu, _ := strconv.Atoi(cpuAndRam[0])
 	ram, _ := strconv.Atoi(cpuAndRam[1])
 	cluster.Cpu = cpu

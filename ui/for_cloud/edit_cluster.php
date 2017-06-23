@@ -60,19 +60,17 @@
                     </div>
                 </div>
                 <div class="form-group hidden">
-                    <label for="Network" class="col-sm-2 control-label">网络</label>
+                    <label for="NetworkOP" class="col-sm-2 control-label">网络</label>
                     <div class="col-sm-10">
-                        <select class="form-control" id="Network" name="Network" onchange="" disabled>
+                        <select class="form-control" id="NetworkOP" name="NetworkOP" onchange="check()" disabled>
                             <option value="">请选择</option>
-                            <option value="">provider</option>
-                            <option value="">provider2</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group hidden">
                     <label for="AvabilityZone" class="col-sm-2 control-label">可用域</label>
                     <div class="col-sm-10">
-                        <select class="form-control" id="AvabilityZone" name="AvabilityZone" onchange="check()" >
+                        <select class="form-control" id="AvalibilityZone" name="AvalibilityZone" onchange="check()" >
                             <option value="">请选择</option>
                             <option value="nova:75-29-208-yf-core.jpool.sinaimg.cn">nova</option>
                         </select>
