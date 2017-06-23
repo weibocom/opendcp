@@ -232,7 +232,7 @@ var change=function(){
       //执行结果提示
       if(action=='audit'){
         if(data.code==0){
-          pageNotify('success','【'+actionDesc+'】操作成功！',data.msg, false);
+          pageNotify('success','【'+actionDesc+'】操作成功！',data.msg);
         }else{
           pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg, false);
         }

@@ -96,10 +96,10 @@ require_once('include/navbar.php');
 
           <div class="nav_menu">
               <nav class="" role="navigation">
-                  <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;}">
+                  <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;">
                       <div id="scroll_begin" style ="display: inline;"></div>
                       <div id="scroll_end" style ="display: inline;"></div>
-                   <div>
+                   </div>
               </nav>
           </div>
       </div>
