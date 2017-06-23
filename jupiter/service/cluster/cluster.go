@@ -86,10 +86,20 @@ func DeleteCluster(clusterId int64, bizId int) (bool, error) {
 func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
 	var providerDriver provider.ProviderDriver
 	var err error
+	var isTest int
 	if instance.IsAccountExist(cluster.BizId, cluster.Provider) {
 		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+		isTest = 0
 	} else {
+		costs, err := instance.GetCost(cluster.BizId, cluster.Provider)
+		if err != nil {
+			return nil, err
+		}
+		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
+			return nil, errors.New("The credit of account has over!")
+		}
 		providerDriver, err = provider.New(cluster.Provider)
+		isTest = 1
 	}
 	if err != nil {
 		return nil, err
@@ -104,7 +114,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	beego.Info("The instance ids is", instanceIds)
 	c := make(chan int)
 	for i := 0; i < len(instanceIds); i++ {
-		go func(i int) {
+		go func(i int, is_test int) {
 			defer func() {
 				if r := recover(); r != nil {
 					logstore.Error(correlationId, instanceIds[i], "Recovered from err:", r)
@@ -131,6 +141,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 			ins.InstanceType = cluster.InstanceType
 			ins.Status = models.Pending
 			ins.BizId = cluster.BizId
+			ins.IsTest = is_test
 			if err := dao.InsertInstance(ins); err != nil {
 				logstore.Error(correlationId, instanceIds[i], "insert instance to db error:", err)
 				c <- i
@@ -138,7 +149,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 			startFuture := future.NewStartFuture(instanceIds[i], cluster.Provider, true, ins.PrivateIpAddress, correlationId, cluster.BizId)
 			future.Exec.Submit(startFuture)
 			c <- i
-		}(i)
+		}(i,isTest)
 	}
 	for i := 0; i < len(instanceIds); i++ {
 		select {

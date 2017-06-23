@@ -47,6 +47,8 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	var err error
 	if IsAccountExist(cluster.BizId, cluster.Provider) {
 		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+		isTest = 0
+	} else {
 		costs, err := GetCost(cluster.BizId, cluster.Provider)
 		if err != nil {
 			return "", err
@@ -54,8 +56,6 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		if GreaterOrEqual(costs["spent"], costs["credit"]) {
 			return "", errors.New("The credit of account has over!")
 		}
-		isTest = 0
-	} else {
 		providerDriver, err = provider.New(cluster.Provider)
 		isTest = 1
 	}
@@ -75,6 +75,7 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 	ins.BizId = cluster.BizId
 	ins.CreateTime = time.Now()
 	ins.IsTest = isTest
+	beego.Info(ins)
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
