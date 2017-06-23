@@ -47,9 +47,11 @@ func (c *PluginExtensionInterfaceController) Post() {
 		c.ServeJSON(true)
 		return
 	}
-
+	cluster := c.HarborProjectName();
 	// 调用插件方法
 	paramsNew := util.Transform(params)
+	//设置cluster
+	paramsNew["cluster"] = cluster
 
 	code, ret := models.AppServer.CallExtensionInterface(plugin, method, paramsNew)
 
