@@ -229,7 +229,8 @@ var change=function(step){
         case 'insert':
             actionDesc='添加';
             postData.Network={};
-            if($('$Provider').val()=='aliyun') {
+            postData.Zone={};
+            if($('#Provider').val()=='aliyun') {
                 switch (postData.NetworkType) {
                     case 'common':
                         if (typeof postData.InternetChargeType != 'undefined') {
@@ -260,21 +261,28 @@ var change=function(step){
                     postData.Network.SecurityGroupId = postData.SecurityGroupId;
                     delete postData.SecurityGroupId;
                 }
-            }else if($('$Provider').val()=='openstack'){
-                postData.Network.VpcId = postData.Network.VpcId;
-                delete postData.VpcId;
+                if(typeof postData.ZoneName != 'undefined'){
+                    postData.Zone.ZoneName=postData.ZoneName;
+                    delete postData.ZoneName;
+                }
+                if(typeof postData.RegionName != 'undefined'){
+                    postData.Zone.RegionName=postData.RegionName;
+                    delete postData.RegionName;
+                }
+                if(typeof postData.DataDiskNum != 'undefined') postData.DataDiskNum=parseInt(postData.DataDiskNum);
+                if(typeof postData.DataDiskSize != 'undefined') postData.DataDiskSize=parseInt(postData.DataDiskSize);
+
+            }else if($('#Provider').val()=='openstack'){
+                postData.Network.VpcId = postData.NetworkOP;
+                delete postData.NetworkOP;
+                postData.Zone.ZoneName=postData.AvalibilityZone;
+
+                postData.InstanceType=postData.DiskType;
+
             }
-            postData.Zone={};
-            if(typeof postData.ZoneName != 'undefined'){
-                postData.Zone.ZoneName=postData.ZoneName;
-                delete postData.ZoneName;
-            }
-            if(typeof postData.RegionName != 'undefined'){
-                postData.Zone.RegionName=postData.RegionName;
-                delete postData.RegionName;
-            }
-            if(typeof postData.DataDiskNum != 'undefined') postData.DataDiskNum=parseInt(postData.DataDiskNum);
-            if(typeof postData.DataDiskSize != 'undefined') postData.DataDiskSize=parseInt(postData.DataDiskSize);
+            delete  postData.DiskType;
+            delete postData.AvalibilityZone;
+
             delete postData['NetworkType'];
             break;
         case 'update':
@@ -454,8 +462,7 @@ var check=function(tab){
                 if (DataDiskNum == '' || DataDiskNum < 1 || DataDiskNum > 4) disabled = true;
                 if ($('#DataDiskCategory').val() == '') disabled = true;
             }else if($('#Provider').val()=='openstack'){
-                console.log('check openstack')
-                if($('#Network').val() == '') disabled =true;
+                if($('#NetworkOP').val() == '') disabled =true;
                 if($('#AvabilityZone').val() == '') disabled=true
                 if($('#ImageId').val()=='') disabled=true
                 if($('#DiskType').val()=='') disabled=true
@@ -556,7 +563,7 @@ var updateSelect=function(name,idx){
         case 'VpcId':
             data=cache.vpc;
             break;
-        case 'Network':
+        case 'NetworkOP':
             data=cache.vpc;
             break;
         case 'SubnetId':
@@ -608,10 +615,10 @@ var updateSelect=function(name,idx){
                     tSelect.append('<option value="' + v.VpcId + '">' + v.VpcId + '</option>');
                 });
                 break;
-            case 'Network':
+            case 'NetworkOP':
                 tSelect.removeAttr("disabled");
                 $.each(data,function(k,v){
-                    tSelect.append('<option value="' + v.State + '">' + v.State + '</option>');
+                    tSelect.append('<option value="' + v.VpcId + '">' + v.State + '</option>');
                 });
                 break;
             case 'SubnetId':
@@ -1018,7 +1025,7 @@ var getVpcId=function(){
         var idx = $('#RegionName').val();
         if (!idx) return false;
     }else if($('#Provider').val()=='openstack'){
-        tSelect='Network'
+        tSelect='NetworkOP'
         var idx=1;
     }
     var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
@@ -1168,9 +1175,9 @@ var switchToAliyun=function () {
     if($('#DataDiskSize').parent().parent().attr('class').indexOf('hidden')!=-1) $('#DataDiskSize').parent().parent().removeClass('hidden');
     if($('#DataDiskNum').parent().parent().attr('class').indexOf('hidden')!=-1) $('#DataDiskNum').parent().parent().removeClass('hidden');
     //隐藏
-    if($('select[name="Network"]').parent().parent().attr('class').indexOf('hidden')==-1) $('select[name="Network"]').parent().parent().addClass('hidden');
-    if($('select[name="AvabilityZone"]').parent().parent().attr('class').indexOf('hidden')==-1) $('select[name="AvabilityZone"]').parent().parent().addClass('hidden');
-    if($('select[name="DiskType"]').parent().parent().attr('class').indexOf('hidden')==-1) $('select[name="DiskType"]').parent().parent().addClass('hidden');
+    if($('#NetworkOP').parent().parent().attr('class').indexOf('hidden')==-1) $('#NetworkOP').parent().parent().addClass('hidden');
+    if($('#AvalibilityZone').parent().parent().attr('class').indexOf('hidden')==-1) $('#AvalibilityZone').parent().parent().addClass('hidden');
+    if($('#DiskType').parent().parent().attr('class').indexOf('hidden')==-1) $('#DiskType').parent().parent().addClass('hidden');
 }
 
 var switchToOpenStack=function () {
@@ -1190,8 +1197,8 @@ var switchToOpenStack=function () {
     if($('#DataDiskNum').parent().parent().attr('class').indexOf('hidden')==-1) $('#DataDiskNum').parent().parent().addClass('hidden');
     //显示
 
-    if($('select[name="Network"]').parent().parent().attr('class').indexOf('hidden')!=-1) $('select[name="Network"]').parent().parent().removeClass('hidden');
-    if($('select[name="AvabilityZone"]').parent().parent().attr('class').indexOf('hidden')!=-1) $('select[name="AvabilityZone"]').parent().parent().removeClass('hidden');
-    if($('select[name="DiskType"]').parent().parent().attr('class').indexOf('hidden')!=-1) $('select[name="DiskType"]').parent().parent().removeClass('hidden');
+    if($('#NetworkOP').parent().parent().attr('class').indexOf('hidden')!=-1) $('#NetworkOP').parent().parent().removeClass('hidden');
+    if($('#AvalibilityZone').parent().parent().attr('class').indexOf('hidden')!=-1) $('#AvalibilityZone').parent().parent().removeClass('hidden');
+    if($('#DiskType').parent().parent().attr('class').indexOf('hidden')!=-1) $('#DiskType').parent().parent().removeClass('hidden');
 
 }
