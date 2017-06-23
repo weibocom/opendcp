@@ -224,14 +224,14 @@
               updateValidate();
             }else{
               $("#btnCommit").attr('disabled',true).html('同意协议并提交');
-              pageNotify('error','操作失败！','错误信息：'+data.msg, false);
+              pageNotify('error','操作失败！','错误信息：'+data.msg);
               updateValidate();
             }
             NProgress.done();
           },
           error: function (){
             $("#btnCommit").attr('disabled',true).html('同意协议并提交');
-            pageNotify('error','操作失败！','错误信息：接口不可用', false);
+            pageNotify('error','操作失败！','错误信息：接口不可用');
             updateValidate();
             NProgress.done();
           }
