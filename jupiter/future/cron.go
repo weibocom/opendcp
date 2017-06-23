@@ -85,7 +85,7 @@ func getNextTickDuration(hour, minute,interval int ) time.Duration {
 	now := time.Now()
 	nextTick := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, time.Local)
 	for ;!nextTick.After(now); {  		//如果任务启动时间早于当前时间，更新启动时间
-		nextTick = nextTick.Add(time.Duration(interval)*time.Hour)
+		nextTick = nextTick.Add(time.Duration(interval)*time.Minute)
 	}
 	beego.Info("The cron task execute next time is ", nextTick)
 	return nextTick.Sub(time.Now())

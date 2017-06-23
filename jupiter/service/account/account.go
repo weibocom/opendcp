@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/astaxie/beego"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"fmt"
 )
 
 const BASE64Table = "IJjkKLMNO567PQX12RVW3YZaDEFGbcdefghiABCHlSTUmnopqrxyz04stuvw89+/"
@@ -97,6 +98,7 @@ func ComputeCost (time float64, instance models.Instance) ( float64 ) {
 生成额度信息
  */
 func GenerateMultiCost() error{
+	beego.Info(fmt.Sprintf("###########begin compute cost for all biz"))
 	instances,err := dao.GetAllBIdInInstance()
 	if err != nil {
 		beego.Error(err)
@@ -115,11 +117,13 @@ func GenerateMultiCost() error{
 			return err
 		}
 	}
+	beego.Info(fmt.Sprintf("###########finish compute cost for all biz"))
 	return nil
 
 }
 
 func GenerateOneCost(biz_id int) error {
+	beego.Info(fmt.Sprintf("#######begin compute cost for biz %d",biz_id))
 	//1、获取此业务方的账户信息
 	accounts,err := dao.GetAllInAccount(biz_id)
 	if err != nil {
@@ -134,6 +138,7 @@ func GenerateOneCost(biz_id int) error {
 			existAccount[account.Provider] = account
 		}
 	}
+	beego.Info(fmt.Sprintf("$$$$exist account for biz %d,content is %v",biz_id,existAccount))
 	//2、获取此业务方的所有实例
 	instances,err := dao.GetAllInstance(biz_id)
 	if err != nil {
@@ -185,6 +190,7 @@ func GenerateOneCost(biz_id int) error {
 			return  err
 		}
 		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
+			beego.Info(fmt.Sprintf("$$$$delete instance for biz %d from %s",biz_id,k))
 			instances, err := dao.GetTestingInstances(biz_id, k)
 			if err != nil {
 				return  err
@@ -193,7 +199,8 @@ func GenerateOneCost(biz_id int) error {
 		}
 
 	}
-	beego.Info(spendMap)
+	beego.Info(fmt.Sprintf("$$$$compute result for biz %d,content is %v",biz_id,spendMap))
+	beego.Info(fmt.Sprintf("#######finish compute cost for biz %d",biz_id))
 	return nil
 
 }
