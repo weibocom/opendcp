@@ -128,6 +128,7 @@ type Instance struct {
 	PrivateKey         string `orm:"type(text);null" json:"-"`
 	BizId		   int
 	ReturnTime         time.Time `orm:"null"`
+	IsTest             int
 }
 
 type SshKey struct {

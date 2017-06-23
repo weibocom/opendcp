@@ -22,7 +22,6 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/instance"
-	"weibo.com/opendcp/jupiter/service/account"
 )
 
 const (
@@ -53,7 +52,7 @@ func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, c
 func (sf *StartFuture) Run() error {
 	var providerDriver provider.ProviderDriver
 	var err error
-	if account.IsAccountExist(sf.BizId, sf.ProviderName) {
+	if instance.IsAccountExist(sf.BizId, sf.ProviderName) {
 		providerDriver, err = provider.NewByAccount(sf.BizId, sf.ProviderName)
 	} else {
 		providerDriver, err = provider.New(sf.ProviderName)

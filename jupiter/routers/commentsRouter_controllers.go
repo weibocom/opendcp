@@ -33,6 +33,7 @@ func init() {
 			Router: `/:provider`,
 			AllowHTTPMethods: []string{"delete"},
 			Params: nil})
+
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"],
 		beego.ControllerComments{
 			Method: "UpdateAccount",

@@ -6,8 +6,10 @@ import (
 	"weibo.com/opendcp/jupiter/service/account"
 	"weibo.com/opendcp/jupiter/models"
 	"encoding/json"
+	"weibo.com/opendcp/jupiter/service/instance"
 	"io/ioutil"
 )
+
 
 type AccountController struct {
 	BaseController
@@ -16,26 +18,26 @@ type AccountController struct {
 // @Title List accounts.
 // @Description list all accounts.
 // @router / [get]
-func (accountController *AccountController) GetAllAccounts()  {
-	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
+func (ac *AccountController) GetAllAccounts()  {
+	bizId := ac.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
 		beego.Error("Get X-Biz-ID err!")
-		accountController.RespInputError()
+		ac.RespInputError()
 		return
 	}
 	accounts, err := account.ListAccounts(bid)
 	if err != nil {
 		beego.Error("Get all accounts err: ", err)
-		accountController.RespServiceError(err)
+		ac.RespServiceError(err)
 		return
 	}
 
 	resp := ApiResponse{}
 	resp.Content = accounts
-	accountController.ApiResponse = resp
-	accountController.Status = SERVICE_SUCCESS
-	accountController.RespJsonWithStatus()
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
 }
 
 // @Title Get a account.
@@ -43,94 +45,109 @@ func (accountController *AccountController) GetAllAccounts()  {
 // @Success 200 {object} models.Account
 // @Failure 403 body is empty
 // @router /:provider [get]
-func (accountController *AccountController) GetAccountInfo()  {
-	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
+func (ac *AccountController) GetAccountInfo()  {
+	bizId := ac.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
 		beego.Error("Get X-Biz-ID err!")
-		accountController.RespInputError()
+		ac.RespInputError()
 		return
 	}
-	provider := accountController.GetString(":provider")
+	provider := ac.GetString(":provider")
 	theAccount, err := account.GetAccount(bid, provider)
 	if err != nil {
 		beego.Error("Get account info err: ", err)
-		accountController.RespServiceError(err)
+		ac.RespServiceError(err)
 		return
 	}
 
 	resp := ApiResponse{}
 	resp.Content = theAccount
-	accountController.ApiResponse = resp
-	accountController.Status = SERVICE_SUCCESS
-	accountController.RespJsonWithStatus()
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
 }
 
 // @Title Create account
 // @Description Create account.
 // @router / [post]
-func (accountController *AccountController) CreateAccount() {
-	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
+func (ac *AccountController) CreateAccount() {
+	bizId := ac.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId == "" || err != nil {
 		beego.Error("Get X-Biz-ID err!")
-		accountController.RespInputError()
+		ac.RespInputError()
 		return
 	}
 
 	var  theAccount models.Account
-	body := accountController.Ctx.Input.RequestBody
+	body := ac.Ctx.Input.RequestBody
 	err = json.Unmarshal(body, &theAccount)
 	if err != nil {
 		beego.Error("Could parse request before the request: ", err)
-		accountController.RespInputError()
+		ac.RespInputError()
 		return
 	}
 	theAccount.BizId = bid
 
+	instances, err := instance.ListTestingInstances(bid, theAccount.Provider)
+	if err != nil {
+		beego.Error("Get testing instances err: ", err)
+		ac.RespServiceError(err)
+		return
+	}
+	beego.Warn("Create account: ", len(instances))
+
+	err = instance.DeleteInstances(instances, bid)
+	if err != nil {
+		beego.Error("Delete testing instances err: ", err)
+		ac.RespServiceError(err)
+		return
+	}
+
 	id, err := account.CreateAccount(&theAccount)
 	if err != nil {
 		beego.Error("Create account err: ", err)
-		accountController.RespServiceError(err)
+		ac.RespServiceError(err)
 		return
 	}
 
 	resp := ApiResponse{}
 	resp.Content = id
-	accountController.ApiResponse = resp
-	accountController.Status = SERVICE_SUCCESS
-	accountController.RespJsonWithStatus()
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
 }
 
 // @Title Delete account
 // @Description Delete account.
 // @router /:provider [delete]
-func (accountController *AccountController) DeleteAccount()  {
-	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
+func (ac *AccountController) DeleteAccount()  {
+	bizId := ac.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
 	if bizId=="" || err != nil {
 		beego.Error("Get X-Biz-ID err!")
-		accountController.RespInputError()
+		ac.RespInputError()
 		return
 	}
-	provider := accountController.GetString(":provider")
+	provider := ac.GetString(":provider")
 	isDeleted, err := account.DeleteAccount(bid, provider)
 	if err != nil {
 		beego.Error("Get account info err: ", err)
-		accountController.RespServiceError(err)
+		ac.RespServiceError(err)
 		return
 	}
 
 	resp := ApiResponse{}
 	resp.Content = isDeleted
-	accountController.ApiResponse = resp
-	accountController.Status = SERVICE_SUCCESS
-	accountController.RespJsonWithStatus()
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
 }
 
 // @Title update account
 // @Description update account.
-// @router /update
+// @router /update [post]
 func (accountController *AccountController) UpdateAccount()  {
 	bizId := accountController.Ctx.Input.Header("X-Biz-ID")
 	bid, err := strconv.Atoi(bizId)
@@ -188,7 +205,7 @@ func (ac *AccountController) GetCost() {
 
 	provider := ac.GetString("provider")
 
-	cost, err := account.GetCost(bid, provider)
+	cost, err := instance.GetCost(bid, provider)
 	if err != nil {
 		beego.Error("Get cost err: ", err)
 		ac.RespServiceError(err)
@@ -215,7 +232,7 @@ func (ac *AccountController) IsExist() {
 	}
 
 	provider := ac.GetString("provider")
-	isExist := account.IsAccountExist(bid, provider)
+	isExist := instance.IsAccountExist(bid, provider)
 
 	resp := ApiResponse{}
 	resp.Content = isExist
