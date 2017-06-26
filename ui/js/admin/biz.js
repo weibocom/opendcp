@@ -145,9 +145,8 @@ var processBody = function(data,head,body){
             break;
         }
         var btnAdd='',btnEdit='',btnDel='';
-        btnEdit = '<a class="text-primary tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_' + tab + '.php?action=edit&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
         btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.name+'\')"><i class="fa fa-trash-o"></i></a>';
-        td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + ' ' + btnDel + '</div></td>';
+        td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnDel + '</div></td>';
         tr.append(td);
 
         body.append(tr);
