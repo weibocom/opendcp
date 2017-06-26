@@ -59,7 +59,7 @@
     "Records":
     [
       "INSERT INTO service(name,`desc`,service_type,docker_image,cluster_id) VALUES('sd-nginx','服务发现-Nginx服务','nginx','-',%d)",
-      "INSERT INTO service(name,`desc`,service_type,docker_image,cluster_id) VALUES('my_server','my_server','php','registry.cn-beijing.aliyuncs.com/opendcp/nginx',%d)"
+      "INSERT INTO service(name,`desc`,service_type,docker_image,cluster_id) VALUES('my_server','my_server','JAVA','registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest',%d)"
 
     ]
   },
@@ -68,7 +68,7 @@
     "Records":
     [
       "INSERT INTO pool(name,`desc`,vm_type,sd_id,tasks,service_id) VALUES('sd-nginx-aliyun','服务发现nginx',%d,%d,'{\"deploy\":%d,\"expand\":%d,\"shrink\":%d}',%d)",
-      "INSERT INTO pool(name,`desc`,vm_type,sd_id,tasks,service_id) VALUES('my_server_nginx','使用nginx服务发现',%d,%d,'{\"deploy\":%d,\"expand\":%d,\"shrink\":%d}',%d)"
+      "INSERT INTO pool(name,`desc`,vm_type,sd_id,tasks,service_id) VALUES('my_server_web','Java Web服务',%d,%d,'{\"deploy\":%d,\"expand\":%d,\"shrink\":%d}',%d)"
     ]
   }
 ]
