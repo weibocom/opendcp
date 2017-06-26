@@ -224,7 +224,10 @@
               updateValidate();
             }else{
               $("#btnCommit").attr('disabled',true).html('同意协议并提交');
-              pageNotify('error','操作失败！','错误信息：'+data.msg);
+              if(data.msg.indexOf("Duplicate entry") != -1){
+              }else{
+                  pageNotify('error','操作失败！','错误信息：'+data.msg);
+              }
               updateValidate();
             }
             NProgress.done();
