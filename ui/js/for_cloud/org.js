@@ -274,16 +274,17 @@ var change=function(step){
 
             }else if($('#Provider').val()=='openstack'){
                 postData.Network.VpcId = postData.NetworkOP;
-                delete postData.NetworkOP;
+
                 postData.Zone.ZoneName=postData.AvalibilityZone;
 
                 postData.InstanceType=postData.DiskType;
 
             }
+            delete postData.NetworkOP;
             delete  postData.DiskType;
             delete postData.AvalibilityZone;
-
             delete postData['NetworkType'];
+
             break;
         case 'update':
             url='/api/for_cloud/quota.php';
