@@ -127,6 +127,9 @@ class myself{
 }
 $mySelf=new myself();
 
+
+var_dump('test');
+
 /*权限检查*/
 $pageForSuper = false;//当前页面是否需要管理员权限
 $hasLimit = ($pageForSuper)?isSuper($myUser):true;
@@ -175,7 +178,7 @@ if($hasLimit){
       $retArr = $mySelf->getInfo($myUser,$fIdx);
       break;
     case 'insert':
-      if($myStatus > 0){$retArr['msg'] = 'Permission Denied!';$retArr['log'] = 'myStatus > 0'; break; }
+      if($myStatus > 0){$retArr['msg'] = 'Permission Denied!'; }
       $arrRecodeLog['t_action'] = '创建';
       if(isset($arrJson) && !empty($arrJson)){
         $retArr = $mySelf->update($myUser,'POST', $arrJson);
@@ -192,7 +195,6 @@ if($hasLimit){
       break;
   }
 }else{
-  $retArr['log']= 'haslimit is false';
   $retArr['msg'] = 'Permission Denied!';
 }
 //记录日志
