@@ -246,6 +246,10 @@ class navbar{
 }
 $navbar=new navbar();
 
+/*权限检查*/
+$pageForSuper = true;//当前页面是否需要管理员权限
+$hasLimit = ($pageForSuper)?isSuper($myUser):true;
+
 $arrUri=explode('?',$_SERVER['REQUEST_URI']);
 if($mySite){
   $pageHref=str_replace($mySite.'/','',$arrUri[0]);
@@ -263,6 +267,7 @@ $navLeft='';
 if(!empty($arrNavBar[0])){
   foreach($arrNavBar[0] as $k=>$v){
     if($k<=0||$v['nb_status']>1){continue;}
+    if($k === 90001 && !$hasLimit){continue;}//如果是系统管理并且不是超级管理员则跳过这个导航栏
     $flag=false;
     $navLi='';
     if(!empty($arrNavBar[$k])){
