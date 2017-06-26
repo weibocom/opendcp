@@ -127,9 +127,6 @@ class myself{
 }
 $mySelf=new myself();
 
-
-
-
 /*权限检查*/
 $pageForSuper = false;//当前页面是否需要管理员权限
 $hasLimit = ($pageForSuper)?isSuper($myUser):true;
