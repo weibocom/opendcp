@@ -175,7 +175,7 @@ if($hasLimit){
       $retArr = $mySelf->getInfo($myUser,$fIdx);
       break;
     case 'insert':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+      if($myStatus > 0){ echo("<script>console.log('myStatus>0');</script>");$retArr['msg'] = 'Permission Denied!'; break; }
       $arrRecodeLog['t_action'] = '创建';
       if(isset($arrJson) && !empty($arrJson)){
         $retArr = $mySelf->update($myUser,'POST', $arrJson);
@@ -192,6 +192,7 @@ if($hasLimit){
       break;
   }
 }else{
+    echo("<script>console.log('hasLimit is false');</script>");
   $retArr['msg'] = 'Permission Denied!';
 }
 //记录日志
