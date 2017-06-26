@@ -274,11 +274,15 @@ var change=function(step){
 
             }else if($('#Provider').val()=='openstack'){
                 postData.Network.VpcId = postData.NetworkOP;
-
                 postData.Zone.ZoneName=postData.AvalibilityZone;
-
                 postData.InstanceType=postData.DiskType;
 
+                delete postData.DataDiskNum;
+                delete postData.DataDiskSize;
+                delete postData.InternetChargeType;
+                delete postData.InternetMaxBandwidthOut;
+                delete postData.ZoneName;
+                delete postData.RegionName;
             }
             delete postData.NetworkOP;
             delete  postData.DiskType;
