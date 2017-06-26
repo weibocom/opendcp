@@ -10,7 +10,6 @@
         - ./conf/rsyncd.conf:/etc/rsyncd.conf
         - ./logs:/data1/logs:rw
         - ./data/Runtime:/data1/hubble/Runtime:rw
-
      volumes_from:
         - hubble
         - web
