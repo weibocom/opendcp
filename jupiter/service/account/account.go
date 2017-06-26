@@ -96,6 +96,7 @@ func ComputeCost (time float64, instance models.Instance) ( float64 ) {
 }
 
 func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (float64) {
+	beego.Info(fmt.Sprintf("$$$$instance=%v ; begin=%v ,end=%v",instance.Id,begin,end))
 	var rt1 time.Time = begin;
 	var rt2 time.Time = end;
 	var totalHour int = 0;
@@ -118,12 +119,19 @@ func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (f
 		var totalS int = m2*60 + s2
 		str := "-"+strconv.Itoa(totalS)+"s"
 		d,_ := time.ParseDuration(str)
-		rt2 =end.Add(d)
+		rt2_tmp :=end.Add(d)
+
+		strT2 := rt2_tmp.Format("2006-01-02 15:04:05")
+
+		rt,_ := time.Parse("2006-01-02 15:04:05",strT2)
+
+		rt2 = rt
 
 	}
+	beego.Info(fmt.Sprintf("$$$$ rt1=%v ,rt2=%v",rt1,rt2))
 	durationH := rt2.Sub(rt1).Hours()
 	totalHour = totalHour+int(durationH)
-
+	beego.Info(fmt.Sprintf("$$$$ durationH=%v ,totalHour=%v",durationH,totalHour))
 	cpuNum := instance.Cpu
 	if cpuNum == 0 {
 		cpuNum = 1
