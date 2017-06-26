@@ -128,7 +128,7 @@ class myself{
 $mySelf=new myself();
 
 
-var_dump('test');
+
 
 /*权限检查*/
 $pageForSuper = false;//当前页面是否需要管理员权限
