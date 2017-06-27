@@ -54,13 +54,13 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 			instance.TenantID = instanceOP.TenantID
 			instance.UserID = instanceOP.UserID
 			instance.Name = instanceOP.Name
-			instance.Updated = instanceOP.Updated
-			instance.Created = instanceOP.Created
-			instance.HostID = instanceOP.HostID
+			//instance.Updated = instanceOP.Updated
+			//instance.Created = instanceOP.Created
+			//instance.HostID = instanceOP.HostID
 			instance.Status = instanceOP.Status
-			instance.Progress = instanceOP.Progress
-			instance.AccessIPv4 = instanceOP.AccessIPv4
-			instance.AccessIPv6 = instanceOP.AccessIPv6
+			//instance.Progress = instanceOP.Progress
+			//instance.AccessIPv4 = instanceOP.AccessIPv4
+			//instance.AccessIPv6 = instanceOP.AccessIPv6
 			//instance.Image = instanceOP.Image
 			//instance.Flavor = instanceOP.Flavor
 			//instance.Addresses = instanceOP.Addresses
@@ -250,8 +250,8 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 	//subnetId
 	//SecurityGroupsId
 	//私有Ip和公有Ip替换为IPV4和IPV6
-	instance.AccessIPv4 = server.AccessIPv4
-	instance.AccessIPv6 = server.AccessIPv6
+
+
 	instance.Name = server.Name
 	instance.TenantID = server.TenantID
 	instance.UserID = server.UserID
@@ -359,13 +359,13 @@ func (driver openstackProvider) GetState(instanceId string) (models.InstanceStat
 		return models.StateError, err
 	}
 	switch server.Status {
-	case "Running":
+	case "ACTIVE":
 		return models.Running, nil
-	case "Starting":
+	case "INITIALIZED":
 		return models.Starting, nil
-	case "Stopped":
+	case "STOPPED":
 		return models.Stopped, nil
-	case "Stopping":
+	case "PAUSED":
 		return models.Stopping, nil
 	default:
 		return models.None, nil
