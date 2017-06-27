@@ -116,7 +116,7 @@ class reg{
       foreach($arrNew as $k=>$v){
         if($k=='id') continue;
         if($k=='pw'&&$v==='') continue;
-        if($k=='pw') $v=md5($v);
+        if($k=='pw' && $arrOld[$id][$k]!=$v) $v=md5($v);
         if($arrOld[$id][$k]!=$v){
           $sqlSet.=($sqlSet)?", `{$k}`=?":"`{$k}`=?";
         }
@@ -128,7 +128,7 @@ class reg{
         foreach($arrNew as $k=>$v){
           if($k=='id') continue;
           if($k=='pw'&&$v==='') continue;
-          if($k=='pw') $v=md5($v);
+          if($k=='pw' && $arrOld[$id][$k]!=$v) $v=md5($v);
           if($arrOld[$id][$k]!=$v) {
             $stmt->mbind_param('s', $v);
           }
@@ -138,7 +138,11 @@ class reg{
           $ret['code'] = 0;
         }
         $ret['msg'] = $db->error;
+      }else{
+          $ret['code'] = 0;
+          $ret['msg'] ='';
       }
+
     }
     return $ret;
   }
