@@ -187,9 +187,17 @@ class myself{
       $retLayout = $this->initLayout($bizId, $retReg[$regId]['biz'], 0);
       $reInit .= ($retLayout['code'] === 0) ? '4.服务编排模块: 成功; <br>' : '4.服务编排模块: <span class="text-danger">失败</span>; <br>';
       $ret['init']['layout'] = $retLayout;
-
+      //发送审批结果邮件
+      $sendData = array(
+          'receiver'=>$paramUser['mail'],
+          'username'=>$paramUser['en'],
+          'content'=>'申请通过，各功能模块审批结果：<br>' . $reInit,
+      );
+      $retLayout = $this->sendEmail($bizId, $retReg[$regId]['biz'], 0, $sendData);
+      $reInit .= ($retLayout['code'] === 0) ? '5.审批结果邮件发送: 成功; <br>' : '4.审批结果邮件发送: <span class="text-danger">失败</span>; <br>';
       $ret['code'] = 0;
       $ret['msg'] = '审批操作成功<br>' . $reInit;
+
     }
     return $ret;
   }
@@ -419,6 +427,54 @@ class myself{
     }
     return $ret;
   }
+
+  function sendEmail($id, $name, $status, $data){
+      global $myUser, $arrRecodeLog;
+      $ret = [ 'code' => 1, 'msg' => 'Param Error' ];
+      $header = array(
+          'accept: application/json',
+          'Content-Type: application/json',
+          'X-HTTP-Method-Override: POST',
+          'Authorization: '.$myUser,
+          'X-CORRELATION-ID: ' . str_replace(array('0.',' '),'',microtime()),
+          'X-Biz-ID: ' . $id,
+          'X-Biz-Name: ' . $name,
+          'X-Biz-Status: ' . $status,
+      );
+      $url = CLOUD_DOMAIN . '/v1/account/email';
+      $handle = curl_init();
+      curl_setopt($handle, CURLOPT_URL, $url);
+      curl_setopt($handle, CURLOPT_HTTPHEADER, $header);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($handle, CURLOPT_TIMEOUT, 20);
+      curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'POST');
+      curl_setopt($handle, CURLOPT_POST, 1);
+      if(is_array($data)) $data=json_encode($data);
+      curl_setopt($handle, CURLOPT_POSTFIELDS, $data);
+      $result = curl_exec($handle);
+      $arrRecodeLog['t_code'] .= '发送邮件接口：' . $url . "\n";
+      $arrRecodeLog['t_code'] .= '邮件接口返回：' . str_replace(array("\n", "\r"), '', $result) . "\n\n";
+      $http_code = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+      if($t = json_decode($result,true)){
+          if(!isset($t['content'])) $t['content']=array();
+          $result = json_encode($t, JSON_UNESCAPED_UNICODE);
+      }
+      if($http_code < 200 || $http_code >= 300){
+          if($http_code == 0) $result = 'timeout';
+          if($aRe=json_decode($result,true)){
+              if(isset($aRe['msg'])){
+                  $result=$aRe['msg'];
+              }else{
+                  return '{"code":1,"http_code":' . $http_code . ',"url":"' . addslashes($url) . '","msg":' . $result . '}';
+              }
+          }
+          return '{"code":1,"http_code":' . $http_code . ',"url":"' . addslashes($url) . '","msg":"' . preg_replace('/\s+/',' ',$result) . '"}';
+      }else{
+          return $result;
+      }
+      return $ret;
+  }
+
 }
 $mySelf=new myself();
 
