@@ -12,19 +12,19 @@ type OpenstackInstace struct {
 	Name string
 
 	// Updated and Created contain ISO-8601 timestamps of when the state of the server last changed, and when it was created.
-	Updated string
-	Created string
+	//Updated string
+	//Created string
 
-	HostID string
+	//HostID string
 
 
 
 	// Progress ranges from 0..100.
 	// A request made against the server completes only once Progress reaches 100.
-	Progress int
+	//Progress int
 
 	// AccessIPv4 and AccessIPv6 contain the IP addresses of the server, suitable for remote access for administration.
-	AccessIPv4, AccessIPv6 string
+	//AccessIPv4, AccessIPv6 string
 
 	// Image refers to a JSON object, which itself indicates the OS image used to deploy the server.
 	//Image map[string]interface{}
