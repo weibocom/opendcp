@@ -225,10 +225,9 @@
             }else{
               $("#btnCommit").attr('disabled',true).html('同意协议并提交');
               if(data.msg.indexOf("Duplicate entry") != -1){
-                  pageNotify('error','操作失败！','错误信息：登录帐户名 '+postData.en+' 已注册！');
-              }else{
-                  pageNotify('error','操作失败！','错误信息：'+data.msg);
+                  pageNotify('error','操作失败！','错误信息：登录帐户名 '+postData.en +' 已注册！');
               }
+              pageNotify('error','操作失败！','错误信息：'+data.msg);
               updateValidate();
             }
             NProgress.done();
