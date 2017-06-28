@@ -174,7 +174,9 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
-	return (server.Addresses["addr"]).(string), err
+	tmp := (server.Addresses["provider"]).([]interface{})
+	tmp1 := tmp[0].(map[string]interface{})
+	return tmp1["addr"], err
 }
 
 
