@@ -22,6 +22,7 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"fmt"
 )
 
 const (
@@ -49,17 +50,26 @@ func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, c
 
 func (sf *StartFuture) Run() error {
 	providerDriver, err := provider.New(sf.ProviderName)
+	fmt.Println("get the provider")
 	if err != nil {
 		return err
 	}
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "----- Begin start instance in future -----")
-	for j := 0; j < INTERVAL; j++ {
-		logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
-		if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
-			break
+	if(sf.ProviderName=="aliyun") {
+		for j := 0; j < INTERVAL; j++ {
+			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
+			if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
+				break
+			}
+			time.Sleep(TIME4WAIT * time.Second)
 		}
-		time.Sleep(TIME4WAIT * time.Second)
+		isStart, err := providerDriver.Start(sf.InstanceId)
+		if err != nil {
+			return err
+		}
+		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
 	}
+	fmt.Println("get Instance")
 	ins, err := providerDriver.GetInstance(sf.InstanceId)
 	if err != nil {
 		return err
@@ -71,6 +81,7 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	} else {
+		fmt.Println("allocate Ip")
 		publicIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
 		if err != nil {
 			return err
@@ -80,11 +91,7 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	}
-	isStart, err := providerDriver.Start(sf.InstanceId)
-	if err != nil {
-		return err
-	}
-	logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
+	fmt.Println("allocated IpAd")
 	for i := 0; i < 60; i++ {
 		time.Sleep(10 * time.Second)
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
