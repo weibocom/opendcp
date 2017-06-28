@@ -150,7 +150,7 @@ var processBody = function(data,head,body){
             tr.append(td);
             break;
           default:
-            btnAdd = '<a class="text-info tooltips" title="审核" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'audit\',\''+v.id+'\',\''+v.en+'\',\''+v.biz+'\')"><i class="fa fa-check-square-o"></i></a>';
+            btnAdd = '<a class="text-info tooltips" title="审核" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'audit\',\''+v.id+'\',\''+v.en+'\',\''+v.biz+'\',\''+v.mail+'\')"><i class="fa fa-check-square-o"></i></a>';
             btnEdit = '<a class="text-primary tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_reg.php?action=edit&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
             btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.en+'\')"><i class="fa fa-trash-o"></i></a>';
             td = '<td><span class="badge bg-default">未审核</span></td>';
@@ -232,7 +232,7 @@ var change=function(){
       //执行结果提示
       if(action=='audit'){
         if(data.code==0){
-          pageNotify('success','【'+actionDesc+'】操作成功！',data.msg, false);
+          pageNotify('success','【'+actionDesc+'】操作成功！',data.msg);
         }else{
           pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg, false);
         }
@@ -418,7 +418,7 @@ var get = function (idx) {
 }
 
 //二次确认
-var twiceCheck=function(action,idx,desc,biz){
+var twiceCheck=function(action,idx,desc,biz, mail){
   NProgress.start();
   if(!idx) idx='';
   if(!desc) desc='';
@@ -436,8 +436,8 @@ var twiceCheck=function(action,idx,desc,biz){
             modalTitle='审核申请';
             modalBody+='<div class="form-group col-sm-12">' +
               '<label for="audit" class="col-sm-2 control-label">用户信息</label>' +
-              '<div class="col-sm-10">' +
-              'ID : ' + idx + '<br>申请用户 : ' + desc + '<br>公司名称 : ' + biz +
+              '<div class="col-sm-10 " style="line-height:200%">' +
+              'ID : ' + idx + '<br>申请用户 : ' + desc + '<br>公司名称 : ' + biz + '<br>邮箱 : ' + mail +
               '</div>' +
               '</div>';
             modalBody+='<div class="form-group col-sm-12">' +

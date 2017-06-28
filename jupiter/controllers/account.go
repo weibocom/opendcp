@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"weibo.com/opendcp/jupiter/service/instance"
 	"io/ioutil"
+	"strings"
 )
 
 
@@ -170,7 +171,15 @@ func (accountController *AccountController) UpdateAccount()  {
 		return
 	}
 	obj.BizId = bid
-	obj.KeySecret = account.Encode(obj.KeySecret)
+	theAccount, err := account.GetAccount(bid, obj.Provider)
+	if err != nil {
+		beego.Error("The account doesn't exist!")
+		accountController.RespServiceError(err)
+		return
+	}
+	if !strings.EqualFold(obj.KeySecret,theAccount.KeySecret) {
+		obj.KeySecret = account.Encode(obj.KeySecret)
+	}
 	fields  := []string{
 		"KeyId",
 		"KeySecret",
@@ -236,6 +245,31 @@ func (ac *AccountController) IsExist() {
 
 	resp := ApiResponse{}
 	resp.Content = isExist
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
+}
+
+// @Title send email
+// @Description Send email to user when register
+// @router /email [post]
+func (ac *AccountController)SendEmail()  {
+	var data models.EmailData
+	body := ac.Ctx.Input.RequestBody
+	err := json.Unmarshal(body, &data)
+	if err != nil {
+		beego.Error("Could not parse the emmail request!", err)
+	}
+
+	err = account.SendEmail(data)
+	if err != nil {
+		beego.Error("Send email err:", err)
+		ac.RespServiceError(err)
+		return
+	}
+
+	resp := ApiResponse{}
+	resp.Content = true
 	ac.ApiResponse = resp
 	ac.Status = SERVICE_SUCCESS
 	ac.RespJsonWithStatus()

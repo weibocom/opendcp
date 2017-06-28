@@ -54,7 +54,6 @@ func (ic *InstanceController) CreateInstance() {
 		return
 	}
 	ob.BizId = bid
-
 	ip, err := instance.CreateOne(&ob)
 	if err != nil {
 		beego.Error("Create instance error:", err)

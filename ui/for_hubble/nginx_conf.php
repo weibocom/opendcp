@@ -102,10 +102,21 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):'';
         <!-- /menu footer buttons -->
       </div>
     </div>
+    <!-- Tips navigation -->
+      <div class="top_nav">
 
+          <div class="nav_menu">
+              <nav class="" role="navigation">
+                  <div id="scroll_div" style="height:26px;overflow: hidden;white-space: nowrap;width:auto;margin-left:15px;margin-right:15px;padding-top: 5px;">
+                      <div id="scroll_begin" style ="display: inline;"></div>
+                      <div id="scroll_end" style ="display: inline;"></div>
+                  </div>
+              </nav>
+          </div>
+      </div>
     <!-- top navigation -->
     <div class="top_nav">
-      <div class="nav_menu">
+      <div class="nav_menu" style="margin-top: -10px">
         <nav class="" role="navigation">
           <div class="nav toggle">
             <a id="menu_toggle"><i class="fa fa-bars"></i></a>
@@ -380,7 +391,7 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):'';
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
 <script src="../js/for_hubble/nginx_conf.js?_t=<?php echo date('U');?>"></script>
-
+<script src="../js/navicate.js?_t=<?php echo date('U');?>"></script>
 
 <!-- Custom Notification -->
 <script>
