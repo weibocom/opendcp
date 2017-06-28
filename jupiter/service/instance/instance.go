@@ -53,8 +53,8 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if GreaterOrEqual(costs["spent"], costs["credit"]) {
-			return "", errors.New("The credit of account has over!")
+		if GreaterOrEqual(costs["spent"] + 1, costs["credit"]+0.1) {
+			return "", errors.New("The credit of account is over!")
 		}
 		providerDriver, err = provider.New(cluster.Provider)
 		isTest = 1
