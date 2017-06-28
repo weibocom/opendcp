@@ -53,6 +53,7 @@ func (sf *StartFuture) Run() error {
 		return err
 	}
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "----- Begin start instance in future -----")
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"###First### create vm")
 	for j := 0; j < INTERVAL; j++ {
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
 		if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
