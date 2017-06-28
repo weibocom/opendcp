@@ -55,6 +55,13 @@ func init() {
 			AllowHTTPMethods: []string{"get"},
 			Params: nil})
 
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:AccountController"],
+		beego.ControllerComments{
+			Method: "SendEmail",
+			Router: `/email`,
+			AllowHTTPMethods: []string{"post"},
+			Params: nil})
+
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
 		beego.ControllerComments{
 			Method: "GetClusters",

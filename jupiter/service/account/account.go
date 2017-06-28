@@ -12,6 +12,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/instance"
 	"fmt"
 	"strconv"
+	"weibo.com/opendcp/jupiter/conf"
 )
 
 const BASE64Table = "IJjkKLMNO567PQX12RVW3YZaDEFGbcdefghiABCHlSTUmnopqrxyz04stuvw89+/"
@@ -22,7 +23,7 @@ func GetAccount(bizId int, provider string)  (*models.Account, error){
 	if err != nil {
 		return nil, err
 	}
-	theAccount.KeySecret, err = Decode(theAccount.KeySecret)
+	//theAccount.KeySecret, err = Decode(theAccount.KeySecret)
 	if err != nil {
 		return nil, errors.New("Decrypt keysecret err!")
 	}
@@ -32,12 +33,12 @@ func GetAccount(bizId int, provider string)  (*models.Account, error){
 
 func ListAccounts(bizId int) ([]models.Account, error) {
 	accounts, err := dao.GetAllInAccount(bizId)
-	for i, _ := range accounts {
+	/*for i, _ := range accounts {
 		accounts[i].KeySecret, err = Decode(accounts[i].KeySecret)
 		if err != nil {
 			return nil,errors.New("Decrypt keysecret err!")
 		}
-	}
+	}*/
 	if err != nil {
 		return nil, err
 	}
@@ -258,5 +259,24 @@ func GenerateOneCost(biz_id int) error {
 
 }
 
+func SendEmail(data models.EmailData) error {
+	emailName := conf.Config.EmailName
+	emailPassword:= conf.Config.EmailPassword
+	emailServer := conf.Config.EmailServer
+	sender := emailService.NewSender(emailName, emailPassword, emailServer)
+	subject := "用户注册提醒"
+	body :=  `
+	<html>
+		<body>
+			<h3>尊敬的用户` + data.UserName + `:</h3>
+			<p>` + data.Content + `</p>
+		</body>
+	</html>
+	`
+	receiver := data.Receiver
+	beego.Warn("Email data",data)
+	email := emailService.NewEmailDate(sender.EmailName,"", receiver, subject, body, "html")
+	return emailService.SendMail(sender, email)
+}
 
 
