@@ -176,7 +176,7 @@ func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (stri
 	server, err := servers.Get(driver.client, instanceId).Extract()
 	tmp := (server.Addresses["provider"]).([]interface{})
 	tmp1 := tmp[0].(map[string]interface{})
-	return tmp1["addr"], err
+	return tmp1["addr"].(string), err
 }
 
 
