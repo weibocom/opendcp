@@ -34,7 +34,7 @@ type InitController struct {
 
 // @Title .
 // @Description.
-// @router / [get]
+// @router / [get,post]
 func (initController *InitController) InitDB() {
 	resp := ApiResponse{}
 
