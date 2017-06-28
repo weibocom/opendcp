@@ -294,11 +294,11 @@ func (driver openstackProvider) ListImages(regionId string, snapshotId string, p
 
 func (driver openstackProvider) Start(instanceId string) (bool, error) {
 
-	//
-	//err := startstop.Start(driver.client, instanceId).ExtractErr()
-	//
-	//return true, err
-	return true, nil
+
+	err := startstop.Start(driver.client, instanceId).ExtractErr()
+
+	return true, err
+
 }
 
 func (driver openstackProvider) Stop(instanceId string) (bool, error) {
