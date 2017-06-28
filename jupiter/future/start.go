@@ -109,6 +109,7 @@ func (sf *StartFuture) Run() error {
 		if err != nil{
 			return err
 		}
+		fmt.Println(privateIpAddress)
 		fmt.Println("allocated Ip")
 		sf.Ip = privateIpAddress
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
