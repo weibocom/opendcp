@@ -173,7 +173,8 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 }
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
-	return "", nil
+	server, err := servers.Get(driver.client, instanceId).Extract()
+	return (server.Addresses["addr"]).(string), err
 }
 
 
@@ -293,10 +294,11 @@ func (driver openstackProvider) ListImages(regionId string, snapshotId string, p
 
 func (driver openstackProvider) Start(instanceId string) (bool, error) {
 
-
-	err := startstop.Start(driver.client, instanceId).ExtractErr()
-
-	return true, err
+	//
+	//err := startstop.Start(driver.client, instanceId).ExtractErr()
+	//
+	//return true, err
+	return true, nil
 }
 
 func (driver openstackProvider) Stop(instanceId string) (bool, error) {
