@@ -240,3 +240,28 @@ func (ac *AccountController) IsExist() {
 	ac.Status = SERVICE_SUCCESS
 	ac.RespJsonWithStatus()
 }
+
+// @Title send email
+// @Description Send email to user when register
+// @router /email [post]
+func (ac *AccountController)SendEmail()  {
+	var data models.EmailData
+	body := ac.Ctx.Input.RequestBody
+	err := json.Unmarshal(body, &data)
+	if err != nil {
+		beego.Error("Could not parse the emmail request!", err)
+	}
+
+	err = account.SendEmail(data)
+	if err != nil {
+		beego.Error("Send email err:", err)
+		ac.RespServiceError(err)
+		return
+	}
+
+	resp := ApiResponse{}
+	resp.Content = true
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
+}
