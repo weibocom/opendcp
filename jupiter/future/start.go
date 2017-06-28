@@ -63,41 +63,60 @@ func (sf *StartFuture) Run() error {
 			}
 			time.Sleep(TIME4WAIT * time.Second)
 		}
+		ins, err := providerDriver.GetInstance(sf.InstanceId)
+		if err != nil {
+			return err
+		}
+		// 支持专有网和经典网
+		if len(ins.PrivateIpAddress) > 0 {
+			sf.Ip = ins.PrivateIpAddress
+			if err := dao.UpdateInstancePrivateIp(ins.InstanceId, ins.PrivateIpAddress); err != nil {
+				return err
+			}
+		} else {
+			publicIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
+			if err != nil {
+				return err
+			}
+			sf.Ip = publicIpAddress
+			if err := dao.UpdateInstancePublicIp(ins.InstanceId, publicIpAddress); err != nil {
+				return err
+			}
+		}
 		isStart, err := providerDriver.Start(sf.InstanceId)
 		if err != nil {
 			return err
 		}
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
-	}
-	fmt.Println("get Instance")
-	ins, err := providerDriver.GetInstance(sf.InstanceId)
-	if err != nil {
-		return err
-	}
-	// 支持专有网和经典网
-	if len(ins.PrivateIpAddress) > 0 {
-		sf.Ip = ins.PrivateIpAddress
+		for i := 0; i < 60; i++ {
+			time.Sleep(10 * time.Second)
+			logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
+			if providerDriver.WaitToStartInstance(sf.InstanceId) {
+				break
+			}
+		}
+	}else if(sf.ProviderName=="openstack"){
+		for j := 0; j < INTERVAL; j++ {
+			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to start:", j)
+			if providerDriver.WaitToStartInstance(sf.InstanceId) {
+				break
+			}
+			time.Sleep(TIME4WAIT * time.Second)
+		}
+		//
+		fmt.Println("allocate Ip")
+		privateIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
+		if err != nil{
+			return err
+		}
+		fmt.Println(privateIpAddress)
+		//
+		fmt.Println("allocated Ip")
+		sf.Ip = privateIpAddress
+		ins, err := providerDriver.GetInstance(sf.InstanceId)
+		ins.PrivateIpAddress = privateIpAddress
 		if err := dao.UpdateInstancePrivateIp(ins.InstanceId, ins.PrivateIpAddress); err != nil {
 			return err
-		}
-	} else {
-		fmt.Println("allocate Ip")
-		publicIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
-		if err != nil {
-			return err
-		}
-		fmt.Println("get the Ip")
-		sf.Ip = publicIpAddress
-		if err := dao.UpdateInstancePublicIp(ins.InstanceId, publicIpAddress); err != nil {
-			return err
-		}
-	}
-	fmt.Println("allocated IpAd")
-	for i := 0; i < 60; i++ {
-		time.Sleep(10 * time.Second)
-		logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
-		if providerDriver.WaitToStartInstance(sf.InstanceId) {
-			break
 		}
 	}
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "Finished to start instance:", sf.InstanceId, sf.Ip)
