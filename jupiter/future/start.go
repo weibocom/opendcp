@@ -112,6 +112,7 @@ func (sf *StartFuture) Run() error {
 		fmt.Println("allocated Ip")
 		sf.Ip = privateIpAddress
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
+		ins.PrivateIpAddress = privateIpAddress
 		if err := dao.UpdateInstancePrivateIp(ins.InstanceId, ins.PrivateIpAddress); err != nil {
 			return err
 		}
