@@ -188,13 +188,13 @@ class myself{
       $reInit .= ($retLayout['code'] === 0) ? '4.服务编排模块: 成功; <br>' : '4.服务编排模块: <span class="text-danger">失败</span>; <br>';
       $ret['init']['layout'] = $retLayout;
       //发送审批结果邮件
-      $sendData = array(
-          'receiver'=>$paramUser['mail'],
-          'username'=>$paramUser['en'],
-          'content'=>'申请通过，各功能模块审批结果：<br>' . $reInit,
-      );
-      $retLayout = $this->sendEmail($bizId, $retReg[$regId]['biz'], 0, $sendData);
-      $reInit .= ($retLayout['code'] === 0) ? '5.审批结果邮件发送: 成功; <br>' : '4.审批结果邮件发送: <span class="text-danger">失败</span>; <br>';
+//      $sendData = array(
+//          'receiver'=>$paramUser['mail'],
+//          'username'=>$paramUser['en'],
+//          'content'=>'申请通过，各功能模块审批结果：<br>' . $reInit,
+//      );
+//      $retLayout = $this->sendEmail($bizId, $retReg[$regId]['biz'], 0, $sendData);
+//      $reInit .= ($retLayout['code'] === 0) ? '5.审批结果邮件发送: 成功; <br>' : '4.审批结果邮件发送: <span class="text-danger">失败</span>; <br>';
       $ret['code'] = 0;
       $ret['msg'] = '审批操作成功<br>' . $reInit;
 
