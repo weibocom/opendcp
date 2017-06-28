@@ -22,6 +22,7 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"fmt"
 )
 
 const (
@@ -49,6 +50,7 @@ func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, c
 
 func (sf *StartFuture) Run() error {
 	providerDriver, err := provider.New(sf.ProviderName)
+	fmt.Println("get the provider")
 	if err != nil {
 		return err
 	}
@@ -67,7 +69,7 @@ func (sf *StartFuture) Run() error {
 		}
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
 	}
-
+	fmt.Println("get Instance")
 	ins, err := providerDriver.GetInstance(sf.InstanceId)
 	if err != nil {
 		return err
@@ -79,6 +81,7 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	} else {
+		fmt.Println("allocate Ip")
 		publicIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
 		if err != nil {
 			return err
@@ -88,7 +91,7 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	}
-
+	fmt.Println("allocated IpAd")
 	for i := 0; i < 60; i++ {
 		time.Sleep(10 * time.Second)
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
