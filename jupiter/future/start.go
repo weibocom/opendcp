@@ -99,7 +99,7 @@ func (sf *StartFuture) Run() error {
 	}else if(sf.ProviderName=="openstack"){
 		for j := 0; j < INTERVAL; j++ {
 			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to start:", j)
-			if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
+			if providerDriver.WaitToStartInstance(sf.InstanceId) {
 				break
 			}
 			time.Sleep(TIME4WAIT * time.Second)

@@ -371,7 +371,7 @@ func (driver openstackProvider) GetState(instanceId string) (models.InstanceStat
 	switch server.Status {
 	case "ACTIVE":
 		return models.Running, nil
-	case "INITIALIZED":
+	case "BUILD":
 		return models.Starting, nil
 	case "STOPPED":
 		return models.Stopped, nil
