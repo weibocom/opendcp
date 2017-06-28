@@ -86,6 +86,7 @@ func (sf *StartFuture) Run() error {
 		if err != nil {
 			return err
 		}
+		fmt.Println("get the Ip")
 		sf.Ip = publicIpAddress
 		if err := dao.UpdateInstancePublicIp(ins.InstanceId, publicIpAddress); err != nil {
 			return err

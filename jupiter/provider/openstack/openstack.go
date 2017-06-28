@@ -9,7 +9,6 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/servers"
 	"github.com/rackspace/gophercloud/pagination"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/images"
-
 	"weibo.com/opendcp/jupiter/provider"
 	"sync"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/startstop"
@@ -174,7 +173,16 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
-	return (server.Addresses["addr"]).(string), err
+	time.Sleep(2 * time.Second)
+	fmt.Println(instanceId)
+	fmt.Println(server)
+	fmt.Println(server.Addresses)
+	fmt.Println(server.Addresses["provider"])
+	tmp := (server.Addresses["provider"]).([]interface{})
+	tmp1 := tmp[0].(map[string]interface{})
+	fmt.Println(tmp)
+	fmt.Println(tmp1)
+	return tmp1["addr"].(string), err
 }
 
 
