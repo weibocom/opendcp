@@ -262,6 +262,20 @@ func (clusterController *ClusterController) ExpandInstances() {
 		clusterController.RespJsonWithStatus()
 		return
 	}
+
+	costs, err := instance.GetCost(bid, theCluster.Provider)
+	if err != nil {
+		beego.Error("Get cost err:", err)
+		clusterController.RespServiceError(err)
+		return
+	}
+	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber), costs["credit"]+0.1) {
+		err = errors.New("The credit of account is over!")
+		beego.Error(err)
+		clusterController.RespServiceError(err)
+		return
+	}
+
 	instanceIds, err := cluster.Expand(theCluster, expandNumber, correlationId)
 	if len(instanceIds) == 0 {
 		beego.Error("expand instances failed:", err)
