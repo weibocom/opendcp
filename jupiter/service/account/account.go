@@ -23,7 +23,7 @@ func GetAccount(bizId int, provider string)  (*models.Account, error){
 	if err != nil {
 		return nil, err
 	}
-	theAccount.KeySecret, err = Decode(theAccount.KeySecret)
+	//theAccount.KeySecret, err = Decode(theAccount.KeySecret)
 	if err != nil {
 		return nil, errors.New("Decrypt keysecret err!")
 	}
@@ -33,12 +33,12 @@ func GetAccount(bizId int, provider string)  (*models.Account, error){
 
 func ListAccounts(bizId int) ([]models.Account, error) {
 	accounts, err := dao.GetAllInAccount(bizId)
-	for i, _ := range accounts {
+	/*for i, _ := range accounts {
 		accounts[i].KeySecret, err = Decode(accounts[i].KeySecret)
 		if err != nil {
 			return nil,errors.New("Decrypt keysecret err!")
 		}
-	}
+	}*/
 	if err != nil {
 		return nil, err
 	}

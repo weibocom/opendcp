@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"weibo.com/opendcp/jupiter/service/instance"
 	"io/ioutil"
+	"strings"
 )
 
 
@@ -170,7 +171,15 @@ func (accountController *AccountController) UpdateAccount()  {
 		return
 	}
 	obj.BizId = bid
-	obj.KeySecret = account.Encode(obj.KeySecret)
+	theAccount, err := account.GetAccount(bid, obj.Provider)
+	if err != nil {
+		beego.Error("The account doesn't exist!")
+		accountController.RespServiceError(err)
+		return
+	}
+	if !strings.EqualFold(obj.KeySecret,theAccount.KeySecret) {
+		obj.KeySecret = account.Encode(obj.KeySecret)
+	}
 	fields  := []string{
 		"KeyId",
 		"KeySecret",
