@@ -201,7 +201,7 @@ require_once('../include/navbar.php');
                                         <div class="col-md-6">
                                             <div class="btn-group pull-right" id="tab_toolbar">
                                                 <div class="btn-group pull-right" id="tab_toolbar">
-                                                    <a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="javascript:;"> 创建云账号 <i class="fa fa-plus"></i></a>
+                                                    <!--<a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="javascript:;"> 创建云账号 <i class="fa fa-plus"></i></a>-->
                                                 </div>
                                             </div>
                                         </div>
