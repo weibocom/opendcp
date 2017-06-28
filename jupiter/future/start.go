@@ -80,7 +80,6 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	}
-
 	isStart, err := providerDriver.Start(sf.InstanceId)
 	if err != nil {
 		return err
