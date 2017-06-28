@@ -53,7 +53,7 @@
               <select class="form-control" id="type" name="type" onchange="getType()">
                 <option value="">请选择</option>
                 <option value="NGINX">Nginx</option>
-                <option value="SLB">AliYun</option>
+               <!-- <option value="SLB">AliYun</option>-->
               </select>
             </div>
           </div>
