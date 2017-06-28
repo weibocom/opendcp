@@ -359,6 +359,7 @@ func (driver openstackProvider) WaitToStartInstance(instanceId string) bool {
 	if err != nil {
 		return false
 	}
+	fmt.Println("the return status is", st)
 	return st == models.Running
 }
 
@@ -368,6 +369,7 @@ func (driver openstackProvider) GetState(instanceId string) (models.InstanceStat
 	if err != nil {
 		return models.StateError, err
 	}
+	fmt.Println("the status is: ",server.Status)
 	switch server.Status {
 	case "ACTIVE":
 		return models.Running, nil
