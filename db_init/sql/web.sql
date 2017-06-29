@@ -70,7 +70,7 @@ CREATE TABLE `member` (
 
 LOCK TABLES `member` WRITE;
 /*!40000 ALTER TABLE `member` DISABLE KEYS */;
-INSERT INTO `member` VALUES (1,'root','管理员','local','','root@sina.com',0,'21232f297a57a5a743894a0e4a801fc3',0);
+INSERT INTO `member` VALUES (1,'root','管理员','local','','root@sina.com',0,'39df627b4a846f431fd6ee406b7a9be0',0);
 /*!40000 ALTER TABLE `member` ENABLE KEYS */;
 UNLOCK TABLES;
 
