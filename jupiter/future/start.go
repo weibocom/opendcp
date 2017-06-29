@@ -63,11 +63,8 @@ func (sf *StartFuture) Run() error {
 			}
 			time.Sleep(TIME4WAIT * time.Second)
 		}
-		isStart, err := providerDriver.Start(sf.InstanceId)
-		if err != nil {
-			return err
-		}
-		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
+
+
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
 		if err != nil {
 			return err
@@ -95,7 +92,12 @@ func (sf *StartFuture) Run() error {
 				break
 			}
 		}
-		logstore.Info(sf.CorrelationId, sf.InstanceId, "Finished to start instance:", sf.InstanceId, sf.Ip)
+		isStart, err := providerDriver.Start(sf.InstanceId)
+		if err != nil {
+			return err
+		}
+		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
+
 	}else if(sf.ProviderName=="openstack"){
 		for j := 0; j < INTERVAL; j++ {
 			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to start:", j)
@@ -118,6 +120,7 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	}
+	logstore.Info(sf.CorrelationId, sf.InstanceId, "Finished to start instance:", sf.InstanceId, sf.Ip)
 	return nil
 }
 
