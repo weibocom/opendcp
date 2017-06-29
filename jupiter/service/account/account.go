@@ -124,7 +124,8 @@ func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (f
 
 		strT2 := rt2_tmp.Format("2006-01-02 15:04:05")
 
-		rt,_ := time.Parse("2006-01-02 15:04:05",strT2)
+		//rt,_ := time.Parse("2006-01-02 15:04:05",strT2)
+		rt,_ := time.ParseInLocation("2006-01-02 15:04:05",strT2, time.Local)
 
 		rt2 = rt
 
