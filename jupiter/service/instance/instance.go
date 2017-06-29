@@ -641,7 +641,6 @@ func  GreaterOrEqual(a, b float64) bool {
 func GetCost (biz_id int, provider string) (map[string] float64, error) {
 	account,err := dao.GetAccount(biz_id,provider)
 	if err != nil {
-		beego.Error(err)
 		return nil, err
 	}
 	cost := make(map[string] float64)

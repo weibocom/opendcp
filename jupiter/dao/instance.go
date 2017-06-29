@@ -265,3 +265,14 @@ func GetAllBIdInInstance () (instances []models.Instance,err error) {
 	return instances, nil
 }
 
+
+func GetAllBidAndProviderInInstance () (instances []models.Instance,err error) {
+	o := GetOrmer()
+
+	_,err = o.QueryTable(INSTANCE_TABLE).Distinct().All(&instances,"biz_id","provider")
+
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}

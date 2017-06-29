@@ -273,6 +273,25 @@ func GetLatestCost(bizId int, provider string) (map[string]float64, error) {
 	return instance.GetCost(bizId, provider)
 }
 
+func GetTotalCosts() (map[string]float64, error) {
+	instances, err := dao.GetAllBidAndProviderInInstance()
+	if err != nil {
+		return nil, err
+	}
+
+	totalCosts := make(map[string]float64)
+	for _, ins := range instances {
+		costs, err := instance.GetCost(ins.BizId, ins.Provider)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range costs{
+			totalCosts[k] += v
+		}
+	}
+	return totalCosts, nil
+}
+
 func SendEmail(data models.EmailData) error {
 	emailName := conf.Config.EmailName
 	emailPassword:= conf.Config.EmailPassword
