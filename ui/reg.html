@@ -217,14 +217,15 @@
           success: function (data) {
             //执行结果提示
             if(data.code==0){
-              pageNotify('success','申请成功！', '请等待审核', false);
+              pageNotify('success','申请成功！', '3秒后返回首页');
               $("#btnCommit").html('已提交申请，请联系管理员审批！');
               $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
               $("#btnCommit").attr('disabled',true);
+              setTimeout('window.location.href="/"', 3000);
               updateValidate();
             }else{
               $("#btnCommit").attr('disabled',true).html('同意协议并提交');
-              if(data.msg.indexOf("Duplicate entry") != -1){
+              if(data.msg.indexOf("Duplicate entry") != -1 && data.msg.indexOf("en_UNIQUE") != -1){
                   pageNotify('error','操作失败！','错误信息：登录帐户名 '+postData.en +' 已注册！');
               }
               pageNotify('error','操作失败！','错误信息：'+data.msg);
