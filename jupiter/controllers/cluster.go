@@ -264,7 +264,7 @@ func (clusterController *ClusterController) ExpandInstances() {
 
 	totalNum := theCluster.Cpu * expandNumber
 	if totalNum >100 {
-		err = errors.New("You can create too many instances all at once.")
+		err = errors.New("You can't create too many instances all at once.")
 		beego.Error(err)
 		clusterController.RespServiceError(err)
 		return

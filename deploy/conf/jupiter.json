@@ -5,6 +5,9 @@
     "BufferSize": 40,
     "KeyDir": "./keys",
     "Schedule":"00点00分开始间隔60分钟",
+    "EmailName":"",
+    "EmailPassword":"",
+    "EmailServer":"",
     "Ansible": {
         "Url": "http://octans:8000",
         "GetOctansUrl": "http://opendcp.oss-cn-shanghai.aliyuncs.com/manage_device.sh",
