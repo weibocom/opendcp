@@ -80,8 +80,43 @@ class reg{
 
   function add($arr,$flag = false){
     global $db;
-    $ret = array('code' => 1, 'msg' => 'param error', 'content' => '');
+    $ret = array('code' => 3, 'msg' => 'param error', 'content' => '');
     if($arr){
+      //判断业务方名称是否已存在
+      if($this->isBIZNameExite($arr['biz'])){
+          $ret['code'] = 1;
+          return $ret;
+      }
+      //判断数据中是否有该用户，以及该用户的状态
+      $usrsql='SELECT * FROM ' . $this->table . " WHERE en = ? ORDER BY en;";
+      $usrstmt = $db->prepare($usrsql);
+      $usrstmt->bind_param('s', $arr['en']);
+      $usrexit = ture;
+      $usrarrRe=array();
+      if($usrstmt->execute()){
+          $result = $usrstmt->get_result();
+          while($row=$result->fetch_array(MYSQLI_ASSOC)){
+              $usrarrRe[1]=$row;
+          }
+          if(empty($usrarrRe)){
+              $usrexit = false;
+          }
+      }else{
+          $ret['code'] = 3;
+          $ret['msg'] = $usrstmt->error;
+          return $ret;
+      }
+      //当用户是拒绝状态时允许默认用户此次为更改操作
+      if($usrexit && $usrarrRe[1]['status'] == 1){
+          $arr['id'] = $usrarrRe[1]['id'];
+          $ret = $this->update($arr);
+          if($ret['code'] !== 0) $ret['code'] = 3;
+          return $ret;
+      }
+      if($usrexit && $usrarrRe[1]['status'] !== 1){
+          $ret['code'] = 2;
+          return $ret;
+      }
       $sqlKey='';$sqlValue='';
       foreach($arr as $k=>$v){
         if($k=='pw'&&$v==='') continue;
@@ -101,11 +136,28 @@ class reg{
         $ret['code'] = 0;
         $ret['content'] = $stmt->insert_id;
       }
+      $ret['code'] = 3;
       $ret['msg'] = $stmt->error;
     }
     return $ret;
   }
-  
+  function isBIZNameExite($bizname){
+      global $db;
+      $sql='SELECT * FROM ' . $this->table . " WHERE biz = ? and status != 1;";
+      $stmt = $db->prepare($sql);
+      $stmt->bind_param('s', $bizname);
+      if($stmt->execute()){
+          $result = $stmt->get_result();
+          $usrarrRe = array();
+          while($row=$result->fetch_array(MYSQLI_ASSOC)){
+              $usrarrRe=$row;
+          }
+          if(empty($usrarrRe)){
+              return false;
+          }
+      }
+      return true;
+  }
   function update($arrNew){
     global $db;
     $ret = array('code' => 1, 'msg' => 'param error', 'content' => $arrNew, 'older'=>'');

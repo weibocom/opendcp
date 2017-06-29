@@ -180,11 +180,19 @@
     <script>
       var check=function(){
         var disabled=false;
-        if($('#en').val()=='') disabled=true;
+        if($('#en').val()=='') {
+            disabled=true;
+        }else{
+            $('#en').parent().css('border','0px none rgb(115, 135, 156)');
+        }
         if($('#cn').val()=='') disabled=true;
         if(!checkParam('mobile', 'mobile')) disabled=true;
         if(!checkParam('email', 'mail')) disabled=true;
-        if($('#biz').val()=='') disabled=true;
+        if($('#biz').val()=='') {
+            disabled=true;
+        }else{
+            $('#biz').parent().css('border','0px none rgb(115, 135, 156)');
+        }
         if(!checkParam('password', 'pw')) disabled=true;
         if($('#repw').val()!=$('#pw').val()){
             $('#repw').parent().css('border','1px solid #CE5454');
@@ -192,8 +200,12 @@
         }else{
             $('#repw').parent().css('border','0px none rgb(115, 135, 156)');
         }
+        if($('#verification_code').val()=='') {
+            disabled=true;
+        }else{
+            $('#verification_code').parent().css('border','0px none rgb(115, 135, 156)');
+        }
         if($("#btnCommit").html() == '已提交申请，请联系管理员审批！') disabled=true;
-        if($('#verification_code').val()=='') disabled=true;
         $("#btnCommit").attr('disabled',disabled);
       }
 
@@ -222,15 +234,21 @@
               $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
               $("#btnCommit").attr('disabled',true);
               setTimeout('window.location.href="/"', 3000);
-              updateValidate();
-            }else{
-              $("#btnCommit").attr('disabled',true).html('同意协议并提交');
-              if(data.msg.indexOf("Duplicate entry") != -1 && data.msg.indexOf("en_UNIQUE") != -1){
-                  pageNotify('error','操作失败！','错误信息：登录帐户名 '+postData.en +' 已注册！');
-              }
-              pageNotify('error','操作失败！','错误信息：'+data.msg);
-              updateValidate();
+            }else if(data.code==1) {
+                pageNotify('error','操作失败！','错误信息：'+'公司名已申请！');
+                $('#biz').parent().css('border','1px solid #CE5454');
+                $("#btnCommit").attr('disabled',true).html('同意协议并提交');
+            }else if(data.code==2) {
+                pageNotify('error','操作失败！','错误信息：'+'登录账户已申请！');
+                $('#en').parent().css('border','1px solid #CE5454');
+                $("#btnCommit").attr('disabled',true).html('同意协议并提交');
+            }else if(data.code==4){
+                $('#verification_code').parent().css('border','1px solid #CE5454');
+                pageNotify('error','操作失败！','错误信息：'+data.msg);
+                $("#btnCommit").attr('disabled',true).html('同意协议并提交');
             }
+
+            updateValidate();
             NProgress.done();
           },
           error: function (){
