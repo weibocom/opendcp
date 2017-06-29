@@ -63,8 +63,6 @@ func (sf *StartFuture) Run() error {
 			}
 			time.Sleep(TIME4WAIT * time.Second)
 		}
-
-
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
 		if err != nil {
 			return err
@@ -85,6 +83,11 @@ func (sf *StartFuture) Run() error {
 				return err
 			}
 		}
+		isStart, err := providerDriver.Start(sf.InstanceId)
+		if err != nil {
+			return err
+		}
+		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
 		for i := 0; i < 60; i++ {
 			time.Sleep(10 * time.Second)
 			logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
@@ -92,12 +95,6 @@ func (sf *StartFuture) Run() error {
 				break
 			}
 		}
-		isStart, err := providerDriver.Start(sf.InstanceId)
-		if err != nil {
-			return err
-		}
-		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
-
 	}else if(sf.ProviderName=="openstack"){
 		for j := 0; j < INTERVAL; j++ {
 			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to start:", j)
@@ -106,12 +103,14 @@ func (sf *StartFuture) Run() error {
 			}
 			time.Sleep(TIME4WAIT * time.Second)
 		}
+		//
 		fmt.Println("allocate Ip")
 		privateIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
 		if err != nil{
 			return err
 		}
 		fmt.Println(privateIpAddress)
+		//
 		fmt.Println("allocated Ip")
 		sf.Ip = privateIpAddress
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
