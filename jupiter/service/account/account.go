@@ -135,10 +135,15 @@ func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (f
 	totalHour = totalHour+int(durationH)
 	beego.Info(fmt.Sprintf("$$$$ durationH=%v ,totalHour=%v",durationH,totalHour))
 	cpuNum := instance.Cpu
+	ramNum := instance.Ram
 	if cpuNum == 0 {
 		cpuNum = 1
 	}
-	return float64(totalHour*cpuNum)
+
+	if ramNum == 0 {
+		ramNum  = 1
+	}
+	return float64(totalHour*(cpuNum+ramNum)/2)
 }
 
 /**

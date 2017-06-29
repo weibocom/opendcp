@@ -270,8 +270,9 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 
-	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber*theCluster.Cpu), costs["credit"]+0.1) {
-		diff := (costs["credit"]-costs["spent"]) / float64(theCluster.Cpu)
+	weight := (theCluster.Cpu+theCluster.Ram)/2
+	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber*weight), costs["credit"]+0.1) {
+		diff := (costs["credit"]-costs["spent"]) / float64(weight)
 		msg := fmt.Sprintf("The number of instances you create is over the credit of your account! You only can create %d instances.", int(diff))
 		err = errors.New(msg)
 		beego.Error(err)
