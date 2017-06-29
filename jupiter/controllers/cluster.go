@@ -221,7 +221,6 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 
-
 	expandNumber, err := clusterController.GetInt(":number")
 	if err != nil {
 		beego.Error("Need to pass vaild expand number: ", err)
@@ -263,14 +262,25 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 
+	totalNum := theCluster.Cpu * expandNumber
+	if totalNum >100 {
+		err = errors.New("You can't create too many instances all at once.")
+		beego.Error(err)
+		clusterController.RespServiceError(err)
+		return
+	}
+
 	costs, err := instance.GetCost(bid, theCluster.Provider)
 	if err != nil {
 		beego.Error("Get cost err:", err)
 		clusterController.RespServiceError(err)
 		return
 	}
+
 	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber), costs["credit"]+0.1) {
-		err = errors.New("The credit of account is over!")
+		diff := costs["credit"] - costs["spent"]
+		msg := fmt.Sprintf("The credit of account is over! You only can create %d instances.", int(diff))
+		err = errors.New(msg)
 		beego.Error(err)
 		clusterController.RespServiceError(err)
 		return
