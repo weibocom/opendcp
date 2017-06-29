@@ -124,7 +124,8 @@ func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (f
 
 		strT2 := rt2_tmp.Format("2006-01-02 15:04:05")
 
-		rt,_ := time.Parse("2006-01-02 15:04:05",strT2)
+		//rt,_ := time.Parse("2006-01-02 15:04:05",strT2)
+		rt,_ := time.ParseInLocation("2006-01-02 15:04:05",strT2, time.Local)
 
 		rt2 = rt
 
@@ -134,10 +135,15 @@ func ComputeCostNew(begin time.Time, end time.Time, instance models.Instance) (f
 	totalHour = totalHour+int(durationH)
 	beego.Info(fmt.Sprintf("$$$$ durationH=%v ,totalHour=%v",durationH,totalHour))
 	cpuNum := instance.Cpu
+	ramNum := instance.Ram
 	if cpuNum == 0 {
 		cpuNum = 1
 	}
-	return float64(totalHour*cpuNum)
+
+	if ramNum == 0 {
+		ramNum  = 1
+	}
+	return float64(totalHour*(cpuNum+ramNum)/2)
 }
 
 /**
@@ -257,6 +263,33 @@ func GenerateOneCost(biz_id int) error {
 	beego.Info(fmt.Sprintf("#######finish compute cost for biz %d",biz_id))
 	return nil
 
+}
+
+func GetLatestCost(bizId int, provider string) (map[string]float64, error) {
+	err := GenerateOneCost(bizId)
+	if err != nil{
+		return nil, err
+	}
+	return instance.GetCost(bizId, provider)
+}
+
+func GetTotalCosts() (map[string]float64, error) {
+	instances, err := dao.GetAllBidAndProviderInInstance()
+	if err != nil {
+		return nil, err
+	}
+
+	totalCosts := make(map[string]float64)
+	for _, ins := range instances {
+		costs, err := instance.GetCost(ins.BizId, ins.Provider)
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range costs{
+			totalCosts[k] += v
+		}
+	}
+	return totalCosts, nil
 }
 
 func SendEmail(data models.EmailData) error {

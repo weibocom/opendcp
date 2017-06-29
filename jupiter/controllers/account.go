@@ -250,6 +250,24 @@ func (ac *AccountController) IsExist() {
 	ac.RespJsonWithStatus()
 }
 
+// @Title get total costs
+// @Description Get cost info
+// @router /costs [get]
+func (ac *AccountController) GetTotalCosts() {
+	totalCosts, err := account.GetTotalCosts()
+	if err != nil {
+		beego.Error("Get total costs err:", err)
+		ac.RespServiceError(err)
+		return
+	}
+
+	resp := ApiResponse{}
+	resp.Content = totalCosts
+	ac.ApiResponse = resp
+	ac.Status = SERVICE_SUCCESS
+	ac.RespJsonWithStatus()
+}
+
 // @Title send email
 // @Description Send email to user when register
 // @router /email [post]

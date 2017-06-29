@@ -49,7 +49,7 @@ func (initController *InitController) InitDB() {
 	//credit,_ := beego.AppConfig.Int("credit")
 	credit,err := beego.AppConfig.Float("credit")
 	if err != nil {
-		credit = 100;
+		credit = 200;
 	}
 
 	provider := "'aliyun'"
@@ -80,14 +80,15 @@ func (initController *InitController) InitDB() {
 	sqlCluster[0] = sql1
 	sqlCluster[1] = sql2
 	sqlCluster[2] = sql3
+	clusterConfig := make([]int, 3)
+	clusterConfig[0] = 200
+	clusterConfig[1] = 33
+	clusterConfig[2] = 12
 
-
-	sqlBill := "insert into bill(cluster_id,costs,credit) values(%d,0,0)"
+	sqlBill := "insert into bill(cluster_id,costs,credit) values(%d,0,%d)"
 	delBill := "delete from bill where cluster_id=%d"
 
-
 	deleteSql := "delete from %s where biz_id=%d"
-
 
 
 	//删除数据
@@ -106,7 +107,7 @@ func (initController *InitController) InitDB() {
 	}
 
 	//插入数据
-	for _,sql := range sqlCluster {
+	for i,sql := range sqlCluster {
 		id64,err := cluster.OperateBysql(fmt.Sprintf(sql,bid))
 		if err != nil {
 			beego.Error("insert data for cluster err: ", err)
@@ -117,7 +118,7 @@ func (initController *InitController) InitDB() {
 
 		cluster.OperateBysql(fmt.Sprintf(delBill,id))
 
-		_,err = cluster.OperateBysql(fmt.Sprintf(sqlBill,id))
+		_,err = cluster.OperateBysql(fmt.Sprintf(sqlBill,id, clusterConfig[i]))
 		if err != nil {
 			beego.Error("insert data for bill err: ", err)
 			initController.RespServiceError(err)
