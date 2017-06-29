@@ -97,12 +97,12 @@ http {
 	reset_timedout_connection on;
         check_shm_size 10M;
 
-	include upstream/openapi_webv2-yf-core-inner.upstream;
-        include upstream/openapi_webv2-yf-statuses-inner.upstream;
-        include upstream/openapi_webv2-yfali-feed-inner.upstream;
-        include upstream/openapi_webv2-yfali-statuses-inner.upstream;
-        include upstream/openapi_friendship-tcali-core.upstream;
-        include upstream/openapi_friendship-tc-core.upstream;
+<!--	    include upstream/openapi_webv2-yf-core-inner.upstream;-->
+<!--        include upstream/openapi_webv2-yf-statuses-inner.upstream;-->
+<!--        include upstream/openapi_webv2-yfali-feed-inner.upstream;-->
+<!--        include upstream/openapi_webv2-yfali-statuses-inner.upstream;-->
+<!--        include upstream/openapi_friendship-tcali-core.upstream;-->
+<!--        include upstream/openapi_friendship-tc-core.upstream;-->
 
 	include vhost/openapi.vhost.conf;
 
