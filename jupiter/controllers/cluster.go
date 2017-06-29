@@ -29,6 +29,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"weibo.com/opendcp/jupiter/service/instance"
 	"strconv"
+	"weibo.com/opendcp/jupiter/service/account"
 )
 
 // Operations about cluster
@@ -262,24 +263,16 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 
-	totalNum := theCluster.Cpu * expandNumber
-	if totalNum >100 {
-		err = errors.New("You can't create too many instances all at once.")
-		beego.Error(err)
-		clusterController.RespServiceError(err)
-		return
-	}
-
-	costs, err := instance.GetCost(bid, theCluster.Provider)
+	costs, err := account.GetLatestCost(bid, theCluster.Provider)
 	if err != nil {
 		beego.Error("Get cost err:", err)
 		clusterController.RespServiceError(err)
 		return
 	}
 
-	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber), costs["credit"]+0.1) {
-		diff := costs["credit"] - costs["spent"]
-		msg := fmt.Sprintf("The credit of account is over! You only can create %d instances.", int(diff))
+	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber*theCluster.Cpu), costs["credit"]+0.1) {
+		diff := (costs["credit"]-costs["spent"]) / float64(theCluster.Cpu)
+		msg := fmt.Sprintf("The number of instances you create is over the credit of your account! You only can create %d instances.", int(diff))
 		err = errors.New(msg)
 		beego.Error(err)
 		clusterController.RespServiceError(err)

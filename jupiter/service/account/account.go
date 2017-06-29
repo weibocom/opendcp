@@ -259,6 +259,14 @@ func GenerateOneCost(biz_id int) error {
 
 }
 
+func GetLatestCost(bizId int, provider string) (map[string]float64, error) {
+	err := GenerateOneCost(bizId)
+	if err != nil{
+		return nil, err
+	}
+	return instance.GetCost(bizId, provider)
+}
+
 func SendEmail(data models.EmailData) error {
 	emailName := conf.Config.EmailName
 	emailPassword:= conf.Config.EmailPassword
