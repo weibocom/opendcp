@@ -3,6 +3,10 @@
     "KeyId": "",
     "KeySecret": "",
     "KeyDir": "./keys",
+    "Schedule":"",
+    "EmailName":"",
+    "EmailPassword":"",
+    "EmailServer":"",
     "Ansible": {
         "Url": "",
         "GetOctansUrl": "",
