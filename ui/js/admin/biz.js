@@ -17,7 +17,7 @@ var list = function(page,tab) {
   switch(tab){
     case 'biz':
       $('#tab_1').attr('class','active');
-      $('#tab_toolbar').html('<a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_'+tab+'.php"> 创建 <i class="fa fa-plus"></i></a>');
+      //$('#tab_toolbar').html('<a type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" href="edit_'+tab+'.php"> 创建 <i class="fa fa-plus"></i></a>');
       postData={"fIdx":fIdx};
       break;
   }
