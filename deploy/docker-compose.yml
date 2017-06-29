@@ -81,7 +81,7 @@
         - MYSQL_HOST=db
         - MYSQL_PORT=3306
         - MYSQL_USER=root
-        - MYSQL_PASSWORD=12345
+        - MYSQL_PASSWORD=Z#56iy0Hv!YN
         - PLUGIN_VIEW_URL=/api/for_repos/proxy_view_plugin.php
         - EXTENSION_INTERFACE_URL=/api/for_repos/proxy_interface.php
         - HARBOR_ADDRESS=harbor_ip:12380
@@ -91,7 +91,7 @@
    db_init:
      image: $REPO/opendcp/db_init:$VER
      environment:
-       - MYSQL_ROOT_PASSWORD=12345
+       - MYSQL_ROOT_PASSWORD=Z#56iy0Hv!YN
        - DB_HOST=db
        - INIT_PORT=11111
      volumes:
@@ -106,6 +106,6 @@
        - ./conf/my.cnf:/etc/mysql/my.cnf
        - ./data/mysql-data:/var/lib/mysql
      environment:
-       - MYSQL_ROOT_PASSWORD=12345
+       - MYSQL_ROOT_PASSWORD=Z#56iy0Hv!YN
      ports:
        - "3306:3306"

@@ -11,7 +11,7 @@ define('DB_CHARSET', 'utf8');
 define('DB_HOST', 'db');
 define('DB_PORT', 3306);
 define('DB_USER', 'root');
-define('DB_PW', '12345');
+define('DB_PW', 'Z#56iy0Hv!YN');
 
 //LDAP配置信息
 define('LDAP_HOST','');
