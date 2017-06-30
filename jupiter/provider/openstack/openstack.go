@@ -388,6 +388,9 @@ func new() (provider.ProviderDriver, error){
 func newProvider() (provider.ProviderDriver, error){
 
 	url := fmt.Sprintf("http://%s:%s",conf.Config.OpIp, conf.Config.OpPort)
+	fmt.Println("the url is: ", url)
+	fmt.Println("the UserName is:", conf.Config.OpUserName)
+	fmt.Println("the password is", conf.Config.OpPassWord)
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
@@ -396,7 +399,9 @@ func newProvider() (provider.ProviderDriver, error){
 	}
 
 	provider, err := openstack.AuthenticatedClient(opts)
-
+	if err != nil{
+		return nil, err
+	}
 	client, err :=
 		openstack.NewComputeV2(provider, gophercloud.EndpointOpts{
 			Region: "RegionOne",
