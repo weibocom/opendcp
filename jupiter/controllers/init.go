@@ -80,10 +80,10 @@ func (initController *InitController) InitDB() {
 	sqlCluster[0] = sql1
 	sqlCluster[1] = sql2
 	sqlCluster[2] = sql3
-	clusterConfig := make([]int, 3)
-	clusterConfig[0] = 200
-	clusterConfig[1] = 33
-	clusterConfig[2] = 12
+	clusterBill := make([]float64, 3)
+	clusterBill[0] = credit
+	clusterBill[1] = credit / 6
+	clusterBill[2] = credit / 16
 
 	sqlBill := "insert into bill(cluster_id,costs,credit) values(%d,0,%d)"
 	delBill := "delete from bill where cluster_id=%d"
@@ -118,7 +118,7 @@ func (initController *InitController) InitDB() {
 
 		cluster.OperateBysql(fmt.Sprintf(delBill,id))
 
-		_,err = cluster.OperateBysql(fmt.Sprintf(sqlBill,id, clusterConfig[i]))
+		_,err = cluster.OperateBysql(fmt.Sprintf(sqlBill,id, int(clusterBill[i])))
 		if err != nil {
 			beego.Error("insert data for bill err: ", err)
 			initController.RespServiceError(err)
