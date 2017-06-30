@@ -135,9 +135,10 @@ class reg{
       if($stmt->execute()){
         $ret['code'] = 0;
         $ret['content'] = $stmt->insert_id;
+      }else{
+          $ret['code'] = 3;
+          $ret['msg'] = $stmt->error;
       }
-      $ret['code'] = 3;
-      $ret['msg'] = $stmt->error;
     }
     return $ret;
   }
