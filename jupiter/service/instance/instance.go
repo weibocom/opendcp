@@ -440,20 +440,13 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		dao.UpdateInstanceStatus(ip, models.InitTimeout)
 		return ssh.Output{}, sshErr
 	}
-	//
-	fmt.Println("init sshService")
 	cli, err := getSSHClient(ip, "", password)
-	fmt.Println("err when getSSHClient:", err)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
-	//cmd := fmt.Sprintf("ls -lh")
 	ret, err := cli.Run(cmd)
-	fmt.Println("err when run cmd:", err)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
 		return ssh.Output{}, err
 	}
-	//
-	fmt.Println("Get sshClient success")
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
 	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
@@ -464,8 +457,6 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		dao.UpdateInstanceStatus(ip, models.StatusError)
 		return ssh.Output{}, err
 	}
-	//
-	fmt.Println("config sql success")
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
 }

@@ -15,6 +15,7 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"github.com/rackspace/gophercloud/openstack/compute/v2/flavors"
 	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
+	"weibo.com/opendcp/jupiter/conf"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -385,10 +386,12 @@ func new() (provider.ProviderDriver, error){
 	return newProvider()
 }
 func newProvider() (provider.ProviderDriver, error){
+
+	url := fmt.Sprintf("http://%s:%s",conf.Config.KeyIp, conf.Config.OpPort)
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "http://10.39.59.27:5000/v3",
-		Username: "admin",
-		Password: "ZYGL32NDG7JS8IGC",
+		IdentityEndpoint: url,
+		Username: conf.Config.OpUserName,
+		Password: conf.Config.OpPassWord,
 		DomainName: "default",
 	}
 
