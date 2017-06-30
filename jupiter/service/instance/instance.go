@@ -443,8 +443,10 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	//
 	fmt.Println("init sshService")
 	cli, err := getSSHClient(ip, "", password)
+	fmt.Println("err when getSSHClient:", err)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
 	ret, err := cli.Run(cmd)
+	fmt.Println("err when run cmd:", err)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
 		return ssh.Output{}, err
