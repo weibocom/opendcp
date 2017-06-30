@@ -395,7 +395,7 @@ func newProvider() (provider.ProviderDriver, error){
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
 		Password: conf.Config.OpPassWord,
-		DomainName: "default",
+		//DomainName: "default",
 	}
 
 	provider, err := openstack.AuthenticatedClient(opts)
