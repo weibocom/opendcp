@@ -297,7 +297,7 @@ func CheckCredit() error {
 		if err != nil {
 			return  err
 		}
-		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
+		if instance.GreaterOrEqual(costs["spent"], costs["credit"] + 1) {
 			beego.Info(fmt.Sprintf("$$$$delete instance for biz %d from %s",ins.BizId, ins.Provider))
 			instances, err := dao.GetTestingInstances(ins.BizId, ins.Provider)
 			if err != nil {
