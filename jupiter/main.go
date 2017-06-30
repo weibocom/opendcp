@@ -13,7 +13,7 @@ import (
 )
 
 func initCostCron()  {
-	costTask := future.NewCronbFuture("Peroidic compute cost", account.GenerateMultiCost)
+	costTask := future.NewCronbFuture("Peroidic compute cost", account.CheckCredit)
 	if costTask != nil {
 		future.Exec.Submit(costTask)
 	}

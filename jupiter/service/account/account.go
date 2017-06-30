@@ -244,19 +244,7 @@ func GenerateOneCost(biz_id int) error {
 			beego.Error(err)
 			return err
 		}
-		//重新检查账户的额度，额度不足时删除机器
-		costs, err := instance.GetCost(biz_id, k)
-		if err != nil {
-			return  err
-		}
-		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
-			beego.Info(fmt.Sprintf("$$$$delete instance for biz %d from %s",biz_id,k))
-			instances, err := dao.GetTestingInstances(biz_id, k)
-			if err != nil {
-				return  err
-			}
-			go instance.DeleteInstances(instances, biz_id)
-		}
+
 
 	}
 	beego.Info(fmt.Sprintf("$$$$compute result for biz %d,content is %v",biz_id,spendMap))
@@ -290,6 +278,35 @@ func GetTotalCosts() (map[string]float64, error) {
 		}
 	}
 	return totalCosts, nil
+}
+
+func CheckCredit() error {
+	err := GenerateMultiCost()
+	if err != nil {
+		return err
+	}
+
+	instances, err := dao.GetAllBidAndProviderInInstance()
+	if err != nil {
+		return err
+	}
+
+	for _, ins := range instances {
+		//查账户的额度，额度不足时删除机器
+		costs, err := instance.GetCost(ins.BizId, ins.Provider)
+		if err != nil {
+			return  err
+		}
+		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
+			beego.Info(fmt.Sprintf("$$$$delete instance for biz %d from %s",ins.BizId, ins.Provider))
+			instances, err := dao.GetTestingInstances(ins.BizId, ins.Provider)
+			if err != nil {
+				return  err
+			}
+			go instance.DeleteInstances(instances, ins.BizId)
+		}
+	}
+	return nil
 }
 
 func SendEmail(data models.EmailData) error {

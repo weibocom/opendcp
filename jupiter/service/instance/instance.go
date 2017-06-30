@@ -593,7 +593,7 @@ func DeleteInstances(instances []models.Instance, bizId int) (err error)  {
 					time.Sleep(time.Millisecond*500)
 					goto REDO
 				}
-				sucessInstances = append(failedInstances, ins.InstanceId)
+				failedInstances = append(failedInstances, ins.InstanceId)
 				logstore.Error(correlationId, ins.InstanceId, "deleted failed!")
 				return
 			}
