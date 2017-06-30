@@ -174,14 +174,8 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
 	time.Sleep(2 * time.Second)
-	fmt.Println(instanceId)
-	fmt.Println(server)
-	fmt.Println(server.Addresses)
-	fmt.Println(server.Addresses["provider"])
 	tmp := (server.Addresses["provider"]).([]interface{})
 	tmp1 := tmp[0].(map[string]interface{})
-	fmt.Println(tmp)
-	fmt.Println(tmp1)
 	return tmp1["addr"].(string), err
 }
 
@@ -193,7 +187,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 	createdError := make(chan error, number)
 	for i := 0; i < number; i++ {
 		go func(i int) {
-			fmt.Println("first create")
 			result, err := servers.Create(driver.client, servers.CreateOpts{
 				Name:      cluster.Name ,
 				ImageRef:  cluster.ImageId,
@@ -203,7 +196,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			}).Extract()
 			if err != nil {
 				for i := 0; i < 3; i++ {
-					fmt.Println("try to create instance")
 					result, err := servers.Create(driver.client, servers.CreateOpts{
 						Name:      cluster.Name ,
 						ImageRef:  cluster.ImageId,
@@ -212,7 +204,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 						Networks: []servers.Network{{UUID: cluster.Network.VpcId}},
 					}).Extract()
 					if err == nil {
-						fmt.Println("create success")
 						createdInstances <- result.ID
 						return
 					}
@@ -220,7 +211,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 				createdError <- err
 				return
 			}
-			fmt.Println("create success")
 			createdInstances <- result.ID
 		}(i)
 	}
@@ -259,8 +249,6 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 	//subnetId
 	//SecurityGroupsId
 	//私有Ip和公有Ip替换为IPV4和IPV6
-
-
 	instance.Name = server.Name
 	instance.TenantID = server.TenantID
 	instance.UserID = server.UserID
@@ -357,7 +345,6 @@ func (driver openstackProvider) WaitForInstanceToStop(instanceId string) bool {
 func (driver openstackProvider) WaitToStartInstance(instanceId string) bool {
 	st, _ := driver.GetState(instanceId)
 
-	fmt.Println("the return status is", st)
 	return st == models.Running
 }
 
@@ -367,7 +354,6 @@ func (driver openstackProvider) GetState(instanceId string) (models.InstanceStat
 	if err != nil {
 		return models.StateError, err
 	}
-	fmt.Println("the status is: ",server.Status)
 	switch server.Status {
 	case "ACTIVE":
 		return models.Running, nil
