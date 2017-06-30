@@ -149,7 +149,7 @@ var processBody = function(data,page,head,body){
             tr.append(td);
             td = '<td>' + v.KeyId + '</td>';
             tr.append(td);
-            td = '<td> ****** </td>';
+            td = '<td> + v.KeySecret +</td>';
             tr.append(td);
             td = '<td>' + Math.round(parseFloat(v.Spent)*10, 1)/10.0 + '</td>';
             tr.append(td);
@@ -201,9 +201,6 @@ var change=function(step){
     var action=$("#page_action").val();
     delete postData['page_action'];
     delete postData['page_other'];
-    if(postData['KeySecret'] == '123456'){
-        postData['KeySecret'] = postData['current_secret'];
-    }
     delete postData['current_secret'];
     postData['id'] = parseInt(postData['id']);
     var actionDesc='';
@@ -272,13 +269,12 @@ var twiceCheck=function(action,idx,desc, secret,Provider){
                 modalBody+='<div class="form-group">';
                 modalBody+='<label for="hours" class="col-sm-4 control-label">云账号密码</label>';
                 modalBody+='<div class="col-sm-7">';
-                modalBody+='<input type="password" class="form-control" id="KeySecret" name="KeySecret" onkeyup="inputchange()" value="123456" placeholder="请输入云账号密码">';
+                modalBody+='<input type="password" class="form-control" id="KeySecret" name="KeySecret" onkeyup="inputchange()" value=\''+ secret + '\'  placeholder="请输入云账号密码">';
                 modalBody+='</div>';
                 modalBody+='</div>';
                 modalBody+='</div>';
                 modalBody+='<input type="hidden" id="provider" name="provider" value="'+Provider+'">';
                 modalBody+='<input type="hidden" id="id" name="id" value='+idx+'>';
-                modalBody+='<input type="hidden" id="current_secret" name="current_secret" value="'+secret+'">';
                 modalBody+='<input type="hidden" id="page_action" name="page_action" value="update">';
                 btnDisable=true;
                 break;
