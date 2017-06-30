@@ -69,4 +69,5 @@ sed -i "s/your_op_ip/$op_ip/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 sed -i "s/your_op_port/$op_port/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 sed -i "s/your_op_username/$op_user_name/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 sed -i "s/your_op_password/$op_password/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
+sed -i "s/your_op_ip/127.0.0.1/g" ${DEPLOY_DIR}/../jupiter/run.sh
 fi
