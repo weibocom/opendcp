@@ -91,20 +91,6 @@ func (ac *AccountController) CreateAccount() {
 	}
 	theAccount.BizId = bid
 
-	instances, err := instance.ListTestingInstances(bid, theAccount.Provider)
-	if err != nil {
-		beego.Error("Get testing instances err: ", err)
-		ac.RespServiceError(err)
-		return
-	}
-	beego.Warn("Create account: ", len(instances))
-
-	err = instance.DeleteInstances(instances, bid)
-	if err != nil {
-		beego.Error("Delete testing instances err: ", err)
-		ac.RespServiceError(err)
-		return
-	}
 
 	id, err := account.CreateAccount(&theAccount)
 	if err != nil {
@@ -112,6 +98,9 @@ func (ac *AccountController) CreateAccount() {
 		ac.RespServiceError(err)
 		return
 	}
+
+	instances, _ := instance.ListTestingInstances(bid, theAccount.Provider)
+	go instance.DeleteTestingInstances(instances, bid)
 
 	resp := ApiResponse{}
 	resp.Content = id
@@ -191,6 +180,9 @@ func (accountController *AccountController) UpdateAccount()  {
 		accountController.RespServiceError(err)
 		return
 	}
+
+	instances, _ := instance.ListTestingInstances(bid, theAccount.Provider)
+	go instance.DeleteTestingInstances(instances, bid)
 
 	resp := ApiResponse{}
 	resp.Content = true

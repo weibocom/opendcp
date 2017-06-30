@@ -303,7 +303,7 @@ func CheckCredit() error {
 			if err != nil {
 				return  err
 			}
-			go instance.DeleteInstances(instances, ins.BizId)
+			go instance.DeleteTestingInstances(instances, ins.BizId)
 		}
 	}
 	return nil
