@@ -2,6 +2,12 @@
     "Password": "ASDqwe123",
     "KeyId": "your_key_id",
     "KeySecret": "your_secret",
+
+    "OpIp": "your_op_ip",
+    "OpPort": "your_op_port",
+    "OpUserName": "your_op_username",
+    "OpPassWord": "your_op_password",
+
     "BufferSize": 40,
     "KeyDir": "./keys",
     "Ansible": {
