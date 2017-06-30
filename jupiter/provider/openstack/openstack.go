@@ -387,7 +387,7 @@ func new() (provider.ProviderDriver, error){
 }
 func newProvider() (provider.ProviderDriver, error){
 
-	url := fmt.Sprintf("http://%s:%s",conf.Config.OpIp, conf.Config.OpPort)
+	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
 	fmt.Println("the url is: ", url)
 	fmt.Println("the UserName is:", conf.Config.OpUserName)
 	fmt.Println("the password is", conf.Config.OpPassWord)
@@ -395,7 +395,7 @@ func newProvider() (provider.ProviderDriver, error){
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
 		Password: conf.Config.OpPassWord,
-		//DomainName: "default",
+		DomainName: "default",
 	}
 
 	provider, err := openstack.AuthenticatedClient(opts)
