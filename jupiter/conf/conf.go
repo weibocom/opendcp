@@ -43,7 +43,7 @@ var (
 
 type Configuration struct {
 	Password   string
-	KeyIp      string
+	KeyId      string
 	KeySecret  string
 	OpIp	   string
 	OpPort   string
