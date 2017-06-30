@@ -387,7 +387,7 @@ func new() (provider.ProviderDriver, error){
 }
 func newProvider() (provider.ProviderDriver, error){
 
-	url := fmt.Sprintf("http://%s:%s",conf.Config.KeyIp, conf.Config.OpPort)
+	url := fmt.Sprintf("http://%s:%s",conf.Config.OpIp, conf.Config.OpPort)
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
