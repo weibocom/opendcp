@@ -22,7 +22,7 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/instance"
-	"fmt"
+
 )
 
 const (
@@ -50,7 +50,6 @@ func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, c
 
 func (sf *StartFuture) Run() error {
 	providerDriver, err := provider.New(sf.ProviderName)
-	fmt.Println("get the provider")
 	if err != nil {
 		return err
 	}
@@ -103,15 +102,10 @@ func (sf *StartFuture) Run() error {
 			}
 			time.Sleep(TIME4WAIT * time.Second)
 		}
-		//
-		fmt.Println("allocate Ip")
 		privateIpAddress, err := providerDriver.AllocatePublicIpAddress(sf.InstanceId)
 		if err != nil{
 			return err
 		}
-		fmt.Println(privateIpAddress)
-		//
-		fmt.Println("allocated Ip")
 		sf.Ip = privateIpAddress
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
 		ins.PrivateIpAddress = privateIpAddress
