@@ -10,8 +10,8 @@ $(document).ready(function() {
     getCurrentDate();
     setInterval(getCurrentDate,1000);
     getColudList();
-    //每小时更新一下列表
-    setInterval(getColudList,1000*60*60);
+    //每15分钟更新一下列表
+    setInterval(getColudList,1000*60*15);
 });
 var ScrollTextLeft = function(){
     var speed=50;
@@ -89,11 +89,14 @@ var showQuota = function(datalist){
             ' <i class="fa fa-cube"></i> 使用额度:' + spent +
             ' <i class="fa fa-cloud"></i> 云厂商:'+ provider +'</a> </li>';
         if(spent > credit * usedRate){
+            if(spent > credit) spent = credit;
             tipresult += '<span style = "padding-right:2em;">' +
-                '<span style = "color: red">额度使用提醒：</span>' +
+                '<span style = "color: red"> <i class="fa fa-exclamation-circle"></i> 体验机额度使用提醒：</span>' +
                 ' <i class="fa fa-cubes"></i> 总额度:' + credit +
                 ' <i class="fa fa-cube"></i> 使用额度已达:' + spent +
-                ' <i class="fa fa-cloud"></i> 云厂商:'+ provider +'</span>';
+                ' <i class="fa fa-cloud"></i> 云厂商:'+ provider +
+                '<span style = "color: red"> <i class="fa fa-exclamation-circle"></i> 体验的机器即将删除！</span>'+
+                '</span>';
         }
     }
     var thescrollContent = '<div id="scroll_begin" style ="display: inline;">' +
@@ -102,6 +105,8 @@ var showQuota = function(datalist){
 
     var totalWidth =  $("#scroll_div").width();
     $("#scroll_div").html(thescrollContent);
+    // $("#scroll_begin").width(totalWidth);
+    // $("#scroll_end").width(totalWidth);
     var scrollWidth = $("#scroll_begin").width();
     if(scrollWidth <= totalWidth){
         $("#scroll_div").width(scrollWidth);
