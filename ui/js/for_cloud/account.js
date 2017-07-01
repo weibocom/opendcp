@@ -125,7 +125,7 @@ var processPage = function(data,page,pageinfo,paginate,func){
 //生成列表
 var processBody = function(data,page,head,body){
     var td="";
-    var title=['#', '云厂商', '云账号id', '云账号密码', '使用额度', '总额度', '#'];
+    var title=['#', '云厂商', '云账号id', '云账号密码', '体验机使用额度', '体验机总额度', '#'];
     if(title){
         var tr = $('<tr></tr>');
         for (var i = 0; i < title.length; i++) {
@@ -153,9 +153,12 @@ var processBody = function(data,page,head,body){
             for(var h = 0; h < v.KeySecret.length; h++)hideSecret +='*';
             td = '<td>' + hideSecret +'</td>';
             tr.append(td);
-            td = '<td>' + Math.round(parseFloat(v.Spent)*10, 1)/10.0 + '</td>';
+            var theCredit = Math.round(parseFloat(v.Credit)*10, 1)/10.0;
+            var theSpent = Math.round(parseFloat(v.Spent)*10, 1)/10.0;
+            if(theSpent > theCredit) theSpent = theCredit;
+            td = '<td>' + theSpent + '</td>';
             tr.append(td);
-            td = '<td>' + Math.round(parseFloat(v.Credit)*10, 1)/10.0 + '</td>';
+            td = '<td>' + theCredit + '</td>';
             tr.append(td);
             btnEdit = '<a class="tooltips" title="修改账号" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'alt\','+ v.Id +',\''+ v.KeyId +'\',\''+ v.KeySecret +'\',\''+ v.Provider +'\')"><i class="fa fa-edit"></i></a>';
             td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + '</div></td>';
