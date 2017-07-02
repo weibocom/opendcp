@@ -181,6 +181,55 @@ func DeleteOne(instanceId, correlationId string, bizId int) error {
 	return nil
 }
 
+func DeleteTestingOne(instanceId, correlationId string, bizId int) error {
+	err := dao.UpdateDeletingStatus(instanceId, bizId)
+	if err != nil {
+		logstore.Error(correlationId, instanceId, "update deleting status err:", err)
+		return err
+	}
+	ins, err := dao.GetInstance(instanceId, bizId)
+	if err != nil {
+		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
+		return err
+	}
+	if ins.Provider != PhyDev {
+		providerDriver, err := provider.New(ins.Provider)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, err)
+			return err
+		}
+		_, err = providerDriver.Delete(instanceId)
+		if err != nil {
+			if strings.Contains(err.Error(), "InvalidInstanceId.NotFound") {
+				//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
+				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
+			} else {
+				return err
+			}
+			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
+		}
+		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
+		usageHours, err := bill.GetUsageHours(instanceId, bizId)
+		cluster, err := GetCluster(instanceId, bizId)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, "get cluster, err:", err)
+			return err
+		}
+		err = bill.Bill(cluster, usageHours)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, "update bill, err:", err)
+			return err
+		}
+	}
+	err = dao.UpdateDeletedStatus(instanceId, bizId)
+	if err != nil {
+		logstore.Error(correlationId, instanceId, "update deleted status, err:", err)
+		return err
+	}
+	logstore.Info(correlationId, instanceId, "update instance status in DB success", instanceId, "success")
+	return nil
+}
+
 func GetCluster(instanceId string, bizId int) (*models.Cluster, error) {
 	cluster, err := dao.GetClusterByInstanceId(instanceId, bizId)
 	if err != nil {
@@ -576,7 +625,7 @@ func ManageDev(ip, password, instanceId, correlationId string, bizId int) (ssh.O
 	return ret, nil
 }
 
-func DeleteInstances(instances []models.Instance, bizId int) (err error)  {
+func DeleteTestingInstances(instances []models.Instance, bizId int) (err error)  {
 	var sucessInstances []string
 	var failedInstances []string
 	correlationId := time.Now().Format("0102-030405")
@@ -586,14 +635,14 @@ func DeleteInstances(instances []models.Instance, bizId int) (err error)  {
 		go func() {
 			times := RETRYTIMES
 			REDO:
-			err = DeleteOne(ins.InstanceId, correlationId, bizId)
+			err = DeleteTestingOne(ins.InstanceId, correlationId, bizId)
 			times--
 			if err != nil  {
 				if times>0 {
 					time.Sleep(time.Millisecond*500)
 					goto REDO
 				}
-				sucessInstances = append(failedInstances, ins.InstanceId)
+				failedInstances = append(failedInstances, ins.InstanceId)
 				logstore.Error(correlationId, ins.InstanceId, "deleted failed!")
 				return
 			}

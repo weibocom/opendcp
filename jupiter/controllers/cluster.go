@@ -263,21 +263,26 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 
-	costs, err := account.GetLatestCost(bid, theCluster.Provider)
-	if err != nil {
-		beego.Error("Get cost err:", err)
-		clusterController.RespServiceError(err)
-		return
-	}
+	if !instance.IsAccountExist(bid, theCluster.Provider) {
+		costs, err := account.GetLatestCost(bid, theCluster.Provider)
+		if err != nil {
+			beego.Error("Get cost err:", err)
+			clusterController.RespServiceError(err)
+			return
+		}
 
-	weight := (theCluster.Cpu+theCluster.Ram)/2
-	if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber*weight), costs["credit"]+0.1) {
-		diff := (costs["credit"]-costs["spent"]) / float64(weight)
-		msg := fmt.Sprintf("The number of instances you create is over the credit of your account! You only can create %d instances.", int(diff))
-		err = errors.New(msg)
-		beego.Error(err)
-		clusterController.RespServiceError(err)
-		return
+		weight := (theCluster.Cpu+theCluster.Ram)/2
+		if instance.GreaterOrEqual(costs["spent"] + float64(expandNumber*weight), costs["credit"]+0.1) {
+			diff := (costs["credit"]-costs["spent"]) / float64(weight)
+			if diff < 0{
+				diff = 0
+			}
+			msg := fmt.Sprintf("The number of instances you create is over the credit of your account! You only can create %d instances.", int(diff))
+			err = errors.New(msg)
+			beego.Error(err)
+			clusterController.RespServiceError(err)
+			return
+		}
 	}
 
 	instanceIds, err := cluster.Expand(theCluster, expandNumber, correlationId)
