@@ -85,6 +85,7 @@ var showQuota = function(datalist){
         var spent = Math.round(parseFloat(datalist[i].Spent)*10, 1)/10.0;
         var credit = Math.round(parseFloat(datalist[i].Credit)*10, 1)/10.0;
         var provider = datalist[i].Provider;
+        if(spent > credit) spent = credit;
         result += '<li><a href="javascript:;"><i class="fa fa-cubes"></i> 总额度:'+ credit +
             ' <i class="fa fa-cube"></i> 使用额度:' + spent +
             ' <i class="fa fa-cloud"></i> 云厂商:'+ provider +'</a> </li>';
