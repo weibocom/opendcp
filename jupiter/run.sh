@@ -11,6 +11,5 @@ rm /etc/hosts1
 
 gopm build
 
-go build
 
 ./jupiter
