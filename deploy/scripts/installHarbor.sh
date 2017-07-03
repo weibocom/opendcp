@@ -32,7 +32,9 @@ if [ $# != 4 ] ; then
 exit 1;
 fi
 
+info "add config of harbor registry conf/jupiter.conf"
 
+sed -i "s#harbor_registry = .*#harbor_registry = $1:$2#g" ../conf/jupiter.conf
  
 info "begin install..."
 
