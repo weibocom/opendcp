@@ -27,6 +27,8 @@ type Cluster struct {
 	DataDiskSize       int
 	DataDiskNum        int
 	DataDiskCategory   string
+	//OpenStack参数
+	FlavorId	   string
 }
 
 type Replication struct {
