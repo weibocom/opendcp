@@ -125,7 +125,7 @@ var processPage = function(data,page,pageinfo,paginate,func){
 //生成列表
 var processBody = function(data,page,head,body){
     var td="";
-    var title=['#', '云厂商', '云账号id', '云账号密码', '体验机使用额度', '体验机总额度', '#'];
+    var title=['#', '云厂商', '云账号id', '云账号密码', '体验机使用额度', '体验机总额度', '账号操作'];
     if(title){
         var tr = $('<tr></tr>');
         for (var i = 0; i < title.length; i++) {
