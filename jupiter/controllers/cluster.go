@@ -291,6 +291,7 @@ func (clusterController *ClusterController) ExpandInstances() {
 		clusterController.RespServiceError(err)
 		return
 	}
+	go account.GenerateOneCost(bid)
 	resp.Content = instanceIds
 	resp.Ext = clusterId
 	clusterController.ApiResponse = resp
