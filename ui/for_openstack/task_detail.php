@@ -144,7 +144,6 @@ $arr_list = node_init_log::getLogListByTaskid($task_id, 1,1000);
                       <th width="40%">标题</th>
                       <th width="10%">状态</th>
                       <th width="20%">时间</th>
-                      <th width="8%">操作</th>
                     </tr>
                     </thead>
                     <tbody id="task_process">
@@ -161,7 +160,6 @@ $arr_list = node_init_log::getLogListByTaskid($task_id, 1,1000);
 					<td></td>
 				<?php } ?>
 				<td><?=date('m-d H:i:s', $oneinit['create_time'])?></td>
-				<td><div class="btn-group btn-group-xs btn-group-solid"><a class="text-primary tooltips" title="查看日志" href="log_detail.php?logid=<?=$oneinit['id']?>" target="_blank"><i class="fa fa-info"></i></a> </div></td>
 			</tr>
 			<?php } ?>
 		    </tbody>
