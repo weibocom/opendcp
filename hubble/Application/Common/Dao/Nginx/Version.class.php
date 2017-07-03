@@ -399,7 +399,7 @@ class Version {
             case 'ANSIBLE':
                 // 准备脚本内容
                 $shell = new Shell();
-                $ret = $shell->getShellDetail(['id' => $shellId ,'biz_id' => 0]);
+                $ret = $shell->getShellDetail(['id' => $shellId ,'biz_id' => $bid]);
                 if($ret['code'] != 0) return $ret;
                 $script = [['action' => [
                     "module" => "longscript",
