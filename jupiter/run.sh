@@ -7,7 +7,7 @@ echo "start building..."
 cp /etc/hosts /etc/hosts1
 echo '127.0.0.1 controller' >> /etc/hosts1
 cp /etc/hosts1 /etc/hosts
-rm hosts1
+rm /etc/hosts1
 
 gopm build
 
