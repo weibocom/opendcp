@@ -375,7 +375,8 @@ function UUID($prefix = ""){
 function hubble_oprlog($module, $operation, $appkey, $user, $args = ''){
 
     $oprlog = new \Common\Dao\Secure\Oprlog();
-    $ret = $oprlog->addItem($module, $operation, $appkey, $user, $args);
+    $bid = I('server.HTTP_X_BIZ_ID',0);
+    $ret = $oprlog->addItem($module, $operation, $appkey, $user, $bid, $args);
     if($ret === false)
         hubble_log(HUBBLE_WARN,
             '变更记录失败: ' . "[$module - $operation by $user with appkey $appkey, args=$args]"

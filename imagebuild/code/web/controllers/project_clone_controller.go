@@ -25,6 +25,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"weibo.com/opendcp/imagebuild/code/errors"
 	"weibo.com/opendcp/imagebuild/code/web/models"
+	"strings"
 )
 
 /**
@@ -35,11 +36,12 @@ type ProjectCloneController struct {
 }
 
 func (c *ProjectCloneController) Post() {
+	srcCluster := c.HarborProjectName()
 	srcProjectName := c.GetString("srcProjectName")
 	dstProjectName := c.GetString("dstProjectName")
 	creator := c.Operator()
-	if creator == "" || srcProjectName == "" || dstProjectName == "" {
-		log.Error("creator,srcProjectName,dstProjectName should not be empy when building project")
+	if creator == "" || srcProjectName == "" || dstProjectName == ""|| srcCluster =="" {
+		log.Error("srcCluster, creator,srcProjectName,dstProjectName should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -49,9 +51,22 @@ func (c *ProjectCloneController) Post() {
 		c.ServeJSON(true)
 		return
 	}
-	_, projectInfo := models.AppServer.GetProjectInfo(srcProjectName)
 
-	_, code := models.AppServer.CloneProject(srcProjectName, dstProjectName, creator, projectInfo.Cluster, projectInfo.DefineDockerFileType)
+	dstProjectName = strings.ToLower(dstProjectName)
+	isvalidate, spec := models.AppServer.ValidateProjectName(dstProjectName)
+	if !isvalidate {
+		var resp = models.BuildResponse(
+			errors.PARAMETER_INVALID,
+			"projectName: "+ dstProjectName + "contains special char:" + spec,
+			errors.ErrorCodeToMessage(errors.PARAMETER_INVALID))
+		c.Data["json"] = resp
+		c.ServeJSON(true)
+		return
+	}
+
+	_, projectInfo := models.AppServer.GetProjectInfo(srcCluster, srcProjectName)
+
+	_, code := models.AppServer.CloneProject(srcCluster, srcProjectName, dstProjectName, creator, projectInfo.Cluster, projectInfo.DefineDockerFileType)
 	response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 	c.Data["json"] = response
 	c.ServeJSON(true)

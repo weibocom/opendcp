@@ -102,17 +102,33 @@ func (f *FlowApi) URLMapping() {
  */
 func (c *FlowApi) AppendFlowImpl() {
 	req := flowImpl{}
-
-	err := c.Body2Json(&req)
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	err = c.Body2Json(&req)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
-
+	params := make(map[string]interface{},2)
+	params["BizId"] = biz_id
+	params["Name"] = req.Name
+	count,err := service.Cluster.CheckIsExists(&FlowImpl{},params)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	if count >= 1 {
+		c.ReturnFailed("Name duplicate!", 400)
+		return
+	}
 	//StepName check
 	for _, step := range req.Steps {
 		name := step.Name
-		s := handler.GetActionImpl(name)
+		s := handler.GetActionImpl(biz_id,name)
 		if s == nil {
 			c.ReturnFailed("step "+name+" not found, error:"+err.Error(), 404)
 			return
@@ -123,6 +139,7 @@ func (c *FlowApi) AppendFlowImpl() {
 
 	obj := &FlowImpl{
 		Name:  req.Name,
+		BizId: biz_id,
 		Steps: string(stepsByte),
 		Desc:  string(req.Desc),
 		//Options:string(optStr),
@@ -167,6 +184,12 @@ func (c *FlowApi) GetFlowImpl() {
 
 //列出TaskImpl
 func (c *FlowApi) ListFlowImpl() {
+	biz := c.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
 	page := c.Query2Int("page", 1)
 	pageSize := c.Query2Int("page_size", 10)
 
@@ -174,7 +197,7 @@ func (c *FlowApi) ListFlowImpl() {
 
 	list := make([]FlowImpl, 0, pageSize)
 
-	count, err := service.Flow.ListByPageWithSort(page, pageSize, &FlowImpl{}, &list,"-id")
+	count, err := service.Flow.ListByPageWithSort(page, pageSize, biz_id, &FlowImpl{}, &list,"-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -239,11 +262,17 @@ func (f *FlowApi) DeleteFlowImpl() {
 
 //列出可用ActionImpl
 func (f *FlowApi) ListTaskStep() {
+	biz := f.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
 	page := f.Query2Int("page", 1)
 	pageSize := f.Query2Int("page_size", 10)
 
 	f.CheckPage(&page, &pageSize)
-	list := handler.GetAllActionImpl()
+	list := handler.GetAllActionImpl(biz_id)
 	f.ReturnPageContent(0, len(list), len(list), list)
 }
 
@@ -278,6 +307,12 @@ func (f *FlowApi) RunFlow() {
 	}
 
 	opUser := f.Ctx.Input.Header("Authorization")
+	biz := f.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
 
 	nodes := make([]string, 0)
 	nodeList := make([]*Node, 0, len(nodes))
@@ -307,7 +342,7 @@ func (f *FlowApi) RunFlow() {
 	context["opUser"] = opUser
 
 
-	err = executor.Executor.Run(req.TaskImplId, req.TaskName,
+	err = executor.Executor.Run(req.TaskImplId, req.TaskName, biz_id,
 		&executor.ExecOption{MaxNum: stepLen}, nodeList, context)
 
 	if err != nil {
@@ -490,12 +525,17 @@ func (f *FlowApi) GetFlow() {
 func (f *FlowApi) ListFlow() {
 	page := f.Query2Int("page", 1)
 	pageSize := f.Query2Int("page_size", 10)
-
+	biz := f.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
 	f.CheckPage(&page, &pageSize)
 
 	list := make([]Flow, 0, pageSize)
 
-	count, err := service.Flow.ListByPageWithSort(page, pageSize, &Flow{}, &list, "-id")
+	count, err := service.Flow.ListByPageWithSort(page, pageSize, biz_id, &Flow{}, &list, "-id")
 	if err != nil {
 		f.ReturnFailed(err.Error(), 400)
 		return
@@ -574,6 +614,12 @@ func (f *FlowApi) GetFlowLogById() {
 
 // GetLog get log using nodeState Id
 func (f *FlowApi) GetLog() {
+	biz := f.Ctx.Input.Header("X-Biz-ID")
+	biz_id,err := strconv.Atoi(biz)
+	if err !=nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
 	idStr := f.Ctx.Input.Param(":nsid")
 	nodeStateId, err:= strconv.Atoi(idStr)
 	if err != nil {
@@ -588,7 +634,7 @@ func (f *FlowApi) GetLog() {
 		return
 	}
 
-	logs, err := getLog(nodeState)
+	logs, err := getLog(nodeState,biz_id)
 	if err != nil {
 		f.ReturnFailed(err.Error(), 400)
 		return
@@ -598,7 +644,7 @@ func (f *FlowApi) GetLog() {
 }
 
 var handlers = make(map[string]*handler.Handler)
-func getLog(nodeState *NodeState) ([]map[string]string, error) {
+func getLog(nodeState *NodeState,biz_id int) ([]map[string]string, error) {
 	logs := make([]map[string]string, 0)
 
 	// load flow definition
@@ -625,7 +671,7 @@ func getLog(nodeState *NodeState) ([]map[string]string, error) {
 	// load logs
 	currStep := nodeState.Steps
 	for _, option := range stepOptions {
-		step := handler.GetActionImpl(option.Name)
+		step := handler.GetActionImpl(flow.BizId,option.Name)
 
 		hdl := handlers[step.Type]
 		if hdl == nil {
@@ -634,7 +680,7 @@ func getLog(nodeState *NodeState) ([]map[string]string, error) {
 			handlers[step.Type] = hdl
 		}
 
-		log := (*hdl).GetLog(nodeState)
+		log := (*hdl).GetLog(nodeState,biz_id)
 		stepLog := map[string]string {
 			step.Name: log,
 		}

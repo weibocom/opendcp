@@ -106,7 +106,7 @@ class Oprlog {
      *
      * @return mixed 成功返回数据ID 失败返回 false
      */
-    public function addItem($module, $operation, $appkey, $user, $args = ''){
+    public function addItem($module, $operation, $appkey, $user, $bid, $args = ''){
 
         $time = date("Y-m-d H:i:s");
 
@@ -116,6 +116,7 @@ class Oprlog {
             'appkey'     => $appkey,
             'opr_time'   => $time,
             'user'       => $user,
+            'biz_id'     => $bid,
             'args'       => $args
         ];
 

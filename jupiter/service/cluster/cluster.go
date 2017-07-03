@@ -23,8 +23,6 @@ package cluster
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 	"time"
 	"weibo.com/opendcp/jupiter/dao"
 	"weibo.com/opendcp/jupiter/future"
@@ -34,10 +32,13 @@ import (
 	"weibo.com/opendcp/jupiter/logstore"
 	"errors"
 	"github.com/astaxie/beego"
+	"regexp"
+	"strconv"
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
-func GetCluster(clusterId int64) (*models.Cluster, error) {
-	cluster, err := dao.GetClusterById(clusterId)
+func GetCluster(clusterId int64, bizId int) (*models.Cluster, error) {
+	cluster, err := dao.GetClusterById(clusterId, bizId)
 	if err != nil {
 		return nil, err
 	}
@@ -46,12 +47,18 @@ func GetCluster(clusterId int64) (*models.Cluster, error) {
 
 func CreateCluster(cluster *models.Cluster) (int64, error) {
 	cluster.CreateTime = time.Now()
-	providerDriver, err := provider.New(cluster.Provider)
+	var providerDriver provider.ProviderDriver
+	var err error
+	if instance.IsAccountExist(cluster.BizId, cluster.Provider) {
+		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+	} else {
+		providerDriver, err = provider.New(cluster.Provider)
+	}
 	if err != nil {
 		return 0, err
 	}
 	instanceTypeModel := cluster.InstanceType
-	validNumber := regexp.MustCompile("[0-9]")
+	validNumber := regexp.MustCompile("[0-9]+")
 	cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
 	cluster.InstanceType = providerDriver.GetInstanceType(instanceTypeModel)
 	cpu, _ := strconv.Atoi(cpuAndRam[0])
@@ -59,21 +66,41 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 	cluster.Cpu = cpu
 	cluster.Ram = ram
 	id, err := dao.InsertCluster(cluster)
+	if err != nil {
+		beego.Error("Create cluster err: ", err)
+		return 0, err
+	}
 	_, err = bill.InsertBill(cluster)
 	return id, err
 }
 
-func DeleteCluster(clusterId int64) (bool, error) {
-	instances, err := dao.ListInstancesByClusterId(clusterId)
+func DeleteCluster(clusterId int64, bizId int) (bool, error) {
+	instances, err := dao.ListInstancesByClusterId(clusterId, bizId)
 	if  len(instances) > 0 {
 		return false, errors.New("Can't delete this cluster, because still exsit instance by cluster model created.")
 	}
-	isDeleted, err := dao.DeleteCluster(clusterId)
+	isDeleted, err := dao.DeleteCluster(clusterId, bizId)
 	return isDeleted, err
 }
 
 func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	var providerDriver provider.ProviderDriver
+	var err error
+	var isTest int
+	if instance.IsAccountExist(cluster.BizId, cluster.Provider) {
+		providerDriver, err = provider.NewByAccount(cluster.BizId, cluster.Provider)
+		isTest = 0
+	} else {
+		costs, err := instance.GetCost(cluster.BizId, cluster.Provider)
+		if err != nil {
+			return nil, err
+		}
+		if instance.GreaterOrEqual(costs["spent"], costs["credit"]) {
+			return nil, errors.New("The credit of account has over!")
+		}
+		providerDriver, err = provider.New(cluster.Provider)
+		isTest = 1
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +114,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	beego.Info("The instance ids is", instanceIds)
 	c := make(chan int)
 	for i := 0; i < len(instanceIds); i++ {
-		go func(i int) {
+		go func(i int, is_test int) {
 			defer func() {
 				if r := recover(); r != nil {
 					logstore.Error(correlationId, instanceIds[i], "Recovered from err:", r)
@@ -113,14 +140,16 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 			ins.SystemDiskCategory = cluster.SystemDiskCategory
 			ins.InstanceType = cluster.InstanceType
 			ins.Status = models.Pending
+			ins.BizId = cluster.BizId
+			ins.IsTest = is_test
 			if err := dao.InsertInstance(ins); err != nil {
 				logstore.Error(correlationId, instanceIds[i], "insert instance to db error:", err)
 				c <- i
 			}
-			startFuture := future.NewStartFuture(instanceIds[i], cluster.Provider, true, ins.PrivateIpAddress, correlationId)
+			startFuture := future.NewStartFuture(instanceIds[i], cluster.Provider, true, ins.PrivateIpAddress, correlationId, cluster.BizId)
 			future.Exec.Submit(startFuture)
 			c <- i
-		}(i)
+		}(i,isTest)
 	}
 	for i := 0; i < len(instanceIds); i++ {
 		select {
@@ -130,10 +159,18 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	return instanceIds, nil
 }
 
-func ListClusters() ([]models.Cluster, error) {
-	clusters, err := dao.GetClusters()
+func ListClusters(bizId int) ([]models.Cluster, error) {
+	clusters, err := dao.GetClusters(bizId)
 	if err != nil {
 		return nil, err
 	}
 	return clusters, nil
+}
+
+func OperateBysql(sql string) (int64,error) {
+	id, err := dao.OperateBysql(sql)
+	if err != nil {
+		return -1,err
+	}
+	return id,nil
 }

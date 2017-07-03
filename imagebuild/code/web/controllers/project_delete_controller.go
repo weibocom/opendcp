@@ -36,9 +36,10 @@ type ProjectDeleteController struct {
 
 func (c *ProjectDeleteController) Post() {
 	projectName := c.GetString("projectName")
+	cluster := c.HarborProjectName()
 	operator := c.Operator()
-	if operator == "" || projectName == "" {
-		log.Error("operator,projectName should not be empy when building project")
+	if operator == "" || projectName == "" || cluster == ""{
+		log.Error("cluster, operator,projectName should not be empy when building project")
 		resp := models.BuildResponse(
 			errors.PARAMETER_INVALID,
 			-1,
@@ -48,7 +49,7 @@ func (c *ProjectDeleteController) Post() {
 		c.ServeJSON(true)
 		return
 	}
-	_, code := models.AppServer.DeleteProject(projectName, operator)
+	_, code := models.AppServer.DeleteProject(cluster, projectName, operator)
 	response := models.BuildResponse(code, "", errors.ErrorCodeToMessage(code))
 	c.Data["json"] = response
 	c.ServeJSON(true)

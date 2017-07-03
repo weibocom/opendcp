@@ -44,6 +44,7 @@ type DownloadDockerfilePlugin struct {
 func (p *DownloadDockerfilePlugin) Process(params map[string]interface{}, resp *string) error {
 	var currentDockerfile string = params["input"].(string)
 	var project string = params["project"].(string)
+	var cluster string = params["cluster"].(string)
 	var projectPath string = params["projectFolder"].(string)
 	config := make(map[string]interface{}, 0)
 	error := json.Unmarshal([]byte(params["config"].(string)), &config)
@@ -59,7 +60,7 @@ func (p *DownloadDockerfilePlugin) Process(params map[string]interface{}, resp *
 	password := config["password"].(string)
 
 	var localPath string = "localPath" + strconv.Itoa(time.Now().Nanosecond())
-	realCheckoutAs := projectPath + project + "/tmp/" + localPath
+	realCheckoutAs := projectPath + cluster + "/" + project + "/tmp/" + localPath
 
 	if sourceType == "git" {
 		error := util.GitDownload(sourceUrl, username, password, realCheckoutAs, project)

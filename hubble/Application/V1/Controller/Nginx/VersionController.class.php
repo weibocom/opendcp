@@ -52,7 +52,7 @@ class VersionController extends RestController {
         $nameArg = I('name');
         $idArg = I('unit_id');
         $likeArg = I('like', true);
-
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
         $page = I('page');
         $limit = I('limit');
 
@@ -63,8 +63,11 @@ class VersionController extends RestController {
         if($page <= 0 || $limit <= 0)
             $this->ajaxReturn(std_error('limit or page out of range'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         // 设置过滤器
-        $filter     = [];
+        $filter     = ['biz_id' => $bidArg];
         if(!empty($nameArg))
             $filter['name'] = $nameArg;
 
@@ -104,13 +107,17 @@ class VersionController extends RestController {
 
     public function detail_get(){
         $idArg = I('id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+
         $version = new Version();
 
-        $ret = $version->getVersionDetail($idArg);
+        $ret = $version->getVersionDetail(['id' => $idArg, 'biz_id' => $bidArg]);
 
         if($ret['code'] == HUBBLE_RET_SUCCESS) {
             $this->ajaxReturn(std_return($ret['content']));
@@ -124,6 +131,7 @@ class VersionController extends RestController {
         $nameArg = I('name');
         $userArg = I('user');
         $typeArg = I('type');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($unitIdArg))
             $this->ajaxReturn(std_error('unit_id is empty'));
@@ -134,6 +142,9 @@ class VersionController extends RestController {
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         $channel = new Channel();
         if(!$channel->isIllegal($typeArg))
             $this->ajaxReturn(std_error('type is not illegal'));
@@ -141,7 +152,7 @@ class VersionController extends RestController {
 
         $unit = new UnitModel();
 
-        $ret = $unit->isExist($unitIdArg);
+        $ret = $unit->isExist($unitIdArg, $bidArg);
         if($ret === false)
             $this->ajaxReturn(std_error('confirm unit_id exist: failed, db error'));
 
@@ -150,7 +161,7 @@ class VersionController extends RestController {
 
 
         $version = new Version();
-        $ret = $version->generateVersion($unitIdArg, $nameArg, $typeArg, $userArg);
+        $ret = $version->generateVersion($unitIdArg, $nameArg, $typeArg, $userArg, $bidArg);
 
         if($ret['code'] != 0)
             $this->ajaxReturn(std_error($ret['msg']));
@@ -165,6 +176,7 @@ class VersionController extends RestController {
         $nameArg = I('name');
         $userArg = I('user');
         $typeArg = I('type');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         $filesArg = I('files', '','unsafe_raw');
 
@@ -182,6 +194,9 @@ class VersionController extends RestController {
 
         if(empty($typeArg))
             $this->ajaxReturn(std_error('type is empty'));
+        
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         $filesJson = json_decode($filesArg, true);
         if(is_null($filesJson))
@@ -194,7 +209,7 @@ class VersionController extends RestController {
 
         $unit = new UnitModel();
 
-        $ret = $unit->isExist($unitIdArg);
+        $ret = $unit->isExist($unitIdArg, $bidArg);
         if($ret === false)
             $this->ajaxReturn(std_error('confirm unit_id exist: failed, db error'));
 
@@ -203,7 +218,7 @@ class VersionController extends RestController {
 
 
         $version = new Version();
-        $ret = $version->createVersion($unitIdArg, $nameArg, $filesArg, $typeArg, $userArg);
+        $ret = $version->createVersion($unitIdArg, $nameArg, $filesArg, $typeArg, $userArg, $bidArg);
 
         if($ret['code'] != 0)
             $this->ajaxReturn(std_error($ret['msg']));
@@ -216,6 +231,7 @@ class VersionController extends RestController {
     public function deprecated_post(){
         $idArg = I('id');
         $userArg = I('user');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -223,15 +239,17 @@ class VersionController extends RestController {
         if(empty($userArg))
             $this->ajaxReturn(std_error('user is empty'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
 
         $version = new Version();
-        $ret = $version->isExist($idArg);
+        $ret = $version->isExist(['id' => $idArg, 'biz_id' => $bidArg]);
         if($ret === false)
             $this->ajaxReturn(std_error('confirm version id exist: db error'));
         if(is_null($ret))
             $this->ajaxReturn(std_error("no such version id [$idArg]"));
 
-        $ret = $version->setDeprecated($idArg);
+        $ret = $version->setDeprecated($idArg, $bidArg);
         if($ret['code'] != 0)
             $this->ajaxReturn(std_error($ret['msg']));
 
@@ -243,6 +261,7 @@ class VersionController extends RestController {
         $idArg = I('id');
         $userArg = I('user');
         $shellIdArg = I('shell_id');
+        $bidArg = I('server.HTTP_X_BIZ_ID',0);
 
         if(empty($idArg))
             $this->ajaxReturn(std_error('id is empty'));
@@ -253,14 +272,17 @@ class VersionController extends RestController {
         if(empty($shellIdArg))
             $this->ajaxReturn(std_error('shell_id is empty'));
 
+        if($bidArg < 0)
+            $this->ajaxReturn(std_error('biz_id is empty'));
+        
         $version = new Version();
-        $ret = $version->isExist($idArg);
+        $ret = $version->isExist(['id' => $idArg, 'biz_id' => $bidArg]);
         if($ret === false)
             $this->ajaxReturn(std_error('confirm version id exist: db error'));
         if(is_null($ret))
             $this->ajaxReturn(std_error("no such version id [$idArg]"));
 
-        $ret = $version->releaseVersion($idArg, $shellIdArg, $userArg);
+        $ret = $version->releaseVersion($idArg, $shellIdArg, $userArg, $bidArg);
         if($ret['code'] != 0)
             $this->ajaxReturn(std_error($ret['msg']));
 

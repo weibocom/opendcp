@@ -30,6 +30,7 @@
         - ./wait-for-it.sh:/wait-for-it.sh
         - ./conf/orion.conf:/go/src/weibo.com/opendcp/orion/conf/app.conf
         - ./logs/:/go/src/weibo.com/opendcp/orion/logs/
+        - ./conf/orion_dbinit.json:/go/src/weibo.com/opendcp/orion/conf/orion_dbinit.json
      ports:
         - "8081:8080"
      depends_on:

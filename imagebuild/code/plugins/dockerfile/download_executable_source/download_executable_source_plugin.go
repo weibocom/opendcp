@@ -43,6 +43,8 @@ var SVN = "svn"
 func (p *DownloadExecutableSourcePlugin) Process(params map[string]interface{}, resp *string) error {
 	project := params["project"].(string)
 
+	cluster := params["cluster"].(string)
+
 	projectPath := params["projectFolder"].(string)
 
 	currentDockerfile := params["input"].(string)
@@ -69,7 +71,7 @@ func (p *DownloadExecutableSourcePlugin) Process(params map[string]interface{}, 
 	}
 
 	var localPath string = "localPath" + strconv.Itoa(time.Now().Nanosecond())
-	realCheckoutAs := projectPath + project + "/tmp/" + localPath
+	realCheckoutAs := projectPath + cluster + "/" + project + "/tmp/" + localPath
 
 	if sourceType == SVN {
 		fmt.Printf("svn download")

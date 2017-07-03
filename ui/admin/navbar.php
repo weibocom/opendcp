@@ -290,7 +290,7 @@ require_once('../include/navbar.php');
 <script src="../js/pnotify.js"></script>
 <script src="../js/switchery.js"></script>
 <script src="../js/login.js"></script>
-<script src="../js/admin/navbar.js"></script>
+<script src="../js/admin/navbar.js?_t=<?php echo date('U');?>"></script>
 
 
 <!-- Custom Notification -->

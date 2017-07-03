@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!-- Meta, title, CSS, favicons, etc. -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Weibo Docker Container Platform</title>
+
+  <!-- Bootstrap -->
+  <link href="gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="gentelella/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Animate.css -->
+  <link href="gentelella/css/animate.min.css" rel="stylesheet">
+  <!-- PNotify -->
+  <link href="gentelella/vendors/pnotify/dist/pnotify.css" rel="stylesheet">
+  <link href="gentelella/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
+  <link href="gentelella/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
+  <!-- starrr -->
+  <link href="gentelella/vendors/starrr/dist/starrr.css" rel="stylesheet">
+  <!-- bootstrap-progressbar -->
+  <link href="../gentelella/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
+
+  <!-- Custom Theme Style -->
+  <link href="gentelella/build/css/custom.min.css" rel="stylesheet">
+  <!-- bootstrap-wysiwyg -->
+  <link href="gentelella/vendors/google-code-prettify/bin/prettify.min.css" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet">
+</head>
+
+<body class="nav-md">
+
+
+      <div class="" style="margin-top: 50px;margin-bottom: 50px;">
+        <h1 style="text-align: center"><i class="fa fa-cloud"></i> OpenDCP混合云平台</h1>
+      </div>
+
+      <div class="clearfix"></div>
+
+      <div class="col-sm-8 col-sm-offset-2">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+          <div class="x_panel">
+            <div class="x_title">
+              <h2><i class="fa fa-cloud-upload"></i> 申请体验</h2>
+              <ul class="nav navbar-right panel_toolbox">
+                <li>
+                  <a href="/" style="color:currentColor;"><i class="fa fa-home"> 返回首页</i></a>
+                </li>
+              </ul>
+              <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+              <br>
+
+              <div class="col-sm-6 col-sm-offset-3">
+
+                <form method="post" id="my_form_1" class="form-horizontal">
+
+                  <div class="form-group has-feedback">
+                    <input type="text" class="form-control" id="en" name="en" onkeyup="check()" placeholder="登录账户">
+                    <span class="fa fa-user form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="form-group has-feedback">
+                    <input type="password" class="form-control" id="pw" name="pw" onkeyup="check()" placeholder="请输入6-16位字符或数字密码">
+                    <span class="fa fa-circle form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                    <div class="form-group has-feedback">
+                        <input type="password" class="form-control" id="repw" name="repw" onkeyup="check()" placeholder="请确认密码">
+                        <span class="fa fa-circle form-control-feedback right" aria-hidden="true"></span>
+                    </div>
+
+                  <div class="divider-dashed"></div>
+
+                  <div class="form-group has-feedback">
+                    <input type="text" class="form-control" id="cn" name="cn" onkeyup="check()" placeholder="姓名">
+                    <span class="fa fa-user form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="form-group has-feedback">
+                    <input type="text" class="form-control" id="mobile" name="mobile" onkeyup="check()" placeholder="手机">
+                    <span class="fa fa-phone form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="form-group has-feedback">
+                    <input type="text" class="form-control" id="mail" name="mail" onkeyup="check()" placeholder="邮箱">
+                    <span class="fa fa-envelope form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="form-group has-feedback">
+                    <input type="text" class="form-control" id="biz" name="biz" onkeyup="check()" placeholder="公司名称">
+                    <span class="fa fa-building form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="form-group has-feedback">
+                    <input type="text" class="form-control" id="verification_code" name="verification_code" onkeyup="check()" placeholder="验证码">
+                    <span class="fa fa-barcode form-control-feedback right" aria-hidden="true"></span>
+                  </div>
+
+                  <div class="form-group has-feedback">
+                    <img id="reg_validate" name="validate" onclick="updateValidate()" src="verification.php"  alt="点击刷新">
+                    <span>点击图片刷新</span>
+                  </div>
+
+                  <div style="margin-top: 10px;">
+                    <button class="btn btn-success" style="width: 100%;" id="btnCommit" onclick="commit();return false;" disabled>同意协议并提交</button>
+                  </div>
+
+                </form>
+
+                <div style="margin-top: 10px;text-align: center;">
+                  <a style="color: #2277da;" data-toggle="modal" data-target="#myViewModal" onclick="showAgreement()">《OpenDCP混合云平台服务协议》</a>
+                </div>
+              </div>
+              <br>
+            </div>
+          </div>
+        </div>
+        <form method="post" class="form-horizontal">
+          <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="myViewModalLabel">《OpenDCP混合云平台服务协议》</h4>
+                </div>
+                <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
+                  <div class="col-sm-12">
+                    <textarea rows="16" class="form-control" placeholder="服务协议" readonly>一、关于OpenDCP
+
+　　(1)   本产品基于OpenDCP开源项目搭建的体验版本，与产品所属公司无直接利益和法律关系。
+
+       (2)   访问者在从事与本产品相关的所有行为（包括但不限于访问、账号管理、使用、部署、宣传）时，必须以善意且谨慎的态度行事。
+
+       (3)　本产品的服务内容的版权仅归原作者所有。
+
+　　(4)　由于用户将个人密码告知他人或与他人共享注册帐户，由此导致的任何个人资料泄露，本网站不负任何责任。
+
+　　(5)　当政府司法机关依照法定程序要求本产品披露个人资料时，我们将根据执法单位之要求或为公共安全之目的提供个人资料。在此情况下之任何披露，本产品均得免责。
+
+　　(6)　访问者不得故意或者过失的损害或者弱化本产品的各类合法权利与利益，不得利用本产品以任何方式直接或者间接的从事违反中华人民共和国法律、国际公约以及社会公德的行为。
+
+　　(7)  本产品之声明以及其修改权、更新权及最终解释权均属OpenDCP团队所有。
+
+二、关于法律责任
+
+　　1 本产品使用者因为违反本声明的规定而触犯中华人民共和国法律的，一切后果自己负责，本网站不承担任何责任。
+
+　　2 凡以任何方式登陆本产品或直接、间接使用本产品服务，视为自愿接受本网站声明的约束
+
+　　3 本声明未涉及的问题参见国家有关法律法规，当本声明与国家法律法规冲突时，以国家法律法规为准。</textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    <!-- jQuery -->
+    <script src="gentelella/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="gentelella/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- NProgress -->
+    <script src="gentelella/vendors/nprogress/nprogress.js"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="gentelella/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+    <!-- PNotify -->
+    <script src="gentelella/vendors/pnotify/dist/pnotify.js"></script>
+    <script src="gentelella/vendors/pnotify/dist/pnotify.buttons.js"></script>
+    <script src="gentelella/vendors/pnotify/dist/pnotify.nonblock.js"></script>
+    <!-- page level -->
+    <script src="js/pnotify.js"></script>
+    <script>
+      var check=function(){
+        var disabled=false;
+        if($('#en').val()=='') disabled=true;
+        if($('#cn').val()=='') disabled=true;
+        if(!checkParam('mobile', 'mobile')) disabled=true;
+        if(!checkParam('email', 'mail')) disabled=true;
+        if($('#biz').val()=='') disabled=true;
+        if(!checkParam('password', 'pw')) disabled=true;
+        if($('#repw').val()!=$('#pw').val()){
+            $('#repw').parent().css('border','1px solid #CE5454');
+            disabled=true;
+        }else{
+            $('#repw').parent().css('border','0px none rgb(115, 135, 156)');
+        }
+        if($("#btnCommit").html() == '已提交申请，请联系管理员审批！') disabled=true;
+        if($('#verification_code').val()=='') disabled=true;
+        $("#btnCommit").attr('disabled',disabled);
+      }
+
+      var commit=function(){
+        $("#btnCommit").attr('disabled',true).html('提交中 . . .');
+        NProgress.start();
+        var url='/api/admin/register.php';
+        var postData={};
+        postData.en = $('#en').val();
+        postData.cn = $('#cn').val();
+        postData.mobile = $('#mobile').val();
+        postData.mail = $('#mail').val();
+        postData.biz = $('#biz').val();
+        postData.pw = $('#pw').val();
+        postData.verification_code = $('#verification_code').val();
+        $.ajax({
+          type: "POST",
+          url: url,
+          data: {action:'insert',data:JSON.stringify(postData)},
+          dataType: "json",
+          success: function (data) {
+            //执行结果提示
+            if(data.code==0){
+              pageNotify('success','申请成功！', '请等待审核', false);
+              $("#btnCommit").html('已提交申请，请联系管理员审批！');
+              $("#btnCommit").removeClass('btn btn-success').addClass('btn btn-warning');
+              $("#btnCommit").attr('disabled',true);
+              updateValidate();
+            }else{
+              $("#btnCommit").attr('disabled',true).html('同意协议并提交');
+              if(data.msg.indexOf("Duplicate entry") != -1){
+                  pageNotify('error','操作失败！','错误信息：登录帐户名 '+postData.en +' 已注册！');
+              }
+              pageNotify('error','操作失败！','错误信息：'+data.msg);
+              updateValidate();
+            }
+            NProgress.done();
+          },
+          error: function (){
+            $("#btnCommit").attr('disabled',true).html('同意协议并提交');
+            pageNotify('error','操作失败！','错误信息：接口不可用');
+            updateValidate();
+            NProgress.done();
+          }
+        });
+      }
+
+      var checkParam=function(t,o){
+        var ret = false;
+        switch (t){
+          case 'mobile':
+            var myreg = /^(((13[0-9]{1})|(15[0-9]{1})|(17[0-9]{1})|(18[0-9]{1}))+\d{8})$/;
+            break;
+          case 'email':
+            var myreg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/;
+            break;
+          case 'password':
+            var myreg = /^[0-9a-zA-Z]{6,16}$/;
+            break;
+          default:
+            return ret;
+            break;
+        }
+        if($('#' + o).val()!=''){
+          if(myreg.test($('#' + o).val())){
+            ret = true;
+            $('#' + o).parent().css('border','0px none rgb(115, 135, 156)');
+          }else{
+            $('#' + o).parent().css('border','1px solid #CE5454');
+          }
+        }
+        return ret;
+      }
+
+      var updateValidate = function(){
+        $('#reg_validate').attr('src', 'verification.php?' + Math.random());
+      }
+    </script>
+</body>
+</html>

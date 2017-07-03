@@ -42,19 +42,23 @@ var (
 )
 
 type Configuration struct {
-	Password   string
-	KeyId      string
-	KeySecret  string
-	BufferSize int
-	Ansible    *Ansible
-	KeyDir     string
+	Password   	string
+	KeyId      	string
+	KeySecret  	string
+	BufferSize 	int
+	Ansible    	*Ansible
+	KeyDir     	string
+	Schedule   	string
+	EmailName  	string
+	EmailPassword 	string
+	EmailServer	string
 }
 
 type Ansible struct {
-	Url         string
-	GetOctansUrl string
-	DefaultRole string
-	ForkNum     int
+	Url         	string
+	GetOctansUrl 	string
+	DefaultRole 	string
+	ForkNum     	int
 }
 
 func GetConfig() (*Configuration, error) {
