@@ -620,7 +620,7 @@ var showLog = function (i, o){
     cache.currentProjectLogId = i;
     cache.currentProjectName = o;
     refreshLog();
-    autoRefresh = setInterval(refreshLog,5000);//5秒刷新一次
+    autoRefresh = setInterval(refreshLog,3000);//3秒刷新一次
 }
 //刷新日志
 var refreshLog = function (){
