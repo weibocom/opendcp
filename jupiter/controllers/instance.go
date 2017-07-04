@@ -13,6 +13,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
+	_ "weibo.com/opendcp/jupiter/provider/openstack"
 )
 
 const DEFAULT_CPU = 1
