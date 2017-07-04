@@ -154,18 +154,23 @@ CREATE TABLE IF NOT EXISTS `logs` (
 -- --------------------------------------------------
 LOCK TABLES `cluster` WRITE;
 INSERT INTO `cluster` VALUES (1,'default_cluster','默认集群','1');
+INSERT INTO `cluster` VALUES (2,'openstack_cluster','虚拟化集群','1');
 UNLOCK TABLES;
 
 LOCK TABLES `service` WRITE;
 INSERT INTO `service` VALUES
     (1,'sd-nginx','服务发现-Nginx服务','nginx','-',1),
     (2,'my_server','my_server','php','registry.cn-beijing.aliyuncs.com/opendcp/nginx',1);
+    (3,'controller_service','虚拟化控制节点服务','openstack','-',1);
+    (4,'compute_service','虚拟化计算节点服务','openstack','-',1);
 UNLOCK TABLES;
 
 LOCK TABLES `pool` WRITE;
 INSERT INTO `pool` VALUES
     (1,'sd-nginx-aliyun','服务发现nginx',3,1,'{\"deploy\":3,\"expand\":1,\"shrink\":2}',1),
     (2,'my_server_nginx','使用nginx服务发现',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',2);
+    (3,'controller_pool','控制节点服务池',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',3);
+    (4,'compute_pool','计算节点服务池',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',4);
 UNLOCK TABLES;
 
 LOCK TABLES `flow_impl` WRITE;
@@ -185,7 +190,9 @@ INSERT INTO `remote_action` VALUES
     (3,'check_url','检测URL','{\"check_keyword\":\"string\",\"check_url\":\"string\"}'),
     (4,'stop_docker','停止Docker容器','{\"name\":\"string\"}'),
     (5,'echo','echo','{\"echo_word\":\"string\"}'),
-    (6,'install_nginx','安装nginx','{\"eth\":\"string\",\"octans_host\":\"string\"}');
+    (6,'install_nginx','安装nginx','{\"eth\":\"string\",\"octans_host\":\"string\"}'),
+    (7,'init_controller','初始化openstack控制节点','{\"opendcp_host\":\"string\"}'),
+    (8,'init_compute','init_compute','{\"opendcp_host\":\"string\"}');
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action_impl` WRITE;
@@ -195,8 +202,9 @@ INSERT INTO `remote_action_impl` VALUES
     (3,'ansible','{\"action\":{\"content\":\"sleep 20\\nres=`curl -m 400 {{check_url}} | grep {{check_keyword}}`\\nif [ \\\"\\\" != \\\"$res\\\" ]; then\\n    echo \\\"OK\\\"\\n    exit 0\\nfi\\n\\necho \\\"check fails\\\"\\nexit 1\\n\",\"module\":\"longscript\"}}',3),
     (4,'ansible','{\"action\":{\"content\":\"docker stop {{name}} \\u0026\\u0026 sleep 5 \\u0026\\u0026 docker rm {{name}} \",\"module\":\"longscript\"}}',4),
     (5,'ansible','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',5),
-    (6,'ansible','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP_$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://{{octans_host}}:8082/api/parallel_run\\n \",\"module\":\"longscript\"}}',6)
-    ;
+    (6,'ansible','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP_$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://{{octans_host}}:8082/api/parallel_run\\n \",\"module\":\"longscript\"}}',6),
+    (7,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.api.weibo.com/xiqiang/openstack:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init.sh\\nsh init.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',7),
+    (8,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.api.weibo.com/xiqiang/openstack:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\n#rm -rf /tmp/oskfile\\n#docker rm -f oskfile\",\"module\":\"longscript\"}}',8);
 UNLOCK TABLES;
 
 LOCK TABLES `remote_step` WRITE;
@@ -204,7 +212,9 @@ INSERT INTO `remote_step` VALUES
     (3,'echo','echo','[\"echo\"]'),
     (4,'install_nginx','安装nginx','[\"install_nginx\",\"check_port\"]'),
     (8,'start_service','启动服务','[\"start_docker\"]'),
-    (9,'stop_service','停止服务','[\"stop_docker\"]');
+    (9,'stop_service','停止服务','[\"stop_docker\"]'),
+    (10,'init_controller','controller初始化','[\"init_controller\"]'),
+    (11,'init_compute','init_compute','[\"init_compute\"]');
 UNLOCK TABLES;
 
 
