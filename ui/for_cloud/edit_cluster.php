@@ -72,7 +72,7 @@
                     <div class="col-sm-10">
                         <select class="form-control" id="AvalibilityZone" name="AvalibilityZone" onchange="check()" >
                             <option value="">请选择</option>
-                            <option value="nova">nova</option>
+                            <option value="nova:75-29-208-yf-core.jpool.sinaimg.cn">nova</option>
                         </select>
                     </div>
                 </div>
