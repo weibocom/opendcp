@@ -275,12 +275,18 @@ func (app *Server) BuildImage(projectName, tag, operator string) (int, int64) {
 	go func() {
 		//清空日志
 		project.ClearLog()
-
+		log.Infof("%s Begin build dockerfile id:%d", projectName, id)
+		project.AppendLog(fmt.Sprintf("%s Begin build dockerfile id:%d", projectName, id),"Info")
+		buildHistoryService.UpdateRecord(id, project.GetLog(), service.BUILDING)
 		success := project.BuildImage()
 		if success {
-			log.Infof("%s build dockerfile success id:%d", projectName, id)
+			log.Infof("%s Build dockerfile success id:%d", projectName, id)
+			project.AppendLog(fmt.Sprintf("%s Build dockerfile success id:%d", projectName, id),"Info")
 			log.Infof("start build and push image with project:%s state for build id:%d", projectName, id)
-			pushSuccess := project.BuildAndPushImage(tag)
+			project.AppendLog(fmt.Sprintf("start build and push image with project:%s state for build id:%d", projectName, id),"Info")
+			buildHistoryService.UpdateRecord(id, project.GetLog(), service.BUILDING)
+			pushSuccess := project.BuildAndPushImage(tag, id)
+			project.AppendLog("Finish build and push image","Info")
 			if pushSuccess {
 				log.Infof("%s push success id:%d tag:%s", projectName, id, tag)
 				pro.ClearTmp(projectName)
