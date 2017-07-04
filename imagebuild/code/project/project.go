@@ -42,10 +42,11 @@ type Project interface {
 	View(lang string) string // 返回project的页面数据
 	Info() ProjectInfo
 	BuildImage() bool                           // 构建镜像
-	BuildAndPushImage(tag string) bool          // push镜像
+	BuildAndPushImage(tag string, projectId int64) bool          // push镜像
 	Save(configs []map[string]interface{}) bool // 保存配置
 
 	ClearLog()
+	AppendLog(line string, logLevel string)
 	GetLog() string
 }
 
