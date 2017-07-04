@@ -128,7 +128,7 @@ func (ic *InstanceController) UpdateInstanceStatus() {
 	var insStat models.InstanceIdStatus
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
 	if err != nil {
-		beego.Error("Could parase request before crate instance: ", err)
+		beego.Error("Could parase request before create instance: ", err)
 		ic.RespInputError()
 		return
 	}
