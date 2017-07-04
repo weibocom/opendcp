@@ -127,7 +127,10 @@ type Instance struct {
 	Status             InstanceStatus
 	PublicKey          string `orm:"type(text);null" json:"-"`
 	PrivateKey         string `orm:"type(text);null" json:"-"`
-	OpenstackInstace
+	//OpenStack attr
+	TenantID string `mapstructure:"tenant_id"`
+	UserID string `mapstructure:"user_id"`
+	Name string
 }
 
 type SshKey struct {
