@@ -23,6 +23,20 @@ require_once('../include/config.inc.php');
 require_once('../include/function.php');
 require_once('../include/func_session.php');
 require_once('../include/navbar.php');
+require_once('../include/openstack.php');
+
+openstack::needOpenstackLogin();
+$ret = openstack::updatePorts('0fa8856c-a110-44f8-bc44-939b6c7b7dad', array('security_groups'=>array(), 'port_security_enabled'=>false));
+var_dump($ret);exit;
+
+$ret = openstack::getNetworkPortList('e9634c8b-0e14-4c2f-83ec-43bd45689f8a');
+print_r($ret);
+exit;
+
+$ret = openstack::getOnePort('0fa8856c-a110-44f8-bc44-939b6c7b7dad');
+var_dump($ret);exit;
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,9 +71,9 @@ require_once('../include/navbar.php');
   <link href="../gentelella/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
   <link href="../gentelella/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
   <!-- reveal -->
-  <link href="../gentelella/vendors/reveal330/css/reveal.css" rel="stylesheet" id="reveal">
+  <link href="../gentelella/vendors/reveal330/css/reveal.css" rel="stylesheet">
   <link href="../gentelella/vendors/reveal330/css/theme/solarized.css" rel="stylesheet" id="theme">
-  <link href="../gentelella/vendors/reveal330/lib/css/zenburn.css" rel="stylesheet" id="zenburn">
+  <link href="../gentelella/vendors/reveal330/lib/css/zenburn.css" rel="stylesheet">
 
   <!-- Custom Theme Style -->
   <link href="../gentelella/build/css/custom.min.css" rel="stylesheet">
@@ -143,87 +157,103 @@ require_once('../include/navbar.php');
         <div class="" style="background-color:#fff;">
           <div class="" role="tabpanel" data-example-id="togglable-tabs">
             <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist" style="margin-bottom: 10px;">
-              <li id="tab_1" role="presentation" class="hidden">
-                <a data-toggle="tab" role="tab" aria-expanded="true" onclick="list(1,'projects')">项目</a>
+              <li id="tab_1" role="presentation" class="active">
+                <a data-toggle="tab" role="tab" aria-expanded="true" onclick="getList('cluster')">物理资源管理</a>
               </li>
               <li id="tab_2" role="presentation">
-                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="getList('repositories','projects')">镜像&标签</a>
+                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="location.href='/for_openstack/initlist.php';">初始化任务列表</a>
+              </li>
+              <li id="tab_3" role="presentation">
+                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="location.href='/for_openstack/network.php';">网络管理</a>
+              </li>
+              <li id="tab_4" role="presentation">
+                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="location.href='/for_openstack/flavor.php';">机型管理</a>
               </li>
             </ul>
             <div id="myTabContent" class="tab-content">
               <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
                 <div class="x_panel" style="border: 0px;">
                   <div class="row">
-                    <div class="col-md-9 form-group">
-                      <div class="btn-group">
-                        <div class="hidden">
-                          <input type="hidden" id="tab" name="tab" value="projects">
-                        </div>
-                        <div class="col-sm-4" style="padding-left:0px;" hidden="hidden">
-                          <div class="input-group">
-                            <span class="input-group-addon">集群</span>
-                            <select class="form-control" id="fProject" onchange="list(1)">
-                              <option value="">全部集群</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="col-sm-3" style="padding-left:0px;">
-                          <div class="input-group">
-                            <input type="name" id="fIdx" class="form-control" placeholder="关键字">
-                                <span class="input-group-btn">
-                                  <button class="btn btn-default" type="button" onclick="list(1)">Go!</button>
-                                </span>
-                          </div>
-                        </div>
-                        <div style="padding-left:0px;">
-                          <button class="btn btn-default" type="button" onclick="reset()">重置</button>
-                        </div>
-                      </div>
+                    <div class="col-md-5 col-sm-5">
+                      <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">控制节点</div>
                     </div>
-                    <div class="col-md-3">
-                      <div class="btn-group pull-right" id="tab_toolbar">
-                      </div>
+                    <div class="col-md-5 col-sm-5">
+                      <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">
+				<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myAddComputeModal" href="add_compute.php?type=2">添加</a>
+		      </div>
                     </div>
-                  </div>
-                  <table class="table table-bordered table-hover" id="page_table">
-                    <thead id="table-head">
+		  </div>
+
+                  <table class="table table-bordered table-hover">
+                    <thead class="flip-content">
                     <tr>
-                      <td>Loading ...</td>
+                      <th>ip</th>
+                      <th width="20%">操作</th>
                     </tr>
                     </thead>
-                    <tbody id="table-body">
-                    </tbody>
+                    <tbody id="task_process">
+			<tr>
+				<td>10.39.59.74</td>
+				<td><div class="btn-group btn-group-xs btn-group-solid"> <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myAddComputeModal" href="add_compute.php?ip=10.39.59.74&type=2">重新初始化</a>   </div></td>
+			</tr>
+		    </tbody>
                   </table>
-                  <div class="accordion" id="page_images" role="tablist" aria-multiselectable="true">
-                  </div>
+
                   <div class="row">
                     <div class="col-md-5 col-sm-5">
-                      <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">Showing 1 to 0 of 0 entries</div>
+                      <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">计算节点</div>
                     </div>
-                    <div class="col-md-7 col-sm-7">
-                      <div class="dataTables_paginate paging_bootstrap_full_number" id="sample_1_paginate">
-                        <ul class="pagination" style="visibility: visible;margin-top: 0px;margin-bottom: 0px;" id="table-paginate">
-                          <li><a href="javascript:;" onclick="list(1)"><i class="fa fa-angle-left"></i></a></li>
-                          <li class="active">
-                            <a href="javascript:;" onclick="list(1)">1</a>
-                          </li>
-                          <li class="next">
-                            <a href="javascript:;" title="Next" onclick="list(1)"><i class="fa fa-angle-right"></i></a>
-                          </li>
-                        </ul>
-                      </div>
+                    <div class="col-md-5 col-sm-5">
+                      <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">
+				<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myAddComputeModal" href="add_compute.php?type=1">添加</a>
+		      </div>
                     </div>
-                  </div>
-                  <form method="post" id="my_form_1" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myModal" role="dialog" aria-hidden="true">
+		  </div>
+
+<?php
+
+require_once('../include/openstack.php');
+openstack::needOpenstackLogin();
+$arr_hyper = openstack::getHypervisorList();
+?>
+                  <table class="table table-bordered table-hover">
+                    <thead class="flip-content">
+                    <tr>
+                      <th>hostname</th>
+                      <th>ip</th>
+                      <th width="20%">vm数量</th>
+                      <th width="20%">状态</th>
+                      <th width="20%">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="task_process">
+			<?php foreach($arr_hyper['hypervisors'] as $onehyper) { ?>
+			<tr>
+				<td><?=$onehyper['hypervisor_hostname']?></td>
+				<td><?=$onehyper['host_ip']?></td>
+				<td><?=$onehyper['running_vms']?></td>
+				<td><?=$onehyper['status']?></td>
+				<td><div class="btn-group btn-group-xs btn-group-solid"> <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myAddComputeModal" href="add_compute.php?ip=<?=$onehyper['host_ip']?>&type=1">重新初始化</a>   </div></td>
+			</tr>
+			<?php } ?>
+		    </tbody>
+                  </table>
+
+
+
+
+                  <form method="post" class="form-horizontal">
+                    <div class="modal fade bs-modal-lg" id="myAddComputeModal" role="dialog" aria-hidden="true">
                       <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                           <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myModalLabel">Loading ...</h4>
+                            <h4 class="modal-title" id="myAddComputeModalLabel">Loading ...</h4>
                           </div>
-                          <div class="modal-body" style="overflow:auto;line-height:200%"" id="myModalBody">
-                            <p> </p>
+                          <div class="modal-body" style="overflow:auto;" id="myAddComputeModalBody">
+                            <p> 
+				
+			    </p>
                           </div>
                           <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
@@ -233,42 +263,7 @@ require_once('../include/navbar.php');
                       </div>
                     </div>
                   </form>
-                  <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myViewModalLabel">Loading ...</h4>
-                          </div>
-                          <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
-                            <p> </p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                  <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myRevealModal" role="dialog" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myRevealModalLabel">帮助</h4>
-                          </div>
-                          <div class="modal-body" style="height:500px;" id="myRevealModalBody">
-                            <p> </p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
+
                 </div>
               </div>
             </div>
@@ -341,7 +336,7 @@ require_once('../include/navbar.php');
 <script src="../js/login.js"></script>
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
-<script src="../js/for_repos/repos.js?_t=<?php echo date('U');?>"></script>
+<script src="../js/for_layout/service.js?_t=<?php echo date('U');?>"></script>
 
 
 <!-- Custom Notification -->
@@ -350,29 +345,22 @@ require_once('../include/navbar.php');
     $("select.form-control").select2({width:'100%'});
     $('#fIdx').bind('keypress',function(event){
       if(event.keyCode == "13"){
-        list(1);
+        //list(1);
       }
     });
-    window.setTimeout('getList(\'repositories\',\'projects\')',200);
+    window.setTimeout('getList()',200);
   });
-  $("#myModal").on("shown.bs.modal", function(){
+
+  $("#myChildModal").on("shown.bs.modal", function(){
     $("select.form-control").select2();
   });
-  $("#myModal").on("hidden.bs.modal", function() {
+  $("#myChildModal").on("hidden.bs.modal", function() {
     $(this).removeData("bs.modal");
-    $('#myModalBody').css('height','');
-    $('#myModalLabel').html('Loading ...');
-    $("#myModalBody").html('<p> </p>');
+    $('#myChildModalBody').css('height','');
+    $('#myChildModalLabel').html('Loading ...');
+    $("#myChildModalBody").html('<p> </p>');
   });
-  $("#myViewModal").on("shown.bs.modal", function(){
-    $("select.form-control").select2();
-  });
-  $("#myViewModal").on("hidden.bs.modal", function() {
-    $(this).removeData("bs.modal");
-    $('#myViewModalBody').css('height','');
-    $('#myViewModalLabel').html('Loading ...');
-    $("#myViewModalBody").html('<p> </p>');
-  });
+
 
 </script>
 <!-- /Custom Notification -->
