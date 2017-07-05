@@ -208,11 +208,11 @@ var updateEle=function(o,idx){
       break;
     case 'state':
       switch(idx){
-        case 0: $('#state').html('<span class="badge bg-default">未开始</span>'); cache.flag=false; break;
+        case 0: $('#state').html('<span class="badge bg-default">未开始</span>'); break;
         case 1: $('#state').html('<span class="badge bg-blue">执行中</span>'); break;
-        case 2: $('#state').html('<span class="badge bg-green">已完成</span>'); cache.flag=false; break;
-        case 3: $('#state').html('<span class="badge bg-red">失败</span>'); cache.flag=false; break;
-        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>'); cache.flag=false; break;
+        case 2: $('#state').html('<span class="badge bg-green">已完成</span>'); break;
+        case 3: $('#state').html('<span class="badge bg-red">失败</span>'); break;
+        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>'); break;
         default: $('#state').html('<span class="badge bg-red" title="'+ idx +'">未知</span>'); break;
       }
       break;
@@ -368,9 +368,13 @@ var twiceCheck=function(action,idx,ip){
     switch(action){
       case 'start':
         modalTitle='启动任务';
-        if(cache.task.state=='1'||cache.task.state=='2'||cache.task.state=='3'){
-          notice='<div class="alert alert-danger">错误信息：任务执行中或已完成</div>';
+        //除任务处在执行中不能重新启动任务外，其他状况均可重新启动任务
+        if(cache.task.state=='1'){
+            notice='<div class="alert alert-danger">错误信息：任务执行中</div>';
         }
+        // if(cache.task.state=='1'||cache.task.state=='2'||cache.task.state=='3'){
+        //   notice='<div class="alert alert-danger">错误信息：任务执行中或已完成</div>';
+        // }
         break;
       case 'pause':
         modalTitle='暂停任务';
@@ -380,9 +384,13 @@ var twiceCheck=function(action,idx,ip){
         break;
       case 'finish':
         modalTitle='完成任务';
-        if(cache.task.state=='0'||cache.task.state=='2'||cache.task.state=='3'){
-          notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+        //当状态是未启动或者是已经完成或时，完成任务不可操作，其他状态均可完成
+        if(cache.task.state=='0'||cache.task.state=='2'){
+            notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
         }
+        // if(cache.task.state=='0'||cache.task.state=='2'||cache.task.state=='3'){
+        //   notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+        // }
         break;
       default:
         modalTitle='';
