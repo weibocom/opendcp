@@ -128,7 +128,7 @@ func (ic *InstanceController) UpdateInstanceStatus() {
 	var insStat models.InstanceIdStatus
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
 	if err != nil {
-		beego.Error("Could parase request before crate instance: ", err)
+		beego.Error("Could parase request before create instance: ", err)
 		ic.RespInputError()
 		return
 	}
@@ -601,5 +601,29 @@ func (ic *InstanceController) ManagePhyDev() {
 	} else {
 		ic.Status = SERVICE_ERRROR
 	}
+	ic.RespJsonWithStatus()
+}
+
+// @Title Update machine status
+// @Description change openstack config
+// @router /openstack/conf [post]
+func (ic *InstanceController) ChangeOpenStackConf() {
+	var OpConf models.OpenStackConf
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &OpConf)
+	if err != nil {
+		beego.Error("Could not parase openstack conf request : ", err)
+		ic.RespInputError()
+		return
+	}
+	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status)
+	if err != nil {
+		beego.Error("update instance status err: ", err)
+		ic.RespServiceError(err)
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = status
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
 }
