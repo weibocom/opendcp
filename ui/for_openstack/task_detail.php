@@ -1,23 +1,4 @@
 <?php
-/**
- *    Copyright (C) 2016 Weibo Inc.
- *
- *    This file is part of Opendcp.
- *
- *    Opendcp is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation; version 2 of the License.
- *
- *    Opendcp is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with Opendcp; if not, write to the Free Software
- *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
- */
-
 
 require_once('../include/config.inc.php');
 require_once('../include/function.php');
@@ -57,9 +38,9 @@ require_once('../include/navbar.php');
   <link href="../gentelella/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
   <link href="../gentelella/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
   <!-- reveal -->
-  <link href="../gentelella/vendors/reveal330/css/reveal.css" rel="stylesheet" id="reveal">
+  <link href="../gentelella/vendors/reveal330/css/reveal.css" rel="stylesheet">
   <link href="../gentelella/vendors/reveal330/css/theme/solarized.css" rel="stylesheet" id="theme">
-  <link href="../gentelella/vendors/reveal330/lib/css/zenburn.css" rel="stylesheet" id="zenburn">
+  <link href="../gentelella/vendors/reveal330/lib/css/zenburn.css" rel="stylesheet">
 
   <!-- Custom Theme Style -->
   <link href="../gentelella/build/css/custom.min.css" rel="stylesheet">
@@ -143,87 +124,62 @@ require_once('../include/navbar.php');
         <div class="" style="background-color:#fff;">
           <div class="" role="tabpanel" data-example-id="togglable-tabs">
             <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist" style="margin-bottom: 10px;">
-              <li id="tab_1" role="presentation" class="hidden">
-                <a data-toggle="tab" role="tab" aria-expanded="true" onclick="list(1,'projects')">项目</a>
-              </li>
-              <li id="tab_2" role="presentation">
-                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="getList('repositories','projects')">镜像&标签</a>
+              <li id="tab_2" role="presentation" class="active">
+                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="getList('service')">初始化任务详情</a>
               </li>
             </ul>
             <div id="myTabContent" class="tab-content">
               <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
                 <div class="x_panel" style="border: 0px;">
-                  <div class="row">
-                    <div class="col-md-9 form-group">
-                      <div class="btn-group">
-                        <div class="hidden">
-                          <input type="hidden" id="tab" name="tab" value="projects">
-                        </div>
-                        <div class="col-sm-4" style="padding-left:0px;" hidden="hidden">
-                          <div class="input-group">
-                            <span class="input-group-addon">集群</span>
-                            <select class="form-control" id="fProject" onchange="list(1)">
-                              <option value="">全部集群</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="col-sm-3" style="padding-left:0px;">
-                          <div class="input-group">
-                            <input type="name" id="fIdx" class="form-control" placeholder="关键字">
-                                <span class="input-group-btn">
-                                  <button class="btn btn-default" type="button" onclick="list(1)">Go!</button>
-                                </span>
-                          </div>
-                        </div>
-                        <div style="padding-left:0px;">
-                          <button class="btn btn-default" type="button" onclick="reset()">重置</button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="btn-group pull-right" id="tab_toolbar">
-                      </div>
-                    </div>
-                  </div>
-                  <table class="table table-bordered table-hover" id="page_table">
-                    <thead id="table-head">
+
+<?php
+
+$task_id = $_REQUEST['task_id'];
+require_once('../include/node_init_log.php');
+$arr_list = node_init_log::getLogListByTaskid($task_id, 1,1000);
+?>
+                  <table class="table table-bordered table-hover">
+                    <thead class="flip-content">
                     <tr>
-                      <td>Loading ...</td>
+                      <th width="40%">标题</th>
+                      <th width="10%">状态</th>
+                      <th width="20%">时间</th>
                     </tr>
                     </thead>
-                    <tbody id="table-body">
-                    </tbody>
+                    <tbody id="task_process">
+			<?php foreach($arr_list['data'] as $oneinit) { ?>
+			<tr>
+				<td><?=$oneinit['title']?></td>
+				<?php if($oneinit['status']==0) {?>
+					<td></td>
+				<?php } elseif($oneinit['status']==1) { ?>
+					<td><span class="badge bg-green">成功</span></td>
+				<?php } elseif($oneinit['status']==2) { ?>
+					<td><span class="badge bg-red">失败</span></td>
+				<?php } else { ?>
+					<td></td>
+				<?php } ?>
+				<td><?=date('m-d H:i:s', $oneinit['create_time'])?></td>
+			</tr>
+			<?php } ?>
+		    </tbody>
                   </table>
-                  <div class="accordion" id="page_images" role="tablist" aria-multiselectable="true">
-                  </div>
-                  <div class="row">
-                    <div class="col-md-5 col-sm-5">
-                      <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">Showing 1 to 0 of 0 entries</div>
-                    </div>
-                    <div class="col-md-7 col-sm-7">
-                      <div class="dataTables_paginate paging_bootstrap_full_number" id="sample_1_paginate">
-                        <ul class="pagination" style="visibility: visible;margin-top: 0px;margin-bottom: 0px;" id="table-paginate">
-                          <li><a href="javascript:;" onclick="list(1)"><i class="fa fa-angle-left"></i></a></li>
-                          <li class="active">
-                            <a href="javascript:;" onclick="list(1)">1</a>
-                          </li>
-                          <li class="next">
-                            <a href="javascript:;" title="Next" onclick="list(1)"><i class="fa fa-angle-right"></i></a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <form method="post" id="my_form_1" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myModal" role="dialog" aria-hidden="true">
+
+
+
+
+                  <form method="post" class="form-horizontal">
+                    <div class="modal fade bs-modal-lg" id="myAddComputeModal" role="dialog" aria-hidden="true">
                       <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                           <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myModalLabel">Loading ...</h4>
+                            <h4 class="modal-title" id="myAddComputeModalLabel">Loading ...</h4>
                           </div>
-                          <div class="modal-body" style="overflow:auto;line-height:200%"" id="myModalBody">
-                            <p> </p>
+                          <div class="modal-body" style="overflow:auto;" id="myAddComputeModalBody">
+                            <p> 
+				
+			    </p>
                           </div>
                           <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
@@ -233,42 +189,7 @@ require_once('../include/navbar.php');
                       </div>
                     </div>
                   </form>
-                  <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myViewModal" role="dialog" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myViewModalLabel">Loading ...</h4>
-                          </div>
-                          <div class="modal-body" style="overflow:auto;line-height:200%" id="myViewModalBody">
-                            <p> </p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                  <form method="post" class="form-horizontal">
-                    <div class="modal fade bs-modal-lg" id="myRevealModal" role="dialog" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title" id="myRevealModalLabel">帮助</h4>
-                          </div>
-                          <div class="modal-body" style="height:500px;" id="myRevealModalBody">
-                            <p> </p>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
+
                 </div>
               </div>
             </div>
@@ -341,7 +262,7 @@ require_once('../include/navbar.php');
 <script src="../js/login.js"></script>
 <script src="../js/locale_messages.js"></script>
 <script src="../js/reveal.js?_t=<?php echo date('U');?>"></script>
-<script src="../js/for_repos/repos.js?_t=<?php echo date('U');?>"></script>
+<script src="../js/for_layout/service.js?_t=<?php echo date('U');?>"></script>
 
 
 <!-- Custom Notification -->
@@ -350,29 +271,22 @@ require_once('../include/navbar.php');
     $("select.form-control").select2({width:'100%'});
     $('#fIdx').bind('keypress',function(event){
       if(event.keyCode == "13"){
-        list(1);
+        //list(1);
       }
     });
-    window.setTimeout('getList(\'repositories\',\'projects\')',200);
+    window.setTimeout('getList()',200);
   });
-  $("#myModal").on("shown.bs.modal", function(){
+
+  $("#myChildModal").on("shown.bs.modal", function(){
     $("select.form-control").select2();
   });
-  $("#myModal").on("hidden.bs.modal", function() {
+  $("#myChildModal").on("hidden.bs.modal", function() {
     $(this).removeData("bs.modal");
-    $('#myModalBody').css('height','');
-    $('#myModalLabel').html('Loading ...');
-    $("#myModalBody").html('<p> </p>');
+    $('#myChildModalBody').css('height','');
+    $('#myChildModalLabel').html('Loading ...');
+    $("#myChildModalBody").html('<p> </p>');
   });
-  $("#myViewModal").on("shown.bs.modal", function(){
-    $("select.form-control").select2();
-  });
-  $("#myViewModal").on("hidden.bs.modal", function() {
-    $(this).removeData("bs.modal");
-    $('#myViewModalBody').css('height','');
-    $('#myViewModalLabel').html('Loading ...');
-    $("#myViewModalBody").html('<p> </p>');
-  });
+
 
 </script>
 <!-- /Custom Notification -->

@@ -54,6 +54,7 @@ func (sf *StartFuture) Run() error {
 		return err
 	}
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "----- Begin start instance in future -----")
+  logstore.Info(sf.CorrelationId,sf.InstanceId,"###First### create vm")
 	if(sf.ProviderName=="aliyun") {
 		for j := 0; j < INTERVAL; j++ {
 			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
@@ -61,7 +62,7 @@ func (sf *StartFuture) Run() error {
 				break
 			}
 			time.Sleep(TIME4WAIT * time.Second)
-		}
+    }
 		ins, err := providerDriver.GetInstance(sf.InstanceId)
 		if err != nil {
 			return err
