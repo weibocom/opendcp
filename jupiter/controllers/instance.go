@@ -615,14 +615,9 @@ func (ic *InstanceController) ChangeOpenStackConf() {
 		ic.RespInputError()
 		return
 	}
-	status, err := instance.UpdateInstanceStatus(insStat.InstanceId, insStat.Status)
-	if err != nil {
-		beego.Error("update instance status err: ", err)
-		ic.RespServiceError(err)
-		return
-	}
+	instance.ChangeOpenStackConf(&OpConf)
 	resp := ApiResponse{}
-	resp.Content = status
+	resp.Content = OpConf
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
