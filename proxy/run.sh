@@ -8,4 +8,5 @@ mkdir -p /data1/hubble/Application/Runtime/Hubble/Nginx/upstream
 rm -rf /data1/hubble/Application/Runtime/*
 chmod 777 -R /data1/hubble/Application/Runtime
 rsync --daemon --config=/etc/rsyncd.conf &
+cd /data1/web && nohup php for_openstack/doInit.php > /tmp/init.log &
 nginx -g "daemon off;"
