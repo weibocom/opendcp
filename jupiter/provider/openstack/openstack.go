@@ -51,8 +51,8 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 		for _, instanceOP := range serverList {
 			var instance models.InstanceAllIn
 			instance.InstanceId = instanceOP.ID
-			instance.TenantID = instanceOP.TenantID
-			instance.UserID = instanceOP.UserID
+			instance.TenantId = instanceOP.TenantID
+			instance.UserId = instanceOP.UserID
 			instance.Name = instanceOP.Name
 			//instance.Updated = instanceOP.Updated
 			//instance.Created = instanceOP.Created
@@ -121,13 +121,15 @@ func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
 }
 
 func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
+
+	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
+
 	opts := gophercloud.AuthOptions{
-		IdentityEndpoint: "http://10.39.59.27:5000/v3",
-		Username: "admin",
-		Password: "ZYGL32NDG7JS8IGC",
+		IdentityEndpoint: url,
+		Username: conf.Config.OpUserName,
+		Password: conf.Config.OpPassWord,
 		DomainName: "default",
 	}
-
 	provider, err := openstack.AuthenticatedClient(opts)
 
 	if(err != nil){
@@ -388,9 +390,6 @@ func new() (provider.ProviderDriver, error){
 func newProvider() (provider.ProviderDriver, error){
 
 	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
-	fmt.Println("the url is: ", url)
-	fmt.Println("the UserName is:", conf.Config.OpUserName)
-	fmt.Println("the password is", conf.Config.OpPassWord)
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
