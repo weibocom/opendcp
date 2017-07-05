@@ -3,13 +3,15 @@
 Class openstack {
 	static $cur_region = 'region1';
 	static $arr_region_config = array(
+	);
+	static $arr_region_config_orig = array(
 		'region1'=>array(
 			'name'=>'Region1',
-			'authorization_domain'=>'http://10.39.59.74:5000',
-			'controller_domain'=>'http://10.39.59.74:5000',
-			'image_domain'=>'http://10.39.59.74:9292',
-			'server_domain'=>'http://10.39.59.74:8774',
-			'network_domain'=>'http://10.39.59.74:9696',
+			'authorization_domain'=>'http://{{controller_ip}}:5000',
+			'controller_domain'=>'http://{{controller_ip}}:5000',
+			'image_domain'=>'http://{{controller_ip}}:9292',
+			'server_domain'=>'http://{{controller_ip}}:8774',
+			'network_domain'=>'http://{{controller_ip}}:9696',
 			'admin_user'=>'admin',
 			'admin_pass'=>'root',
 		),
@@ -35,7 +37,22 @@ Class openstack {
 		'MIGRATING'=>'迁移中',
 	);
 
+	static function getControllerIp(){
+		require_once('keydata.php');
+		$ip = keydata::getContentByKey('controller_ip');
+		if(empty($ip)){
+			return false;
+		}
+		foreach(self::$arr_region_config_orig as $rn=>$rc){
+			foreach($rc as $k=>$v){
+				self::$arr_region_config[$rn][$k] = str_replace('{{controller_ip}}', $ip, $v);
+			}
+		}
+		return true;
+	}
+
 	static function needOpenstackLogin(){
+		if(!self::getControllerIp()) return false;
 		if(!empty($_SESSION['openstack_token_'.self::$cur_region])){
 			//self::$token = $_SESSION['openstack_token_'.self::$cur_region];
 			//return true;
@@ -52,6 +69,7 @@ Class openstack {
 		return false;
 	}
 	static function setUserProject($project_id){
+		if(!self::getControllerIp()) return false;
 		self::$cur_project_id = $project_id;
 		$_SESSION['openstack_cur_project_id'] = self::$cur_project_id;
 		$username = self::$arr_region_config[self::$cur_region]['admin_user'];
@@ -59,6 +77,7 @@ Class openstack {
 		return self::getToken($username, $password, $project_id);
 	}
 	static function setRegion($region_id){
+		if(!self::getControllerIp()) return false;
 		self::$cur_region = $region_id;
 		$_SESSION['openstack_region'] = $region_id;
 		$username = self::$arr_region_config[self::$cur_region]['admin_user'];
@@ -66,6 +85,7 @@ Class openstack {
 		return self::getToken($username, $password, $project_id);
 	}
 	static function getAdminToken($project_id = '5e140c8f1f38414ab9160a4164a7ca93') {
+		if(!self::getControllerIp()) return false;
 		$url = self::$arr_region_config[self::$cur_region]['authorization_domain'].'/v3/auth/tokens';
 		$method = 'POST';
 		$username = self::$arr_region_config[self::$cur_region]['admin_user'];
@@ -124,6 +144,7 @@ Class openstack {
 		return false;
 	}
 	static function getToken($username, $password, $project_id = '') {
+		if(!self::getControllerIp()) return false;
 		$url = self::$arr_region_config[self::$cur_region]['authorization_domain'].'/v3/auth/tokens';
 		$method = 'POST';
 		$arr = array(
@@ -181,6 +202,7 @@ Class openstack {
 		return false;
 	}
 	static function getProject() {
+		if(!self::getControllerIp()) return false;
 		$arr_project = self::getUserProjectList(self::$user_id);
 		if(!empty($arr_project['projects'])){
 			$_SESSION['openstack_arr_project'] = $arr_project['projects'];
@@ -194,6 +216,7 @@ Class openstack {
 	}
 
 	static function getUserProjectList($id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		return self::send_http(
@@ -202,6 +225,7 @@ Class openstack {
 		);
 	}
 	static function getImageList($name = '', $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'marker'=>$marker,
 			'limit'=>$limit,
@@ -215,6 +239,7 @@ Class openstack {
 		);
 	}
 	static function getKeypairList($arr_option = array(), $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'marker'=>$marker,
 			'limit'=>$limit,
@@ -225,6 +250,7 @@ Class openstack {
 		);
 	}
 	static function getOneNetwork($network_id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		$networkinfo = self::send_http(
@@ -239,6 +265,7 @@ Class openstack {
 		return $networkinfo;
 	}
 	static function getNetworkPortList($network_id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'network_id'=>$network_id,
 		);
@@ -249,6 +276,7 @@ Class openstack {
 		);
 	}
 	static function getNetworkIpStatus($network_id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		self::$needadmin = true;
@@ -258,6 +286,7 @@ Class openstack {
 		);
 	}
 	static function getNetworkSubnetList($network_id, $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'network_id'=>$network_id,
 			'marker'=>$marker,
@@ -269,6 +298,7 @@ Class openstack {
 		);
 	}
 	static function getNetworkList($arr_option = array(), $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'marker'=>$marker,
 			'limit'=>$limit,
@@ -279,6 +309,7 @@ Class openstack {
 		);
 	}
 	static function getFlavorList($arr_option = array(), $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			//'marker'=>$marker,
 			//'limit'=>$limit,
@@ -289,6 +320,7 @@ Class openstack {
 		);
 	}
 	static function getHypervisorServerList($id){
+		if(!self::getControllerIp()) return false;
 		self::$needadmin = true;
 		$arr_server = self::send_http(
 			self::$arr_region_config[self::$cur_region]['server_domain'].'/v2.1/os-hypervisors/'.$id.'/servers',
@@ -297,6 +329,7 @@ Class openstack {
 		return $arr_server;
 	}
 	static function getHypervisorList($arr_option = array(), $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'marker'=>$marker,
 			'limit'=>$limit,
@@ -317,6 +350,7 @@ Class openstack {
 		return $arr_server;
 	}
 	static function getOneHypervisor($id){
+		if(!self::getControllerIp()) return false;
 		self::$needadmin = true;
 		$hinfo = self::send_http(
 			self::$arr_region_config[self::$cur_region]['server_domain'].'/v2.1/os-hypervisors/'.$id,
@@ -332,6 +366,7 @@ Class openstack {
 		return $hinfo['hypervisor'];
 	}
 	static function getServerList($arr_option = array(), $marker = 0, $limit = 20){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'marker'=>$marker,
 			'limit'=>$limit,
@@ -353,6 +388,7 @@ Class openstack {
 		return $arr_server;
 	}
 	static function getOneServer($id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		$sinfo = self::send_http(
@@ -366,6 +402,7 @@ Class openstack {
 		return $sinfo['server'];
 	}
 	static function getOneFlavor($id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		$sinfo = self::send_http(
@@ -375,6 +412,7 @@ Class openstack {
 		return $sinfo['flavor'];
 	}
 	static function getOneImage($id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		$sinfo = self::send_http(
@@ -386,6 +424,7 @@ Class openstack {
 
 
 	static function saveImage($id, $name){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'createImage'=>array(
 				'name'=>$name,
@@ -399,6 +438,7 @@ Class openstack {
 		);
 	}
 	static function deleteImage($id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		return self::send_http(
@@ -409,9 +449,11 @@ Class openstack {
 		);
 	}
 	static function rebootServerHard($id){
+		if(!self::getControllerIp()) return false;
 		return self::rebootServer($id, 'HARD');
 	}
 	static function rebootServer($id, $type='SOFT'){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 			'reboot'=>array(
 				'type'=>$type,
@@ -425,6 +467,7 @@ Class openstack {
 		);
 	}
 	static function deleteServer($id){
+		if(!self::getControllerIp()) return false;
 		$arr = array(
 		);
 		return self::send_http(
@@ -436,6 +479,7 @@ Class openstack {
 	}
 
 	static function createKeypair($name){
+		if(!self::getControllerIp()) return false;
 		$arr = array();
 		$arr['keypair'] = array('name'=>$name);
 		return self::send_http(
@@ -447,6 +491,7 @@ Class openstack {
 	}
 
 	static function createServer($arr_data){
+		if(!self::getControllerIp()) return false;
 		$arr = array();
 		$arr['name'] = $arr_data['name'];
 		$arr['imageRef'] = $arr_data['image'];
@@ -473,6 +518,7 @@ Class openstack {
 	}
 
 	static function createFlavor($arr_data){
+		if(!self::getControllerIp()) return false;
 		$arr = array();
 		$arr['name'] = $arr_data['flavor_name'];
 		$arr['ram'] = $arr_data['flavor_ram'];
@@ -492,6 +538,7 @@ Class openstack {
 	}
 
 	static function createNetwork($arr_data){
+		if(!self::getControllerIp()) return false;
 		$arr = array();
 		$arr['name'] = $arr_data['network_name'];
 		$arr['provider:network_type'] = 'flat';
@@ -510,6 +557,7 @@ Class openstack {
 	}
 
 	static function createSubnet($arr_data){
+		if(!self::getControllerIp()) return false;
 		$arr = array();
 		$arr['name'] = $arr_data['network_subnet_name'];
 		$arr['network_id'] = $arr_data['network_id'];
@@ -538,6 +586,7 @@ Class openstack {
 
 	static function getOnePort($port_id){
 
+		if(!self::getControllerIp()) return false;
 		return self::send_http(
 			self::$arr_region_config[self::$cur_region]['network_domain'].'/v2.0/ports/'.$port_id,
 			$arr_param,
@@ -550,6 +599,7 @@ Class openstack {
 
 	static function updatePorts($port_id, $arr_data){
 
+		if(!self::getControllerIp()) return false;
 		$arr_param = array('port'=>$arr_data);
 		print_r($arr_param);
 		return self::send_http(
