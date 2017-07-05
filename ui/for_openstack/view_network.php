@@ -19,6 +19,10 @@
  */
 
 
+require_once('../include/config.inc.php');
+require_once('../include/function.php');
+
+
   $myAction=(isset($_GET['action'])&&!empty($_GET['action']))?trim($_GET['action']):'add';
   $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):'';
   $myTitle = '网络详情';
