@@ -467,3 +467,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
 }
+
+func ChangeOpenStackConf(OpConf *models.OpenStackConf){
+
+}
