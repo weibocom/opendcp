@@ -124,7 +124,6 @@ func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
 func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
 
 	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
-
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
@@ -154,8 +153,8 @@ func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSi
 			vpc.VpcId = network.ID
 			vpc.State = network.Name
 			vpcsResp.Vpcs = append(vpcsResp.Vpcs, vpc)
+			networksInOpenStack[network.Name] = network.ID
 		}
-
 		return true, err
 	})
 	return &vpcsResp, err
@@ -177,11 +176,19 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
-	tmp := (server.Addresses["provider"]).([]interface{})
-	tmp1 := tmp[0].(map[string]interface{})
-	return tmp1["addr"].(string), err
-}
+	for _, address := range server.Addresses {
+		switch address.(type) {
+		case []interface{}:
+			tmp := address.([]interface{})
+			tmp1 := tmp[0].(map[string]interface{})
+			return tmp1["addr"].(string), err
+		default:
+		}
+	}
+	return nil, err
 
+
+}
 
 //创建实例代码待做
 func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
@@ -227,7 +234,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
-
 	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
 	return instanceIds, errs
 }
