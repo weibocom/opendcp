@@ -182,7 +182,8 @@ INSERT INTO `flow_impl` VALUES
     (5,'unexpand_my_server','缩容my_server','[{\"name\":\"unregister\",\"param_values\":{\"service_discovery_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":true}},{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":true}},{\"name\":\"return_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
     (6,'upgrade_my_server','上线my_server','[{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"registry.cn-beijing.aliyuncs.com/opendcp/nginx\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
     (7,'init_controller','controller初始化','[{\"name\":\"init_controller\",\"param_values\":{\"opendcp_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
-    (8,'init_compute','compute初始化','[{\"name\":\"init_compute\",\"param_values\":{\"opendcp_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]');
+    (8,'init_compute','compute初始化','[{\"name\":\"init_compute\",\"param_values\":{\"opendcp_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
+    (9,'add-openstack-default-image','添加openstack缺省镜像','[{\"name\":\"add-default-image\",\"param_values\":{},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]');
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action` WRITE;
@@ -194,7 +195,8 @@ INSERT INTO `remote_action` VALUES
     (5,'echo','echo','{\"echo_word\":\"string\"}'),
     (6,'install_nginx','安装nginx','{\"eth\":\"string\",\"octans_host\":\"string\"}'),
     (7,'init_controller','初始化openstack控制节点','{\"opendcp_host\":\"string\"}'),
-    (8,'init_compute','init_compute','{\"opendcp_host\":\"string\"}');
+    (8,'init_compute','init_compute','{\"opendcp_host\":\"string\"}'),
+    (9,'add-default-image','添加openstack Centos7缺省镜像','{}');
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action_impl` WRITE;
@@ -206,7 +208,8 @@ INSERT INTO `remote_action_impl` VALUES
     (5,'ansible','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',5),
     (6,'ansible','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP_$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://{{octans_host}}:8082/api/parallel_run\\n \",\"module\":\"longscript\"}}',6),
     (7,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init.sh\\nsh init.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',7),
-    (8,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\n#rm -rf /tmp/oskfile\\n#docker rm -f oskfile\",\"module\":\"longscript\"}}',8);
+    (8,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\n#rm -rf /tmp/oskfile\\n#docker rm -f oskfile\",\"module\":\"longscript\"}}',8),
+    (9,'ansible','{\"action\":{\"content\":\"curl -v -o c71.qcow2 http://opendcp.oss-cn-shanghai.aliyuncs.com/c71.clean.qcow2\\n\\nexport OS_PROJECT_DOMAIN_NAME=default\\nexport OS_USER_DOMAIN_NAME=default\\nexport OS_PROJECT_NAME=admin\\nexport OS_USERNAME=admin\\nexport OS_PASSWORD=root\\nexport OS_AUTH_URL=http://controller:35357/v3\\nexport OS_IDENTITY_API_VERSION=3\\nexport OS_IMAGE_API_VERSION=2\\n\\nglance image-create --file=c71.qcow2 --name=centos7.1 --disk-format=qcow2 --container-format=bare\",\"module\":\"longscript\"}}',9);
 UNLOCK TABLES;
 
 LOCK TABLES `remote_step` WRITE;
@@ -216,7 +219,8 @@ INSERT INTO `remote_step` VALUES
     (8,'start_service','启动服务','[\"start_docker\"]'),
     (9,'stop_service','停止服务','[\"stop_docker\"]'),
     (10,'init_controller','controller初始化','[\"init_controller\"]'),
-    (11,'init_compute','init_compute','[\"init_compute\"]');
+    (11,'init_compute','init_compute','[\"init_compute\"]'),
+    (12,'add-default-image','添加openstack缺省镜像','[\"add-default-image\"]');
 UNLOCK TABLES;
 
 
