@@ -36,7 +36,10 @@ import (
 	"weibo.com/opendcp/jupiter/ssh"
 )
 
-const PhyDev = "phydev"
+const (
+	PhyDev = "phydev"
+	OPENSTACK = "openstack"
+)
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -441,7 +444,20 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		return ssh.Output{}, sshErr
 	}
 	cli, err := getSSHClient(ip, "", password)
-	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	octanUrl := conf.Config.Ansible.GetOctansUrl
+
+	ins, err := dao.GetInstance(instanceId)
+	if err != nil {
+		return ssh.Output{}, err
+	}
+
+	if strings.EqualFold(ins.Provider, OPENSTACK){
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
+	} else {
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
+	}
+
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
 	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
 	ret, err := cli.Run(cmd)
 	if err != nil {
