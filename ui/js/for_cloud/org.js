@@ -277,6 +277,11 @@ var change=function(step){
                 postData.Zone.ZoneName=postData.AvalibilityZone;
                 postData.InstanceType=postData.DiskType;
 
+                delete postData.DataDiskCategory
+                delete postData.SystemDiskCategory
+                delete postData.SecurityGroupId
+                delete postData.SubnetId
+                delete postData.VpcId
                 delete postData.DataDiskNum;
                 delete postData.DataDiskSize;
                 delete postData.InternetChargeType;
@@ -582,7 +587,6 @@ var updateSelect=function(name,idx){
             break;
         case 'DiskType':
             data=cache.ecs_type;
-            console.log('get data');
             break;
         case 'ImageId':
             data=cache.image;
@@ -647,7 +651,9 @@ var updateSelect=function(name,idx){
             case 'DiskType':
                 tSelect.removeAttr("disabled");
                 $.each(data,function(k,v){
-                    tSelect.append('<option value="' + v.name + '">' + v.name + '</option>');
+                    //传来的字符串由#分隔，第一段是flavorID，第二段是flavorName
+                    strs=v.name.split("#")
+                    tSelect.append('<option value="' + strs[0] + '">' + strs[1] + '</option>');
                 })
                 break;
             case 'ImageId':

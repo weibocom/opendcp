@@ -16,6 +16,7 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/flavors"
 	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
 	"weibo.com/opendcp/jupiter/conf"
+	"strconv"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -33,8 +34,8 @@ func init(){
 
 
 var instanceTypesInOpenStack = map[string]string{}
-
-var instanceTypesList []string
+var VcpuInOpenStack = map[string]string{}
+var RamInOpenStack = map[string]string{}
 var networksInOpenStack = map[string]string{}
 var networksList []string
 
@@ -81,32 +82,34 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 
 
 //将instanceType对应OpenStack中的flavor
-//openstack中的获取InstanceType方法待做，需要与创建机型模板那边联动【已解决】
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
-	
-	//if instanceTypesInOpenStack != nil{
-	//	return instanceTypesList, nil
-	//}
+	var instanceTypesList []string
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(driver.client, opts)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 
 		flavorList, err := flavors.ExtractFlavors(page)
 		for _, flavor := range flavorList {
-			instanceTypesList = append(instanceTypesList, flavor.Name)
-			instanceTypesInOpenStack[flavor.Name] = flavor.ID
+			name := flavor.Name
+			id := flavor.ID
+			instanceType := fmt.Sprintf("%s#%s", id, name)
+			instanceTypesList = append(instanceTypesList, instanceType)
+			instanceTypesInOpenStack[flavor.ID] = flavor.Name
+			RamInOpenStack[flavor.ID] = strconv.Itoa(flavor.RAM)
+			VcpuInOpenStack[flavor.ID] = strconv.Itoa(flavor.VCPUs)
 		}
 		return true, err
 	})
-
-
 	return instanceTypesList, err
 }
 
 func (driver openstackProvider) GetInstanceType(key string) string{
+	instanceType := instanceTypesInOpenStack[key]
+	ram := RamInOpenStack[key]
+	cpu := VcpuInOpenStack[key]
 
-	return instanceTypesInOpenStack[key]
+	return fmt.Sprintf("%s#%s#%s",instanceType, cpu, ram)
 }
 func (driver openstackProvider) ListSecurityGroup(regionId string, vpcId string) (*models.SecurityGroupsResp, error){
 	return nil, nil
@@ -123,7 +126,6 @@ func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
 func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
 
 	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
-
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: url,
 		Username: conf.Config.OpUserName,
@@ -153,8 +155,8 @@ func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSi
 			vpc.VpcId = network.ID
 			vpc.State = network.Name
 			vpcsResp.Vpcs = append(vpcsResp.Vpcs, vpc)
+			networksInOpenStack[network.Name] = network.ID
 		}
-
 		return true, err
 	})
 	return &vpcsResp, err
@@ -176,12 +178,19 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
-	time.Sleep(2 * time.Second)
-	tmp := (server.Addresses["provider"]).([]interface{})
-	tmp1 := tmp[0].(map[string]interface{})
-	return tmp1["addr"].(string), err
-}
+	for _, address := range server.Addresses {
+		switch address.(type) {
+		case []interface{}:
+			tmp := address.([]interface{})
+			tmp1 := tmp[0].(map[string]interface{})
+			return tmp1["addr"].(string), err
+		default:
+		}
+	}
+	return "", err
 
+
+}
 
 //创建实例代码待做
 func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
@@ -227,7 +236,6 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
-
 	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
 	return instanceIds, errs
 }
