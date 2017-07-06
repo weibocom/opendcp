@@ -277,6 +277,11 @@ var change=function(step){
                 postData.Zone.ZoneName=postData.AvalibilityZone;
                 postData.InstanceType=postData.DiskType;
 
+                delete postData.DataDiskCategory
+                delete postData.SystemDiskCategory
+                delete postData.SecurityGroupId
+                delete postData.SubnetId
+                delete postData.VpcId
                 delete postData.DataDiskNum;
                 delete postData.DataDiskSize;
                 delete postData.InternetChargeType;
@@ -582,7 +587,6 @@ var updateSelect=function(name,idx){
             break;
         case 'DiskType':
             data=cache.ecs_type;
-            console.log('get data');
             break;
         case 'ImageId':
             data=cache.image;
