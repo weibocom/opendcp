@@ -59,6 +59,16 @@ class node_init {
 		if(!empty($id) && $type==2){
 			require_once('keydata.php');
 			keydata::update('controller_ip', $data['ip']);
+
+			require_once('cloud.php');
+			$mycloud = new cloud();
+			$ret = $mycloud->get('root', 'instance/openstack', 'POST', array(
+				'OpIp'=>$data['ip'],
+				'OpPort'=>'5000',
+				'OpUserName'=>'admin',
+				'OpPassWord'=>'root',
+			));
+
 		}
 		return $id;
 	}
