@@ -651,7 +651,9 @@ var updateSelect=function(name,idx){
             case 'DiskType':
                 tSelect.removeAttr("disabled");
                 $.each(data,function(k,v){
-                    tSelect.append('<option value="' + v.name + '">' + v.name + '</option>');
+                    //传来的字符串由#分隔，第一段是flavorID，第二段是flavorName
+                    strs=v.name.split("#")
+                    tSelect.append('<option value="' + strs[0] + '">' + strs[1] + '</option>');
                 })
                 break;
             case 'ImageId':
