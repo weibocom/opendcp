@@ -3,6 +3,8 @@ cache = {
     page_size: 20,
     account: [],
     account_filter: [],
+    keyId:'',
+    keySecret:'',
 }
 
 var reset = function(){
@@ -125,7 +127,7 @@ var processPage = function(data,page,pageinfo,paginate,func){
 //生成列表
 var processBody = function(data,page,head,body){
     var td="";
-    var title=['#', '云厂商', '云账号id', '云账号密码', '体验机使用额度', '体验机总额度', '账号操作'];
+    var title=['#', '云厂商', '云账号', '体验机使用额度', '体验机总额度', '账号操作'];
     if(title){
         var tr = $('<tr></tr>');
         for (var i = 0; i < title.length; i++) {
@@ -149,10 +151,10 @@ var processBody = function(data,page,head,body){
             tr.append(td);
             td = '<td>' + v.KeyId + '</td>';
             tr.append(td);
-            var hideSecret = '';
-            for(var h = 0; h < v.KeySecret.length; h++)hideSecret +='*';
-            td = '<td>' + hideSecret +'</td>';
-            tr.append(td);
+            // var hideSecret = '';
+            // for(var h = 0; h < v.KeySecret.length; h++)hideSecret +='*';
+            // td = '<td>' + hideSecret +'</td>';
+            // tr.append(td);
             var theCredit = Math.round(parseFloat(v.Credit)*10, 1)/10.0;
             var theSpent = Math.round(parseFloat(v.Spent)*10, 1)/10.0;
             if(theSpent > theCredit) theSpent = theCredit;
@@ -160,7 +162,7 @@ var processBody = function(data,page,head,body){
             tr.append(td);
             td = '<td>' + theCredit + '</td>';
             tr.append(td);
-            btnEdit = '<a class="tooltips" title="修改账号" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'alt\','+ v.Id +',\''+ v.KeyId +'\',\''+ v.KeySecret +'\',\''+ v.Provider +'\')"><i class="fa fa-edit"></i></a>';
+            btnEdit = '<a class="tooltips" title="账号操作" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'alt\','+ v.Id +',\''+ v.KeyId +'\',\''+ v.KeySecret +'\',\''+ v.Provider +'\')"><i class="fa fa-edit"></i></a>';
             td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + '</div></td>';
             tr.append(td);
             body.append(tr);
@@ -262,6 +264,8 @@ var twiceCheck=function(action,idx,desc, secret,Provider){
     }else{
         switch(action){
             case 'alt':
+                cache.keyId = desc;
+                cache.keySecret = secret;
                 modalTitle='修改云账号';
                 modalBody+='<div class="col-sm-11">';
                 modalBody+='<div class="form-group">';
@@ -300,6 +304,16 @@ var twiceCheck=function(action,idx,desc, secret,Provider){
     NProgress.done();
 }
 
-var inputchange=function(input){
+var inputchange=function(){
+    var inputKeyId = $('#KeyId').val();
+    var inputKeySecret = $('#KeySecret').val();
+    if(inputKeyId == '' || inputKeySecret == ''){
+        $('#btnCommit').attr('disabled',true);
+        return;
+    }
+    if(cache.keyId == inputKeyId && cache.keySecret == inputKeySecret){
+        $('#btnCommit').attr('disabled',true);
+        return;
+    }
     $('#btnCommit').attr('disabled',false);
 }
