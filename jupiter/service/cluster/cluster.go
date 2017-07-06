@@ -65,10 +65,10 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 	}else if(cluster.Provider == "openstack"){
 		cluster.FlavorId = cluster.InstanceType
 		resp := providerDriver.GetInstanceType(cluster.InstanceType)
-		strs := strings.Split(resp, '#')
+		strs := strings.Split(resp, "#")
 		cluster.InstanceType = strs[0]
-		cluster.Cpu = strs[1]
-		cluster.Ram = strs[2]
+		cluster.Cpu, _ = strconv.Atoi(strs[1])
+		cluster.Ram, _ = strconv.Atoi(strs[2])
 	}
 
 	id, err := dao.InsertCluster(cluster)
