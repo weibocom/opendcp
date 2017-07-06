@@ -114,45 +114,57 @@ func (p *PluggedProject) BuildImage() bool {
 	return true
 }
 //构建镜像并推送镜像到Harobor仓库
-func (p *PluggedProject) BuildAndPushImage(tag string) bool {
+func (p *PluggedProject) BuildAndPushImage(tag string, projectId int64) bool {
+	buildHistoryService := service.GetBuildHistoryServiceInstance()
 	registry := env.HARBOR_ADDRESS
 	fullImageName := registry + "/" + p.Cluster + "/" + p.Name + ":" + tag
 
 	projectPath := env.PROJECT_CONFIG_BASEDIR
 	dockerFilePath := projectPath + p.Name + "/tmp/"
 	//第一步创建镜像
-	log.Info(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + " fullImageName:" + fullImageName)
-	p.appendLog(p.timeNow() + "[Info]\t"+"BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName)
+	log.Info("BuildImage dockerFilePath: " + dockerFilePath + " fullImageName:" + fullImageName)
+	p.AppendLog("BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName, "Info")
+
+	buildHistoryService.UpdateRecord(projectId, p.GetLog(), service.BUILDING)
+
 	logStr, err := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName)
-	p.logs = append(p.logs, p.timeNow() + "[info]\t" + logStr)
+	p.logs = append(p.logs, p.timeNow() + "\t[Info]\t" + logStr)
 
 	if err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Build Image with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Build Image with error:" + err.Error())
+		log.Error("Build Image with error:", err)
+		p.AppendLog("Build Image with error:" + err.Error(),"Error")
 		return false
 	}
 
 	//第二步登录仓库
-	log.Info(p.timeNow() + "[Info]\t"+"Login Harbor")
-	p.appendLog(p.timeNow() + "[Info]\t"+"Login Harbor")
+	log.Info("Begin login Harbor")
+	p.AppendLog("Begin login Harbor", "Info")
+
+	buildHistoryService.UpdateRecord(projectId, p.GetLog(), service.BUILDING)
+
 	if err := service.GetDockerOperatorInstance().LoginHarbor(); err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Login Harbor with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Login Harbor with error:" + err.Error())
+		log.Error("Login Harbor with error:", err)
+		p.AppendLog("Login Harbor with error:" + err.Error(), "Error")
 		return false
 	}
-	p.appendLog(p.timeNow() +"login haror success ...")
+	p.AppendLog("Login haror success", "Info")
 	//第三步推送镜像到仓库
-	p.appendLog(p.timeNow() + "[Info]\t"+"Begin push image")
+	log.Info("Begin push image to Harbor")
+	p.AppendLog("Begin push image to Harbor", "Info")
+
+	buildHistoryService.UpdateRecord(projectId, p.GetLog(), service.BUILDING)
+
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
-	p.logs = append(p.logs, p.timeNow() +"[Info]\t" + logStr)
+
+	p.logs = append(p.logs, p.timeNow() +"\t[Info]\t" + logStr)
 
 	if err != nil {
-		log.Error(p.timeNow() + "[Error]\t"+"Push Image with error:", err)
-		p.appendLog(p.timeNow() + "[Error]\t"+"Push Image with error:" + err.Error())
+		log.Error("Push Image to harbor with error:", err)
+		p.AppendLog("Push Image to harbor with error:" + err.Error(), "Error")
 		return false
 	}
-	p.appendLog(p.timeNow() + "[Info]\t"+"push image success...")
-	p.appendLog(p.timeNow() + "[Info]\t"+"Build and Push image success..." + "\n")
+	log.Info("Push image to harbor success")
+	p.AppendLog("Push image to harbor success", "Info")
 	return true
 }
 
@@ -178,8 +190,8 @@ func (p *PluggedProject) readInfo() {
 	p.DefineDockerFileType = infoMap["defineDockerFileType"]
 }
 //增加日志
-func (p *PluggedProject) appendLog(line string) {
-	p.logs = append(p.logs, line+"\n")
+func (p *PluggedProject) AppendLog(line string, logLevel string) {
+	p.logs = append(p.logs, p.timeNow() + "\t[" + logLevel + "]\t" + line+"\n")
 }
 //获取日志
 func (p *PluggedProject) GetLog() string {

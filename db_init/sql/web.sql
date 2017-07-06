@@ -105,6 +105,38 @@ LOCK TABLES `user_log` WRITE;
 /*!40000 ALTER TABLE `user_log` DISABLE KEYS */;
 /*!40000 ALTER TABLE `user_log` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+
+CREATE TABLE `node_init` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ip` varchar(64) NOT NULL,
+  `password` varchar(64) NOT NULL DEFAULT '',
+  `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `create_time` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `node_init_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(128) NOT NULL DEFAULT '',
+  `task_id` int(10) unsigned NOT NULL,
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `data` text NOT NULL,
+  `create_time` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_task` (`task_id`,`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `keydata` (
+  `datakey` varchar(128) NOT NULL,
+  `datacontent` longtext NOT NULL,
+  PRIMARY KEY (`datakey`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO keydata (datakey, datacontent) VALUES ('controller_ip', '""');
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -117,33 +149,4 @@ UNLOCK TABLES;
 
 -- Dump completed on 2016-11-28 11:12:57
 
-
-CREATE TABLE `node_init` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ip` varchar(64) NOT NULL,
-  `password` varchar(64) NOT NULL DEFAULT '',
-  `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `create_time` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-
-CREATE TABLE `node_init_log` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `title` varchar(128) NOT NULL DEFAULT '',
-  `task_id` int(10) unsigned NOT NULL,
-  `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `data` text NOT NULL,
-  `create_time` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `idx_task` (`task_id`,`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-
-CREATE TABLE `keydata` (
-  `datakey` varchar(128) NOT NULL,
-  `datacontent` longtext NOT NULL,
-  PRIMARY KEY (`datakey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-
-INSERT INTO keydata (datakey, datacontent) VALUES ('controller_ip', '""');
 

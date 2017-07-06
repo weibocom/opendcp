@@ -59,10 +59,6 @@ class node_init {
 		if(!empty($id) && $type==2){
 			require_once('keydata.php');
 			keydata::update('controller_ip', $data['ip']);
-			$curdir = __DIR__;
-			system('cp '.$curdir.'/openstack.php.orig '.$curdir.'/openstack.php.new');
-			system('sed -i "s/controller_ip/'.$data['ip'].'/g" '.$curdir.'/openstack.php.new');
-			system('cp '.$curdir.'/openstack.php.new '.$curdir.'/openstack.php');
 		}
 		return $id;
 	}
