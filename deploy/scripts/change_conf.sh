@@ -63,6 +63,7 @@ fi
 
 sed -i "s/your_key_id/$ali_key/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 sed -i "s/your_secret/$ali_secret/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
+sed -i "s/host_ip/$host_ip/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 
 if [ $hasAccount = "y" ] ;then
 sed -i "s/your_op_ip/$op_ip/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
