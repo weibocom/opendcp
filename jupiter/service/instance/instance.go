@@ -34,6 +34,7 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+	"os/exec"
 )
 
 const PhyDev = "phydev"
@@ -473,4 +474,5 @@ func ChangeOpenStackConf(OpConf *models.OpenStackConf){
 	conf.Config.OpPort = OpConf.OpPort
 	conf.Config.OpUserName = OpConf.OpUserName
 	conf.Config.OpPassWord = OpConf.OpPassWord
+
 }
