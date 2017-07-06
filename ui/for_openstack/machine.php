@@ -176,9 +176,15 @@ require_once('../include/navbar.php');
                       <th>ip</th>
                     </tr>
                     </thead>
+<?php
+
+require_once('../include/keydata.php');
+$controller_ip = keydata::getContentByKey('controller_ip');
+
+?>
                     <tbody id="task_process">
 			<tr>
-				<td>10.39.59.74</td>
+				<td><?=$controller_ip?></td>
 			</tr>
 		    </tbody>
                   </table>
