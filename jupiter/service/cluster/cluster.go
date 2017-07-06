@@ -68,7 +68,8 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 		strs := strings.Split(resp, "#")
 		cluster.InstanceType = strs[0]
 		cluster.Cpu, _ = strconv.Atoi(strs[1])
-		cluster.Ram, _ = strconv.Atoi(strs[2])
+		ram , _ := strconv.Atoi(strs[2])
+		cluster.Ram = ram / 1024
 	}
 
 	id, err := dao.InsertCluster(cluster)
