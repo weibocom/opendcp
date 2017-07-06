@@ -34,7 +34,7 @@ func init(){
 
 var instanceTypesInOpenStack = map[string]string{}
 
-var instanceTypesList []string
+
 var networksInOpenStack = map[string]string{}
 var networksList []string
 
@@ -88,6 +88,7 @@ func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 	//if instanceTypesInOpenStack != nil{
 	//	return instanceTypesList, nil
 	//}
+	var instanceTypesList []string
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(driver.client, opts)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
@@ -176,7 +177,6 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
-	time.Sleep(2 * time.Second)
 	tmp := (server.Addresses["provider"]).([]interface{})
 	tmp1 := tmp[0].(map[string]interface{})
 	return tmp1["addr"].(string), err
