@@ -116,7 +116,7 @@ function dolog($msg){
 }
 
 function doaddlog($task_id, $title, $status, $text){
-	exec('curl -v "http://10.39.59.73:8888/api/for_openstack/machine.php?action=addlog&task_id='.$task_id.'&title='.$title.'&status='.$status.'&text='.$text.'"', $ret);
+	exec('curl -v "http://host_ip:8888/api/for_openstack/machine.php?action=addlog&task_id='.$task_id.'&title='.$title.'&status='.$status.'&text='.$text.'"', $ret);
 	dolog('curl ret: '.print_r($ret,true));
 }
 
