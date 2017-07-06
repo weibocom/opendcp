@@ -187,7 +187,7 @@ func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (stri
 		default:
 		}
 	}
-	return nil, err
+	return "", err
 
 
 }
