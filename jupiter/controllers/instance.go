@@ -607,6 +607,7 @@ func (ic *InstanceController) ManagePhyDev() {
 // @Title Update machine status
 // @Description change openstack config
 // @router /openstack [post]
+
 func (ic *InstanceController) ChangeOpenStackConf() {
 	var OpConf models.OpenStackConf
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &OpConf)
