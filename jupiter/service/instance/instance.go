@@ -35,6 +35,8 @@ import (
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
 
+	"os/exec"
+	"github.com/beego/bee/cmd"
 )
 
 const PhyDev = "phydev"
@@ -469,10 +471,34 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	return ret, nil
 }
 
-func ChangeOpenStackConf(OpConf *models.OpenStackConf){
+func ChangeOpenStackConf(OpConf *models.OpenStackConf) error{
+	//修改hosts文件的controller域名
+	cmd := exec.Command("/bin/sh", "-c", "cp /etc/hosts /etc/hostsbak")
+	err := cmd.Run()
+	if err != nil{
+		return err
+	}
+	op := fmt.Sprintf("sed -i  s/%s/%s/g /etc/hostsbak", conf.Config.OpIp, OpConf.OpIp)
+	cmd = exec.Command("/bin/sh", "-c", op)
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "cp /etc/hostsbak /etc/hosts")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "rm /etc/hostsbak")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+
 	conf.Config.OpIp = OpConf.OpIp
 	conf.Config.OpPort = OpConf.OpPort
 	conf.Config.OpUserName = OpConf.OpUserName
 	conf.Config.OpPassWord = OpConf.OpPassWord
+	return err
 
 }
