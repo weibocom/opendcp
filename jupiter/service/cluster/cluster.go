@@ -34,6 +34,7 @@ import (
 	"weibo.com/opendcp/jupiter/logstore"
 	"errors"
 	"github.com/astaxie/beego"
+	"strings"
 )
 
 func GetCluster(clusterId int64) (*models.Cluster, error) {
@@ -50,19 +51,27 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	instanceTypeModel := cluster.InstanceType
-	validNumber := regexp.MustCompile("[0-9]")
-	cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
+
 	//在openstack中，Flavor的名称就是对应的类型，不需要再进行转换
 	if(cluster.Provider == "aliyun") {
+		instanceTypeModel := cluster.InstanceType
+		validNumber := regexp.MustCompile("[0-9]")
+		cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
 		cluster.InstanceType = providerDriver.GetInstanceType(instanceTypeModel)
+		cpu, _ := strconv.Atoi(cpuAndRam[0])
+		ram, _ := strconv.Atoi(cpuAndRam[1])
+		cluster.Cpu = cpu
+		cluster.Ram = ram
 	}else if(cluster.Provider == "openstack"){
-		cluster.FlavorId = providerDriver.GetInstanceType(instanceTypeModel)
+		cluster.FlavorId = cluster.InstanceType
+		resp := providerDriver.GetInstanceType(cluster.InstanceType)
+		strs := strings.Split(resp, "#")
+		cluster.InstanceType = strs[0]
+		cluster.Cpu, _ = strconv.Atoi(strs[1])
+		ram , _ := strconv.Atoi(strs[2])
+		cluster.Ram = ram / 1024
 	}
-	cpu, _ := strconv.Atoi(cpuAndRam[0])
-	ram, _ := strconv.Atoi(cpuAndRam[1])
-	cluster.Cpu = cpu
-	cluster.Ram = ram
+
 	id, err := dao.InsertCluster(cluster)
 	_, err = bill.InsertBill(cluster)
 	return id, err
