@@ -16,6 +16,7 @@ import (
 	"github.com/rackspace/gophercloud/openstack/compute/v2/flavors"
 	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
 	"weibo.com/opendcp/jupiter/conf"
+	"strconv"
 )
 
 //1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
@@ -33,8 +34,8 @@ func init(){
 
 
 var instanceTypesInOpenStack = map[string]string{}
-
-
+var VcpuInOpenStack = map[string]string{}
+var RamInOpenStack = map[string]string{}
 var networksInOpenStack = map[string]string{}
 var networksList []string
 
@@ -81,13 +82,8 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 
 
 //将instanceType对应OpenStack中的flavor
-//openstack中的获取InstanceType方法待做，需要与创建机型模板那边联动【已解决】
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
-	
-	//if instanceTypesInOpenStack != nil{
-	//	return instanceTypesList, nil
-	//}
 	var instanceTypesList []string
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(driver.client, opts)
@@ -95,19 +91,25 @@ func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
 		flavorList, err := flavors.ExtractFlavors(page)
 		for _, flavor := range flavorList {
-			instanceTypesList = append(instanceTypesList, flavor.Name)
-			instanceTypesInOpenStack[flavor.Name] = flavor.ID
+			name := flavor.Name
+			id := flavor.ID
+			instanceType := fmt.Sprintf("%s#%s", id, name)
+			instanceTypesList = append(instanceTypesList, instanceType)
+			instanceTypesInOpenStack[flavor.ID] = flavor.Name
+			RamInOpenStack[flavor.ID] = strconv.Itoa(flavor.RAM)
+			VcpuInOpenStack[flavor.ID] = strconv.Itoa(flavor.VCPUs)
 		}
 		return true, err
 	})
-
-
 	return instanceTypesList, err
 }
 
 func (driver openstackProvider) GetInstanceType(key string) string{
+	instanceType := instanceTypesInOpenStack[key]
+	ram := RamInOpenStack[key]
+	cpu := VcpuInOpenStack[key]
 
-	return instanceTypesInOpenStack[key]
+	return fmt.Sprintf("%s#%s#%s",instanceType, cpu, ram)
 }
 func (driver openstackProvider) ListSecurityGroup(regionId string, vpcId string) (*models.SecurityGroupsResp, error){
 	return nil, nil
