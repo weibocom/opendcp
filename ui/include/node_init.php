@@ -60,6 +60,7 @@ class node_init {
 			require_once('keydata.php');
 			keydata::update('controller_ip', $data['ip']);
 
+
 			require_once('cloud.php');
 			$mycloud = new cloud();
 			$ret = $mycloud->get('root', 'instance/openstack', 'POST', array(
