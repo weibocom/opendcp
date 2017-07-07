@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `batch_id` integer,
     `status` integer NOT NULL DEFAULT 0 ,
     `steps` longtext NOT NULL,
+    `step_num` integer NOT NULL DEFAULT 0 ,
     `log` longtext NOT NULL,
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
