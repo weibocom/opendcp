@@ -20,7 +20,7 @@ $arr_type = array(
 	),
 );
 
-while(true) {
+
 $arr = node_init::getNodeInitList();
 foreach($arr['data'] as $oneinit){
 	if($oneinit['status']!=0){
@@ -107,8 +107,7 @@ foreach($arr['data'] as $oneinit){
 	doaddlog($oneinit['id'], '创建初始化任务完成', 1, '');
 	break;
 }
-sleep(5);
-}
+
 
 function dolog($msg){
         global $logid;
