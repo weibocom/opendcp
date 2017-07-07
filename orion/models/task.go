@@ -67,6 +67,7 @@ type NodeState struct {
 	Batch	    *FlowBatch`json:"-" orm:"rel(fk);null;"`
 	Status      int       `json:"state"`
 	Steps       string    `json:"steps" orm:"type(text)"`
+	StepNum     int       `json:"step_num"`
 	Log         string    `orm:"type(text)"`
 	CreatedTime time.Time `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time `json:"updated" orm:"auto_now_add;type(datetime)"`
