@@ -80,6 +80,13 @@ checkImage registry.cn-beijing.aliyuncs.com/opendcp/octans-agent  latest
 #6、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)
 echo "6、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)"
 
+hn=`hostname`
+echo "hostname=" $hn
+wc=$(grep "$5 $hn" /etc/hosts|wc -l )
+if [ $wc -eq 0 ]; then
+    echo "$5 $hn" >> /etc/hosts
+fi
+
 #环境变量设置
 #mysql://root:12345@10.85.41.168:3306/octans?charset=utf8
 #http://10.85.41.168:8083/v1/instance/sshkey/
