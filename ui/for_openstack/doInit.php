@@ -5,6 +5,7 @@ include_once('include/function.php');
 include_once('include/node_init.php');
 include_once('include/cloud.php');
 include_once('include/layout.php');
+include_once('include/keydata.php');
 
 $mycloud = new cloud();
 $mylayout = new layout();
@@ -32,7 +33,18 @@ foreach($arr['data'] as $oneinit){
 	
 	$ip = $oneinit['ip'];
 	$password = $oneinit['password'];
-	
+
+
+	//del 
+	delip($ip, $mylayout, $mycloud);
+	if($oneinit['type']==1){
+		//del original controllerip
+		$cip = keydata::getContentByKey('controller_ip');
+		delip($cip, $mylayout, $mycloud);
+	}
+
+	sleep(3);
+
 	$arrJson = array();
         $arrJson['InstanceList'][] = array(
 		'publicip'=>$ip,
@@ -60,6 +72,11 @@ foreach($arr['data'] as $oneinit){
 				if($onemachine['Status']==1){
 					$initok = true;
 					break;
+				}
+				if($onemachine['Status']==7){
+					dolog('init machine failed');
+					doaddlog($oneinit['id'], '机器初始化失败', 2, '', 11);
+					exit;
 				}
 			}
 		}
@@ -115,6 +132,56 @@ function dolog($msg){
 function doaddlog($task_id, $title, $status, $text){
 	exec('curl -v "http://host_ip:8888/api/for_openstack/machine.php?action=addlog&task_id='.$task_id.'&title='.$title.'&status='.$status.'&text='.$text.'"', $ret);
 	dolog('curl ret: '.print_r($ret,true));
+}
+
+function doaddlogfinal($task_id, $title, $status, $text, $final = 10){
+	exec('curl -v "http://host_ip:8888/api/for_openstack/machine.php?action=addlog&task_id='.$task_id.'&title='.$title.'&status='.$status.'&text='.$text.'&final='.$final.'"', $ret);
+	dolog('curl ret: '.print_r($ret,true));
+}
+
+function delip($ip, $mylayout, $mycloud){
+	dolog('del ip: '.$ip);
+	$ip = trim($ip);
+	if(empty($ip)) return false;
+        $getipret = $mylayout->get('root', 'pool/search_by_ip', $ip);
+        $getipret = @json_decode($getipret, true);
+        dolog('search ip ret: '.print_r($getipret,true));
+        if(!empty($getipret['data'][$ip]) && $getipret['data'][$ip]!=-1){
+                $arrJson = array(
+                        'page' => 1,
+                        'page_size' => 100,
+                        'pool_id' => $getipret['data'][$ip],
+                );
+                $poollist = $mylayout->get('root', 'pool/'.$getipret['data'][$ip], 'list_nodes', $arrJson);
+                $poollist = @json_decode($poollist, true);
+                dolog('getpoolnode ret:'.print_r($poollist, true));
+                foreach($poollist['data'] as $onenode){
+                        if($onenode['ip']==$ip){
+                                $arrJson = array(
+                                        'nodes'=>array(
+                                                (int)$onenode['id'],
+                                        ),
+                                );
+                                dolog('remove nodes :'.print_r($arrJson, true));
+                                $removeret = $mylayout->get('root', 'pool/'.$getipret['data'][$ip], 'remove_nodes', $arrJson);
+                                dolog('remove nodes ret:'.print_r($removeret, true));
+                        }
+                }
+        }
+
+
+
+        $mlist = $mycloud->get('root', 'instance/list', 'GET');
+        $mlist = @json_decode($mlist, true);
+        dolog('machine list : '.print_r($mlist ,true));
+        foreach($mlist['content'] as $onemachine){
+                if($onemachine['PrivateIpAddress']==$ip){
+                        dolog('delete machine: '.print_r($onemachine, true));
+                        $delret = $mycloud->get('root', 'instance/'.$onemachine['InstanceId'], 'DELETE');
+                        dolog('delete machine ret: '.print_r($delret, true));
+                }
+        }
+        return true;
 }
 
 
