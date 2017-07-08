@@ -37,7 +37,7 @@ foreach($arr['data'] as $oneinit){
 
 	//del 
 	delip($ip, $mylayout, $mycloud);
-	if($oneinit['type']==1){
+	if($oneinit['type']==2){
 		//del original controllerip
 		$cip = keydata::getContentByKey('controller_ip');
 		delip($cip, $mylayout, $mycloud);
