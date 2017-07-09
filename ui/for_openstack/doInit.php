@@ -75,7 +75,7 @@ foreach($arr['data'] as $oneinit){
 				}
 				if($onemachine['Status']==7){
 					dolog('init machine failed');
-					doaddlog($oneinit['id'], '机器初始化失败', 2, '', 11);
+					doaddlogfinal($oneinit['id'], '机器初始化失败', 2, '', 11);
 					exit;
 				}
 			}
