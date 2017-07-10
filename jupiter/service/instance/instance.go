@@ -487,14 +487,10 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 
 func ChangeOpenStackConf(OpConf *models.OpenStackConf) error{
 	//修改hosts文件的controller域名
-	cmd := exec.Command("/bin/sh", "-c", "cp /etc/hosts /etc/hostsbak")
+
+	op := fmt.Sprintf("awk '{if($2==\"controller\") {$1=%s} print}' /etc/hosts > /etc/hostbak",  OpConf.OpIp)
+	cmd := exec.Command("/bin/sh", "-c", op)
 	err := cmd.Run()
-	if err != nil{
-		return err
-	}
-	op := fmt.Sprintf("sed -i  s/%s/%s/g /etc/hostsbak", conf.Config.OpIp, OpConf.OpIp)
-	cmd = exec.Command("/bin/sh", "-c", op)
-	err = cmd.Run()
 	if err != nil{
 		return err
 	}
