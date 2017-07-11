@@ -35,6 +35,7 @@ var (
 	Flow    = &FlowService{}
 	Remote  = &RemoteStepService{}
 	Logs    = &LogsService{}
+	Task    = &TaskService{}
 )
 
 func (b *BaseService) InsertBase(obj interface{}) error {
