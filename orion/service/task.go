@@ -17,39 +17,36 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
 	"github.com/astaxie/beego/orm"
 
 	"weibo.com/opendcp/orion/models"
-	//"weibo.com/opendcp/orion/handler"
 )
 
 type TaskService struct {
 	BaseService
 }
 
-func (t *TaskService) GetAllTaskByPool(pool_id int,task_type string) (tasks []*models.ExecTask, err error ) {
+func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (tasks []*models.ExecTask, err error) {
 	o := orm.NewOrm()
 
 	if task_type == "" || task_type == " " || task_type == "all" {
-		_,err = o.QueryTable("exec_task").Filter("Pool", pool_id).RelatedSel().All(&tasks)
-	}else{
-		_,err = o.QueryTable("exec_task").Filter("Pool", pool_id).Filter("Type",task_type).RelatedSel().All(&tasks)
+		_, err = o.QueryTable("exec_task").Filter("Pool", pool_id).RelatedSel().All(&tasks)
+	} else {
+		_, err = o.QueryTable("exec_task").Filter("Pool", pool_id).Filter("Type", task_type).RelatedSel().All(&tasks)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	for _,task := range tasks{
-		o.LoadRelated(task,"CronItems")
-		o.LoadRelated(task,"DependItems")
+	for _, task := range tasks {
+		o.LoadRelated(task, "CronItems")
+		o.LoadRelated(task, "DependItems")
 	}
 	//bytes,_:=json.Marshal(tasks)
 	//fmt.Println(string(bytes))
 	return tasks, nil
 }
-
