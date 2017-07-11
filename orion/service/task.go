@@ -17,27 +17,36 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-package models
+package service
 
 import (
-	"time"
+	"github.com/astaxie/beego/orm"
+
+	"weibo.com/opendcp/orion/models"
 )
 
-type Logs struct {
-	Id            int    `json:"id" orm:"pk;auto"`
-	Fid           int    `json:"fid"`
-	BatchId       int    `json:"batch_id"`
-	CorrelationId string `json:"correlation_id"`
-	Message       string `json:"message"` //日志信息
-	Ctime         int    `json:"ctime"`
+type TaskService struct {
+	BaseService
 }
 
-func NewLogsInit(Fid int, BatchId int, correlationId string, Message string) (result *Logs) {
-	result = &Logs{}
-	result.Fid = Fid
-	result.BatchId = BatchId
-	result.CorrelationId = correlationId
-	result.Message = Message
-	result.Ctime = int(time.Now().Unix())
-	return result
+func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (tasks []*models.ExecTask, err error) {
+	o := orm.NewOrm()
+
+	if task_type == "" || task_type == " " || task_type == "all" {
+		_, err = o.QueryTable("exec_task").Filter("Pool", pool_id).RelatedSel().All(&tasks)
+	} else {
+		_, err = o.QueryTable("exec_task").Filter("Pool", pool_id).Filter("Type", task_type).RelatedSel().All(&tasks)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, task := range tasks {
+		o.LoadRelated(task, "CronItems")
+		o.LoadRelated(task, "DependItems")
+	}
+	//bytes,_:=json.Marshal(tasks)
+	//fmt.Println(string(bytes))
+	return tasks, nil
 }
