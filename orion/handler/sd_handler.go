@@ -17,7 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package handler
 
 import (
@@ -110,8 +109,7 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	fid := nodes[0].Flow.Id
 	batchId := nodes[0].Batch.Id
 
-	logService.Debug(fid,batchId,corrId,fmt.Sprintf("sd handler recieve new action: [%s]",action.Name))
-
+	logService.Debug(fid, batchId, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case REG:
@@ -119,7 +117,7 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	case UNREG:
 		return h.unregister(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid,batchId,corrId,fmt.Sprintf("Unknown SD action: [%s]",action.Name))
+		logService.Error(fid, batchId, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
 
 		return Err("Unknown action: " + action.Name)
 	}
@@ -143,20 +141,19 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 	fid := nodes[0].Flow.Id
 	batchId := nodes[0].Batch.Id
 
-	logService.Debug(fid,batchId,corrId,fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s",params[SV_ID],corrId))
-
+	logService.Debug(fid, batchId, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	svVal := params[SV_ID]
 	sv, err := utils.ToInt(svVal)
 
 	if err != nil {
-		logService.Error(fid,batchId,corrId,fmt.Sprintf("Bad service_discovery_id :[%v]",svVal))
+		logService.Error(fid, batchId, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
 
 		return Err("Bad servicd_id")
 	}
 
 	// call api
-	logService.Debug(fid,batchId,corrId,fmt.Sprintf("SD:%d , nodes = %v", sv,nodes))
+	logService.Debug(fid, batchId, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
@@ -168,7 +165,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 	data["ips"] = strings.Join(ips, ",")
 	data["user"] = "root"
 
-	header:= make(map[string]interface{})
+	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
 
@@ -190,13 +187,12 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	// check result if async
 	taskId := resp.Content.TaskId
-	logService.Debug(fid,batchId,corrId,fmt.Sprintf("task id = %s", taskId))
+	logService.Debug(fid, batchId, corrId, fmt.Sprintf("task id = %s", taskId))
 
 	// start checking result
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid,batchId,corrId,fmt.Sprintf("check result for times %d", i+1))
-
+		logService.Info(fid, batchId, corrId, fmt.Sprintf("check result for times %d", i+1))
 
 		//data := make(map[string]interface{})
 		//data["task_id"] = taskId
@@ -209,7 +205,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //, "task_id", taskId, "appkey", SD_APPKEY)
 		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
-			logService.Warn(fid,batchId,corrId,fmt.Sprintf("check result err: \n%v", err))
+			logService.Warn(fid, batchId, corrId, fmt.Sprintf("check result err: \n%v", err))
 
 			continue
 		}
@@ -217,13 +213,13 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		resp := &sdChkResp{}
 		err = json.Unmarshal([]byte(msg), resp)
 		if err != nil {
-			logService.Error(fid,batchId,corrId,fmt.Sprintf("bad response: %s", msg))
+			logService.Error(fid, batchId, corrId, fmt.Sprintf("bad response: %s", msg))
 
 			continue
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid,batchId,corrId,fmt.Sprintf("check result return fail"))
+			logService.Error(fid, batchId, corrId, fmt.Sprintf("check result return fail"))
 
 			continue
 		}
@@ -260,9 +256,9 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 }
 
 func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
-	corrId , instanceId := nodeState.CorrId, nodeState.VmId
+	corrId, instanceId := nodeState.CorrId, nodeState.VmId
 
-	header:= make(map[string]interface{})
+	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
 

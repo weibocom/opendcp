@@ -17,20 +17,13 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package api
 
 import (
-	//"fmt"
 	"strconv"
 
 	h "weibo.com/opendcp/orion/helper"
-	//. "weibo.com/opendcp/orion/models"
-	//s "weibo.com/opendcp/orion/service"
-	//u "weibo.com/opendcp/orion/utils"
 )
-
-const ()
 
 type ExecApi struct {
 	baseAPI
@@ -47,7 +40,6 @@ func (c *ExecApi) ExpandPool() {
 	opUser := c.Ctx.Input.Header("Authorization")
 	id := c.Ctx.Input.Param(":id")
 	idInt, _ := strconv.Atoi(id)
-
 
 	req := struct {
 		Num int `json:"num"`

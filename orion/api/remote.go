@@ -17,7 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package api
 
 import (
@@ -27,7 +26,6 @@ import (
 
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
-	//"weibo.com/opendcp/orion/utils"
 )
 
 /**
@@ -109,7 +107,6 @@ func (c *RemoteApi) ActionAppend() {
 		return
 	}
 
-
 	data := models.RemoteAction{
 		Name:   req.Name,
 		Desc:   req.Desc,
@@ -136,7 +133,7 @@ func (c *RemoteApi) ActionList() {
 
 	list := make([]models.RemoteAction, 0, pageSize)
 
-	count, err := service.Remote.ListByPageWithSort(page, pageSize, &models.RemoteAction{}, &list,"-id")
+	count, err := service.Remote.ListByPageWithSort(page, pageSize, &models.RemoteAction{}, &list, "-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -334,7 +331,7 @@ func (c *RemoteApi) RemoteStepList() {
 
 	list := make([]models.RemoteStep, 0, pageSize)
 
-	count, err := service.Remote.ListByPageWithSort(page, pageSize, &models.RemoteStep{}, &list,"-id")
+	count, err := service.Remote.ListByPageWithSort(page, pageSize, &models.RemoteStep{}, &list, "-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
