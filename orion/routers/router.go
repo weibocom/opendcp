@@ -17,18 +17,17 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package routers
 
 import (
 	"github.com/astaxie/beego"
+
 	"weibo.com/opendcp/orion/api"
 	"weibo.com/opendcp/orion/controllers"
 )
 
 func init() {
 	cluster := beego.NewNamespace("/cluster",
-
 		//beego.NSRouter("/", &api.ClusterApi{}, "*:ClusterList"),
 		beego.NSRouter("/?:id", &api.ClusterApi{}, "*:ClusterInfo"),
 		beego.NSRouter("/list", &api.ClusterApi{}, "*:ClusterList"),
