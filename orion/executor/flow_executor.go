@@ -471,6 +471,11 @@ func (exec *FlowExecutor) runBatch(batch *models.FlowBatch, stateMap map[int]*mo
 		//	//return errors.New("Fail at step " + step.Name)
 		//	exec.updateStepStatus(errNodes, step.Name, stepNum, models.STATUS_FAILED)
 		//}
+		//失败的节点需要更新node
+		for _,errNode := range errNodes {
+			errNode.Node.Status = models.STATUS_FAILED
+			service.Cluster.UpdateBase(errNode.Node)
+		}
 		//如果该最后一步，成功0个节点，则最后结果为失败
 		if stepNum == theStep_index && len(okNodes) == 0 {
 			logService.Error(fid, batch.Id, correlationId, fmt.Sprintf("Flow %s fails at batch[%d] step[%s]", batch.Flow.Name, batch.Id, step.Name))
@@ -480,6 +485,10 @@ func (exec *FlowExecutor) runBatch(batch *models.FlowBatch, stateMap map[int]*mo
 		//如果最后一步，成功的节点部位0，则最后的结果为成功
 		if stepNum == theStep_index && len(okNodes) != 0 {
 			exec.allSuccess(batch, okNodes, stepNum)
+			for _,okNode := range okNodes {
+				okNode.Node.Status = models.STATUS_SUCCESS
+				service.Cluster.UpdateBase(okNode.Node)
+			}
 			return nil
 		}
 		//更新内存中states成功的节点状态改为执行中
