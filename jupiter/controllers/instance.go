@@ -13,6 +13,8 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
+	"strconv"
+	"weibo.com/opendcp/jupiter/service/cluster"
 )
 
 const DEFAULT_CPU = 1
@@ -600,5 +602,43 @@ func (ic *InstanceController) ManagePhyDev() {
 	} else {
 		ic.Status = SERVICE_ERRROR
 	}
+	ic.RespJsonWithStatus()
+}
+
+// @Title get total instances number
+// @Description get total instances number
+// @router /number [get]
+func (ic *InstanceController) GetInstancesNumber() {
+	result := make(map[string] string)
+
+	allIns, err := instance.ListAllInstances()
+	if err != nil {
+		beego.Error("Get all instances err:", err)
+		ic.RespServiceError(err)
+		return
+	}
+	result["all"] = strconv.Itoa(len(allIns))
+
+	clusters, err := cluster.ListClusters()
+	if err != nil {
+		beego.Error("Get all clusters err:", err)
+		ic.RespServiceError(err)
+		return
+	}
+
+	for _, c := range clusters {
+		clusterIns, err := instance.GetClusterInstances(c.Id)
+		if err != nil  {
+			beego.Error("Get the instances based on the cluster err:", err)
+			ic.RespServiceError(err)
+			return
+		}
+		result[c.Name] = strconv.Itoa(len(clusterIns))
+	}
+
+	resp := ApiResponse{}
+	resp.Content = result
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
 }
