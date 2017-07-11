@@ -35,6 +35,7 @@ type ExecTask struct {
 	CronItems   []*CronItem   `json:"cron_itmes" orm:"reverse(many)"`   //定时任务列表
 	DependItems []*DependItem `json:"depend_itmes" orm:"reverse(many)"` //依赖任务列表
 	Type        string        `json:"type"`                             //任务类型 expand/upload
+	ExecType   string	  `json:"exec_type"`			    //任务类型 crontab/depend
 }
 
 type CronItem struct {

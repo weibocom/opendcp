@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS `pool` (
 CREATE TABLE IF NOT EXISTS `exec_task` (
   `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
   `pool_id` integer NOT NULL,
-  `type` varchar(50) NOT NULL DEFAULT 'expand'
+  `type` varchar(50) NOT NULL DEFAULT 'expand',
+  `exec_type` VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
