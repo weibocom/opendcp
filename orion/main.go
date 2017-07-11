@@ -64,4 +64,5 @@ func initOrm() {
 	orm.RegisterModel(&(Cluster{}), &(Service{}), &(Pool{}), &(Node{}),&(Logs{}))
 	orm.RegisterModel(&(FlowImpl{}), &(Flow{}), &(FlowBatch{}), &(NodeState{}))
 	orm.RegisterModel(&(RemoteStep{}), &(RemoteAction{}), &(RemoteActionImpl{}))
+	orm.RegisterModel(&(CronItem{}), &(DependItem{}), &(ExecTask{}))
 }

@@ -568,8 +568,7 @@ library:harbor默认集群，暂时不用。
     yum install docker
 2.  将harbor增加安全仓库配置
 
-	vim /etc/systemd/system/docker.service.d/docker.conf
-
+	vim /etc/sysconfig/docker 或者 /etc/systemd/system/docker.service.d/docker.conf
 	将--insecure-registry harborAddress:harborPort 加到 ExecStart的值后边
 3.  重新启动
 
