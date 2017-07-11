@@ -17,14 +17,13 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"github.com/go-errors/errors"
-	"fmt"
 )
 
 type BaseService struct {
@@ -63,7 +62,7 @@ func (b *BaseService) DeleteBase(obj interface{}) error {
 	}
 
 	if n == 0 {
-		return errors.New("fail to delete: " + fmt.Sprintf("%v", obj))
+		return fmt.Errorf("fail to delete: %v", obj)
 	}
 
 	return nil

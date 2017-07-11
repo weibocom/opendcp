@@ -17,14 +17,13 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego/orm"
 	"weibo.com/opendcp/orion/models"
-	"errors"
-	"fmt"
 )
 
 type RemoteStepService struct {
@@ -64,36 +63,35 @@ func (f *RemoteStepService) ActionDelete(id int) error {
 *  check step then delete actions from db
 *
 *  if step is using.. return error
-*/
+ */
 func (f *RemoteStepService) CheckActionDelete(id int) error {
 	objItem := &models.RemoteAction{Id: id}
 	err := f.GetBase(objItem)
-	if(err != nil) {
+	if err != nil {
 		return err
 	}
 
 	//check Step
 	o := orm.NewOrm()
 	stepItem := &models.RemoteStep{}
-	err = o.QueryTable(stepItem).Filter("actions__icontains","\""+objItem.Name+"\"").One(stepItem)
+	err = o.QueryTable(stepItem).Filter("actions__icontains", "\""+objItem.Name+"\"").One(stepItem)
 
-	if(len(stepItem.Name) > 0) {
-		return errors.New(fmt.Sprintf("action is using ! step id:%v,step name:%v",stepItem.Id,stepItem.Name))
+	if len(stepItem.Name) > 0 {
+		return fmt.Errorf("action is using ! step id:%v,step name:%v", stepItem.Id, stepItem.Name)
 	}
 
 	return f.ActionDelete(id)
 }
 
-
 /**
 *  check template then delete step from db
 *
 *  if step is using.. return error
-*/
+ */
 func (f *RemoteStepService) CheckStepDelete(id int) error {
 	stepItem := &models.RemoteStep{Id: id}
 	err := f.GetBase(stepItem)
-	if(err != nil) {
+	if err != nil {
 		return err
 	}
 
@@ -101,10 +99,10 @@ func (f *RemoteStepService) CheckStepDelete(id int) error {
 	orm.Debug = true
 	o := orm.NewOrm()
 	flowItem := &models.FlowImpl{}
-	err = o.QueryTable(flowItem).Filter("steps__icontains","\"name\":\""+stepItem.Name+"\"").One(flowItem)
+	err = o.QueryTable(flowItem).Filter("steps__icontains", "\"name\":\""+stepItem.Name+"\"").One(flowItem)
 
-	if(len(flowItem.Name) > 0) {
-		return errors.New(fmt.Sprintf("step is using ! template id:%v,template name:%v",flowItem.Id,flowItem.Name))
+	if len(flowItem.Name) > 0 {
+		return fmt.Errorf("step is using ! template id:%v,template name:%v", flowItem.Id, flowItem.Name)
 	}
 
 	return f.DeleteBase(stepItem)
