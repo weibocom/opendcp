@@ -38,6 +38,44 @@ CREATE TABLE IF NOT EXISTS `pool` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.ExecTask`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `exec_task` (
+  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `pool_id` integer NOT NULL,
+  `type` varchar(50) NOT NULL DEFAULT 'expand'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.CronItem`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cron_item` (
+  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `exec_task_id` integer NOT NULL,
+  `instance_num` integer ,
+  `concurr_ratio` integer ,
+  `concurr_num` integer ,
+  `week_day` integer NOT NULL DEFAULT 0,
+  `time` VARCHAR(255) NOT NULL,
+  `ignore` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.DependItem`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `depend_item` (
+  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `exec_task_id` integer NOT NULL,
+  `pool_id` integer NOT NULL,
+  `ratio` DOUBLE NOT NULL,
+  `elastic_count` integer NOT NULL,
+  `step_name` VARCHAR(255) NOT NULL,
+  `ignore` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------
 --  Table Structure for `weibo.com/opendcp/orion/models.Node`
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `node` (
@@ -45,7 +83,8 @@ CREATE TABLE IF NOT EXISTS `node` (
     `ip` varchar(255),
     `vm_id` varchar(255),
     `status` integer NOT NULL DEFAULT 0 ,
-    `pool_id` integer NOT NULL
+    `pool_id` integer NOT NULL,
+    `node_type` varchar(255) NOT NULL DEFAULT 'manual'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
@@ -70,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `flow` (
     `impl_id` integer NOT NULL,
     `step_len` integer NOT NULL DEFAULT 0 ,
     `op_user` varchar(255) NOT NULL DEFAULT '' ,
+    `flow_type` varchar(50) NOT NULL DEFAULT 'manual',
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
