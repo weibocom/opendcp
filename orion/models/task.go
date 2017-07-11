@@ -34,8 +34,8 @@ type ExecTask struct {
 	Pool        *Pool         `json:"pool" orm:"rel(fk)"`               //服务池id
 	CronItems   []*CronItem   `json:"cron_itmes" orm:"reverse(many)"`   //定时任务列表
 	DependItems []*DependItem `json:"depend_itmes" orm:"reverse(many)"` //依赖任务列表
-	Type        string        `json:"type"`                             //任务类型 expand/upload
-	ExecType   string	  `json:"exec_type"`			    //任务类型 crontab/depend
+	Type        string        `json:"type"`                             //模版任务类型 expand/upload
+	ExecType    string	  `json:"exec_type"`			    //执行任务类型 crontab/depend
 }
 
 type CronItem struct {
@@ -44,9 +44,9 @@ type CronItem struct {
 	InstanceNum  int       `json:"instance_num"`              //扩容缩容使用作为机器的数量
 	ConcurrRatio int       `json:"concurr_ratio"`             //上线使用作为最大并发比例
 	ConcurrNum   int       `json:"concurr_num"`               //上线使用作为最大并发数
-	WeekDay      int       `json:"week_day" orm:"default(0)"` //每周第几天，取值 0,1,2,3,4,5,6,7
+	WeekDay      int       `json:"week_day" orm:"default(0)"` //每周第几天，取值 0 每天,1 周日,2 周一,3 周二,4 周三,5 周四,6 周五,7 周六
 	Time         string    `json:"time"`                      //每天时分秒,例如 14:09:08
-	Ignore       bool      `json:"ignore" orm:"default(0)"`   //是否忽略定时任务
+	Ignore       bool      `json:"ignore" orm:"default(0)"`   //是否忽略定时任务 0 不忽略，1 忽略
 }
 
 type DependItem struct {
@@ -56,7 +56,7 @@ type DependItem struct {
 	Ratio        float64   `json:"ratio"`                   //依赖比例
 	ElasticCount int       `json:"elastic_count"`           //冗余机器数量
 	StepName     string    `json:"step_name"`               //依赖步骤名称
-	Ignore       bool      `json:"ignore" orm:"default(0)"` //是否忽略依赖
+	Ignore       bool      `json:"ignore" orm:"default(0)"` //是否忽略依赖 0 不忽略，1 忽略
 }
 
 //任务流
