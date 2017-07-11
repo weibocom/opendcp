@@ -189,13 +189,13 @@ func (b *BaseService) ListByPageWithSort(page, pageSize int, obj interface{}, li
 	var qr orm.QuerySeter
 	switch len(sortstr) {
 	case 1:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0])
+		qr = o.QueryTable(obj).OrderBy(sortstr[0]).RelatedSel()
 	case 2:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1])
+		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1]).RelatedSel()
 	case 3:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1], sortstr[2])
+		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1], sortstr[2]).RelatedSel()
 	default:
-		qr = o.QueryTable(obj)
+		qr = o.QueryTable(obj).RelatedSel()
 	}
 	count, err := qr.Count()
 	if err != nil {
