@@ -223,6 +223,13 @@ func init() {
 			AllowHTTPMethods: []string{"post"},
 			Params: nil})
 
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
+		beego.ControllerComments{
+			Method: "GetInstancesNumber",
+			Router: `/number`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:OrganizationController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:OrganizationController"],
 		beego.ControllerComments{
 			Method: "ListAllOrganizations",

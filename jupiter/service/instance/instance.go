@@ -461,3 +461,20 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
 }
+
+func ListAllInstances() ([]models.Instance, error) {
+	instances, err := dao.GetAllRunningInstance()
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}
+
+
+func GetClusterInstances(clusterId int64)  ([]models.Instance, error){
+	instances, err := dao.GetAllInstanceByClusterId(clusterId)
+	if err != nil {
+		return nil, err
+	}
+	return instances, err
+}
