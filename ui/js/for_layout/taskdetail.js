@@ -18,6 +18,7 @@ cache = {
     running: [],
     success: [],
     failed: [],
+    stoped:[]
   },
   arg_name: [],
   tasklist: [],
@@ -106,6 +107,7 @@ var getTask=function(action){
               cache.ip.running=[];
               cache.ip.success=[];
               cache.ip.failed=[];
+              cache.ip.stoped=[];
               $.each(data.content,function(k,v){
                 switch (k){
                   case 0:
@@ -120,12 +122,15 @@ var getTask=function(action){
                   case 3:
                   case '3':
                     cache.ip.failed=v; break;
+                  case '4':
+                    cache.ip.stoped=v; break;
                 }
               });
               updateEle('ip','ready');
               updateEle('ip','running');
               updateEle('ip','success');
               updateEle('ip','failed');
+              updateEle('ip','stoped');
               if(cache.ip.ready.length>0){
                 $('#tab_1').attr('class','tab-pane fade active in');
                 $('#tab_2').attr('class','tab-pane fade');
@@ -135,35 +140,56 @@ var getTask=function(action){
                 $('#tab_home_2').attr('class','');
                 $('#tab_home_3').attr('class','');
                 $('#tab_home_4').attr('class','');
+                $('#tab_home_5').attr('class','');
               }else{
                 if(cache.ip.running.length>0){
                   $('#tab_1').attr('class','tab-pane fade');
                   $('#tab_2').attr('class','tab-pane fade active in');
                   $('#tab_3').attr('class','tab-pane fade');
                   $('#tab_4').attr('class','tab-pane fade');
+                  $('#tab_5').attr('class','tab-pane fade');
                   $('#tab_home_1').attr('class','');
                   $('#tab_home_2').attr('class','active');
                   $('#tab_home_3').attr('class','');
                   $('#tab_home_4').attr('class','');
+                  $('#tab_home_5').attr('class','');
                 }else{
-                  if(cache.ip.success.length>0){
-                    $('#tab_1').attr('class','tab-pane fade');
-                    $('#tab_2').attr('class','tab-pane fade');
-                    $('#tab_3').attr('class','tab-pane fade active in');
-                    $('#tab_4').attr('class','tab-pane fade');
-                    $('#tab_home_1').attr('class','');
-                    $('#tab_home_2').attr('class','');
-                    $('#tab_home_3').attr('class','active');
-                    $('#tab_home_4').attr('class','');
+                  if(cache.ip.stoped.length>0){
+                      $('#tab_1').attr('class','tab-pane fade');
+                      $('#tab_2').attr('class','tab-pane fade');
+                      $('#tab_5').attr('class','tab-pane fade active in');
+                      $('#tab_3').attr('class','tab-pane fade');
+                      $('#tab_4').attr('class','tab-pane fade');
+                      $('#tab_home_1').attr('class','');
+                      $('#tab_home_2').attr('class','');
+                      $('#tab_home_5').attr('class','active');
+                      $('#tab_home_3').attr('class','');
+                      $('#tab_home_4').attr('class','');
+
                   }else{
-                    $('#tab_1').attr('class','tab-pane fade');
-                    $('#tab_2').attr('class','tab-pane fade');
-                    $('#tab_3').attr('class','tab-pane fade');
-                    $('#tab_4').attr('class','tab-pane fade active in');
-                    $('#tab_home_1').attr('class','');
-                    $('#tab_home_2').attr('class','');
-                    $('#tab_home_3').attr('class','');
-                    $('#tab_home_4').attr('class','active');
+                      if(cache.ip.success.length>0){
+                          $('#tab_1').attr('class','tab-pane fade');
+                          $('#tab_2').attr('class','tab-pane fade');
+                          $('#tab_3').attr('class','tab-pane fade active in');
+                          $('#tab_4').attr('class','tab-pane fade');
+                          $('#tab_5').attr('class','tab-pane fade');
+                          $('#tab_home_1').attr('class','');
+                          $('#tab_home_2').attr('class','');
+                          $('#tab_home_3').attr('class','active');
+                          $('#tab_home_4').attr('class','');
+                          $('#tab_home_5').attr('class','');
+                      }else{
+                          $('#tab_1').attr('class','tab-pane fade');
+                          $('#tab_2').attr('class','tab-pane fade');
+                          $('#tab_3').attr('class','tab-pane fade');
+                          $('#tab_4').attr('class','tab-pane fade active in');
+                          $('#tab_5').attr('class','tab-pane fade');
+                          $('#tab_home_1').attr('class','');
+                          $('#tab_home_2').attr('class','');
+                          $('#tab_home_3').attr('class','');
+                          $('#tab_home_4').attr('class','active');
+                          $('#tab_home_5').attr('class','');
+                      }
                   }
                 }
               }
@@ -218,18 +244,18 @@ var updateEle=function(o,idx){
       break;
     case 'num':
       var data=cache.task.Stat;
-      var ready=0,success= 0,running= 0,failed=0;
+      var ready=0,success= 0,running= 0,failed=0, stoped=0;
       if(!$.isEmptyObject(data)) {
         $('#num_ready').html('');
         $('#num_success').html('');
         $('#num_running').html('');
         $('#num_failed').html('');
-
+        $('#num_stoped').html('');
         ready=data[0];
         running=data[1];
         success=data[2];
         failed=data[3];
-
+        stoped=data[4];
         if(ready>0){
           $('#num_ready').html(ready);
         }else{
@@ -250,6 +276,11 @@ var updateEle=function(o,idx){
         }else{
           $('#task_failed').html('');
         }
+        if(stoped>0){
+            $('#num_stoped').html(stoped);
+        }else{
+            $('#num_stoped').html('');
+        }
       }
       break;
     case 'overview':
@@ -264,12 +295,15 @@ var updateEle=function(o,idx){
         var running=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[1] : 0;
         var success=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[2] : 0;
         var failed=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[3] : 0;
-        var count=ready+running+success+failed;
+        var stoped=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[4] : 0;
+        var count=ready+running+success+failed+stoped;
         td = '<td>' + count + '</td>';
         tr.append(td);
         td = '<td><span class="label label-default">' + ready + '</span></td>';
         tr.append(td);
         td = '<td><span class="label label-info">' + running + '</span></td>';
+        tr.append(td);
+        td = '<td><span class="label label-warning">' + stoped + '</span></td>';
         tr.append(td);
         td = '<td><span class="label label-success">' + success + '</span></td>';
         tr.append(td);
@@ -297,6 +331,7 @@ var updateEle=function(o,idx){
         case 'running':  data=cache.ip.running;  break;
         case 'success':  data=cache.ip.success;  break;
         case 'failed':  data=cache.ip.failed;  break;
+        case 'stoped': data=cache.ip.stoped;  break;
       }
       var n=1;
       body.html('');
@@ -324,6 +359,7 @@ var updateEle=function(o,idx){
                   case 'running': style='badge bg-blue'; break;
                   case 'success': style='badge bg-green'; break;
                   case 'failed': style='badge bg-red'; break;
+                  case 'stoped': style='badge bg-orange'; break;
                 }
               }else{
                 if(idx!='ready') if(key<curr||curr==-1) style='label label-success';
@@ -614,7 +650,7 @@ var view=function(type,idx,ip,offset){
                   text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ log +'</span>';
                 });
                 text+='</div>';
-                if(cache.task.state==0||cache.task.state==1) window.setInterval('getResult("'+idx+'","'+ip+'")',5000);
+                if(cache.task.state!=4) window.setInterval('getResult("'+idx+'","'+ip+'")',5000);
                 break;
               case 'tasklog':
                 cache.result={};
@@ -627,7 +663,7 @@ var view=function(type,idx,ip,offset){
                 text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ log +'</span>';
                 text+='</div>';
                 console.log(cache.task);
-                if(cache.task.state==0||cache.task.state==1) window.setInterval('getTaskLog("'+idx+'")',5000);
+                if(cache.task.state!=4) window.setInterval('getTaskLog("'+idx+'")',5000);
                 break;
               default:
                 var locale={};
