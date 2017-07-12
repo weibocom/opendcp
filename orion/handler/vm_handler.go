@@ -203,7 +203,11 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 		node.UpdatedTime = time.Now()
 
 		service.Cluster.UpdateBase(node)
-		service.Cluster.DeleteBase(node.Node)
+		//service.Cluster.DeleteBase(node.Node)
+		node.Node.Status = models.STATUS_FAILED
+		ip := fmt.Sprintf("%d", node.Node.Id)
+		node.Node.Ip = ip
+		service.Cluster.UpdateBase(node.Node)
 	}
 
 	// start checking result
@@ -272,8 +276,13 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			// if failed, remove the node from pool
 			if toDel {
 				logService.Info(fid, batchId, correlationId, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
+				nodeMap[id].Node.Status = models.STATUS_FAILED
+				if nodeMap[id].Node.Ip == "-" {
+					ip := fmt.Sprintf("%d", nodeMap[id].Node.Id)
+					nodeMap[id].Node.Ip = ip
+				}
+				service.Cluster.UpdateBase(nodeMap[id].Node)
 
-				service.Cluster.DeleteBase(nodeMap[id].Node)
 			}
 		}
 
@@ -295,9 +304,14 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			n.Status = models.STATUS_FAILED
 			service.Cluster.UpdateBase(n)
 
-			logService.Info(fid, batchId, correlationId, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
+			logService.Info(fid, batchId, correlationId, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
 
-			service.Cluster.DeleteBase(n.Node)
+			n.Node.Status=models.STATUS_FAILED
+			if nodeMap[id].Node.Ip == "-" {
+				ip := fmt.Sprintf("%d", n.Node.Id)
+				n.Node.Ip = ip
+			}
+			service.Cluster.UpdateBase(n.Node)
 		}
 	}
 
@@ -351,7 +365,11 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 			cannotDelete[node.Id] = false
 		} else {
 			// for vmId == "", we cannot delete them
-			cannotDelete[node.Id] = true
+			if node.Ip != fmt.Sprintf("%d" ,node.Node.Id) {
+				cannotDelete[node.Id] = true
+			}else {
+				cannotDelete[node.Id] = false
+			}
 		}
 	}
 

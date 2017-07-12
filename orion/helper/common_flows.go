@@ -74,7 +74,8 @@ func Expand(poolId int, num int, opUser string) error {
 		n := &models.Node{
 			Ip:     "-",
 			Pool:   pool,
-			Status: 0,
+			Status: models.STATUS_INIT,
+			NodeType:models.Manual,
 		}
 		nodes[i] = n
 
