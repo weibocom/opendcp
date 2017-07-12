@@ -29,6 +29,12 @@ const (
 	STATUS_STOPPED
 )
 
+const (
+	Manual = "manual"
+	Crontab = "crontab"
+	Depend = "depend"
+)
+
 type ExecTask struct {
 	Id          int           `json:"id" orm:"pk;auto"`
 	Pool        *Pool         `json:"pool" orm:"rel(fk)"`               //服务池id
