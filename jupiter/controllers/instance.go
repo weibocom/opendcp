@@ -616,7 +616,12 @@ func (ic *InstanceController) ChangeOpenStackConf() {
 		ic.RespInputError()
 		return
 	}
-	instance.ChangeOpenStackConf(&OpConf)
+	err = instance.ChangeOpenStackConf(&OpConf)
+	if err != nil{
+		beego.Error("Could not change hosts: ", err)
+		ic.RespInputError()
+		return
+	}
 	resp := ApiResponse{}
 	resp.Content = OpConf
 	ic.ApiResponse = resp
