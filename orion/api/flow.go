@@ -409,13 +409,13 @@ func (f *FlowApi) StartFlow() {
 	}
 
 	//重新读取配置文件
-	objImpl, err := service.Flow.GetFlowImplWithRel(obj.Impl.Id)
-	if err != nil {
-		f.ReturnFailed("flowImp not found id: "+strconv.Itoa(obj.Impl.Id), 400)
+	if obj.Impl != nil{
+		obj.Options = obj.Impl.Steps
+	}else{
+		beego.Error("flowImp is not found " + _id)
+		f.ReturnFailed("flowImp is not found " + _id, 400)
 		return
 	}
-	obj.Options = objImpl.Steps
-
 	err = executor.Executor.Start(obj)
 	if err != nil {
 		beego.Error("start flow ", _id, "fails: ", err)
@@ -671,7 +671,7 @@ func (f *FlowApi) popFlowStruct(obj *Flow, flowstru *flow_struct) {
 	}
 
 	// get statistics
-	stat := make([]int, 4)
+	stat := make([]int, 5)
 
 	states := make([]*NodeState, 0)
 	_, err := service.Flow.ListByPageWithFilter(0, 10000,
