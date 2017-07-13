@@ -409,11 +409,11 @@ func (f *FlowApi) StartFlow() {
 	}
 
 	//重新读取配置文件
-	if obj.Impl != nil{
+	if obj.Impl != nil {
 		obj.Options = obj.Impl.Steps
-	}else{
+	} else {
 		beego.Error("flowImp is not found " + _id)
-		f.ReturnFailed("flowImp is not found " + _id, 400)
+		f.ReturnFailed("flowImp is not found "+_id, 400)
 		return
 	}
 	err = executor.Executor.Start(obj)
