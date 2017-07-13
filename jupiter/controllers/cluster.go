@@ -28,6 +28,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"strconv"
 )
 
 // Operations about cluster
@@ -258,8 +259,18 @@ func (cc *ClusterController) GetInstancesNumber() {
 		}
 	}
 
+	result := make([] map[string]string,0)
+	for _, detail := range details {
+		info := make(map[string] string)
+		info["time"] = detail.RunningTime
+		for k, v := range detail.InstanceNumber {
+			info[k] = strconv.Itoa(v)
+		}
+		result = append(result, info)
+	}
+
 	resp := ApiResponse{}
-	resp.Content = details
+	resp.Content = result
 	cc.ApiResponse = resp
 	cc.Status = SERVICE_SUCCESS
 	cc.RespJsonWithStatus()
