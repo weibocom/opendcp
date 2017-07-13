@@ -100,6 +100,7 @@ func DeleteOne(instanceId, correlationId string) error {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
+
 	if ins.Provider != PhyDev {
 		providerDriver, err := provider.New(ins.Provider)
 		if err != nil {
