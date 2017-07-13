@@ -59,7 +59,9 @@ func InsertNetwork(network *models.Network) (int64, error) {
 		o.QueryTable(NETWORK_TABLE).Filter("subnet_id", network.SubnetId).
 			Filter("security_group", network.SecurityGroup).
 			Filter("internet_charge_type", network.InternetChargeType).
-			Filter("internet_max_bandwidth_out", network.InternetMaxBandwidthOut).RelatedSel().One(&networkModel)
+			Filter("internet_max_bandwidth_out", network.InternetMaxBandwidthOut).
+			Filter("vpc_id", network.VpcId).
+			RelatedSel().One(&networkModel)
 		id = networkModel.Id
 	}
 	return id, nil

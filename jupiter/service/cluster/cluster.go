@@ -71,7 +71,6 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 		ram , _ := strconv.Atoi(strs[2])
 		cluster.Ram = ram / 1024
 	}
-
 	id, err := dao.InsertCluster(cluster)
 	_, err = bill.InsertBill(cluster)
 	return id, err
