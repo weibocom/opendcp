@@ -77,10 +77,10 @@ class myself{
     return $ret;
   }
 
-  function getMachines($myUser = ''){
+  function getMachines($myUser = '', $namespace = '', $method = 'GET', $id = ''){
       global $thisClass;
       $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-      if($strList = $thisClass->get($myUser, 'instance/number', 'GET', '' ,'')){
+      if($strList = $thisClass->get($myUser, $this->module.'/'.$namespace, $method, '' ,$id)){
           $arrList = json_decode($strList,true);
           if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['content'])){
               $ret = array(
@@ -99,6 +99,7 @@ class myself{
       $ret['ret'] = $strList;
       return $ret;
   }
+
   function getInfo($myUser = '', $idx = ''){
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
@@ -213,8 +214,11 @@ if($hasLimit){
       break;
     case 'machine':
         $logFlag = false;//本操作不记录日志
-        $retArr = $mySelf->getMachines($myUser);
-        break;
+        if(isset($arrJson) && !empty($arrJson)){
+            $retArr=$mySelf->getMachines($myUser, $arrJson["action"],'GET', $arrJson["hour"]);
+            $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+        }
+      break;
   }
 }else{
   $retArr['msg'] = 'Permission Denied!';

@@ -214,23 +214,104 @@ var theme = {
 };
 var cache = {
     index:[],
-    test:{},
     page: 1,
     tasklist:[],
-    check_step: {}, //Action详情
-    task_step: [], //步骤
-    task_tpl: {}, //模板列表
-    cluster: [], //集群列表
-    service: [], //服务列表
-    pool: [], //服务池列表
-    ip: [], //选中IP列表
 }
-
+var machineLineChart = null;
+var intervalRefreshLineChart = null;
+var intervalRefreshTaskList = null;
+var intervalminute = 1;//表示1分钟刷新一次整体数据
 $(document).ready(function() {
     getTask(1);
-    getTheMachine();
+    changeTime(0);
+    setInterval('getTask(1)',intervalminute*60*1000);
+    // getTheMachine();
 });
-var getModuleMachine = function(pie_data){
+
+var changeTime = function(timeUnit){
+    var timeHour = 0;
+    if(timeUnit == 0){
+        $("#time_unit").html('<a onclick="changeTime(0)">小时 </a><span class="caret"></span>');
+        timeHour = 1;
+    }
+    if(timeUnit == 1){
+        $("#time_unit").html('<a onclick="changeTime(1)">天 </a><span class="caret"></span>');
+        timeHour = 1*24;
+    }
+    if(timeUnit == 2){
+        $("#time_unit").html('<a onclick="changeTime(2)">周 </a><span class="caret"></span>');
+        timeHour = 1*24*7;
+    }
+    if(timeUnit == 3){
+        $("#time_unit").html('<a onclick="changeTime(3)">月 </a><span class="caret"></span>');
+        timeHour = 1*24*31;
+    }
+    if(timeUnit == 4){
+        $("#time_unit").html('<a onclick="changeTime(4)">年 </a><span class="caret"></span>');
+        timeHour = 1*24*31*365;
+
+    }
+    var time_data = $("#time_nume").val();
+    if($.isNumeric(time_data)){
+        var time = parseInt(time_data)*timeHour;
+        loadAllData(time);
+    }
+}
+var loadAllData = function (time){
+    var postData = {'action':'number','hour':time};
+    $.ajax({
+        type : "post",
+        async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+        url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
+        data : {"data":JSON.stringify(postData)},
+        dataType : "json",        //返回数据形式为json
+        success : function(result) {
+            //请求成功时执行该函数内容，result即为服务器返回的json对象
+            if (result.code == 0) {
+                var line_data = [];
+                var pie_data = [];
+                for(var i = 0; i < result.content.length; i++){
+                    var map = eval(result.content[i]); //数组
+                    var x = "", y = "";
+                    if(i == result.content.length -1){
+                        $.each(map, function (k, v) {
+                            var name = k + "";
+                            if(name != "time" && name != "all"){
+                                var element = {
+                                    "name":name,
+                                    "value":parseInt(v)
+                                }
+                                pie_data.push(element);
+                            }
+                        });
+                    }
+                    $.each(map, function (k, v) {
+                        var name = k + "";
+                        if(name=="all"){y = v}
+                        if(name=="time") {x = v}
+                    });
+                    var point = {
+                        'x':x,
+                        'y':parseInt(y)
+                    };
+                    line_data.push(point);
+                }
+                initMachineLine(line_data, time);
+                initMachinePieChart(pie_data);
+            }else{
+                var line_data = [];
+                var pie_data = [];
+                initMachineLine(line_data, time);
+                initMachinePieChart(pie_data);
+                pageNotify('error','数据加载失败！','错误信息：接口出错');
+            }
+        },
+        error : function() {
+            pageNotify('error','加载失败！','错误信息：接口不可用');
+        }
+    });
+}
+var initMachinePieChart = function(pie_data){
     var echartPie = echarts.init(document.getElementById('echart_pie'), theme);
     echartPie.setOption({
         tooltip: {
@@ -253,65 +334,20 @@ var getModuleMachine = function(pie_data){
         }]
     });
 }
-var getTheMachine = function(){
-    Highcharts.setOptions({
-        global: {
-            useUTC: false
-        }
-    });
-    var mychart = new Highcharts.Chart('container', {
+var initMachineLine = function (line_data, time) {
+    Highcharts.setOptions({global: {useUTC: false}});
+    machineLineChart = new Highcharts.Chart('container', {
         chart:{
             type: 'spline',
             animation: Highcharts.svg, // don't animate in IE < IE 10.
-            marginRight: 5,
+            marginRight: 10,
             events: {
                 load: function () {
-                    var series = this.series;
                     var loadData = function() {
-                        $.ajax({
-                            type : "post",
-                            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-                            url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
-                            data : {},
-                            dataType : "json",        //返回数据形式为json
-                            success : function(result) {
-                                //请求成功时执行该函数内容，result即为服务器返回的json对象
-                                if (result.code == 0) {
-                                    var x = (new Date()).getTime();// current time
-                                    var y = parseInt(result.content.all);
-                                    series[0].addPoint([x, y], true, true);
-                                    var json = eval(result.content); //数组
-                                    var pie_data = [];
-                                    var pie_index = 0;
-                                    $.each(json, function (k, v) {
-                                        var name = k + "";
-                                        // if(name == "time") alert(true);
-                                        if(name != "time" && name != "all"){
-                                            var element = {};
-                                            element["name"] = name;
-                                            element["value"] = parseInt(v);
-                                            pie_data[pie_index] = element;
-                                            pie_index++;
-                                        }
-                                        //循环获取数据
-                                    });
-                                    getModuleMachine(pie_data);
-
-                                }else{
-                                    var x = (new Date()).getTime();// current time
-                                    var y = 0;
-                                    series[0].addPoint([x, y], true, true);
-                                    var pie_data = [];
-                                    getModuleMachine(pie_data);
-                                }
-                            },
-                            error : function() {
-                                pageNotify('error','加载失败！','错误信息：接口不可用');
-                            }
-                        });
+                        loadAllData(time);
                     }
-                    loadData();
-                    setInterval(loadData, 60000);
+                    if(intervalRefreshLineChart != null) clearInterval(intervalRefreshLineChart);
+                    intervalRefreshLineChart = setInterval(loadData, intervalminute*60*1000);
                 }
             }
         },
@@ -324,8 +360,22 @@ var getTheMachine = function(){
             x: -20
         },
         xAxis: {
-            type: 'datetime',
-            tickPixelInterval: 100,
+            title: {
+                text: null
+            },
+            labels: {
+                formatter: function () {
+                    return this.value;
+                }
+            },
+            categories: (function () {
+                // generate an array of random data
+                var data = [],time = (new Date()).getTime(),i;
+                for(var i = 0; i < line_data.length; i++){
+                    data.push(line_data[i].x);
+                }
+                return data;
+            }())
         },
         yAxis: {
             title: {
@@ -357,34 +407,30 @@ var getTheMachine = function(){
                         // 数据点点击事件
                         // 其中 e 变量为事件对象，this 为当前数据点对象
                         click: function (e) {
+                            var postData = {'action':'oldnumber','hour':e.point.category.replace(" ", "%20")};
                             $.ajax({
                                 type : "post",
                                 async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
                                 url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
-                                data : {},
+                                data :  {"data":JSON.stringify(postData)},
                                 dataType : "json",        //返回数据形式为json
                                 success : function(result) {
                                     //请求成功时执行该函数内容，result即为服务器返回的json对象
                                     if (result.code == 0) {
                                         var json = eval(result.content); //数组
                                         var pie_data = [];
-                                        var pie_index = 0;
                                         $.each(json, function (k, v) {
                                             var name = k + "";
                                             if(name != "time" && name != "all"){
                                                 var element = {};
                                                 element["name"] = name;
                                                 element["value"] = parseInt(v);
-                                                pie_data[pie_index] = element;
-                                                pie_index++;
+                                                pie_data.push(element);
                                             }
-                                            //循环获取数据
                                         });
-                                        getModuleMachine(pie_data);
-
+                                        initMachinePieChart(pie_data);
                                     }else{
-                                        var pie_data = [];
-                                        getModuleMachine(pie_data);
+                                        pageNotify('warning','数据获取失败！','错误信息：接口错误');
                                     }
                                 },
                                 error : function() {
@@ -405,16 +451,18 @@ var getTheMachine = function(){
             data: (function () {
                 // generate an array of random data
                 var data = [],time = (new Date()).getTime(),i;
-                for (i = -19; i <= 0; i += 1) {
-                    data.push({
-                        x: time + i * 60000,
-                        y: parseInt(Math.random()*10)
-                    });
+                for(var i = 0; i < line_data.length; i++){
+                    data.push(line_data[i].y);
                 }
                 return data;
             }())
         }]
     });
+}
+var showMachineLine = function(linedata){
+
+
+
 }
 //获取任务列表
 var getTask=function(page){
@@ -424,7 +472,7 @@ var getTask=function(page){
     }else{
         cache.page = page;
     }
-    var postData={"action":"list","page":page,"pagesize":20};
+    var postData={"action":"list","page":page,"pagesize":8};
     $.ajax({
         type: "POST",
         url: url,
@@ -445,7 +493,7 @@ var getTask=function(page){
                 //生成页面
                 //生成分页
                 //生成分页
-                listdata.title = ["#","服务池名称","任务名称","执行中","成功","失败","总计","成功率","执行时间"];
+                listdata.title = ["#","服务池名称","任务名称","执行中","暂停","成功","失败","总计","成功率","执行时间"];
                 processPage(listdata, pageinfo, paginate);
                 //生成列表
                 processBody(listdata, head, body);
@@ -531,8 +579,11 @@ var processBody = function(data,head,body){
                 var running = v.Stat[1];
                 var success = v.Stat[2];
                 var failed = v.Stat[3];
-                var count = v.Stat[0]+v.Stat[1]+v.Stat[2]+v.Stat[3];
+                var stoped = v.Stat[4];
+                var count = v.Stat[0]+v.Stat[1]+v.Stat[2]+v.Stat[3]+v.Stat[4];
                 td = '<td><span class="label label-info">' + running + '</span></td>';
+                tr.append(td);
+                td = '<td><span class="label label-warning">' + stoped + '</span></td>';
                 tr.append(td);
                 td = '<td><span class="label label-success">' + success + '</span></td>';
                 tr.append(td);
