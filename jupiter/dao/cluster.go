@@ -115,7 +115,7 @@ func InsertDetail(detail *models.Detail) error {
 
 func GetDetailByTimePeriod(begin, end string)  (details []models.Detail, err error) {
 	o := GetOrmer()
-	sql := fmt.Sprintf("SELECT * FROM %s WHERE RUNNING_TIME BETWEEN '%s' AND '%s'", DETAIL_TABLE, begin, end)
+	sql := fmt.Sprintf("SELECT * FROM %s WHERE RUNNING_TIME BETWEEN '%s' AND '%s' ORDER BY RUNNING_TIME", DETAIL_TABLE, begin, end)
 	_, err = o.Raw(sql).QueryRows(&details)
 	if err != nil {
 		return nil, err
