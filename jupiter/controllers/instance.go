@@ -13,6 +13,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
+	"weibo.com/opendcp/jupiter/service/cluster"
 )
 
 const DEFAULT_CPU = 1
@@ -158,6 +159,7 @@ func (ic *InstanceController) DeleteMulti() {
 	for i := 0; i < len(instanceIdsArray); i++ {
 		go instance.DeleteOne(instanceIdsArray[i], correlationId)
 	}
+	go cluster.UpdateInstanceDetail()
 	resp := ApiResponse{}
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
@@ -586,6 +588,7 @@ func (ic *InstanceController) ManagePhyDev() {
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
 		}
 	}
+	go cluster.UpdateInstanceDetail()
 
 	// 3. response
 	resp := ApiResponse{}
