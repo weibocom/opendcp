@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-const DETAIL_INTERVAL = "00时00分30分钟"
+const DETAIL_INTERVAL = "00时00分60分钟"
 
 type Handle func() error
 

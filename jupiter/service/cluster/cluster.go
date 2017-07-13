@@ -224,6 +224,7 @@ func GetLatestDetail() (map[string]int, error) {
 	return instanceInfo, nil
 }
 
+
 func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
 	details := make([]models.InstanceDetail,0)
 	instanceInfo, err := GetLatestDetail()
@@ -241,10 +242,11 @@ func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
 
 func GetPastInstanceDetail(specificTime string) (*models.InstanceDetail, error)  {
 	theTime, err := time.ParseInLocation("2006-01-02 15:04:05", specificTime, time.Local)
+	convertTime := theTime.Add(-time.Duration(8)*time.Hour)
 	if err != nil {
 		return nil, err
 	}
-	detail, err := dao.GetDetailByTime(theTime)
+	detail, err := dao.GetDetailByTime(convertTime)
 	if err != nil {
 		return nil, err
 	}
@@ -272,3 +274,4 @@ func InitInstanceDetailCron()  {
 		future.Exec.Submit(detailCron)
 	}
 }
+
