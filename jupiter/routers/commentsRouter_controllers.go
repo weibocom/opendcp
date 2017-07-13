@@ -41,6 +41,20 @@ func init() {
 			AllowHTTPMethods: []string{"post"},
 			Params: nil})
 
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
+		beego.ControllerComments{
+			Method: "GetInstancesNumber",
+			Router: `/number/:hour`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
+		beego.ControllerComments{
+			Method: "UpdateInstanceInfo",
+			Router: `/update`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:CredentialController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:CredentialController"],
 		beego.ControllerComments{
 			Method: "Post",
@@ -221,13 +235,6 @@ func init() {
 			Method: "ManagePhyDev",
 			Router: `/phydev`,
 			AllowHTTPMethods: []string{"post"},
-			Params: nil})
-
-	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:InstanceController"],
-		beego.ControllerComments{
-			Method: "GetInstancesNumber",
-			Router: `/number`,
-			AllowHTTPMethods: []string{"get"},
 			Params: nil})
 
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:OrganizationController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:OrganizationController"],

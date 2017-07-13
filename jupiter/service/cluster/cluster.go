@@ -34,6 +34,10 @@ import (
 	"weibo.com/opendcp/jupiter/logstore"
 	"errors"
 	"github.com/astaxie/beego"
+	"unsafe"
+	"reflect"
+	"encoding/json"
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 func GetCluster(clusterId int64) (*models.Cluster, error) {
@@ -137,3 +141,105 @@ func ListClusters() ([]models.Cluster, error) {
 	}
 	return clusters, nil
 }
+
+
+
+func UpdateInstanceDetail() error {
+	instanceInfo, err := GetLatestDetail()
+	if err != nil {
+		return err
+	}
+
+	instanceData, err := json.Marshal(instanceInfo)
+	if err != nil {
+		return err
+	}
+
+	detail := &models.Detail{
+		InstanceNumber:	string(instanceData),
+		RunningTime:	time.Now(),
+	}
+
+	err = dao.InsertDetail(detail)
+	return err
+}
+
+func GetRecentDetail(beginTime, endTime  time.Time) ([]models.Detail, error) {
+	begin := beginTime.Format("2006-01-02 15:04:05")
+	end := endTime.Format("2006-01-02 15:04:05")
+	details, err := dao.GetDetailByTime(begin, end)
+	if err != nil {
+		return nil, err
+	}
+
+	return details, nil
+}
+
+func GetRecentInstanceDetail(hour int) ([]models.InstanceDetail, error) {
+	endTime := time.Now()
+	beginTime := endTime.Add(-time.Duration(hour)*time.Hour)
+	beego.Info("Get the instances number from begin time", beginTime,"to end time", endTime)
+	details, err := GetRecentDetail(beginTime, endTime)
+	if err != nil {
+		return nil, err
+	}
+	insDetails := make([]models.InstanceDetail,0)
+	for _, v := range details {
+		bytes := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&v.InstanceNumber))))
+		number := make(map[string] int)
+		err := json.Unmarshal(bytes, &number)
+		if err != nil {
+			return nil, err
+		}
+		insDetail := models.InstanceDetail{
+			InstanceNumber: number,
+			RunningTime:	GetCstTime(v.RunningTime),
+		}
+		insDetails = append(insDetails, insDetail)
+	}
+	return insDetails, nil
+}
+
+func GetLatestDetail() (map[string]int, error) {
+	instanceInfo := make(map[string] int)
+	allIns, err := instance.ListAllInstances()
+	if err != nil {
+		return nil, err
+	}
+	instanceInfo["all"] = len(allIns)
+
+	clusters, err := ListClusters()
+	if err != nil {
+		return  nil, err
+	}
+
+	for _, c := range clusters {
+		clusterIns, err := instance.GetClusterInstances(c.Id)
+		if err != nil  {
+			return  nil, err
+		}
+		instanceInfo[c.Name] = len(clusterIns)
+	}
+	return instanceInfo, nil
+}
+
+func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
+	details := make([]models.InstanceDetail,0)
+	instanceInfo, err := GetLatestDetail()
+	if err != nil {
+		return nil, err
+	}
+
+	instanceDetail := models.InstanceDetail{
+		InstanceNumber: instanceInfo,
+		RunningTime: 	GetCstTime(time.Now()),
+	}
+	details = append(details, instanceDetail)
+	return details, nil
+}
+
+func GetCstTime(converTime time.Time) string  {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	return converTime.In(loc).Format("2006-01-02 15:04:05")
+}
+
