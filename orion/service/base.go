@@ -17,14 +17,13 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"github.com/go-errors/errors"
-	"fmt"
 )
 
 type BaseService struct {
@@ -35,6 +34,7 @@ var (
 	Flow    = &FlowService{}
 	Remote  = &RemoteStepService{}
 	Logs    = &LogsService{}
+	Task    = &TaskService{}
 )
 
 func (b *BaseService) InsertBase(obj interface{}) error {
@@ -62,7 +62,7 @@ func (b *BaseService) DeleteBase(obj interface{}) error {
 	}
 
 	if n == 0 {
-		return errors.New("fail to delete: " + fmt.Sprintf("%v", obj))
+		return fmt.Errorf("fail to delete: %v", obj)
 	}
 
 	return nil
@@ -189,13 +189,13 @@ func (b *BaseService) ListByPageWithSort(page, pageSize int, obj interface{}, li
 	var qr orm.QuerySeter
 	switch len(sortstr) {
 	case 1:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0])
+		qr = o.QueryTable(obj).OrderBy(sortstr[0]).RelatedSel()
 	case 2:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1])
+		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1]).RelatedSel()
 	case 3:
-		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1], sortstr[2])
+		qr = o.QueryTable(obj).OrderBy(sortstr[0], sortstr[1], sortstr[2]).RelatedSel()
 	default:
-		qr = o.QueryTable(obj)
+		qr = o.QueryTable(obj).RelatedSel()
 	}
 	count, err := qr.Count()
 	if err != nil {

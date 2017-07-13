@@ -74,8 +74,10 @@ require_once('include/navbar.php');
               <li class="active">
                 <a><i class="fa fa-home"></i> Home </a>
                 <ul class="nav child_menu" style="display: block;">
-                  <li class="current-page"><a href="/">Dashboard</a></li>
+                  <!--<li class="current-page"><a href="/">Dashboard</a></li>-->
+                  <li class="current-page"><a href="/opendcp_data.php">平台数据</a></li>
                 </ul>
+
               </li>
               <?php echo $navLeft;?>
             </ul>
