@@ -243,3 +243,9 @@ func GetCstTime(converTime time.Time) string  {
 	return converTime.In(loc).Format("2006-01-02 15:04:05")
 }
 
+func InitInstanceDetailCron()  {
+	detailCron := future.NewCronbFuture("Instance detail task", future.DETAIL_INTERVAL, UpdateInstanceDetail)
+	if detailCron != nil {
+		future.Exec.Submit(detailCron)
+	}
+}
