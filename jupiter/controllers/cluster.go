@@ -228,3 +228,56 @@ func (clusterController *ClusterController) ExpandInstances() {
 	clusterController.Status = SERVICE_SUCCESS
 	clusterController.RespJsonWithStatus()
 }
+
+
+// @Title get total instances number
+// @Description get total instances number
+// @router /number/:hour [get]
+func (cc *ClusterController) GetInstancesNumber() {
+	hour, err := cc.GetInt(":hour")
+	if err != nil {
+		beego.Error("Can't parse the hour err:", err)
+		cc.RespInputError()
+		return
+	}
+
+	var details []models.InstanceDetail
+	if hour == 0 {
+		details, err = cluster.GetLatestInstanceDetail()
+		if err != nil {
+			beego.Error("Get instance detail err:", err)
+			cc.RespServiceError(err)
+			return
+		}
+	} else {
+		details, err = cluster.GetRecentInstanceDetail(hour)
+		if err != nil {
+			beego.Error("Get instance detail err:", err)
+			cc.RespServiceError(err)
+			return
+		}
+	}
+
+	resp := ApiResponse{}
+	resp.Content = details
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
+}
+
+// @Title get total instances number
+// @Description get total instances number
+// @router /update [get]
+func (cc *ClusterController) UpdateInstanceInfo() {
+	err := cluster.UpdateInstanceDetail()
+	if err != nil {
+		beego.Error("Update instances detail err", err)
+		cc.RespServiceError(err)
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = true
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
+}
