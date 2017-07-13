@@ -156,10 +156,15 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	if hr != nil {
 		// remove all node since it fails here
 		for _, nodeState := range nodes {
-			logService.Info(fid, batchId, correlationId, fmt.Sprintf("Deleting node [%d],", nodeState.Node.Id))
-
-			service.Cluster.DeleteBase(nodeState.Node)
-
+			//logService.Info(fid, batchId, correlationId, fmt.Sprintf("Deleting node [%d],", nodeState.Node.Id))
+			//
+			//service.Cluster.DeleteBase(nodeState.Node)
+			nodeState.Node.Status = models.STATUS_FAILED
+			if nodeState.Node.Ip == "-" {
+				ip := fmt.Sprintf("%d", nodeState.Node.Id)
+				nodeState.Node.Ip = ip
+			}
+			service.Cluster.UpdateBase(nodeState.Node)
 			nodeState.Log = "[jupiter]: " + hr.Msg + "\n"
 			service.Cluster.UpdateBase(nodeState)
 		}
@@ -306,7 +311,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 			logService.Info(fid, batchId, correlationId, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
 
-			n.Node.Status=models.STATUS_FAILED
+			n.Node.Status = models.STATUS_FAILED
 			if nodeMap[id].Node.Ip == "-" {
 				ip := fmt.Sprintf("%d", n.Node.Id)
 				n.Node.Ip = ip
@@ -365,22 +370,23 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 			cannotDelete[node.Id] = false
 		} else {
 			// for vmId == "", we cannot delete them
-			if node.Ip != fmt.Sprintf("%d" ,node.Node.Id) {
+			if node.Ip != fmt.Sprintf("%d", node.Node.Id) {
 				cannotDelete[node.Id] = true
-			}else {
+			} else {
 				cannotDelete[node.Id] = false
 			}
 		}
 	}
-
-	url := fmt.Sprintf(apiReturn, jupiterAddr, strings.Join(ids, ","))
-	header := map[string]interface{}{
-		"X-CORRELATION-ID": corrId,
-		"APPKEY":           SD_APPKEY,
-	}
-	_, hr := v.callAPI("DELETE", url, nil, &header)
-	if hr != nil {
-		return hr
+	if len(ids) != 0 {
+		url := fmt.Sprintf(apiReturn, jupiterAddr, strings.Join(ids, ","))
+		header := map[string]interface{}{
+			"X-CORRELATION-ID": corrId,
+			"APPKEY":           SD_APPKEY,
+		}
+		_, hr := v.callAPI("DELETE", url, nil, &header)
+		if hr != nil {
+			return hr
+		}
 	}
 
 	// delete nodes from pool

@@ -72,10 +72,10 @@ func Expand(poolId int, num int, opUser string) error {
 	nodes := make([]*models.Node, num)
 	for i := 0; i < num; i++ {
 		n := &models.Node{
-			Ip:     "-",
-			Pool:   pool,
-			Status: models.STATUS_INIT,
-			NodeType:models.Manual,
+			Ip:       "-",
+			Pool:     pool,
+			Status:   models.STATUS_INIT,
+			NodeType: models.Manual,
 		}
 		nodes[i] = n
 
