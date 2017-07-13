@@ -62,12 +62,12 @@
 -  访问openstack控制台，使用控制节点的ip访问，例如：http://10.39.59.59/dashboard
 -  登录控制台 域：default   用户名：admin   密码：root
 
-<img src="media/QQ20170713-4@2x.png"  >
+<img src="media/QQ20170713-4@2x.png" width="600" >
 
 -  打开 管理员－》系统－》网络 页面
 -  点击创建网络按钮，创建一个新网络，可根据事先准备好的网络环境进行设置，选择平面或VLAN或其他类型的网络，例如：
 
-<img src="media/QQ20170713-5@2x.png"  >
+<img src="media/QQ20170713-5@2x.png"  width="600" >
 
 >   名称：mynet  
    项目：admin  
@@ -77,8 +77,8 @@
 -  添加成功后，点击mynet，进入网络编辑页面
 -  点击创建子网按钮，创建子网，例如：
 
-<img src="media/QQ20170713-6@2x.png"  >
-<img src="media/QQ20170713-7@2x.png"  >
+<img src="media/QQ20170713-6@2x.png"  width="600" >
+<img src="media/QQ20170713-7@2x.png"  width="600" >
 
  >    名称: mysubnet  
      网络地址: 事先准备好的网段cidr，例如 10.39.59.0/24  
@@ -94,7 +94,7 @@
 -  在openstack控制台打开 管理员－》系统－》flavor数 页面
 -  点击创建flavor，根据计算节点物理资源的多少，可自定义虚拟机的配置，例如，可创建
 
-<img src="media/QQ20170713-8@2x.png"  >
+<img src="media/QQ20170713-8@2x.png"  width="600" >
 
  > 名称: 4C-4G-8G  
     vcpu  4  
@@ -110,8 +110,8 @@
 -  添加所有ICMP协议，入口方向允许规则
 -  添加所有TCP协议，入口方向允许规则
 
-<img src="media/QQ20170713-9@2x.png"  >
-<img src="media/QQ20170713-10@2x.png"  >
+<img src="media/QQ20170713-9@2x.png"  width="600" >
+<img src="media/QQ20170713-10@2x.png"  width="600" >
  
   
 ### 至此，openstack环境安装和配置完成 
