@@ -24,6 +24,7 @@ package dao
 import (
 	"weibo.com/opendcp/jupiter/models"
 	"fmt"
+	"time"
 )
 
 func GetClusterById(clusterId int64) (*models.Cluster, error) {
@@ -112,7 +113,7 @@ func InsertDetail(detail *models.Detail) error {
 	return err
 }
 
-func GetDetailByTime(begin, end string)  (details []models.Detail, err error) {
+func GetDetailByTimePeriod(begin, end string)  (details []models.Detail, err error) {
 	o := GetOrmer()
 	sql := fmt.Sprintf("SELECT * FROM %s WHERE RUNNING_TIME BETWEEN '%s' AND '%s'", DETAIL_TABLE, begin, end)
 	_, err = o.Raw(sql).QueryRows(&details)
@@ -123,3 +124,13 @@ func GetDetailByTime(begin, end string)  (details []models.Detail, err error) {
 	return details, nil
 }
 
+func GetDetailByTime(specificTime time.Time) (*models.Detail, error)  {
+	o := GetOrmer()
+	timeStr := specificTime.Format("2006-01-02 15:04:05")
+	var detail models.Detail
+	err := o.QueryTable(DETAIL_TABLE).Filter("running_time", timeStr).One(&detail)
+	if err != nil {
+		return nil, err
+	}
+	return &detail, err
+}

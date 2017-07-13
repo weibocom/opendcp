@@ -131,6 +131,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		case <-c:
 		}
 	}
+	go UpdateInstanceDetail()
 	return instanceIds, nil
 }
 
@@ -167,7 +168,7 @@ func UpdateInstanceDetail() error {
 func GetRecentDetail(beginTime, endTime  time.Time) ([]models.Detail, error) {
 	begin := beginTime.Format("2006-01-02 15:04:05")
 	end := endTime.Format("2006-01-02 15:04:05")
-	details, err := dao.GetDetailByTime(begin, end)
+	details, err := dao.GetDetailByTimePeriod(begin, end)
 	if err != nil {
 		return nil, err
 	}
@@ -236,6 +237,28 @@ func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
 	}
 	details = append(details, instanceDetail)
 	return details, nil
+}
+
+func GetPastInstanceDetail(specificTime string) (*models.InstanceDetail, error)  {
+	theTime, err := time.ParseInLocation("2006-01-02 15:04:05", specificTime, time.Local)
+	if err != nil {
+		return nil, err
+	}
+	detail, err := dao.GetDetailByTime(theTime)
+	if err != nil {
+		return nil, err
+	}
+	bytes := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&detail.InstanceNumber))))
+	number := make(map[string] int)
+	err = json.Unmarshal(bytes, &number)
+	if err != nil {
+		return nil, err
+	}
+	insDetail := &models.InstanceDetail{
+		InstanceNumber: number,
+		RunningTime:	GetCstTime(detail.RunningTime),
+	}
+	return insDetail, nil
 }
 
 func GetCstTime(converTime time.Time) string  {

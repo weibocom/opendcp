@@ -50,6 +50,13 @@ func init() {
 
 	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
 		beego.ControllerComments{
+			Method: "GetPastInstancesNumber",
+			Router: `/oldnumber/:time`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
+
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
+		beego.ControllerComments{
 			Method: "UpdateInstanceInfo",
 			Router: `/update`,
 			AllowHTTPMethods: []string{"get"},

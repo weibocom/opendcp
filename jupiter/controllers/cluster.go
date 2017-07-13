@@ -29,6 +29,7 @@ import (
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"weibo.com/opendcp/jupiter/service/instance"
 	"strconv"
+	"strings"
 )
 
 // Operations about cluster
@@ -276,8 +277,32 @@ func (cc *ClusterController) GetInstancesNumber() {
 	cc.RespJsonWithStatus()
 }
 
-// @Title get total instances number
-// @Description get total instances number
+// @Title get past instances number
+// @Description get past instances number
+// @router /oldnumber/:time [get]
+func (cc *ClusterController) GetPastInstancesNumber() {
+	timeStr := cc.GetString(":time")
+	specificTime := strings.Replace(timeStr,"%20"," ", -1)
+ 	detail, err := cluster.GetPastInstanceDetail(specificTime)
+	if err != nil {
+		beego.Error("Get instance detail at the time err:", err)
+		cc.RespServiceError(err)
+		return
+	}
+	result := make(map[string]string)
+	result["time"] = detail.RunningTime
+	for k, v := range detail.InstanceNumber {
+		result[k] = strconv.Itoa(v)
+	}
+	resp := ApiResponse{}
+	resp.Content = result
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
+}
+
+// @Title update instances number
+// @Description update instances number
 // @router /update [get]
 func (cc *ClusterController) UpdateInstanceInfo() {
 	err := cluster.UpdateInstanceDetail()
