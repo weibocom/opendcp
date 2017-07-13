@@ -315,7 +315,7 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow) error {
 	}
 
 	if len(steps) < 1 {
-		logService.Error(flow.Id, 0, correlationId, "step length bellow 1 is: " + flow.Options)
+		logService.Error(flow.Id, 0, correlationId, "step length bellow 1 is: "+flow.Options)
 		exec.setFlowStatus(flow, models.STATUS_FAILED)
 		return errors.New("step length bellow 1 is: " + flow.Options)
 	}
@@ -334,15 +334,15 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow) error {
 	// load node states
 	idStateMap, stopnodesNum, oknodesNum, err := exec.loadNodeStates(flow)
 	if err != nil {
-		logService.Error(flow.Id, 0, correlationId, "load node states happen error: " + err.Error())
-		if stopnodesNum != 0{
+		logService.Error(flow.Id, 0, correlationId, "load node states happen error: "+err.Error())
+		if stopnodesNum != 0 {
 			exec.setFlowStatus(flow, models.STATUS_STOPPED)
 			return err
 		}
 		if oknodesNum == 0 {
 			exec.setFlowStatus(flow, models.STATUS_FAILED)
 			return err
-		}else{
+		} else {
 			exec.setFlowStatus(flow, models.STATUS_SUCCESS)
 			return err
 		}
@@ -350,15 +350,15 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow) error {
 
 	//如果没有要执行的节点，任务执行成功
 	beego.Debug(len(idStateMap))
-	logService.Debug(flow.Id, 0, correlationId, "load node length: " + strconv.Itoa(len(idStateMap)))
-	if len(idStateMap) == 0{
-		logService.Warn(flow.Id, 0, correlationId, "load node length: " + strconv.Itoa(len(idStateMap)))
-		if stopnodesNum != 0{
-			logService.Warn(flow.Id, 0, correlationId, "load stopped node length: " + strconv.Itoa(stopnodesNum))
+	logService.Debug(flow.Id, 0, correlationId, "load node length: "+strconv.Itoa(len(idStateMap)))
+	if len(idStateMap) == 0 {
+		logService.Warn(flow.Id, 0, correlationId, "load node length: "+strconv.Itoa(len(idStateMap)))
+		if stopnodesNum != 0 {
+			logService.Warn(flow.Id, 0, correlationId, "load stopped node length: "+strconv.Itoa(stopnodesNum))
 			exec.setFlowStatus(flow, models.STATUS_STOPPED)
 			return nil
 		}
-		if oknodesNum != 0{
+		if oknodesNum != 0 {
 			exec.setFlowStatus(flow, models.STATUS_SUCCESS)
 			return nil
 		}
@@ -400,24 +400,22 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow) error {
 
 		if err != nil {
 			logService.Error(flow.Id, 0, correlationId, fmt.Sprintf("Batch %d fails:", i+1), err)
-			if oknodesNum != 0{
+			if oknodesNum != 0 {
 				exec.setFlowStatus(flow, models.STATUS_SUCCESS)
 				return err
 			}
 			exec.setFlowStatus(flow, models.STATUS_FAILED)
 			return err
-		}else{
-			if stateCode == models.STATUS_STOPPED{
+		} else {
+			if stateCode == models.STATUS_STOPPED {
 				exec.setFlowStatus(flow, models.STATUS_STOPPED)
 				return nil
 			}
-			if stateCode == models.STATUS_FAILED && oknodesNum == 0{
+			if stateCode == models.STATUS_FAILED && oknodesNum == 0 {
 				exec.setFlowStatus(flow, models.STATUS_FAILED)
 				return nil
 			}
 		}
-
-
 
 	}
 	exec.setFlowStatus(flow, models.STATUS_SUCCESS)
@@ -470,18 +468,18 @@ func (exec *FlowExecutor) runBatch(batch *models.FlowBatch, stateMap map[int]*mo
 		}
 		//如果该步骤没有执行节点，在最后一步，则最后结果为失败
 		if len(tempall) == 0 && stepNum == theStep_index {
-			if oknodesNum != 0{
+			if oknodesNum != 0 {
 				exec.allSuccess(batch, step, stepNum, tempall)
 				return models.STATUS_SUCCESS, nil
 			}
-			logService.Warn(fid, batch.Id, correlationId, "last step: " + step.Name + "has none ok nodes")
+			logService.Warn(fid, batch.Id, correlationId, "last step: "+step.Name+"has none ok nodes")
 			exec.allFailed(batch, step, stepNum, tempall)
 			return models.STATUS_FAILED, nil
 		}
 		//此处从数据读取是否需要暂停
-		flow, _ := flowService.GetFlowWithRel(fid);
-		if flow.Status == models.STATUS_STOPPED{
-			logService.Warn(fid, batch.Id, correlationId, "the step: " + step.Name + "begin stop!")
+		flow, _ := flowService.GetFlowWithRel(fid)
+		if flow.Status == models.STATUS_STOPPED {
+			logService.Warn(fid, batch.Id, correlationId, "the step: "+step.Name+"begin stop!")
 			exec.allStoped(batch, step, stepNum, tempall)
 			return models.STATUS_STOPPED, nil
 		}
@@ -491,7 +489,7 @@ func (exec *FlowExecutor) runBatch(batch *models.FlowBatch, stateMap map[int]*mo
 		handler := handler.GetHandler(step.Type)
 		if handler == nil {
 			logService.Error(fid, batch.Id, correlationId, fmt.Sprintf("Handler not found for type %s", step.Type))
-			if oknodesNum != 0{
+			if oknodesNum != 0 {
 				exec.allSuccess(batch, step, stepNum, tempall)
 				return models.STATUS_SUCCESS, nil
 			}
@@ -513,23 +511,22 @@ func (exec *FlowExecutor) runBatch(batch *models.FlowBatch, stateMap map[int]*mo
 		correlationId := exec.getCorrelationId(batch.Flow.Id, batch.Id)
 
 		okNodes, errNodes := exec.runStep(handler, step, stepNum, tempall, stepParams, retryOption, correlationId)
-
+		//失败的节点需要更新node数据库
+		for _, errNode := range errNodes {
+			errNode.Node.Status = models.STATUS_FAILED
+			service.Cluster.UpdateBase(errNode.Node)
+		}
 		//如果第一步是create_vm并且成功的节点为0, 直接返回错误
-		if stepNum == 0 && step.Name == "create_vm"{
-			if len(okNodes) == 0 && oknodesNum == 0{
+		if stepNum == 0 && step.Name == "create_vm" {
+			if len(okNodes) == 0 && oknodesNum == 0 {
 				exec.allFailed(batch, step, stepNum, errNodes)
 				return models.STATUS_FAILED, errors.New("first step of create_vm all nodes is failed")
 			}
 		}
-		//失败的节点需要更新node数据库
-		for _,errNode := range errNodes {
-			errNode.Node.Status = models.STATUS_FAILED
-			service.Cluster.UpdateBase(errNode.Node)
-		}
 		//如果该最后一步，成功0个节点，则最后结果为失败
 		if stepNum == theStep_index && len(okNodes) == 0 {
 			logService.Error(fid, batch.Id, correlationId, fmt.Sprintf("Flow %s fails at batch[%d] step[%s]", batch.Flow.Name, batch.Id, step.Name))
-			if oknodesNum != 0{
+			if oknodesNum != 0 {
 				exec.allSuccess(batch, step, stepNum, okNodes)
 				return models.STATUS_SUCCESS, nil
 			}
@@ -538,6 +535,10 @@ func (exec *FlowExecutor) runBatch(batch *models.FlowBatch, stateMap map[int]*mo
 		}
 		//如果最后一步，成功的节点不为0，则最后的结果为成功
 		if stepNum == theStep_index && len(okNodes) != 0 {
+			for _, okNode := range okNodes {
+				okNode.Node.Status = models.STATUS_SUCCESS
+				service.Cluster.UpdateBase(okNode.Node)
+			}
 			exec.allSuccess(batch, step, stepNum, okNodes)
 			return models.STATUS_SUCCESS, nil
 		}
@@ -741,13 +742,13 @@ func (exec *FlowExecutor) loadNodeStates(flow *models.Flow) (map[int]*models.Nod
 	for _, state := range states {
 		if state.Status == models.STATUS_FAILED && !strings.EqualFold(state.Steps, "create_vm") {
 			tempnodeList = append(tempnodeList, state)
-		}else if state.Status == models.STATUS_STOPPED{
-			stopnodes++;
+		} else if state.Status == models.STATUS_STOPPED {
+			stopnodes++
 			tempnodeList = append(tempnodeList, state)
-		}else if state.Status == models.STATUS_INIT {
+		} else if state.Status == models.STATUS_INIT {
 			tempnodeList = append(tempnodeList, state)
-		}else if state.Status == models.STATUS_SUCCESS{
-			oknodes++;
+		} else if state.Status == models.STATUS_SUCCESS {
+			oknodes++
 		}
 	}
 	states = tempnodeList
@@ -978,7 +979,7 @@ func (exec *FlowExecutor) allFailed(batch *models.FlowBatch, step *models.Action
 	return nil
 }
 
-func (exec *FlowExecutor) allSuccess(batch *models.FlowBatch, step *models.ActionImpl, stepNum int,states []*models.NodeState) error {
+func (exec *FlowExecutor) allSuccess(batch *models.FlowBatch, step *models.ActionImpl, stepNum int, states []*models.NodeState) error {
 	exec.updateStepStatus(states, step.Name, stepNum, models.STATUS_SUCCESS)
 
 	batch.Status = models.STATUS_SUCCESS
