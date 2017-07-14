@@ -160,7 +160,7 @@ UNLOCK TABLES;
 LOCK TABLES `service` WRITE;
 INSERT INTO `service` VALUES
     (1,'sd-nginx','服务发现-Nginx服务','nginx','-',1),
-    (2,'my_server','my_server','php','registry.cn-beijing.aliyuncs.com/opendcp/nginx',1),
+    (2,'my_server','my_server','Java','registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest',1),
     (3,'controller_service','虚拟化控制节点服务','openstack','-',2),
     (4,'compute_service','虚拟化计算节点服务','openstack','-',2);
 UNLOCK TABLES;
