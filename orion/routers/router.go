@@ -69,6 +69,7 @@ func init() {
 			beego.NSRouter("/create", &api.FlowApi{}, "*:AppendFlowImpl"),
 			beego.NSRouter("/delete", &api.FlowApi{}, "*:DeleteFlowImpl"),
 			beego.NSRouter("/list", &api.FlowApi{}, "*:ListFlowImpl"),
+
 		),
 
 		beego.NSRouter("/create", &api.FlowApi{}, "*:RunFlow"),
@@ -81,6 +82,13 @@ func init() {
 		beego.NSRouter("/list", &api.FlowApi{}, "*:ListFlow"),
 		beego.NSRouter("/:id:int", &api.FlowApi{}, "*:GetFlow"),
 		beego.NSRouter("/:id:int/detail", &api.FlowApi{}, "*:GetNodeStates"),
+
+		//获取该pool下的依赖任务列表
+		beego.NSRouter("/expandList", &api.TaskApi{}, "*:GetExpandList"),
+		//获取该pool下的定时任务列表
+		beego.NSRouter("/uploadList", &api.TaskApi{}, "*:GetUploadList"),
+		//增加Task
+		beego.NSRouter("/addTask", &api.TaskApi{}, "*:AddTask"),
 
 		beego.NSRouter("/node/:nsid:int/log", &api.FlowApi{}, "*:GetLog"),
 	)
