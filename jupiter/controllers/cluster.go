@@ -28,6 +28,8 @@ import (
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"strconv"
+	"strings"
 )
 
 // Operations about cluster
@@ -227,4 +229,91 @@ func (clusterController *ClusterController) ExpandInstances() {
 	clusterController.ApiResponse = resp
 	clusterController.Status = SERVICE_SUCCESS
 	clusterController.RespJsonWithStatus()
+}
+
+
+// @Title get total instances number
+// @Description get total instances number
+// @router /number/:hour [get]
+func (cc *ClusterController) GetInstancesNumber() {
+	hour, err := cc.GetInt(":hour")
+	if err != nil {
+		beego.Error("Can't parse the hour err:", err)
+		cc.RespInputError()
+		return
+	}
+
+	var details []models.InstanceDetail
+	if hour == 0 {
+		details, err = cluster.GetLatestInstanceDetail()
+		if err != nil {
+			beego.Error("Get instance detail err:", err)
+			cc.RespServiceError(err)
+			return
+		}
+	} else {
+		details, err = cluster.GetRecentInstanceDetail(hour)
+		if err != nil {
+			beego.Error("Get instance detail err:", err)
+			cc.RespServiceError(err)
+			return
+		}
+	}
+
+	result := make([] map[string]string,0)
+	for _, detail := range details {
+		info := make(map[string] string)
+		info["time"] = detail.RunningTime
+		for k, v := range detail.InstanceNumber {
+			info[k] = strconv.Itoa(v)
+		}
+		result = append(result, info)
+	}
+
+	resp := ApiResponse{}
+	resp.Content = result
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
+}
+
+// @Title get past instances number
+// @Description get past instances number
+// @router /oldnumber/:time [get]
+func (cc *ClusterController) GetPastInstancesNumber() {
+	timeStr := cc.GetString(":time")
+	specificTime := strings.Replace(timeStr,"%20"," ", -1)
+ 	detail, err := cluster.GetPastInstanceDetail(specificTime)
+	if err != nil {
+		beego.Error("Get instance detail at the time err:", err)
+		cc.RespServiceError(err)
+		return
+	}
+	result := make(map[string]string)
+	result["time"] = detail.RunningTime
+	for k, v := range detail.InstanceNumber {
+		result[k] = strconv.Itoa(v)
+	}
+	resp := ApiResponse{}
+	resp.Content = result
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
+}
+
+// @Title update instances number
+// @Description update instances number
+// @router /update [get]
+func (cc *ClusterController) UpdateInstanceInfo() {
+	err := cluster.UpdateInstanceDetail()
+	if err != nil {
+		beego.Error("Update instances detail err", err)
+		cc.RespServiceError(err)
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = true
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
 }
