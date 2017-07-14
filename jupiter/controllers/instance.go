@@ -13,8 +13,8 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
-	"strconv"
 	"weibo.com/opendcp/jupiter/service/cluster"
+	"time"
 )
 
 const DEFAULT_CPU = 1
@@ -160,6 +160,10 @@ func (ic *InstanceController) DeleteMulti() {
 	for i := 0; i < len(instanceIdsArray); i++ {
 		go instance.DeleteOne(instanceIdsArray[i], correlationId)
 	}
+	go func() {
+		time.Sleep(time.Second*5)
+		cluster.UpdateInstanceDetail()
+	}()
 	resp := ApiResponse{}
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
@@ -588,6 +592,7 @@ func (ic *InstanceController) ManagePhyDev() {
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
 		}
 	}
+	go cluster.UpdateInstanceDetail()
 
 	// 3. response
 	resp := ApiResponse{}
@@ -605,40 +610,3 @@ func (ic *InstanceController) ManagePhyDev() {
 	ic.RespJsonWithStatus()
 }
 
-// @Title get total instances number
-// @Description get total instances number
-// @router /number [get]
-func (ic *InstanceController) GetInstancesNumber() {
-	result := make(map[string] string)
-
-	allIns, err := instance.ListAllInstances()
-	if err != nil {
-		beego.Error("Get all instances err:", err)
-		ic.RespServiceError(err)
-		return
-	}
-	result["all"] = strconv.Itoa(len(allIns))
-
-	clusters, err := cluster.ListClusters()
-	if err != nil {
-		beego.Error("Get all clusters err:", err)
-		ic.RespServiceError(err)
-		return
-	}
-
-	for _, c := range clusters {
-		clusterIns, err := instance.GetClusterInstances(c.Id)
-		if err != nil  {
-			beego.Error("Get the instances based on the cluster err:", err)
-			ic.RespServiceError(err)
-			return
-		}
-		result[c.Name] = strconv.Itoa(len(clusterIns))
-	}
-
-	resp := ApiResponse{}
-	resp.Content = result
-	ic.ApiResponse = resp
-	ic.Status = SERVICE_SUCCESS
-	ic.RespJsonWithStatus()
-}
