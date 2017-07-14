@@ -161,7 +161,11 @@ func (ic *InstanceController) DeleteMulti() {
 		go instance.DeleteOne(instanceIdsArray[i], correlationId)
 	}
 	go func() {
-		time.Sleep(time.Second*5)
+		time.Sleep(time.Second*10)
+		cluster.UpdateInstanceDetail()
+		time.Sleep(time.Minute)
+		cluster.UpdateInstanceDetail()
+		time.Sleep(time.Minute*2)
 		cluster.UpdateInstanceDetail()
 	}()
 	resp := ApiResponse{}
