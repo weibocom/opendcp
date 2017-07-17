@@ -81,6 +81,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+	beego.Info("---- Begin to create instances from cloud ----")
 	instanceIds, errs := providerDriver.Create(cluster, num)
 	if len(instanceIds) == 0 {
 		return nil, errs[0]
