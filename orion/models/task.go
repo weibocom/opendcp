@@ -38,8 +38,8 @@ const (
 type ExecTask struct {
 	Id          int           `json:"id" orm:"pk;auto"`
 	Pool        *Pool         `json:"pool" orm:"rel(fk)"`               //服务池id
-	CronItems   []*CronItem   `json:"cron_itmes" orm:"reverse(many)"`   //定时任务列表
-	DependItems []*DependItem `json:"depend_itmes" orm:"reverse(many)"` //依赖任务列表
+	CronItems   []*CronItem   `json:"cron_items" orm:"reverse(many)"`   //定时任务列表
+	DependItems []*DependItem `json:"depend_items" orm:"reverse(many)"` //依赖任务列表
 	Type        string        `json:"type"`                             //模版任务类型 expand/upload
 	ExecType    string        `json:"exec_type"`                        //执行任务类型 crontab/depend
 }
