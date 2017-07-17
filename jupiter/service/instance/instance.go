@@ -113,9 +113,9 @@ func DeleteOne(instanceId, correlationId string) error {
 				//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
 				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
 			} else {
+				logstore.Error(correlationId, instanceId, "delete instance, err:", err)
 				return err
 			}
-			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
 		}
 		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
 		usageHours, err := bill.GetUsageHours(instanceId)
