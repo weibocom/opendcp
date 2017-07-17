@@ -130,12 +130,6 @@ require_once('../include/navbar.php');
               <li id="tab_2" role="presentation" class="active">
                 <a data-toggle="tab" role="tab" aria-expanded="false" onclick="getList('service')">初始化任务列表</a>
               </li>
-              <li id="tab_3" role="presentation" class="">
-                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="location.href='/for_openstack/network.php';">网络管理</a>
-              </li>
-              <li id="tab_4" role="presentation">
-                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="location.href='/for_openstack/flavor.php';">机型管理</a>
-              </li>
             </ul>
             <div id="myTabContent" class="tab-content">
               <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
