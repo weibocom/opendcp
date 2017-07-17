@@ -13,6 +13,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
+	_ "weibo.com/opendcp/jupiter/provider/openstack"
 )
 
 const DEFAULT_CPU = 1
@@ -127,7 +128,7 @@ func (ic *InstanceController) UpdateInstanceStatus() {
 	var insStat models.InstanceIdStatus
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
 	if err != nil {
-		beego.Error("Could parase request before crate instance: ", err)
+		beego.Error("Could parase request before create instance: ", err)
 		ic.RespInputError()
 		return
 	}
@@ -600,5 +601,30 @@ func (ic *InstanceController) ManagePhyDev() {
 	} else {
 		ic.Status = SERVICE_ERRROR
 	}
+	ic.RespJsonWithStatus()
+}
+
+// @Title Update machine status
+// @Description change openstack config
+// @router /openstack [post]
+
+func (ic *InstanceController) ChangeOpenStackConf() {
+	var OpConf models.OpenStackConf
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &OpConf)
+	if err != nil {
+		beego.Error("Could not parase openstack conf request : ", err)
+		ic.RespInputError()
+		return
+	}
+	err = instance.ChangeOpenStackConf(&OpConf)
+	if err != nil{
+		beego.Error("Could not change hosts: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = OpConf
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
 }
