@@ -15,6 +15,7 @@ import (
 	_ "weibo.com/opendcp/jupiter/provider/aws"
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"time"
+	"weibo.com/opendcp/jupiter/logstore"
 )
 
 const DEFAULT_CPU = 1
@@ -585,6 +586,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		ins.PublicIpAddress = info.PublicIp
 		ins.PrivateIpAddress = info.PrivateIp
 
+		logstore.Info(correlationId, ins.InstanceId, "###First### Insert the instance into db")
 		ins, err = instance.InputPhyDev(ins)
 
 		if err != nil {
@@ -593,6 +595,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		} else {
 			successCount++
 			// asynchronous manage
+			logstore.Info(correlationId, ins.InstanceId, "###Second### Begin to execute init operation in the instance")
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
 		}
 	}
