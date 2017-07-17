@@ -34,9 +34,13 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+	"os/exec"
 )
 
-const PhyDev = "phydev"
+const (
+	PhyDev = "phydev"
+	OPENSTACK = "openstack"
+)
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -44,16 +48,22 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		return "", err
 	}
 	instanceIds, errs := providerDriver.Create(cluster, 1)
-	if errs != nil {
+	if len(errs) != 0 {
 		return "", errs[0]
 	}
+	//if errs != nil {
+	//	return "", errs[0]
+	//}
+	fmt.Println("getting instance")
 	ins, err := providerDriver.GetInstance(instanceIds[0])
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("insert into database")
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
+	fmt.Println("have inserted")
 	return instanceIds[0], nil
 }
 
@@ -334,7 +344,7 @@ func getSSHClient(ip string, path string, password string) (*ssh.Client, error) 
 			Keys: []string{path},
 		}
 	}
-	port := 22
+	port := 26018
 	sshCli, err := ssh.NewClient("root", ip, port, &auth)
 	if err != nil {
 		return nil, err
@@ -435,7 +445,20 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		return ssh.Output{}, sshErr
 	}
 	cli, err := getSSHClient(ip, "", password)
-	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	octanUrl := conf.Config.Ansible.GetOctansUrl
+
+	ins, err := dao.GetInstance(instanceId)
+	if err != nil {
+		return ssh.Output{}, err
+	}
+
+	if strings.EqualFold(ins.Provider, OPENSTACK){
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
+	} else {
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
+	}
+
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
 	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
 	ret, err := cli.Run(cmd)
 	if err != nil {
@@ -446,9 +469,11 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	}
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
-	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
-		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
-	logstore.Info(correlationId, instanceId, "###Third### Exec init operaration："+cmd)
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	cmdOut := fmt.Sprintf("sh /root/manage_device.sh mysql://****:****@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
+		  dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	logstore.Info(correlationId, instanceId, "###Third### Exec init operaration："+cmdOut)
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
@@ -458,4 +483,32 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	}
 	logstore.Info(correlationId, instanceId, ret)
 	return ret, nil
+}
+
+func ChangeOpenStackConf(OpConf *models.OpenStackConf) error{
+	//修改hosts文件的controller域名
+
+	op := fmt.Sprintf("awk '{if($2==\"controller\") {$1=%s} print}' /etc/hosts > /etc/hostbak",  OpConf.OpIp)
+	cmd := exec.Command("/bin/sh", "-c", op)
+	err := cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "cp /etc/hostsbak /etc/hosts")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "rm /etc/hostsbak")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+
+	conf.Config.OpIp = OpConf.OpIp
+	conf.Config.OpPort = OpConf.OpPort
+	conf.Config.OpUserName = OpConf.OpUserName
+	conf.Config.OpPassWord = OpConf.OpPassWord
+	return err
+
 }
