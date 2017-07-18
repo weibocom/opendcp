@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `steps` longtext NOT NULL,
     `step_num` integer NOT NULL DEFAULT 0 ,
     `log` longtext NOT NULL,
+    `last_op` varchar(255),
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
