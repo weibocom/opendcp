@@ -143,4 +143,5 @@ type NodeState struct {
 	Log         string     `orm:"type(text)"`
 	CreatedTime time.Time  `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time  `json:"updated" orm:"auto_now_add;type(datetime)"`
+	LastOp      string     `json:"last_op"`
 }
