@@ -23,30 +23,36 @@ import (
 	"github.com/astaxie/beego/orm"
 
 	"weibo.com/opendcp/orion/models"
+	"fmt"
 )
 
 type TaskService struct {
 	BaseService
 }
 
-func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (tasks []*models.ExecTask, err error) {
+func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (*models.ExecTask, error) {
 	o := orm.NewOrm()
-
+	task := &models.ExecTask{}
+	var err error
 	if task_type == "" || task_type == " " || task_type == "all" {
-		_, err = o.QueryTable("exec_task").Filter("Pool", pool_id).RelatedSel().All(&tasks)
+		err = o.QueryTable("exec_task").Filter("Pool", pool_id).RelatedSel().One(task)
 	} else {
-		_, err = o.QueryTable("exec_task").Filter("Pool", pool_id).Filter("Type", task_type).RelatedSel().All(&tasks)
+		err = o.QueryTable("exec_task").Filter("Pool", pool_id).Filter("Type", task_type).RelatedSel().One(task)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	for _, task := range tasks {
-		o.LoadRelated(task, "CronItems")
-		o.LoadRelated(task, "DependItems")
+
+	o.LoadRelated(task, "CronItems")
+	o.LoadRelated(task, "DependItems")
+
+	for _, dep := range task.DependItems {
+		if err := o.Read(dep.Pool); err != nil {
+			return nil, fmt.Errorf("db load %d DependItems Pool failed: %v", err)
+		}
 	}
-	//bytes,_:=json.Marshal(tasks)
-	//fmt.Println(string(bytes))
-	return tasks, nil
+
+	return task, nil
 }
