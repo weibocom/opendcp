@@ -6,6 +6,7 @@ deploy/data/project/
 hubble/Application/Runtime
 orion/orion
 jupiter/conf/jupiter.json
+orion/conf/app.conf
 
 
 # eclipse ignore
