@@ -107,6 +107,7 @@ func (s *scheduler) Create(cfg *models.ExecTask) error {
 	return nil
 }
 
+// Delete deletes this ExecTask
 func (s *scheduler) Delete(cfg *models.ExecTask) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
