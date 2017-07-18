@@ -52,8 +52,7 @@ func (sf *StartFuture) Run() error {
 	if err != nil {
 		return err
 	}
-	logstore.Info(sf.CorrelationId, sf.InstanceId, "----- Begin start instance in future -----")
-	logstore.Info(sf.CorrelationId,sf.InstanceId,"###First### Wait the instance stop")
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"(1). Wait the instance stop")
 	for j := 0; j < INTERVAL; j++ {
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
 		if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
@@ -61,7 +60,10 @@ func (sf *StartFuture) Run() error {
 		}
 		time.Sleep(TIME4WAIT * time.Second)
 	}
-	logstore.Info(sf.CorrelationId,sf.InstanceId,"###Second### Get the instance info")
+	isStop := providerDriver.WaitForInstanceToStop(sf.InstanceId)
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"Is the instance stop?", isStop)
+
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"(2). Get the instance info and update ip info in db")
 	ins, err := providerDriver.GetInstance(sf.InstanceId)
 	if err != nil {
 		return err
@@ -82,7 +84,9 @@ func (sf *StartFuture) Run() error {
 			return err
 		}
 	}
-	logstore.Info(sf.CorrelationId,sf.InstanceId,"###Third### Start the instance")
+
+	logstore.Info(sf.CorrelationId,sf.InstanceId,sf.Ip, "Update the ip of instance successfully")
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"(3). Start the instance")
 	isStart, err := providerDriver.Start(sf.InstanceId)
 	if err != nil {
 		return err
@@ -90,7 +94,7 @@ func (sf *StartFuture) Run() error {
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
 	for i := 0; i < 60; i++ {
 		time.Sleep(10 * time.Second)
-		logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
+		logstore.Info(sf.CorrelationId, sf.InstanceId, "Wait for instance", sf.InstanceId, "to start", i)
 		if providerDriver.WaitToStartInstance(sf.InstanceId) {
 			break
 		}
@@ -114,7 +118,7 @@ func (sf *StartFuture) Success() {
 	//}
 	if sf.AutoInit {
 		//Exec.Submit(NewAnsibleTaskFuture(sf.InstanceId, sf.Ip, roles, sf.CorrelationId))
-		logstore.Info(sf.CorrelationId,sf.InstanceId,"###Fourth### Begin to execute init operation in the instance")
+		logstore.Info(sf.CorrelationId,sf.InstanceId,"3. Begin to execute init operation in the instance")
 		instance.ManageDev(sf.Ip, conf.Config.Password, sf.InstanceId, sf.CorrelationId)
 	}
 }

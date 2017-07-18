@@ -586,7 +586,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		ins.PublicIpAddress = info.PublicIp
 		ins.PrivateIpAddress = info.PrivateIp
 
-		logstore.Info(correlationId, ins.InstanceId, "###First### Insert the instance into db")
+		logstore.Info(correlationId, ins.InstanceId, "1. Insert the instance into db")
 		ins, err = instance.InputPhyDev(ins)
 
 		if err != nil {
@@ -595,7 +595,8 @@ func (ic *InstanceController) ManagePhyDev() {
 		} else {
 			successCount++
 			// asynchronous manage
-			logstore.Info(correlationId, ins.InstanceId, "###Second### Begin to execute init operation in the instance")
+			logstore.Info(correlationId, ins.InstanceId, "Insert the instance into db successfully")
+			logstore.Info(correlationId, ins.InstanceId, "2. Begin to execute init operation in the instance")
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
 		}
 	}
