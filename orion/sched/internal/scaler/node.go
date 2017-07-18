@@ -24,6 +24,9 @@ func onlineNodesList(pid int) ([]*Node, error) {
 	if _, err := o.QueryTable(&models.Node{}).
 		Filter("Pool", pid).Filter("NodeType", models.Crontab).
 		All(&nodes); err != nil {
+		if err == orm.ErrNoRows { // ignore no row found
+			err = nil
+		}
 		return nil, err
 	}
 
