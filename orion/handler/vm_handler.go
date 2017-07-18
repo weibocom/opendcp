@@ -392,7 +392,9 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 	// delete nodes from pool
 	for _, node := range nodes {
 		if !cannotDelete[node.Id] {
-			service.Cluster.DeleteBase(&models.Node{Id: node.Node.Id})
+			id := node.Node.Id
+			service.Cluster.DeleteBase(node)
+			service.Cluster.DeleteBase(&models.Node{Id: id})
 		}
 	}
 
