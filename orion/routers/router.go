@@ -88,7 +88,7 @@ func init() {
 		//获取该pool下的定时任务列表
 		beego.NSRouter("/uploadList/:poolId:int", &api.TaskApi{}, "*:GetUploadList"),
 		//增加Task
-		beego.NSRouter("/addTask", &api.TaskApi{}, "*:AddTask"),
+		beego.NSRouter("/saveTask", &api.TaskApi{}, "*:SaveTask"),
 
 		beego.NSRouter("/node/:nsid:int/log", &api.FlowApi{}, "*:GetLog"),
 	)

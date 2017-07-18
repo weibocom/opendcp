@@ -23,8 +23,8 @@ import (
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 	"strconv"
-	"strings"
 	"github.com/astaxie/beego"
+	"weibo.com/opendcp/orion/sched"
 )
 /**
 *  operation exec_task cronItem and dependItem
@@ -41,7 +41,7 @@ type task_cron_struct struct{
 	ConcurrNum   int       `json:"concurr_num"`               //上线使用作为最大并发数
 	WeekDay      int       `json:"week_day"`                  //每周第几天，取值 0 每天,1 周日,2 周一,3 周二,4 周三,5 周四,6 周五,7 周六
 	Time         string    `json:"time"`                      //每天时分秒,例如 14:09:08
-	Ignore       bool      `json:"ignore"`                    //是否忽略定时任务 0 不忽略，1 忽略
+	Ignore       int      `json:"ignore"`                    //是否忽略定时任务 0 不忽略，1 忽略
 }
 type task_depend_struct struct{
 	Id           int       `json:"id"`
@@ -50,7 +50,7 @@ type task_depend_struct struct{
 	Ratio        float64   `json:"ratio"`                     //依赖比例
 	ElasticCount int       `json:"elastic_count"`             //冗余机器数量
 	StepName     string    `json:"step_name"`                 //依赖步骤名称
-	Ignore       bool      `json:"ignore"` 			  //是否忽略依赖 0 不忽略，1 忽略
+	Ignore       int      `json:"ignore"` 			  //是否忽略依赖 0 不忽略，1 忽略
 }
 type exec_task_struct struct{
 	Id          int                   `json:"id"`
@@ -64,7 +64,7 @@ type exec_task_struct struct{
 func (c *TaskApi) URLMapping() {
 	c.Mapping("GetExpandList", c.GetExpandList)
 	c.Mapping("GetUploadList", c.GetUploadList)
-	c.Mapping("AddTask", c.AddTask)
+	c.Mapping("SaveTask", c.SaveTask)
 }
 
 /*
@@ -99,34 +99,23 @@ func (c *TaskApi) GetUploadList() {
 /*
 add exec Task
 */
-func (c *TaskApi) AddTask() {
-	//req := struct {
-	//	poolId              int                      `json:"pool_id"`
-	//	taskType            string                   `json:"task_type"`
-	//	cronList            []map[string]interface{} `json:"cronList"`
-	//	depentList          []map[string]interface{} `json:"dependList"`
-	//}{}
-	var exe_taskList []exec_task_struct
-	err := c.Body2Json(&exe_taskList)
+func (c *TaskApi) SaveTask() {
+	beego.Info(".....SaveTask.....")
+	save_exe_task := exec_task_struct{}
+	err := c.Body2Json(&save_exe_task)
 	if err != nil {
 		beego.Error("RUN Add Task, json err:", err)
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
-	if len(exe_taskList) != 2{
-		beego.Error("exe_taskList matrix length have not two elements!")
-		c.ReturnFailed(err.Error(), 400)
-		return
-	}
-	pool_id := exe_taskList[0].PoolId
-	Type := exe_taskList[0].Type
+	pool_id := save_exe_task.PoolId
+	Type := save_exe_task.Type
+	exe_Type := save_exe_task.ExecType
+	beego.Info("pool_id: ", pool_id, " Type: ", Type, " exe_Type:", exe_Type)
+	cronList := save_exe_task.CronItems
+	depentList := save_exe_task.DependItems
 
-	cronList := exe_taskList[1].CronItems
-	depentList := exe_taskList[0].DependItems
-	if strings.EqualFold("crontab", exe_taskList[0].ExecType){
-		cronList = exe_taskList[0].CronItems
-		depentList = exe_taskList[1].DependItems
-	}
+	beego.Info("cronList length: ", len(cronList), " depentList length: ", len(depentList))
 
 	taskList, _:= service.Task.GetAllTaskByPool(pool_id, Type)
 
@@ -134,33 +123,37 @@ func (c *TaskApi) AddTask() {
 	var depentItemList []*models.DependItem
 	if taskList == nil{
 		//创建exec_task
+		beego.Info("create exec_task!")
 		pool := &models.Pool{Id: pool_id}
 		cronItems:=make([]*models.CronItem,0)
 		dependItems:=make([]*models.DependItem,0)
 		taskList, err = creatTask(pool, cronItems, dependItems, Type)
-		cronItemList = cronItems
-		depentItemList = dependItems
 		if err != nil{
 			beego.Error("create Task is failed: ", err)
 			c.ReturnFailed(err.Error(), 400)
 			return
 		}
-	}else{
-		for _, task := range taskList {
-			if strings.EqualFold("crontab", task.ExecType){
-				cronItemList = task.CronItems
-			}
-			if strings.EqualFold("depend", task.ExecType){
-				depentItemList = task.DependItems
-			}
+		err :=sched.Scheduler.Create(taskList)
+		if err != nil{
+			c.ReturnFailed(err.Error(), 500)
 		}
+		cronItemList = cronItems
+		depentItemList = dependItems
+	}else{
+		updateTask(taskList, save_exe_task)
+		beego.Info("exec_task id :", taskList.Id)
+		cronItemList = taskList.CronItems
+		depentItemList = taskList.DependItems
 	}
-
+	beego.Info("get cronItemList length:",  len(cronItemList))
+	beego.Info("get depentItemList length:",  len(depentItemList))
 	//get update or add of cron
+	beego.Info("get update or add of cron")
 	cronUpdateItemList := make([]*models.CronItem, 0)
 	cronAddItemList := make([]*models.CronItem, 0)
 	for _, cron := range cronList {
 		cronId := cron.Id
+		beego.Debug("get cronList cron id: ", cronId)
 		if cronId == 0{
 			cron_item,_:= getCronItemForm(cron)
 			cronAddItemList = append(cronAddItemList, cron_item)
@@ -169,33 +162,36 @@ func (c *TaskApi) AddTask() {
 			cronUpdateItemList = append(cronUpdateItemList, cron_item)
 		}
 	}
+	beego.Info("get update cron length:",  len(cronUpdateItemList), " get add cron length:", len(cronAddItemList))
 	//get need delete cron
 	cronDeleteItemList := make([]*models.CronItem, 0)
 	for _, cron := range cronItemList{
 		isNeedDelete := true
 		for _, updateCron := range cronUpdateItemList{
 			if cron.Id == updateCron.Id{
+				beego.Debug("delete cronList cron id: ", cron.Id , updateCron.Id)
 				isNeedDelete = false
+				break
 			}
 		}
+		beego.Debug("isNeedDelete: ", isNeedDelete)
 		if isNeedDelete{
 			cronDeleteItemList = append(cronDeleteItemList, cron)
 		}
 	}
+	beego.Info("get delete cron length:",  len(cronDeleteItemList))
 	//更新cron表
-	cron_exec_task := taskList[1];
-	if strings.EqualFold(taskList[0].ExecType,"crontab"){
-		cron_exec_task = taskList[0];
-	}
-	creatCron(cronAddItemList, cron_exec_task)
-	updateCron(cronUpdateItemList, cron_exec_task)
-	deleteCron(cronDeleteItemList, cron_exec_task)
+	creatCron(cronAddItemList, taskList)
+	updateCron(cronUpdateItemList, taskList)
+	deleteCron(cronDeleteItemList, taskList)
 
 	//get update or add of depend
+	beego.Info("get update or add of depend")
 	var dependUpdateItemList []*models.DependItem
 	var dependAddItemList []*models.DependItem
 	for _, depend := range depentList {
 		dependId := depend.Id
+		beego.Info("depentList dependId: ", dependId)
 		if dependId == 0{
 			depend_item,_:= getDependItemForm(depend)
 			dependAddItemList = append(dependAddItemList, depend_item)
@@ -204,86 +200,113 @@ func (c *TaskApi) AddTask() {
 			dependUpdateItemList = append(dependUpdateItemList, depend_item)
 		}
 	}
+	beego.Info("get update depend length:",  len(dependUpdateItemList), " get add depend length:", len(dependAddItemList))
 	//get need delete depend
 	dependDeleteItemList := make([]*models.DependItem, 0)
 	for _, depend := range depentItemList{
 		isNeedDelete := true
+		beego.Debug("depentItemList depend id: ", depend.Id)
 		for _, updateDepend := range dependUpdateItemList{
 			if depend.Id == updateDepend.Id{
+				beego.Debug("delete dependList cron id: ", depend.Id , updateDepend.Id)
 				isNeedDelete = false
+				break
 			}
 		}
 		if isNeedDelete{
 			dependDeleteItemList = append(dependDeleteItemList, depend)
 		}
 	}
+	beego.Info("get delete depend length:",  len(dependDeleteItemList))
 	//更新depend表
-	depend_exec_task := taskList[1];
-	if strings.EqualFold(taskList[0].ExecType,"depend"){
-		depend_exec_task = taskList[0];
+	creatDepend(dependAddItemList, taskList)
+	updateDepend(dependUpdateItemList, taskList)
+	deleteDepend(dependDeleteItemList, taskList)
+
+	//更新内存
+	taskList, _= service.Task.GetAllTaskByPool(pool_id, Type)
+	err = sched.Scheduler.Update(taskList)
+	if err != nil{
+		c.ReturnFailed(err.Error(), 500)
 	}
-	creatDepend(dependAddItemList, depend_exec_task)
-	updateDepend(dependUpdateItemList, depend_exec_task)
-	deleteDepend(dependDeleteItemList, depend_exec_task)
-
-
-
+	c.ReturnSuccess(nil)
 }
 
 func getCronItemForm(cron task_cron_struct)(*models.CronItem, error){
+	beego.Info("getCronItemForm")
+	beego.Info("cron.ExecTaskId ",cron.ExecTaskId)
 	cron_item := &models.CronItem{}
-	cron_item.ExecTask.Id = cron.ExecTaskId
-	cron_item.Ignore = cron.Ignore
+	cron_item.Id = cron.Id
+	exe_Task := &models.ExecTask{Id:cron.ExecTaskId}
+	cron_item.ExecTask = exe_Task;
+	beego.Info("cron.ExecTaskId ",cron.ExecTaskId)
+	if(cron.Ignore == 0){
+		cron_item.Ignore = false
+	}else{
+		cron_item.Ignore = true
+	}
+	beego.Info("cron.Ignore ",cron_item.Ignore)
 	cron_item.Time = cron.Time
+	beego.Info("cron_item.Time ",cron_item.Time)
 	cron_item.WeekDay = cron.WeekDay
+	beego.Info("cron_item.WeekDay ",cron_item.WeekDay)
 	cron_item.ConcurrRatio = cron.ConcurrRatio
+	beego.Info("cron_item.ConcurrRatio  ",cron_item.ConcurrRatio )
 	cron_item.ConcurrNum = cron.ConcurrNum
+	beego.Info("cron_item.ConcurrNum ",cron_item.ConcurrNum)
 	cron_item.InstanceNum = cron.InstanceNum
+	beego.Info("cron_item.InstanceNum  ",cron_item.InstanceNum )
 	return cron_item,nil
 }
 
 func getDependItemForm(depend task_depend_struct)(*models.DependItem, error){
+	beego.Info("getDependItemForm")
 	depend_item := &models.DependItem{}
-	depend_item.ExecTask.Id = depend.ExecTaskId
-	depend_item.Ignore = depend_item.Ignore
-	depend_item.Pool.Id =depend.PoolId
+	beego.Info("depend.Id: ",depend.Id)
+	depend_item.Id = depend.Id
+	beego.Info("depend.ExecTaskId: ",depend.ExecTaskId)
+	exe_Task := &models.ExecTask{Id:depend.ExecTaskId}
+	depend_item.ExecTask = exe_Task
+	if(depend.Ignore == 0){
+		depend_item.Ignore = false
+	}else{
+		depend_item.Ignore = true
+	}
+	beego.Info("depend_item.Ignore: ",depend_item.Ignore)
+	depend_pool := &models.Pool{Id:depend.PoolId}
+	beego.Info("depend_item.Ignore: ",depend.PoolId)
+	depend_item.Pool = depend_pool
 	depend_item.ElasticCount = depend.ElasticCount
+	beego.Info("depend.ElasticCount: ",depend.ElasticCount)
 	depend_item.Ratio = depend.Ratio
+	beego.Info("depend.Ratio: ",depend.Ratio)
 	depend_item.StepName = depend.StepName
+	beego.Info("depend.StepName: ",depend.StepName)
 	//该依赖的poolId中所有的任务没有依赖任务
 	//需要判断，避免形成环
 	return depend_item,nil
 }
 
-func creatTask(pool *models.Pool, cronItems []*models.CronItem, dependItems []*models.DependItem, task_type string,) ([]*models.ExecTask, error) {
-	tasks := make([]*models.ExecTask,0)
-	exec_task_cron:= &models.ExecTask{
+func updateTask(dbtask *models.ExecTask, save_exe_task exec_task_struct)(error){
+	dbtask.Type = save_exe_task.Type
+	dbtask.ExecType = save_exe_task.ExecType
+	err := service.Task.UpdateBase(dbtask)
+	return err
+}
+func creatTask(pool *models.Pool, cronItems []*models.CronItem, dependItems []*models.DependItem, task_type string,) (*models.ExecTask, error) {
+	exec_task:= &models.ExecTask{
 		Pool: pool,
 		CronItems: cronItems,
 		DependItems: dependItems,
 		Type:  task_type,
 		ExecType: "crontab",
 	}
-	exec_task_depend:= &models.ExecTask{
-		Pool: pool,
-		CronItems: cronItems,
-		DependItems: dependItems,
-		Type:  task_type,
-		ExecType: "depend",
-	}
-	err := service.Task.InsertBase(exec_task_cron)
+	err := service.Task.InsertBase(exec_task)
 	if err != nil{
 		beego.Error("creat task_cron is failed")
 		return nil, err
 	}
-	tasks = append(tasks, exec_task_cron)
-	err = service.Task.InsertBase(exec_task_depend)
-	if err != nil{
-		beego.Error("creat task_depend is failed")
-		return nil, err
-	}
-	tasks = append(tasks, exec_task_depend)
-	return tasks, nil
+	return exec_task, nil
 }
 
 func creatCron(task_cron_list []*models.CronItem, exec_task *models.ExecTask){
@@ -304,6 +327,7 @@ func updateCron(task_cron_list []*models.CronItem, exec_task *models.ExecTask){
 			beego.Warning("insert cron error already skip! " + err.Error())
 			continue
 		}
+
 	}
 }
 func deleteCron(task_cron_list []*models.CronItem, exec_task *models.ExecTask){
