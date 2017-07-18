@@ -81,6 +81,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+	beego.Info("First. Begin to create instances from cloud")
 	instanceIds, errs := providerDriver.Create(cluster, num)
 	if len(instanceIds) == 0 {
 		return nil, errs[0]
@@ -89,6 +90,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		beego.Error("Expand failed number is", len(errs), "errors is", errs)
 	}
 	beego.Info("The instance ids is", instanceIds)
+	beego.Info("Second. Begin to start and init instances ----")
 	c := make(chan int)
 	for i := 0; i < len(instanceIds); i++ {
 		go func(i int) {
@@ -103,11 +105,13 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 					}
 				}
 			}()
+			logstore.Info(correlationId, instanceIds[i], "1. Begin to insert instances into db")
 			ins, err := providerDriver.GetInstance(instanceIds[i])
 			if err != nil {
 				logstore.Error(correlationId, instanceIds[i], "get instance info error:", err)
 				c <- i
 			}
+			logstore.Info(correlationId, instanceIds[i], "get instance info successfully")
 			ins.Cluster = cluster
 			ins.Cpu = cluster.Cpu
 			ins.Ram = cluster.Ram
@@ -121,6 +125,8 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 				logstore.Error(correlationId, instanceIds[i], "insert instance to db error:", err)
 				c <- i
 			}
+			logstore.Info(correlationId, instanceIds[i], "insert instance into db successfully")
+			logstore.Info(correlationId, instanceIds[i], "2. Begin start instance in future")
 			startFuture := future.NewStartFuture(instanceIds[i], cluster.Provider, true, ins.PrivateIpAddress, correlationId)
 			future.Exec.Submit(startFuture)
 			c <- i
