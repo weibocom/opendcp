@@ -44,6 +44,10 @@ class layout{
     'list_nodes'      =>  'GET',
     'add_nodes'       =>  'POST',
     'remove_nodes'    =>  'POST',
+    'expandList'      =>  'POST',
+    'uploadList'      =>  'POST',
+    'saveTask'        =>  'POST',
+
   );
 
   function curl($token='', $module = '', $action = '', $data = '', $id = '') {

@@ -1,23 +1,3 @@
-Skip to content
-This repository
-Search
-Pull requests
-Issues
-Marketplace
-Gist
-@lhy940808
-Sign out
-Watch 0
-Star 0
-Fork 60 lhy940808/opendcp
-forked from weibocom/opendcp
-Code  Pull requests 0  Projects 0  Wiki  Settings Insights
-Branch: master Find file Copy pathopendcp/ui/js/for_layout/service.js
-cfa92fb  on Dec 19 2016
-jigui init code
-0 contributors
-RawBlameHistory
-1303 lines (1273 sloc)  46.7 KB
 cache = {
     page: 1,
     cluster_id: '',
@@ -36,6 +16,14 @@ cache = {
     vm_type: [],
     ip: [], //选中IP列表
 }
+
+
+var cronRowNum = 1;
+var dependRowNum = 1;
+
+var execTaskCronId = 0;
+var execTaskDepend = 0;
+
 
 var reset = function(){
     $('#fIdx').val('');
@@ -67,8 +55,7 @@ var list = function(page,tab,idx) {
             $('#fService').parent().parent().attr('hidden',true);
             $('#fPool').parent().parent().attr('hidden',true);
             break;
-        case 'pool'
-        :
+        case 'pool':
             $('#tab_1').attr('class','');
             $('#tab_2').attr('class','active');
             $('#tab_3').attr('class','');
@@ -199,6 +186,7 @@ var processBody = function(data,head,body){
         head.html(tr);
     }
     if(data.content){
+        cache.pool =  data.content;
         if(data.content.length>0){
             var tab=$('#tab').val();
             cache.copy.ip=[];
@@ -209,9 +197,8 @@ var processBody = function(data,head,body){
                     td = '<td>' + v.i + '</td>';
                     tr.append(td);
                 }
-                var btnAdd='',btnEdit='',btnDel='';
+                var btnAdd='',btnEdit='',btnDel='',btnSet='';
                 switch(tab){
-
                     case 'service':
                         if(i==0) cache.service_id = v.id;
                         cache.service.push(v);
@@ -260,6 +247,7 @@ var processBody = function(data,head,body){
                         td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnAdd + '</div></td>';
                         tr.append(td);
                         btnEdit = '<a class="text-success tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_'+tab+'.php?action=edit&par_id='+ $('#fService').val() +'&par_name='+ $('#fService').find("option:selected").text() +'&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
+                        btnSet = '<a class="text-success tooltips" title="任务设置" data-toggle="modal" data-target="#myModal" href="set_'+tab+'.php?action=expandList&idx=' + v.id + '" ><i class="fa fa-tasks"></i></a>';
                         btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.name+'\')"><i class="fa fa-trash-o"></i></a>';
                         break;
                     case 'node':
@@ -275,7 +263,7 @@ var processBody = function(data,head,body){
                         btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\'' + v.pool_id + ',' + getName('pool',v.pool_id) + '\',\'' + v.ip + '\',\'' + v.id + '\')"><i class="fa fa-trash-o"></i></a>';
                         break;
                 }
-                td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + ' ' + btnDel + '</div></td>';
+                td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnEdit + ' ' + btnSet+' '+btnDel + '</div></td>';
                 tr.append(td);
 
                 body.append(tr);
@@ -1323,3 +1311,466 @@ var getQuota=function(idx){
         }
     });
 }
+///////////////////////////////////////////////
+function addTaskCron(){
+    if($('#task_type').val()=="expandList") {
+        var row = '<tr id ="cron_row_' + cronRowNum + '">';
+        row += '<td style="vertical-align: middle;" name="0">' + cronRowNum + '</td>';
+        row += '<td><select class="form-control" style="font-size:13px">' +
+            '<option value="0" selected = "selected">每天</option>' +
+            '<option value="1">星期日</option>' +
+            '<option value="2">星期一</option>' +
+            '<option value="3">星期二</option>' +
+            '<option value="4">星期三</option>' +
+            '<option value="5">星期四</option>' +
+            '<option value="6">星期五</option>' +
+            '<option value="7">星期六</option>' +
+            '</select></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="00:00:00"></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="1"></td>';
+        row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
+        row += '<td style="vertical-align: middle;">' +
+            '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
+            '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
+        row += "</td></tr>";
+        $("#cron_body").append(row);
+        cronRowNum++;
+    }
+    if($('#task_type').val()=="uploadList"){
+        var row = '<tr id ="cron_row_' + cronRowNum + '">';
+        row += '<td style="vertical-align: middle;" name="0">' + cronRowNum + '</td>';
+        row += '<td><select class="form-control" style="font-size:13px">';
+        row += '<option value="0" selected = "selected">每天</option>' +
+            '<option value="1">星期日</option>' +
+            '<option value="2">星期一</option>' +
+            '<option value="3">星期二</option>' +
+            '<option value="4">星期三</option>' +
+            '<option value="5">星期四</option>' +
+            '<option value="6">星期五</option>' +
+            '<option value="7">星期六</option>' +
+            '</select></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="00:00:00"></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="1"></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="1"></td>';
+        row += '<td style="vertical-align: middle;"><input type="checkbox" ></td>';
+        row += '<td style="vertical-align: middle;">' +
+            '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
+            '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
+        row += "</td></tr>";
+        $("#cron_body").append(row);
+        cronRowNum++;
+    }
+}
+
+function delRow(rowId){
+    $("#"+rowId).remove();
+    if(rowId.indexOf("cron")>=0){
+        cronRowNum--;
+    }
+    if(rowId.indexOf("depend")>=0){
+        dependRowNum--;
+    }
+}
+
+function addTaskDepen(){
+    var row = '<tr id ="depend_row_'+dependRowNum+'">';
+    row+='<td style="vertical-align: middle;" name = "0">'+dependRowNum+'</td>';
+    row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
+    for(var i = 0; i <cache.pool.length; i++){
+        row+= '<option value = "'+cache.pool[i].id+'">'+cache.pool[i].name+'</option>';
+    }
+    row+='</select></td>';
+
+    var fIdx = 0;
+    if($('#task_type').val()=="expandList") {
+        if(cache.pool.length>0){
+            fIdx = parseInt(cache.pool[0].tasks.expand);
+        }
+    }
+    if($('#task_type').val()=="uploadList"){
+        if(cache.pool.length>0){
+            fIdx = parseInt(cache.pool[0].tasks.deploy);
+        }
+    }
+    var step = {};
+    for(var i = 0; i < cache.task_tpl.length; i++){
+        if(fIdx == parseInt(cache.task_tpl[i].id)){
+            step = cache.task_tpl[i];
+            break;
+        }
+    }
+    row += '<td><select id ="child_steps_'+dependRowNum+'" class="form-control" style="font-size:13px">';
+    for(var i = 0; i < step.steps.length; i++){
+        row += '<option value ="'+step.steps[i].name+'">'+step.steps[i].name+'</option>';
+    }
+    row += "</select></td>"
+    row+='<td><input type="text" class = "form-control" style="font-size:13px" value="0.6"></td>';
+    row+='<td><input type="text" class = "form-control" style="font-size:13px" value="1"></td>';
+    row+='<td style="vertical-align: middle;"><input type="checkbox"></td>';
+    row+='<td style="vertical-align: middle;"><a class="text-danger tooltips" title="删除" onclick="delRow(\''+"depend_row_"+dependRowNum+'\')"><i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
+    row+="</td></tr>";
+    $("#depend_body").append(row);
+    dependRowNum++;
+}
+
+function addOpt(rid){
+    var current_pool_id = parseInt($("#upload_pool_"+rid).val());
+    var my_current_pool = {};
+    for(var i = 0; i <cache.pool.length; i++){
+        if(cache.pool[i].id == current_pool_id){
+            my_current_pool = cache.pool[i];
+            break;
+        }
+    }
+    var fIdx = 0;
+    if($('#task_type').val()=="expandList") {
+        fIdx = parseInt(my_current_pool.tasks.expand);
+    }
+    if($('#task_type').val()=="uploadList"){
+        fIdx = parseInt(my_current_pool.tasks.deploy);
+    }
+    var step = {};
+    for(var i = 0; i < cache.task_tpl.length; i++){
+        if(fIdx == parseInt(cache.task_tpl[i].id)){
+            step = cache.task_tpl[i];
+            break;
+        }
+    }
+    var current_step_select = $("#child_steps_"+rid);
+    current_step_select.empty();
+    var row = "";
+    for(var i = 0; i < step.steps.length; i++){
+        row += '<option value ="'+step.steps[i].name+'">'+step.steps[i].name+'</option>';
+    }
+    current_step_select.append(row);
+}
+
+//获取依赖任务和定时任务数据
+var listCronOrDepen= function(idx) {
+    cache.pool_id = idx;
+    $('.popovers').each(function(){$(this).popover('hide');});
+    if($('#task_type').val()=="expandList"){
+        $('#cron_head').empty();
+        tr="<tr><th>#</th>"+
+            "<th >执行日期</th>"+
+            "<th >执行时间</th>"+
+            "<th>机器数量</th>"+
+            "<th>忽略</th>"+
+            "<th>#</th></tr>";
+        $('#cron_head').append(tr);
+    }
+    if ($('#task_type').val()=="uploadList"){
+        $('#cron_head').empty();
+        tr="<tr><th>#</th>"+
+            "<th >执行日期</th>"+
+            "<th >执行时间</th>"+
+            "<th>最大并发数</th>"+
+            "<th>最大并发比例数</th>"+
+            "<th>忽略</th>"+
+            "<th>#</th></tr>";
+        $("#cron_head").append(tr);
+    }
+    NProgress.start();
+    action="expandList";
+    var task_type=$('#task_type').val();
+    if(task_type){
+        action=task_type;
+    }
+    var url='/api/for_layout/task.php';
+    postData={'pool_id':idx,'action':action};
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: {"action":action,"data":JSON.stringify(postData)},
+        dataType: "json",
+        success: function (listdata) {
+            if(listdata.code==0){
+                var depend_body= $("#depend_body");//依赖任务的内容
+                depend_body.empty();
+                var cron_body = $("#cron_body");//定时任务的内容
+                cron_body.empty();
+                var the_cron_itmes  = [];
+                var the_depend_itmes = [];
+
+                if(listdata.content == null){
+                    NProgress.done();
+                    return;
+                }
+                if( typeof(listdata.content)!='undefined' && typeof(listdata.content.cron_items)!='undefined'){
+                    the_cron_itmes = listdata.content.cron_items;
+                }
+                if(typeof(listdata.content)!='undefined' &&typeof(listdata.content.depend_items)!='undefined'){
+                    the_depend_itmes = listdata.content.depend_items;
+                }
+                if(typeof(listdata.content)!='undefined' && typeof(listdata.content.id)!='undefined'){
+                    cache.exec_task_id = listdata.content.id;
+                }
+                if(the_cron_itmes.length >0){
+                    processCronList(the_cron_itmes);
+                }
+                if(the_depend_itmes.length >0){
+                    processDependList(the_depend_itmes);
+                }
+                //清除当前页面数据
+                $('.popovers').each(function(){$(this).popover();});
+                $('.tooltips').each(function(){$(this).tooltip();});
+                NProgress.done();
+            }else{
+                pageNotify('error','加载失败！','错误信息：'+listdata.msg);
+                NProgress.done();
+            }
+        },
+        error: function (){
+            pageNotify('error','加载失败！','错误信息：接口不可用');
+            NProgress.done();
+        }
+    });
+}
+
+var processCronList = function(data){
+    var cron_body = $("#cron_body");//定时任务的内容
+    cron_body.empty();
+    cronRowNum = 1;
+    var arr_week=["每天","星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+    if($('#task_type').val()=="expandList") {
+        for (var i = 0; i < data.length; i++) {
+            var rowData = data[i];
+            var row = '<tr id ="cron_row_' + cronRowNum + '">';
+            row += '<td name = "' + data[i].id + '" style="vertical-align: middle;">' + cronRowNum + '</td>';
+            row += '<td><select class="form-control" style="font-size:13px">';
+            for(var f = 0; f <　arr_week.length; f++){
+                if(rowData["week_day"] == f){
+                    row += '<option value="'+rowData["week_day"]+'" selected = "selected">'+arr_week[f]+'</option>';
+                }else{
+                    row += '<option value="'+f+'">'+arr_week[f]+'</option>';
+                }
+            }
+            row +='</select></td>';
+            row += '<td ><input type="name" class = "form-control" style="font-size:13px" value="'+rowData['time']+'"></td>';
+            row += '<td><input type="name" class = "form-control" style="font-size:13px" value="'+rowData['instance_num']+'"></td>';
+            if(rowData['ignore']){
+                row += '<td style="vertical-align: middle;"><input type="checkbox" checked ></td>';
+            }else{
+                row += '<td style="vertical-align: middle;"><input type="checkbox" ></td>';
+            }
+            row += '<td style="vertical-align: middle;">' +
+                '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
+                '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
+            row += "</td></tr>";
+            $("#cron_body").append(row);
+            cronRowNum++;
+        }
+    }
+    if($('#task_type').val()=="uploadList"){
+        alert($('#task_type').val());
+        for (var i = 0; i < data.length; i++) {
+            var rowData = data[i];
+            var row = '<tr id ="cron_row_' + cronRowNum + '">';
+            row += '<td style="vertical-align: middle;" name="'+data[i].id+'">' + cronRowNum + '</td>';
+            row += '<td><select class="form-control" style="font-size:13px">';
+            for(var f = 0; f <　arr_week.length; f++){
+                if(rowData["week_day"] == f){
+                    row += '<option value="'+rowData["week_day"]+'" selected = "selected">'+arr_week[f]+'</option>';
+                }else{
+                    row += '<option value="'+f+'">'+arr_week[f]+'</option>';
+                }
+            }
+            row +='</select></td>';
+            row += '<td><input type="name" class = "form-control" style="font-size:13px" value="'+rowData['time']+'"></td>';
+            row += '<td><input type="name" class = "form-control" style="font-size:13px" value="'+rowData['concurr_num']+'"></td>';
+            row += '<td><input type="name" class = "form-control" style="font-size:13px" value="'+rowData['concurr_ratio']+'"></td>';
+            if(rowData['ignore']){
+                row += '<td style="vertical-align: middle;"><input type="checkbox" checked></td>';
+            }else{
+                row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
+            }
+            row += '<td style="vertical-align: middle;">' +
+                '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
+                '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
+            row += "</td></tr>";
+            $("#cron_body").append(row);
+            cronRowNum++;
+        }
+    }
+}
+
+var processDependList  = function(data) {
+    var depend_body = $("#depend_body");//依赖任务的内容
+    depend_body.empty();
+    dependRowNum = 1;
+    for(var k = 0; k < data.length; k++){
+        var row = '<tr id ="depend_row_'+dependRowNum+'">';
+        row+='<td style="vertical-align: middle;" name = "' + data[k].id + '">'+dependRowNum+'</td>';
+        row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
+        var  currentThePool = {};
+        for(var i = 0; i < cache.pool.length; i++){
+            if(data[k].pool.id == cache.pool[i].id){
+                row+='<option value = "'+cache.pool[i].id+'" selected = "selected">'+cache.pool[i].name+'</option>';
+                currentThePool = cache.pool[i];
+            }else{
+                row+='<option value = "'+cache.pool[i].id+'">'+cache.pool[i].name+'</option>';
+            }
+        }
+        var fIdx = 0;
+        if($('#task_type').val()=="expandList") {
+            fIdx = parseInt(currentThePool.tasks.expand);
+        }
+        if($('#task_type').val()=="uploadList") {
+            fIdx = parseInt(currentThePool.tasks.deploy);
+        }
+        var step = {};
+        for(var i = 0; i < cache.task_tpl.length; i++){
+            if(fIdx == parseInt(cache.task_tpl[i].id)){
+                step = cache.task_tpl[i];
+                break;
+            }
+        }
+        row += '<td><select id ="child_steps_'+dependRowNum+'" class="form-control" style="font-size:13px">';
+        for(var i = 0; i < step.steps.length; i++){
+            if(data[k].step_name== step.steps[i].name){
+                row += '<option value = "'+step.steps[i].name+'" selected="selected">'+step.steps[i].name+'</option>';
+            }
+            else{
+                row += '<option value = "'+step.steps[i].name+'">'+step.steps[i].name+'</option>';
+            }
+        }
+        row += "</select></td>";
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="'+data[k].ratio+'"></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" value="'+data[k].elastic_count+'"></td>';
+        if(data[k].ignore){
+            row += '<td style="vertical-align: middle;"><input type="checkbox" checked></td>';
+        }else{
+            row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
+        }
+        row += '<td style="vertical-align: middle;">' +
+            '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "depen_row_" + dependRowNum + '\')">' +
+            '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
+        row += "</td></tr>";
+        $("#depend_body").append(row);
+        dependRowNum++;
+    }
+}
+
+var saveCronAndDependTask = function(){
+    var cron_itmes=[];
+    taskType = $('#task_type').val();
+    //首先获取定时任务列表
+    if(taskType == "expandList"){
+        var trList = $("#cron_body").children("tr")
+        for (var i=0;i<trList.length;i++) {
+            var tdArr = trList.eq(i).find("td");
+            var id = tdArr.eq(0).attr("name");
+            var execData = tdArr.eq(1).find("select").val();//执行日期
+            var execTime = tdArr.eq(2).find("input").val();//执行时间
+            var instanceNum = tdArr.eq(3).find("input").val();//  机器数量
+            var ignore = tdArr.eq(4).find("input");//  是否忽略
+            var isIgnore = 0;
+            if(ignore.attr("checked") == "checked"){
+                isIgnore = 1
+            }
+            var crontItem = {
+                "id": parseInt(id),
+                "exec_task_id": parseInt(cache.exec_task_id),
+                "instance_num": parseInt(instanceNum),
+                "ConcurrRatio":0,
+                "ConcurrNum":0,
+                "week_day": parseInt(execData),
+                "time": execTime,
+                "ignore":isIgnore
+            };
+            cron_itmes.push(crontItem);
+        }
+    }
+    if(taskType == "uploadList"){
+        var trList = $("#cron_body").children("tr")
+        for (var i=0;i<trList.length;i++) {
+            var tdArr = trList.eq(i).find("td");
+            var id = tdArr.eq(0).attr("name");
+            var execData = tdArr.eq(1).find("select").val();//执行日期
+            var execTime = tdArr.eq(2).find("input").val();//执行时间
+            var concurr_ratio = tdArr.eq(3).find("input").val();//最大并发数
+            var concurr_num = tdArr.eq(4).find("input").val();//最大并发比例数
+            var ignore = tdArr.eq(4).find("input");//  是否忽略
+            alert("ignore" + ignore.checked);
+            var isIgnore = 0;
+            if(ignore.attr("checked") == "checked"){
+                isIgnore = 1
+            }
+            var crontItem = {
+                "id": parseInt(id),
+                "exec_task_id": parseInt(cache.exec_task_id),
+                "instance_num": 0,
+                "concurr_ratio": parseInt(concurr_ratio),
+                "concurr_num": parseInt(concurr_num),
+                "week_day": parseInt(execData ),
+                "time": execTime,
+                "ignore":isIgnore
+            };
+            cron_itmes.push(crontItem);
+        }
+
+    }
+    //获取依赖任务列表
+    var depend_itmes=[];
+    var trList = $("#depend_body").children("tr")
+    for (var i=0;i<trList.length;i++) {
+        var tdArr = trList.eq(i).find("td");
+        var id = tdArr.eq(0).attr("name");
+        var current_pool_id = tdArr.eq(1).find("select").val();//依赖服务
+        var current_step = tdArr.eq(2).find("select").val();//依赖步骤
+        var ratio = tdArr.eq(3).find("input").val();//比例
+        var elastic_count = tdArr.eq(4).find("input").val();//机器冗余数量
+        var ignore = tdArr.eq(5).find("input");//  是否忽略
+        var isIgnore = 0;
+        if(ignore.attr("checked") == "checked"){
+            isIgnore = 1
+        }
+        var dependItem = {
+            "id": parseInt(id),
+            "exec_task_id": parseInt(cache.exec_task_id),
+            "pool_id": parseInt(current_pool_id),
+            "ratio": parseFloat(ratio),
+            "elastic_count": parseInt(elastic_count),
+            "step_name": current_step,
+            "ignore":isIgnore
+        };
+        depend_itmes.push(dependItem);
+    }
+    //构造任务
+    var type = "expand";
+    if($('#task_type').val() == "uploadList"){
+        type = "upload"
+    }
+    var exec_type = "crontab";
+    if(cron_itmes.length == 0 && depend_itmes.length != 0){
+        exec_type = "depend";
+    }
+    var exec_task={
+        "id": parseInt(cache.exec_task_id),
+        "pool_id": parseInt(cache.pool_id),
+        "type":type,
+        "exec_type":exec_type ,
+        "cron_itmes":cron_itmes,
+        "depend_itmes":depend_itmes,
+
+    }
+    var postData= exec_task;
+    $.ajax({
+        type: "POST",
+        url:"/api/for_layout/task.php",
+        data: {"action":"saveTask","data":JSON.stringify(postData)},
+        dataType: "json",
+        success: function (data) {
+            if(data.code == 0){
+                pageNotify('success','【任务设置保存】操作成功！');
+            }else{
+                pageNotify('warning','【任务设置保存】操作失败！','错误信息，服务器出错！');
+            }
+
+        },
+        error: function (){
+            pageNotify('error','【任务设置保存】操作失败！','错误信息：接口不可用');
+        }
+    });
+}
+
