@@ -41,9 +41,6 @@ const (
 )
 
 const (
-	NodeTypeCron   = "cron"
-	NodeTypeManual = "manual"
-
 	TaskExpend  = "expand"
 	TaskShrink  = "shrink"
 	TaskDdeploy = "deploy"
@@ -140,8 +137,8 @@ type NodeState struct {
 	Status      int        `json:"state"`
 	Steps       string     `json:"steps" orm:"type(text)"`
 	StepNum     int        `json:"step_num"`
-	Log         string     `orm:"type(text)"`
+	Log         string     `json:"log" orm:"type(text)"`
+	LastOp      string     `json:"last_op"`
 	CreatedTime time.Time  `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time  `json:"updated" orm:"auto_now_add;type(datetime)"`
-	LastOp      string     `json:"last_op"`
 }
