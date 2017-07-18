@@ -114,6 +114,7 @@ func scaleDependPool(ctx context.Context, cfg *models.ExecTask, expand bool, sho
 // why so long ?
 func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, should int, dependc chan *dependNotice) {
 	var (
+		operation                            string
 		ok, failed, running, stopped, picked []*Node
 		actions                              []*models.ActionImpl
 		steps                                []*models.StepOption
@@ -220,6 +221,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 			helper.CREATE_VM: map[string]interface{}{helper.KEY_VM_TYPE: pool.VmType},
 			helper.REGISTER:  map[string]interface{}{helper.KEY_SD_ID: pool.SdId},
 		})
+		operation = models.TaskExpend
 	} else {
 		if steps[len(steps)-1].Name != "return_vm" {
 			err = fmt.Errorf("pool(%d) last step of expand template is not return_vm",
@@ -230,6 +232,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 			helper.RETURN_VM:  map[string]interface{}{helper.KEY_VM_TYPE: pool.VmType},
 			helper.UNREGISTER: map[string]interface{}{helper.KEY_SD_ID: pool.SdId},
 		})
+		operation = models.TaskShrink
 	}
 
 	ff, err = createRealFlow(pool.Name+"_"+tname, len(picked), steps, pool, flow)
@@ -249,7 +252,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 		}
 	}()
 
-	if err = createNodeState(pool, ff, picked); err != nil {
+	if err = createNodeState(pool, ff, picked, operation); err != nil {
 		return
 	}
 
@@ -326,7 +329,7 @@ func createRealFlow(name string, num int, steps []*models.StepOption,
 		Impl:        flow,
 		Pool:        pool,
 		StepLen:     num,
-		OpUser:      "cron",
+		OpUser:      models.Crontab, // TODO just use this string as operation user ???
 		CreatedTime: time.Now(),
 		UpdatedTime: time.Now(),
 	}
@@ -336,7 +339,7 @@ func createRealFlow(name string, num int, steps []*models.StepOption,
 	return ff, nil
 }
 
-func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node) error {
+func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node, operation string) error {
 	o := orm.NewOrm()
 	for i := 0; i < len(nodes); i++ {
 		if nodes[i].n.Ip == "" {
@@ -351,6 +354,15 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node) error {
 		nodes[i].s.Pool = pool
 		nodes[i].s.Log = ""
 		nodes[i].s.Steps = "[]"
+
+		if nodes[i].s.LastOp != operation {
+			// Reset step num if current operation is different from last operation.
+			// If current operation is equal the last operation, we run this task as
+			// a repeat task, it will retry those nodes which are failed in last task.
+			// If current operation is not equal the last operation, we set the step
+			// num to 0, and run this task from the beginning.
+			nodes[i].s.StepNum = 0
+		}
 
 		if nodes[i].n.Id == 0 {
 			if _, err := o.Insert(&nodes[i].n); err != nil {
@@ -534,6 +546,7 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 				n.Node.Status = models.STATUS_SUCCESS
 				service.Cluster.UpdateBase(n.Node)
 			}
+			updateNode(ok, idx, models.STATUS_SUCCESS, actions[idx].Name)
 		} else {
 			updateNode(ok, idx+1, models.STATUS_RUNNING, actions[idx+1].Name)
 		}
