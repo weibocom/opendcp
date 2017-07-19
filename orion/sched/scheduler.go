@@ -28,9 +28,8 @@ var (
 )
 
 func Initial() error {
-	Scheduler := &scheduler{
+	Scheduler = &scheduler{
 		tasks: make(map[int]task),
-		mu:    new(sync.Mutex),
 	}
 	if err := Scheduler.load(); err != nil {
 		return err
