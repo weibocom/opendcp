@@ -38,7 +38,7 @@ func Initial() error {
 }
 
 type scheduler struct {
-	mu      *sync.Mutex
+	mu      sync.Mutex
 	configs syncmap.Map
 	tasks   map[int]task
 	stopped bool
