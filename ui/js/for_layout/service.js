@@ -6,6 +6,7 @@ cache = {
     cluster: [],
     service: [],
     pool: [],
+    poolList:[],
     pool_vm: {},
     pool_quota: {},
     copy: {
@@ -15,15 +16,12 @@ cache = {
     balance: [],
     vm_type: [],
     ip: [], //选中IP列表
+    exec_task_id: 0,
 }
 
 
 var cronRowNum = 1;
 var dependRowNum = 1;
-
-var execTaskCronId = 0;
-var execTaskDepend = 0;
-
 
 var reset = function(){
     $('#fIdx').val('');
@@ -100,6 +98,8 @@ var list = function(page,tab,idx) {
         dataType: "json",
         success: function (listdata) {
             if(listdata.code==0){
+                //refresh pool List to background
+                getPoolList();
                 var pageinfo = $("#table-pageinfo");//分页信息
                 var paginate = $("#table-paginate");//分页代码
                 var head = $("#table-head");//数据表头
@@ -718,6 +718,7 @@ var getList=function(type,idx){
             postData.fClusterId=fClusterId;
             $('#tab').val('pool');
             actionDesc='服务';
+            getPoolList();
             getTaskTpl();
             getHubbleBalance();
             getCloudCluster();
@@ -1312,6 +1313,32 @@ var getQuota=function(idx){
     });
 }
 ///////////////////////////////////////////////
+//获取服务池
+var getPoolList=function(){
+    var actionDesc='服务池列表';
+    var postData={"action":"poolList","pagesize":1000};
+    $.ajax({
+        type: "POST",
+        url: '/api/for_layout/pool.php',
+        data: postData,
+        dataType: "json",
+        success: function (data) {
+            if(data.code==0){
+                if(data.content.length>0){
+                    cache.poolList = data.content;
+                }else{
+                    pageNotify('info','加载'+actionDesc+'成功！','数据为空！');
+                }
+            }else{
+                pageNotify('error','加载'+actionDesc+'失败！','错误信息：'+data.msg);
+            }
+        },
+        error: function (){
+            pageNotify('error','加载'+actionDesc+'失败！','错误信息：接口不可用');
+        }
+    });
+}
+
 function addTaskCron(){
     if($('#task_type').val()=="expandList") {
         var row = '<tr id ="cron_row_' + cronRowNum + '">';
@@ -1376,20 +1403,28 @@ function addTaskDepen(){
     var row = '<tr id ="depend_row_'+dependRowNum+'">';
     row+='<td style="vertical-align: middle;" name = "0">'+dependRowNum+'</td>';
     row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
-    for(var i = 0; i <cache.pool.length; i++){
-        row+= '<option value = "'+cache.pool[i].id+'">'+cache.pool[i].name+'</option>';
+
+    var firstIndexPool = -1;
+    for(var i = 0; i <cache.poolList.length; i++){
+        if(cache.poolList[i].id != cache.pool_id){
+            row+= '<option value = "'+cache.poolList[i].id+'">'+cache.poolList[i].name+'</option>';
+            if(firstIndexPool == -1){
+                firstIndexPool = i;
+            }
+        }
+
     }
     row+='</select></td>';
 
     var fIdx = 0;
     if($('#task_type').val()=="expandList") {
-        if(cache.pool.length>0){
-            fIdx = parseInt(cache.pool[0].tasks.expand);
+        if(firstIndexPool>=0){
+            fIdx = parseInt(cache.poolList[firstIndexPool].tasks.expand);
         }
     }
     if($('#task_type').val()=="uploadList"){
-        if(cache.pool.length>0){
-            fIdx = parseInt(cache.pool[0].tasks.deploy);
+        if(firstIndexPool>=0){
+            fIdx = parseInt(cache.pool[firstIndexPool].tasks.deploy);
         }
     }
     var step = {};
@@ -1416,9 +1451,9 @@ function addTaskDepen(){
 function addOpt(rid){
     var current_pool_id = parseInt($("#upload_pool_"+rid).val());
     var my_current_pool = {};
-    for(var i = 0; i <cache.pool.length; i++){
-        if(cache.pool[i].id == current_pool_id){
-            my_current_pool = cache.pool[i];
+    for(var i = 0; i <cache.poolList.length; i++){
+        if(cache.poolList[i].id == current_pool_id){
+            my_current_pool = cache.poolList[i];
             break;
         }
     }
@@ -1603,12 +1638,14 @@ var processDependList  = function(data) {
         row+='<td style="vertical-align: middle;" name = "' + data[k].id + '">'+dependRowNum+'</td>';
         row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
         var  currentThePool = {};
-        for(var i = 0; i < cache.pool.length; i++){
-            if(data[k].pool.id == cache.pool[i].id){
-                row+='<option value = "'+cache.pool[i].id+'" selected = "selected">'+cache.pool[i].name+'</option>';
-                currentThePool = cache.pool[i];
+        for(var i = 0; i < cache.poolList.length; i++){
+            if(data[k].pool.id == cache.poolList[i].id){
+                row+='<option value = "'+cache.poolList[i].id+'" selected = "selected">'+cache.poolList[i].name+'</option>';
+                currentThePool = cache.poolList[i];
             }else{
-                row+='<option value = "'+cache.pool[i].id+'">'+cache.pool[i].name+'</option>';
+                if(cache.poolList[i].id != cache.pool_id){
+                    row+='<option value = "'+cache.poolList[i].id+'">'+cache.poolList[i].name+'</option>';
+                }
             }
         }
         var fIdx = 0;
@@ -1665,7 +1702,7 @@ var saveCronAndDependTask = function(){
             var instanceNum = tdArr.eq(3).find("input").val();//  机器数量
             var ignore = tdArr.eq(4).find("input");//  是否忽略
             var isIgnore = 0;
-            if(ignore.attr("checked") == "checked"){
+            if(ignore.is(':checked')){
                 isIgnore = 1
             }
             var crontItem = {
@@ -1693,7 +1730,7 @@ var saveCronAndDependTask = function(){
             var ignore = tdArr.eq(4).find("input");//  是否忽略
             alert("ignore" + ignore.checked);
             var isIgnore = 0;
-            if(ignore.attr("checked") == "checked"){
+            if(ignore.is(':checked')){
                 isIgnore = 1
             }
             var crontItem = {
@@ -1722,7 +1759,7 @@ var saveCronAndDependTask = function(){
         var elastic_count = tdArr.eq(4).find("input").val();//机器冗余数量
         var ignore = tdArr.eq(5).find("input");//  是否忽略
         var isIgnore = 0;
-        if(ignore.attr("checked") == "checked"){
+        if(ignore.is(':checked')){
             isIgnore = 1
         }
         var dependItem = {
