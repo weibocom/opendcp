@@ -24,6 +24,7 @@ include_once('../../include/config.inc.php');
 include_once('../../include/function.php');
 include_once('../../include/func_session.php');
 include_once('../../include/cloud.php');
+//cloud类提供了curl方法的调用
 $thisClass = $cloud;
 
 class myself{
@@ -174,7 +175,7 @@ if($hasLimit){
       $retArr = $mySelf->getInfo($myUser,$fIdx);
       break;
     case 'insert':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+      if($myStatus > 0){$retArr['msg'] = 'Permission Denied!'; }
       $arrRecodeLog['t_action'] = '创建';
       if(isset($arrJson) && !empty($arrJson)){
         $retArr = $mySelf->update($myUser,'POST', $arrJson);
