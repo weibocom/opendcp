@@ -17,6 +17,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/davecgh/go-spew/spew"
 	gosync "github.com/lrita/gosync"
 )
 
@@ -40,6 +41,8 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 		beego.Error("task(%d) has not config", id)
 		return
 	}
+
+	beego.Info(spew.Sprintf("task(%+v) idx(%d) running", cfg, idx))
 
 	if cfg.Type != models.TaskExpend && cfg.Type != models.TaskShrink {
 		beego.Error(fmt.Sprintf("id(%d) not support task %q", id, cfg.Type))
