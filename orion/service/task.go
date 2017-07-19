@@ -22,8 +22,8 @@ package service
 import (
 	"github.com/astaxie/beego/orm"
 
-	"weibo.com/opendcp/orion/models"
 	"fmt"
+	"weibo.com/opendcp/orion/models"
 )
 
 type TaskService struct {
@@ -43,7 +43,6 @@ func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (*models.E
 	if err != nil {
 		return nil, err
 	}
-
 
 	o.LoadRelated(task, "CronItems")
 	o.LoadRelated(task, "DependItems")
