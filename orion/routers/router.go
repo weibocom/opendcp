@@ -69,7 +69,6 @@ func init() {
 			beego.NSRouter("/create", &api.FlowApi{}, "*:AppendFlowImpl"),
 			beego.NSRouter("/delete", &api.FlowApi{}, "*:DeleteFlowImpl"),
 			beego.NSRouter("/list", &api.FlowApi{}, "*:ListFlowImpl"),
-
 		),
 
 		beego.NSRouter("/create", &api.FlowApi{}, "*:RunFlow"),
