@@ -30,6 +30,7 @@ var (
 func Initial() error {
 	Scheduler := &scheduler{
 		tasks: make(map[int]task),
+		mu:    new(sync.Mutex),
 	}
 	if err := Scheduler.load(); err != nil {
 		return err
@@ -38,7 +39,7 @@ func Initial() error {
 }
 
 type scheduler struct {
-	mu      sync.Mutex
+	mu      *sync.Mutex
 	configs syncmap.Map
 	tasks   map[int]task
 	stopped bool
