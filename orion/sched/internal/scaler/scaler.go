@@ -369,6 +369,7 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node, operatio
 			// If current operation is not equal the last operation, we set the step
 			// num to 0, and run this task from the beginning.
 			nodes[i].s.StepNum = 0
+			nodes[i].s.LastOp = operation
 		}
 
 		if nodes[i].n.Id == 0 {
