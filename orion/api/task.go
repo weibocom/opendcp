@@ -101,6 +101,8 @@ func (c *TaskApi) GetUploadList() {
 
 /*
 add exec Task
+CronItem add check for time unique
+DependItem add chekc for depend pool unique
 */
 
 func (c *TaskApi) SaveTask() {
@@ -128,10 +130,19 @@ func (c *TaskApi) SaveTask() {
 
 	cronItems := make([]*models.CronItem, 0)
 	dependItems := make([]*models.DependItem, 0)
+
+	timeMap := make(map[string]bool)
+	dependPoolMap := make(map[string]bool)
+
 	for _, cron := range save_exe_task.CronItems {
 		cronItem := &models.CronItem{}
 		cronItem.Id = cron.Id
 		cronItem.ExecTask = exec_task
+		if _, ok := timeMap[cron.Time]; ok {
+			c.ReturnFailed("Cron time "+cron.Time+" is duplicate!", 500)
+		} else {
+			timeMap[cron.Time] = true
+		}
 		cronItem.Time = cron.Time
 		cronItem.ConcurrNum = cron.ConcurrNum
 		cronItem.ConcurrRatio = cron.ConcurrRatio
@@ -159,6 +170,11 @@ func (c *TaskApi) SaveTask() {
 		err = service.Cluster.GetBase(pool)
 		if err != nil {
 			c.ReturnFailed(err.Error(), 500)
+		}
+		if _, ok := dependPoolMap[pool.Name]; ok {
+			c.ReturnFailed("Depend pool "+pool.Name+" is duplicate!", 500)
+		} else {
+			dependPoolMap[pool.Name] = true
 		}
 		dependItem.Pool = pool
 		dependItem.Ratio = depend.Ratio
