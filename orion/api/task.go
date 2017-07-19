@@ -181,7 +181,7 @@ func (c *TaskApi) SaveTask() {
 			c.ReturnFailed(err.Error(), 500)
 		}
 	}
-
+	c.ReturnSuccess(true)
 }
 
 /*func (c *TaskApi) SaveTask() {
