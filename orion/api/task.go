@@ -158,9 +158,7 @@ func (c *TaskApi) SaveTask() {
 		pool := &models.Pool{Id: depend.PoolId}
 		err = service.Cluster.GetBase(pool)
 		if err != nil {
-			if err != nil {
-				c.ReturnFailed(err.Error(), 500)
-			}
+			c.ReturnFailed(err.Error(), 500)
 		}
 		dependItem.Pool = pool
 		dependItem.Ratio = depend.Ratio
