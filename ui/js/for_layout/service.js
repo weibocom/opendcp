@@ -1643,7 +1643,9 @@ var processDependList  = function(data) {
                 row+='<option value = "'+cache.poolList[i].id+'" selected = "selected">'+cache.poolList[i].name+'</option>';
                 currentThePool = cache.poolList[i];
             }else{
-                row+='<option value = "'+cache.poolList[i].id+'">'+cache.poolList[i].name+'</option>';
+                if(cache.poolList[i].id != cache.pool_id){
+                    row+='<option value = "'+cache.poolList[i].id+'">'+cache.poolList[i].name+'</option>';
+                }
             }
         }
         var fIdx = 0;
