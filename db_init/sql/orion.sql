@@ -38,6 +38,45 @@ CREATE TABLE IF NOT EXISTS `pool` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.ExecTask`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `exec_task` (
+  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `pool_id` integer NOT NULL,
+  `type` varchar(50) NOT NULL DEFAULT 'expand',
+  `exec_type` VARCHAR(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.CronItem`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cron_item` (
+  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `exec_task_id` integer NOT NULL,
+  `instance_num` integer ,
+  `concurr_ratio` integer ,
+  `concurr_num` integer ,
+  `week_day` integer NOT NULL DEFAULT 0,
+  `time` VARCHAR(255) NOT NULL,
+  `ignore` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.DependItem`
+-- --------------------------------------------------
+CREATE TABLE IF NOT EXISTS `depend_item` (
+  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `exec_task_id` integer NOT NULL,
+  `pool_id` integer NOT NULL,
+  `ratio` DOUBLE NOT NULL,
+  `elastic_count` integer NOT NULL,
+  `step_name` VARCHAR(255) NOT NULL,
+  `ignore` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------
 --  Table Structure for `weibo.com/opendcp/orion/models.Node`
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `node` (
@@ -45,7 +84,8 @@ CREATE TABLE IF NOT EXISTS `node` (
     `ip` varchar(255),
     `vm_id` varchar(255),
     `status` integer NOT NULL DEFAULT 0 ,
-    `pool_id` integer NOT NULL
+    `pool_id` integer NOT NULL,
+    `node_type` varchar(255) NOT NULL DEFAULT 'manual'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
@@ -70,6 +110,7 @@ CREATE TABLE IF NOT EXISTS `flow` (
     `impl_id` integer NOT NULL,
     `step_len` integer NOT NULL DEFAULT 0 ,
     `op_user` varchar(255) NOT NULL DEFAULT '' ,
+    `flow_type` varchar(50) NOT NULL DEFAULT 'manual',
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -103,6 +144,7 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `steps` longtext NOT NULL,
     `step_num` integer NOT NULL DEFAULT 0 ,
     `log` longtext NOT NULL,
+    `last_op` varchar(255),
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -160,7 +202,7 @@ UNLOCK TABLES;
 LOCK TABLES `service` WRITE;
 INSERT INTO `service` VALUES
     (1,'sd-nginx','服务发现-Nginx服务','nginx','-',1),
-    (2,'my_server','my_server','php','registry.cn-beijing.aliyuncs.com/opendcp/nginx',1);
+    (2,'my_server','my_server','Java','registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest',1);
 UNLOCK TABLES;
 
 LOCK TABLES `pool` WRITE;
@@ -174,9 +216,9 @@ INSERT INTO `flow_impl` VALUES
     (1,'expand_nginx','扩容nginx服务','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"install_nginx\",\"param_values\":{\"check_port\":80,\"check_times\":30,\"eth\":\"eth1\",\"octans_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
     (2,'undeploy_nginx','缩容nginx服务','[{\"name\":\"return_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":2,\"ignore_error\":false}}]'),
     (3,'noop','No op','[{\"name\":\"echo\",\"param_values\":{\"echo_word\":\"noop\"},\"retry\":{\"retry_times\":0,\"ignore_error\":true}}]'),
-    (4,'expand_my_server','扩容my_server','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"harbor_ip:12380/base/nginx_base:v1 \"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"register\",\"param_values\":{\"service_discovery_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
+    (4,'expand_my_server','扩容my_server','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest \"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"register\",\"param_values\":{\"service_discovery_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
     (5,'unexpand_my_server','缩容my_server','[{\"name\":\"unregister\",\"param_values\":{\"service_discovery_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":true}},{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":true}},{\"name\":\"return_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
-    (6,'upgrade_my_server','上线my_server','[{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"registry.cn-beijing.aliyuncs.com/opendcp/nginx\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]');
+    (6,'upgrade_my_server','上线my_server','[{\"name\":\"stop_service\",\"param_values\":{\"name\":\"my_server\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]');
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action` WRITE;
@@ -194,9 +236,9 @@ INSERT INTO `remote_action_impl` VALUES
     (1,'ansible','{\"action\":{\"content\":\"docker run -d --net=\\\"{{host}}\\\" --name {{name}} {{tag}} \",\"module\":\"longscript\"}}',1),
     (2,'ansible','{\"action\":{\"content\":\"# check port\\nTIMES={{check_times}}\\nPORT={{check_port}}\\nfor ((i=0;i\\u003c$TIMES;i++));\\ndo\\n\\techo \\\"check $PORT time $i ...\\\"\\n\\tres=`netstat -an | grep LISTEN | grep -e \\\"\\\\b$PORT\\\\b\\\"`\\n\\tif [ \\\"\\\" != \\\"$res\\\" ]; then\\n\\t\\techo \\\"OK\\\"\\n\\t\\texit 0\\n\\tfi\\n\\tsleep 5\\ndone\\necho \\\"error\\\" \\nexit 1\",\"module\":\"longscript\"}}',2),
     (3,'ansible','{\"action\":{\"content\":\"sleep 20\\nres=`curl -m 400 {{check_url}} | grep {{check_keyword}}`\\nif [ \\\"\\\" != \\\"$res\\\" ]; then\\n    echo \\\"OK\\\"\\n    exit 0\\nfi\\n\\necho \\\"check fails\\\"\\nexit 1\\n\",\"module\":\"longscript\"}}',3),
-    (4,'ansible','{\"action\":{\"content\":\"docker stop {{name}} \\u0026\\u0026 sleep 5 \\u0026\\u0026 docker rm {{name}} \",\"module\":\"longscript\"}}',4),
+    (4,'ansible','{\"action\":{\"content\":\"cname={{name}}\\ncontainer=`docker ps|grep -w $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n    docker stop $cname\\nfi\\nsleep 5\\ncontainer=`docker ps -af status=exited|grep -w  $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n        docker rm $cname\\nfi\\nexit 0\",\"module\":\"longscript\"}}',4),
     (5,'ansible','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',5),
-    (6,'ansible','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP_$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://{{octans_host}}:8082/api/parallel_run\\n \",\"module\":\"longscript\"}}',6)
+    (6,'ansible','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep -w inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $IP-$NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP-$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://$IP:8000/api/parallel_run\\n \",\"module\":\"longscript\"}}',6)
     ;
 UNLOCK TABLES;
 

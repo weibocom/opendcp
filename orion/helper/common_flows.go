@@ -17,13 +17,14 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package helper
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego"
 
@@ -31,8 +32,6 @@ import (
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
-	"encoding/json"
-	"strings"
 )
 
 const (
@@ -73,9 +72,10 @@ func Expand(poolId int, num int, opUser string) error {
 	nodes := make([]*models.Node, num)
 	for i := 0; i < num; i++ {
 		n := &models.Node{
-			Ip:     "-",
-			Pool:   pool,
-			Status: 0,
+			Ip:       "-",
+			Pool:     pool,
+			Status:   models.STATUS_INIT,
+			NodeType: models.Manual,
 		}
 		nodes[i] = n
 
@@ -102,7 +102,6 @@ func Expand(poolId int, num int, opUser string) error {
 	context["overrideParams"] = override
 	context["opUser"] = opUser
 
-
 	beego.Info("Expand pool[", pool.Name, "] vm_type =", pool.VmType,
 		",sd_id =", pool.SdId)
 
@@ -122,7 +121,7 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 		return error
 	}
 
-	if len(steps) < 1 || steps[len(steps) - 1].Name != "return_vm" {
+	if len(steps) < 1 || steps[len(steps)-1].Name != "return_vm" {
 		return errors.New("last step of shrink template is not return_vm: " + flow.Steps)
 	}
 
