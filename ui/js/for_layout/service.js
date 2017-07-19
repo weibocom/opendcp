@@ -1424,7 +1424,7 @@ function addTaskDepen(){
     }
     if($('#task_type').val()=="uploadList"){
         if(firstIndexPool>=0){
-            fIdx = parseInt(cache.pool[if(firstIndexPool>=0){].tasks.deploy);
+            fIdx = parseInt(cache.pool[firstIndexPool].tasks.deploy);
         }
     }
     var step = {};
