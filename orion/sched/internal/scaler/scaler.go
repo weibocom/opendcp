@@ -558,7 +558,12 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 			updateNode(ok, idx+1, models.STATUS_RUNNING, actions[idx+1].Name)
 		}
 	}
-	status = models.STATUS_SUCCESS
+
+	if oknum > 0 {
+		status = models.STATUS_SUCCESS
+	} else {
+		status = models.STATUS_FAILED
+	}
 	updateBatch(batch, finidx, status)
 	return
 }
