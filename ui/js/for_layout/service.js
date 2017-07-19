@@ -15,15 +15,12 @@ cache = {
     balance: [],
     vm_type: [],
     ip: [], //选中IP列表
+    exec_task_id: 0,
 }
 
 
 var cronRowNum = 1;
 var dependRowNum = 1;
-
-var execTaskCronId = 0;
-var execTaskDepend = 0;
-
 
 var reset = function(){
     $('#fIdx').val('');
