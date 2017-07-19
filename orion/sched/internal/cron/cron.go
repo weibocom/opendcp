@@ -82,13 +82,13 @@ func (r *Cron) addJobs(ctx context.Context) error {
 	sort.Sort(models.CronItemSlice(cfg.CronItems))
 	weekday := int(n.Weekday()) + 1
 	idx := sort.Search(l, func(i int) bool {
-		if weekday != cfg.CronItems[i].WeekDay {
+		if wd := cfg.CronItems[i].WeekDay; wd != 0 && weekday != wd {
 			return weekday < cfg.CronItems[i].WeekDay
 		}
 
 		token := strings.Split(cfg.CronItems[i].Time, ":")
 		ih, _ := strconv.Atoi(token[0])
-		im, _ := strconv.Atoi(token[i])
+		im, _ := strconv.Atoi(token[1])
 
 		if ih == n.Hour() {
 			return n.Minute() < im

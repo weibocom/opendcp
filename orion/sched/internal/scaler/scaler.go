@@ -26,6 +26,10 @@ var (
 	pmutex = gosync.NewMutexGroup()
 )
 
+func init() {
+	gosync.PanicOnBug = false
+}
+
 type configs interface {
 	Config(id int) *models.ExecTask
 }
