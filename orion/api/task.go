@@ -79,7 +79,7 @@ func (c *TaskApi) GetExpandList() {
 		c.ReturnFailed("Bad pool id: "+poolId, 400)
 		return
 	}
-	taskList, err := service.Task.GetAllTaskByPool(pool_id, "expand")
+	taskList, err := service.Task.GetAllTaskByPool(pool_id, models.TaskExpend)
 	c.ReturnSuccess(taskList)
 }
 
@@ -95,7 +95,7 @@ func (c *TaskApi) GetUploadList() {
 		return
 		return
 	}
-	taskList, err := service.Task.GetAllTaskByPool(pool_id, "upload")
+	taskList, err := service.Task.GetAllTaskByPool(pool_id, models.TaskDdeploy)
 	c.ReturnSuccess(taskList)
 }
 
@@ -119,8 +119,8 @@ func (c *TaskApi) SaveTask() {
 	exec_task.Type = save_exe_task.Type
 	exec_task.ExecType = save_exe_task.ExecType
 
-	cronItems := make([]*models.CronItem, 0)
-	dependItems := make([]*models.DependItem, 0)
+	cronItems := make([]*models.CronItem, len(save_exe_task.CronItems))
+	dependItems := make([]*models.DependItem, len(save_exe_task.DependItems))
 	for i, cron := range save_exe_task.CronItems {
 		cronItems[i].Id = cron.Id
 		cronItems[i].ExecTask = exec_task
