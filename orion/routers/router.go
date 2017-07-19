@@ -54,6 +54,7 @@ func init() {
 		beego.NSRouter("/:id:int/list_nodes", &api.ClusterApi{}, "*:NodeList"),
 		beego.NSRouter("/:id:int/add_nodes", &api.ClusterApi{}, "*:NodeAppend"),
 		beego.NSRouter("/:id:int/remove_nodes", &api.ClusterApi{}, "*:NodeDelete"),
+		beego.NSRouter("/list", &api.ClusterApi{}, "*:AllPoolList"),
 
 		// search ip
 		beego.NSRouter("/search_by_ip/:iplist", &api.ClusterApi{}, "*:SearchPoolByIP"),
