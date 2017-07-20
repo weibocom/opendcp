@@ -369,6 +369,7 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node, operatio
 			// If current operation is not equal the last operation, we set the step
 			// num to 0, and run this task from the beginning.
 			nodes[i].s.StepNum = 0
+			nodes[i].s.LastOp = operation
 		}
 
 		if nodes[i].n.Id == 0 {
@@ -558,7 +559,12 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 			updateNode(ok, idx+1, models.STATUS_RUNNING, actions[idx+1].Name)
 		}
 	}
-	status = models.STATUS_SUCCESS
+
+	if oknum > 0 {
+		status = models.STATUS_SUCCESS
+	} else {
+		status = models.STATUS_FAILED
+	}
 	updateBatch(batch, finidx, status)
 	return
 }
