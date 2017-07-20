@@ -313,9 +313,9 @@ func (f *FlowApi) RunFlow() {
 	if err != nil {
 		beego.Error("Run", req.TaskName, "[", req.TaskImplId, "] fails:", err)
 		f.ReturnFailed("run task fails: "+err.Error(), 400)
+	}else{
+		f.ReturnSuccess(nil)
 	}
-
-	f.ReturnSuccess(nil)
 }
 
 /*
@@ -410,13 +410,22 @@ func (f *FlowApi) StartFlow() {
 		return
 	}
 
+	//重新读取配置文件
+	objImpl, err := service.Flow.GetFlowImplWithRel(obj.Impl.Id)
+	if err != nil {
+		f.ReturnFailed("flowImp not found id: "+ strconv.Itoa(obj.Impl.Id), 400)
+		return
+	}
+	obj.Options = objImpl.Steps;
+
 	err = executor.Executor.Start(obj)
 	if err != nil {
 		beego.Error("start flow ", _id, "fails: ", err)
-		f.ReturnFailed("start task "+_id+" fails", 400)
+		f.ReturnFailed("start task "+_id+" fails： " + err.Error(), 400)
+	}else{
+		f.ReturnSuccess(nil)
 	}
 
-	f.ReturnSuccess(nil)
 }
 
 func (f *FlowApi) StopFlow() {
@@ -436,11 +445,10 @@ func (f *FlowApi) StopFlow() {
 	err = executor.Executor.Stop(obj)
 	if err != nil {
 		beego.Error("stop flow ", _id, "fails: ", err)
-		f.ReturnFailed("stop task "+_id+" fails", 400)
+		f.ReturnFailed("stop task "+_id+" fails: " + err.Error(), 400)
+	}else {
+		f.ReturnSuccess(nil)
 	}
-
-	f.ReturnSuccess(nil)
-
 }
 
 func (f *FlowApi) PauseFlow() {
@@ -460,10 +468,10 @@ func (f *FlowApi) PauseFlow() {
 	err = executor.Executor.Pause(obj)
 	if err != nil {
 		beego.Error("pause flow ", _id, "fails: ", err)
-		f.ReturnFailed("pause task "+_id+" fails", 400)
+		f.ReturnFailed("pause task "+_id+" fails: " + err.Error(), 400)
+	}else{
+		f.ReturnSuccess(nil)
 	}
-
-	f.ReturnSuccess(nil)
 }
 
 func (f *FlowApi) GetFlow() {
