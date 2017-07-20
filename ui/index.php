@@ -205,7 +205,7 @@ require_once('include/navbar.php');
                     <div class="col-md-4 col-sm-4 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>机器模板</h2>
+                                <h2>云厂商机器</h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
