@@ -1680,7 +1680,7 @@ var processDependList  = function(data) {
             row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
         }
         row += '<td style="vertical-align: middle;">' +
-            '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "depen_row_" + dependRowNum + '\')">' +
+            '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "depend_row_" + dependRowNum + '\')">' +
             '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
         row += "</td></tr>";
         $("#depend_body").append(row);
