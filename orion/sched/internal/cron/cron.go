@@ -78,34 +78,17 @@ func (r *Cron) addJobs(ctx context.Context) error {
 		return nil
 	}
 
-	n := time.Now()
 	sort.Sort(models.CronItemSlice(cfg.CronItems))
-	weekday := int(n.Weekday()) + 1
-	idx := sort.Search(l, func(i int) bool {
-		if wd := cfg.CronItems[i].WeekDay; wd != 0 && weekday != wd {
-			return weekday < cfg.CronItems[i].WeekDay
-		}
 
-		token := strings.Split(cfg.CronItems[i].Time, ":")
-		ih, _ := strconv.Atoi(token[0])
-		im, _ := strconv.Atoi(token[1])
-
-		if ih == n.Hour() {
-			return n.Minute() < im
-		}
-		return n.Hour() < ih
-	})
-
-	if idx == 0 {
-		idx = l - 1
-	} else {
-		idx--
+	if idx := findNonIgnoredCronItem2Check(cfg.CronItems); !cfg.CronItems[idx].Ignore {
+		// must run once at now to check there are enough machines
+		(&cronJob{ctx: ctx, cfgs: r.cfgs, id: r.id, idx: idx}).Run()
 	}
 
-	// must run once at now to check there are enough machines
-	(&cronJob{ctx: ctx, cfgs: r.cfgs, id: r.id, idx: idx}).Run()
-
 	for i, item := range cfg.CronItems {
+		if item.Ignore {
+			continue
+		}
 		if err := r.cron.AddJob(toCronExpression(item), &cronJob{
 			ctx:  ctx,
 			cfgs: r.cfgs,
@@ -116,6 +99,34 @@ func (r *Cron) addJobs(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func findNonIgnoredCronItem2Check(items []*models.CronItem) int {
+	l := len(items)
+	n := time.Now()
+	weekday := int(n.Weekday()) + 1
+	idx := sort.Search(l, func(i int) bool {
+		if wd := items[i].WeekDay; wd != 0 && weekday != wd {
+			return weekday < items[i].WeekDay
+		}
+		token := strings.Split(items[i].Time, ":")
+		ih, _ := strconv.Atoi(token[0])
+		im, _ := strconv.Atoi(token[1])
+		if ih == n.Hour() {
+			return n.Minute() < im
+		}
+		return n.Hour() < ih
+	})
+
+	// pick up which cron item should be checked
+	idx += l - 1
+	for i := 0; i < l; i++ {
+		if !items[idx%l].Ignore {
+			break
+		}
+		idx--
+	}
+	return idx % l
 }
 
 // the every field of models.CronItem must be validated by input api,
