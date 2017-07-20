@@ -11,7 +11,6 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/davecgh/go-spew/spew"
-	"golang.org/x/sync/syncmap"
 )
 
 // task represents a background running task
@@ -28,7 +27,7 @@ var (
 )
 
 func Initial() error {
-	Scheduler := &scheduler{
+	Scheduler = &scheduler{
 		tasks: make(map[int]task),
 	}
 	if err := Scheduler.load(); err != nil {
@@ -39,7 +38,6 @@ func Initial() error {
 
 type scheduler struct {
 	mu      sync.Mutex
-	configs syncmap.Map
 	tasks   map[int]task
 	stopped bool
 }
@@ -99,7 +97,7 @@ func (s *scheduler) Create(cfg *models.ExecTask) error {
 
 	beego.Debug(spew.Sprintf("create task %+v", cfg))
 
-	if cfg.ExecType != models.Crontab {
+	if cfg.ExecType == models.Crontab {
 		if err := s.addTask(cfg); err != nil {
 			return fmt.Errorf("add task %d failed: %v", cfg.Id, err)
 		}
@@ -122,7 +120,7 @@ func (s *scheduler) Delete(cfg *models.ExecTask) error {
 
 	beego.Debug(spew.Sprintf("delete task %+v", old))
 
-	if old.ExecType != models.Crontab {
+	if old.ExecType == models.Crontab {
 		s.delTask(old.Id)
 	}
 	return nil
@@ -145,13 +143,13 @@ func (s *scheduler) Update(cfg *models.ExecTask) error {
 		return fmt.Errorf("update cfg failed: %v", err)
 	}
 
-	if old.ExecType != models.Crontab {
+	if old.ExecType == models.Crontab {
 		s.delTask(old.Id)
 	}
 
 	beego.Debug(spew.Sprintf("update task from (%+v) to (%+v)", old, cfg))
 
-	if cfg.ExecType != models.Crontab {
+	if cfg.ExecType == models.Crontab {
 		if err := s.addTask(cfg); err != nil {
 			return err
 		}
