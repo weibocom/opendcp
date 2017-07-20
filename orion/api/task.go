@@ -79,7 +79,7 @@ func (c *TaskApi) GetExpandList() {
 		c.ReturnFailed("Bad pool id: "+poolId, 400)
 		return
 	}
-	taskList, err := service.Task.GetAllTaskByPool(pool_id, "expand")
+	taskList, err := service.Task.GetAllTaskByPool(pool_id, models.TaskExpend)
 	c.ReturnSuccess(taskList)
 }
 
@@ -95,12 +95,14 @@ func (c *TaskApi) GetUploadList() {
 		return
 		return
 	}
-	taskList, err := service.Task.GetAllTaskByPool(pool_id, "upload")
+	taskList, err := service.Task.GetAllTaskByPool(pool_id, models.TaskDdeploy)
 	c.ReturnSuccess(taskList)
 }
 
 /*
 add exec Task
+CronItem add check for time unique
+DependItem add chekc for depend pool unique
 */
 
 func (c *TaskApi) SaveTask() {
@@ -115,47 +117,71 @@ func (c *TaskApi) SaveTask() {
 
 	exec_task := &models.ExecTask{}
 	exec_task.Id = save_exe_task.Id
-	exec_task.Pool = &models.Pool{Id: save_exe_task.PoolId}
+
+	pool := &models.Pool{Id: save_exe_task.PoolId}
+	err = service.Cluster.GetBase(pool)
+	if err != nil {
+		c.ReturnFailed(err.Error(), 500)
+	}
+	exec_task.Pool = pool
+
 	exec_task.Type = save_exe_task.Type
 	exec_task.ExecType = save_exe_task.ExecType
 
 	cronItems := make([]*models.CronItem, 0)
 	dependItems := make([]*models.DependItem, 0)
-	for i, cron := range save_exe_task.CronItems {
-		cronItems[i].Id = cron.Id
-		cronItems[i].ExecTask = exec_task
-		cronItems[i].Time = cron.Time
-		cronItems[i].ConcurrNum = cron.ConcurrNum
-		cronItems[i].ConcurrRatio = cron.ConcurrRatio
-		if cron.Ignore ==0 {
-			cronItems[i].Ignore = false
-		}else {
-			cronItems[i].Ignore = true
+
+	timeMap := make(map[string]bool)
+	dependPoolMap := make(map[string]bool)
+
+	for _, cron := range save_exe_task.CronItems {
+		cronItem := &models.CronItem{}
+		cronItem.Id = cron.Id
+		cronItem.ExecTask = exec_task
+		if _, ok := timeMap[cron.Time]; ok {
+			c.ReturnFailed("Cron time "+cron.Time+" is duplicate!", 500)
+		} else {
+			timeMap[cron.Time] = true
+		}
+		cronItem.Time = cron.Time
+		cronItem.ConcurrNum = cron.ConcurrNum
+		cronItem.ConcurrRatio = cron.ConcurrRatio
+		if cron.Ignore == 0 {
+			cronItem.Ignore = false
+		} else {
+			cronItem.Ignore = true
 		}
 
-		cronItems[i].InstanceNum = cron.InstanceNum
-		cronItems[i].WeekDay = cron.WeekDay
+		cronItem.InstanceNum = cron.InstanceNum
+		cronItem.WeekDay = cron.WeekDay
+
+		cronItems = append(cronItems, cronItem)
 	}
 
-	for i, depend := range save_exe_task.DependItems {
-		dependItems[i].Id = depend.Id
-		if depend.Ignore ==0 {
-			dependItems[i].Ignore = false
-		}else {
-			dependItems[i].Ignore = true
+	for _, depend := range save_exe_task.DependItems {
+		dependItem := &models.DependItem{}
+		dependItem.Id = depend.Id
+		if depend.Ignore == 0 {
+			dependItem.Ignore = false
+		} else {
+			dependItem.Ignore = true
 		}
 		pool := &models.Pool{Id: depend.PoolId}
 		err = service.Cluster.GetBase(pool)
 		if err != nil {
-			if err != nil {
-				c.ReturnFailed(err.Error(), 500)
-			}
+			c.ReturnFailed(err.Error(), 500)
 		}
-		dependItems[i].Pool = pool
-		dependItems[i].Ratio = depend.Ratio
-		dependItems[i].ElasticCount = depend.ExecTaskId
-		dependItems[i].StepName = depend.StepName
-		dependItems[i].ExecTask = exec_task
+		if _, ok := dependPoolMap[pool.Name]; ok {
+			c.ReturnFailed("Depend pool "+pool.Name+" is duplicate!", 500)
+		} else {
+			dependPoolMap[pool.Name] = true
+		}
+		dependItem.Pool = pool
+		dependItem.Ratio = depend.Ratio
+		dependItem.ElasticCount = depend.ExecTaskId
+		dependItem.StepName = depend.StepName
+		dependItem.ExecTask = exec_task
+		dependItems = append(dependItems, dependItem)
 	}
 	exec_task.CronItems = cronItems
 	exec_task.DependItems = dependItems
@@ -171,7 +197,7 @@ func (c *TaskApi) SaveTask() {
 			c.ReturnFailed(err.Error(), 500)
 		}
 	}
-
+	c.ReturnSuccess(true)
 }
 
 /*func (c *TaskApi) SaveTask() {

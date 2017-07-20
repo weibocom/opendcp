@@ -93,6 +93,7 @@ func (c *ClusterApi) URLMapping() {
 	c.Mapping("PoolAppend", c.PoolAppend)
 	c.Mapping("PoolDelete", c.PoolDelete)
 	c.Mapping("PoolUpdate", c.PoolUpdate)
+	c.Mapping("AllPoolList", c.AllPoolList)
 
 	c.Mapping("NodeList", c.NodeList)
 	c.Mapping("NodeAppend", c.NodeAppend)
@@ -700,4 +701,41 @@ func (c *ClusterApi) SearchPoolByIP() {
 	poolIds := service.Cluster.SearchPoolByIP(ips)
 
 	c.ReturnSuccess(poolIds)
+}
+
+func (c *ClusterApi) AllPoolList() {
+	page := c.Query2Int("page", 1)
+	pageSize := c.Query2Int("page_size", 10)
+
+	c.CheckPage(&page, &pageSize)
+
+	list := make([]models.Pool, 0, pageSize)
+
+	count, err := service.Flow.ListByPageWithSort(page, pageSize, &models.Pool{}, &list, "-id")
+	if err != nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	liststruct := make([]pool_struct, len(list), pageSize)
+
+	for i, fi := range list {
+		liststruct[i].Id = fi.Id
+		liststruct[i].Name = fi.Name
+		liststruct[i].Desc = fi.Desc
+		liststruct[i].VmType = fi.VmType
+		liststruct[i].SdId = fi.SdId
+
+		json.Unmarshal([]byte(fi.Tasks), &liststruct[i].Tasks)
+		liststruct[i].ServiceId = fi.Service.Id
+
+		count, err = service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
+		if err != nil {
+			c.ReturnFailed(err.Error(), 400)
+			return
+		}
+		liststruct[i].Nodecount = count
+
+	}
+	c.ReturnPageContent(page, pageSize, count, liststruct)
 }
