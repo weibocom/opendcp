@@ -23,6 +23,8 @@ cache = {
   arg_name: [],
   tasklist: [],
   result: {},
+  refreshInterval:null,
+
 }
 
 var getDate = function(t,type){
@@ -236,9 +238,21 @@ var updateEle=function(o,idx){
       switch(idx){
         case 0: $('#state').html('<span class="badge bg-default">未开始</span>'); break;
         case 1: $('#state').html('<span class="badge bg-blue">执行中</span>'); break;
-        case 2: $('#state').html('<span class="badge bg-green">已完成</span>'); break;
-        case 3: $('#state').html('<span class="badge bg-red">失败</span>'); break;
-        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>'); break;
+        case 2: $('#state').html('<span class="badge bg-green">已完成</span>');
+                if(cache.refreshInterval != null) {
+                    clearInterval(cache.refreshInterval);
+                }
+                break;
+        case 3: $('#state').html('<span class="badge bg-red">失败</span>');
+                if(cache.refreshInterval != null) {
+                    clearInterval(cache.refreshInterval);
+                }
+                break;
+        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>');
+            if(cache.refreshInterval != null) {
+                clearInterval(cache.refreshInterval);
+            }
+            break;
         default: $('#state').html('<span class="badge bg-red" title="'+ idx +'">未知</span>'); break;
       }
       break;
@@ -504,6 +518,9 @@ var change=function(){
       actionDesc='删除';
       break;
     case 'start':
+      if(cache.refreshInterval == null){
+          cache.refreshInterval = setInterval('getTask(\'info\');',10000);
+      }
       actionDesc+='启动任务';
       break;
     case 'pause':
@@ -526,7 +543,10 @@ var change=function(){
       if(data.code==0){
         pageNotify('success','【'+actionDesc+'】操作成功！');
       }else{
-        pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+          if(cache.refreshInterval != null){
+              clearInterval(cache.refreshInterval);
+          }
+          pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
       }
       //重载列表
       getTask('info');
@@ -539,6 +559,9 @@ var change=function(){
       });
     },
     error: function (){
+      if(cache.refreshInterval != null){
+          clearInterval(cache.refreshInterval);
+      }
       pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
     }
   });
