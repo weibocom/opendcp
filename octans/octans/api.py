@@ -389,7 +389,7 @@ def parallel_run_task():
             req_json['nodes'] = [nodes]
             req_json['come_from_master'] = 1
             req_json['mtask_id'] = task_id
-            r = requests.post("http://%s:8000/api/run" %(nodes),data=json.dumps(req_json), headers=headers, timeout=3)
+            r = requests.post("http://%s:8000/api/run" %(nodes),data=json.dumps(req_json), headers=headers, timeout=30)
             return_list.append(r.json()['content']['id'])
         # check task name duplicate
         return return_success(content={"id": task_id}), 200
