@@ -80,14 +80,16 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	id := conf.Config.KeyId
 	secret := conf.Config.KeySecret
 	var token string = ""
+	fmt.Println(id, " ", secret, " ")
 
 	credentials := credentials.NewStaticCredentials(id, secret, token)
+	fmt.Println(credentials)
+
 	zone := aws.String(input.Zone.ZoneName)
 	config := aws.Config{Credentials: credentials, Region: zone}
 
 	driver.client.Config = config
 
-	fmt.Println(config.Credentials)
 	fmt.Println(input)
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
