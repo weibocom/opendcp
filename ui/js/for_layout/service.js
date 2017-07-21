@@ -23,8 +23,6 @@ cache = {
 var error_tr_list=[];
 var cronRowNum = 1;
 var dependRowNum = 1;
-var expand_time=[];
-var upload_time=[];
 var reset = function(){
     $('#fIdx').val('');
 }
@@ -1383,7 +1381,7 @@ function addTaskCron(){
         row += '<td><input type="name" class = "form-control" oninput="checkTime()" style="font-size:13px" name="0"  placeholder="00:00:00"></td>';
         row += '<td><input type="name" class = "form-control" oninput="isNum()" style="font-size:13px" name="0"   placeholder="1"></td>';
         row += '<td><input type="name" class = "form-control" oninput="isRatio()" style="font-size:13px" name="0"  placeholder="1"></td>';
-        row += '<td style="vertical-align: middle;"><input type="checkbox" ></td>';
+        row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox" ></td>';
         row += '<td style="vertical-align: middle;">' +
             '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
             '<i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
@@ -1393,15 +1391,14 @@ function addTaskCron(){
     }
 }
 
-
+function isNgore(){
+    checkSave();
+}
 function  checkSave(){
     var taskType = $('#task_type').val();
     var flag=true;
-    var cron_row=0;
-    var depen_row=0;
     if(taskType == "expandList"){
         var trList = $("#cron_body").children("tr");
-        cron_row=trList.length;
         for (var i=0;i<trList.length;i++) {
             var tdArr = trList.eq(i).find("td");
             var Time = tdArr.eq(2).find("input").attr("name");//执行时间
@@ -1420,7 +1417,6 @@ function  checkSave(){
     }
     if(taskType == "uploadList"){
         var trList = $("#cron_body").children("tr");
-        depen_row=trtrList.length;
         for (var i=0;i<trList.length;i++) {
             var tdArr = trList.eq(i).find("td");
             var Time = tdArr.eq(2).find("input").attr("name");//执行时间
@@ -1446,7 +1442,6 @@ function  checkSave(){
 
     //获取依赖任务列表
     var trList = $("#depend_body").children("tr");
-    depen_row=trList.length;
     for (var i=0;i<trList.length;i++) {
         var tdArr = trList.eq(i).find("td");
         var Ratio = tdArr.eq(3).find("input").attr("name");//比例
@@ -1468,9 +1463,6 @@ function  checkSave(){
     }else{
         $("#btnSaveTask").attr('disabled',true);
     }
-    if(cron_row==0 && depen_row==0){
-        $("#btnSaveTask").attr('disabled',true);
-    }
 }
 function delRow(rowId){
     var taskType = $('#task_type').val();
@@ -1478,16 +1470,6 @@ function delRow(rowId){
     var cur_name=$("#"+rowId).find("td").eq(2).find("input").attr("name");
     $("#"+rowId).remove();
     checkSave();
-    if(taskType=="uploadList"){
-        if(cur_name=="0"){
-            upload_time.splice(upload_time.indexOf(time),1);
-        }
-    }
-    if(taskType=="expandList"){
-        if(cur_name=="0"){
-            expand_time.splice($.inArray(time,expand_time),1);
-        }
-    }
     if(rowId.indexOf("cron")>=0){
         cronRowNum--;
     }
@@ -1547,7 +1529,21 @@ function isNum(){
     }
     checkSave();
 }
-
+function compTime(repeated_time){
+    var flag=true;
+    var taskType = $('#task_type').val();
+    var trList = $("#cron_body").children("tr");
+    for (var i=0;i<trList.length;i++) {
+        var tdArr = trList.eq(i).find("td");
+        var r_time=tdArr.eq(2).find("input").attr("name");
+        var time_val=tdArr.eq(2).find("input").val();
+        if(repeated_time == r_time||time_val==''){
+            flag=false;
+            break;
+        }
+    }
+    return flag;
+}
 function checkTime(){
     var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/;
     var regExp = new RegExp(reg);
@@ -1557,23 +1553,21 @@ function checkTime(){
     }else{
         time = event.target.value.replace(/\s/g, "");
         if($('#task_type').val()=="uploadList"){
-            if(upload_time.indexOf(time)!=-1){
-                event.target.style.border="1px solid #CE5454";
-                event.target.name="1";
-            }else{
-                upload_time.push(time);
+            if(compTime(time)){
                 event.target.style.border='1px solid #cccccc';
                 event.target.name="0";
+            }else{
+                event.target.style.border="1px solid #CE5454";
+                event.target.name="1";
             }
         }
         if($('#task_type').val()=="expandList"){
-            if(expand_time.indexOf(event.target.value)!=-1){
-                event.target.style.border="1px solid #CE5454";
-                event.target.name="1";
-            }else{
-                expand_time.push(event.target.value);
+            if(compTime(time)){
                 event.target.style.border='1px solid #cccccc';
                 event.target.name="0";
+            }else{
+                event.target.style.border="1px solid #CE5454";
+                event.target.name="1";
             }
         }
     }
@@ -1594,10 +1588,8 @@ function addTaskDepen(){
                 firstIndexPool = i;
             }
         }
-
     }
     row+='</select></td>';
-
     var fIdx = 0;
     if($('#task_type').val()=="expandList") {
         if(firstIndexPool>=0){
@@ -1769,9 +1761,9 @@ var processCronList = function(data){
             row += '<td ><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="checkTime()" value="'+rowData['time']+'"></td>';
             row += '<td><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="isNum()" value="'+rowData['instance_num']+'"></td>';
             if(rowData['ignore']){
-                row += '<td style="vertical-align: middle;"><input type="checkbox" checked ></td>';
+                row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox" checked ></td>';
             }else{
-                row += '<td style="vertical-align: middle;"><input type="checkbox" ></td>';
+                row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox" ></td>';
             }
             row += '<td style="vertical-align: middle;">' +
                 '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
@@ -1801,9 +1793,9 @@ var processCronList = function(data){
             row += '<td><input type="name" class = "form-control" style="font-size:13px" oninput="isNum()" name="0" value="'+rowData['concurr_num']+'"></td>';
             row += '<td><input type="name" class = "form-control" style="font-size:13px" oninput="isNum()" name="0" value="'+rowData['concurr_ratio']+'"></td>';
             if(rowData['ignore']){
-                row += '<td style="vertical-align: middle;"><input type="checkbox" checked></td>';
+                row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox" checked></td>';
             }else{
-                row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
+                row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox"></td>';
             }
             row += '<td style="vertical-align: middle;">' +
                 '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "cron_row_" + cronRowNum + '\')">' +
