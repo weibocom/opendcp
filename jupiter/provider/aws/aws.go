@@ -34,6 +34,7 @@ import (
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/conf"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"fmt"
 )
 
 func init() {
@@ -85,6 +86,9 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	config := aws.Config{Credentials: credentials, Region: zone}
 
 	driver.client.Config = config
+
+	fmt.Println(config.Credentials)
+	fmt.Println(input)
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
