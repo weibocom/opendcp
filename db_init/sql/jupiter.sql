@@ -151,14 +151,17 @@ INSERT INTO `network` VALUES
 UNLOCK TABLES;
 
 LOCK TABLES `zone` WRITE;
-INSERT INTO `zone` VALUES (1,'cn-beijing','cn-beijing-c');
+INSERT INTO `zone` VALUES (1,'cn-beijing','cn-beijing-c'),
+                          (2, 'cn-beijing','cn-beijing-a'),
+                          (3, 'cn-north','cn-north-1');
 UNLOCK TABLES;
 
 LOCK TABLES `cluster` WRITE;
 INSERT INTO `cluster` VALUES 
     (1,'16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
     (2,'4Core8G经典网',  'aliyun',0,'',NOW(),NULL,4, 8, 'ecs.n2.large', 'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
-    (3,'1Core1G经典网',  'aliyun',0,'',NOW(),NULL,1, 1, 'ecs.n1.tiny',  'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency')
+    (3,'1Core1G经典网',  'aliyun',0,'',NOW(),NULL,1, 1, 'ecs.n1.tiny',  'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
+    (4,'1Core-2Gib',    'aws',   0,'',NOW(),NULL,1, 2, 't2.nano',      'ami-7611c01b',                           '','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency')
     ;
 UNLOCK TABLES;
 
@@ -166,7 +169,8 @@ LOCK TABLES `bill` WRITE;
 INSERT INTO `bill` VALUES 
     (1,1,0,10),
     (2,2,0,0),
-    (3,3,0,10);
+    (3,3,0,10),
+    (4,4,0,10);
 UNLOCK TABLES;
 
 
