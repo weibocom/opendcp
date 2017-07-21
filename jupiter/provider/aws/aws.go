@@ -32,6 +32,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"weibo.com/opendcp/jupiter/conf"
 )
 
 func init() {
@@ -75,7 +78,11 @@ func (driver awsProvider) ListInternetChargeType() []string {
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	zone := aws.String(input.Zone.ZoneName)
-	driver.client.Config = aws.Config{Region: zone}
+	cre := credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
+	driver.client.Config.Region = zone
+	driver.client.Config.Credentials = cre
+
+	fmt.Println(cre)
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
