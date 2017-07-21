@@ -8,7 +8,7 @@ RUN mkdir keys
 
 RUN go build
 
-RUN scripts/delete_src.sh
+# RUN scripts/delete_src.sh
 
 EXPOSE 8080
 

@@ -32,10 +32,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"weibo.com/opendcp/jupiter/conf"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 )
 
 func init() {
-	//provider.RegisterProviderDriver("aws", new)
+	provider.RegisterProviderDriver("aws", new)
 }
 
 type awsProvider struct {
@@ -74,6 +76,16 @@ func (driver awsProvider) ListInternetChargeType() []string {
 }
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
+	id := conf.Config.KeyId
+	secret := conf.Config.KeySecret
+	var token string = ""
+
+	credentials := credentials.NewStaticCredentials(id, secret, token)
+	zone := aws.String(input.Zone.ZoneName)
+	config := aws.Config{Credentials: credentials, Region: zone}
+
+	driver.client.Config = config
+
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
 		ImageId:      aws.String(input.ImageId),
@@ -549,7 +561,10 @@ func new() (provider.ProviderDriver, error) {
 }
 
 func newProvider() (provider.ProviderDriver, error) {
-	client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
+	//client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
+	sess := session.Must(session.NewSession())
+	client := ec2.New(sess)
+
 	ret := awsProvider{
 		client: client,
 	}
