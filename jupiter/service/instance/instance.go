@@ -464,7 +464,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
 	}
 
-	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
 	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
 
 	ret, err := cli.Run(cmd)
