@@ -1530,30 +1530,34 @@ function isNum(){
     checkSave();
 }
 function compTime(repeated_time){
-    var flag=true;
     var taskType = $('#task_type').val();
     var trList = $("#cron_body").children("tr");
+    var total_num=0;
     for (var i=0;i<trList.length;i++) {
+        var row_id=trList.eq(i).attr("id");
         var tdArr = trList.eq(i).find("td");
-        var r_time=tdArr.eq(2).find("input").attr("name");
         var time_val=tdArr.eq(2).find("input").val();
-        if(repeated_time == r_time||time_val==''){
-            flag=false;
-            break;
+        if(repeated_time == time_val){
+            total_num++;
         }
     }
-    return flag;
+    if(total_num>1){
+        return false;
+    }else{
+        return true;
+    }
 }
 function checkTime(){
     var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/;
     var regExp = new RegExp(reg);
+    var cur_id = event.target.parentNode.parentNode.id;
     if(!regExp.test(event.target.value)){
         event.target.style.border="1px solid #CE5454";
         event.target.name="1";
     }else{
-        time = event.target.value.replace(/\s/g, "");
+        var r_time = event.target.value.replace(/\s/g, "");
         if($('#task_type').val()=="uploadList"){
-            if(compTime(time)){
+            if(compTime(r_time,cur_id)){
                 event.target.style.border='1px solid #cccccc';
                 event.target.name="0";
             }else{
@@ -1562,7 +1566,7 @@ function checkTime(){
             }
         }
         if($('#task_type').val()=="expandList"){
-            if(compTime(time)){
+            if(compTime(r_time)){
                 event.target.style.border='1px solid #cccccc';
                 event.target.name="0";
             }else{
@@ -1657,7 +1661,7 @@ function addOpt(rid){
 //获取依赖任务和定时任务数据
 var listCronOrDepen= function(idx) {
     error_tr_list=[];
-    $("#btnSaveTask").attr('disabled',true);
+    $("#btnSaveTask").attr('disabled',false);
     cache.pool_id = idx;
     $('.popovers').each(function(){$(this).popover('hide');});
     if($('#task_type').val()=="expandList"){
@@ -1757,7 +1761,6 @@ var processCronList = function(data){
                 }
             }
             row +='</select></td>';
-            expand_time.push(rowData['time']);
             row += '<td ><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="checkTime()" value="'+rowData['time']+'"></td>';
             row += '<td><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="isNum()" value="'+rowData['instance_num']+'"></td>';
             if(rowData['ignore']){
@@ -1787,7 +1790,6 @@ var processCronList = function(data){
                     row += '<option value="'+f+'">'+arr_week[f]+'</option>';
                 }
             }
-            upload_time.push(rowData['time']);
             row +='</select></td>';
             row += '<td><input type="name" class = "form-control" style="font-size:13px" oninput="checkTime()" name="0" value="'+rowData['time']+'"></td>';
             row += '<td><input type="name" class = "form-control" style="font-size:13px" oninput="isNum()" name="0" value="'+rowData['concurr_num']+'"></td>';
