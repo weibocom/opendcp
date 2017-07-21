@@ -347,7 +347,7 @@ func getSSHClient(ip string, path string, password string) (*ssh.Client, error) 
 			Keys: []string{path},
 		}
 	}
-	port := 26018
+	port := 22
 	sshCli, err := ssh.NewClient("root", ip, port, &auth)
 	if err != nil {
 		return nil, err
