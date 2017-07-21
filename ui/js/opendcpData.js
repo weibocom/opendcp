@@ -216,18 +216,101 @@ var cache = {
     index:[],
     page: 1,
     tasklist:[],
+    taskCount:0,
+    machineCount:0,
+    clusterCount:0,
+    poolCount:0,
+
 }
 var machineLineChart = null;
 var intervalRefreshLineChart = null;
-var intervalRefreshTaskList = null;
 var intervalminute = 1;//表示1分钟刷新一次整体数据
+
 $(document).ready(function() {
     getTask(1);
+    window.setTimeout('getInstanceCount()',200);
+    window.setTimeout('getClusterCount()',400);
+    window.setTimeout('getPoolCount()',600);
     changeTime(0);
     setInterval('getTask(1)',intervalminute*60*1000);
-    // getTheMachine();
+    setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
+    setInterval('getClusterCount()',intervalminute*60*1000 + 400);
+    setInterval('getPoolCount()',intervalminute*60*1000 + 600);
 });
 
+var refreshTaskCountView = function(){
+    $("#taskCount").html(cache.taskCount);
+}
+
+var refreshMachineCountView = function(){
+    $("#machineCount").html(cache.machineCount);
+}
+var refreshClusterCountView = function(){
+    $("#clusterCount").html(cache.clusterCount);
+}
+var refreshPoolCountView = function () {
+    $("#poolCount").html(cache.poolCount);
+}
+var getInstanceCount = function () {
+    var url='/api/for_cloud/ecs.php?action=list';
+    var postData={'pagesize':1000};
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: postData,
+        dataType: "json",
+        success: function (data) {
+            NProgress.done();
+            if(data.code==0){
+                if(typeof data.content != 'undefined') {
+                    cache.machineCount = data.content.length;
+                    refreshMachineCountView();
+                }
+            }
+        },
+        error: function (){
+        }
+    });
+}
+
+var getClusterCount = function () {
+    var url='/api/for_layout/cluster.php?page=1';
+    var postData={"action":"list","fIdx":""};
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: postData,
+        dataType: "json",
+        success: function (listdata) {
+            if(listdata.code==0){
+                cache.clusterCount = listdata.count;
+                refreshClusterCountView();
+            }
+        },
+        error: function (){
+        }
+    });
+}
+
+var getPoolCount = function () {
+    var postData={"action":"poolList","pagesize":1000};
+    $.ajax({
+        type: "POST",
+        url: '/api/for_layout/pool.php',
+        data: postData,
+        dataType: "json",
+        success: function (data) {
+            if(data.code==0){
+                if(data.content.length>0){
+                    cache.poolCount = data.count;
+                    refreshPoolCountView();
+                }
+            }
+        },
+        error: function (){
+        }
+    });
+}
 var changeTime = function(timeUnit){
     var timeHour = 0;
     if(timeUnit == 0){
@@ -481,6 +564,8 @@ var getTask=function(page){
         success: function (listdata) {
             if(listdata.code==0) {
                 //更新最新状态
+                cache.taskCount = listdata.count;
+                refreshTaskCountView();
                 var pageinfo = $("#table-pageinfo");//分页信息
                 var paginate = $("#table-paginate");//分页代码
                 var head = $("#table-head");//数据表头
