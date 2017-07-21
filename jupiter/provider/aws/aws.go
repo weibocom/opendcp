@@ -82,7 +82,10 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	driver.client.Config.Region = zone
 	driver.client.Config.Credentials = cre
 
-	fmt.Println(cre)
+	fmt.Println(zone)
+	fmt.Println(driver.client.Config.Region)
+	fmt.Println(driver.client.Config.Credentials)
+
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
