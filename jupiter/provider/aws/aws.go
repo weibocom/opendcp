@@ -83,7 +83,7 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	fmt.Println(id, " ", secret, " ")
 
 	credentials := credentials.NewStaticCredentials(id, secret, token)
-	fmt.Println(credentials)
+	fmt.Println(credentials.Creds.AccessKeyID)
 
 	zone := aws.String(input.Zone.ZoneName)
 	config := aws.Config{Credentials: credentials, Region: zone}
