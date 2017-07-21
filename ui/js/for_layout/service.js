@@ -1474,14 +1474,19 @@ function  checkSave(){
 }
 function delRow(rowId){
     var taskType = $('#task_type').val();
-    var time = $("#"+rowId).eq(2).find("input").val();
+    var time = $("#"+rowId).find("td").eq(2).find("input").val();
+    var cur_name=$("#"+rowId).find("td").eq(2).find("input").attr("name");
     $("#"+rowId).remove();
     checkSave();
     if(taskType=="uploadList"){
-        upload_time.splice(upload_time.indexOf(time),1);
+        if(cur_name=="0"){
+            upload_time.splice(upload_time.indexOf(time),1);
+        }
     }
-    if(taskType=="expandlIST"){
-        expand_time.splice(expand_time.indexOf(time),1);
+    if(taskType=="expandList"){
+        if(cur_name=="0"){
+            expand_time.splice($.inArray(time,expand_time),1);
+        }
     }
     if(rowId.indexOf("cron")>=0){
         cronRowNum--;
