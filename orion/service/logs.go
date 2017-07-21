@@ -17,7 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
@@ -38,42 +37,39 @@ var (
 	isPrintBeego = true
 )
 
-
-func (store *LogsService) Debug(Fid int,BatchId int, correlationId string, v ...interface{}) {
+func (store *LogsService) Debug(Fid int, BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
 		beego.Debug(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,v ...)
+	go store.saveToDb(Fid, BatchId, correlationId, v...)
 }
 
-
-func (store *LogsService) Info(Fid int,BatchId int, correlationId string, v ...interface{}) {
+func (store *LogsService) Info(Fid int, BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
 		beego.Info(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,v ...)
+	go store.saveToDb(Fid, BatchId, correlationId, v...)
 }
 
-func (store *LogsService) Warn(Fid int,BatchId int, correlationId string, v ...interface{}) {
+func (store *LogsService) Warn(Fid int, BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
 		beego.Warn(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,v ...)
+	go store.saveToDb(Fid, BatchId, correlationId, v...)
 }
 
-func (store *LogsService) Error(Fid int,BatchId int, correlationId string, v ...interface{}) {
+func (store *LogsService) Error(Fid int, BatchId int, correlationId string, v ...interface{}) {
 	if isPrintBeego {
 		beego.Error(v...)
 	}
 
-	go store.saveToDb(Fid,BatchId,correlationId,v ...)
+	go store.saveToDb(Fid, BatchId, correlationId, v...)
 }
 
-
-func (store *LogsService) saveToDb(Fid int,BatchId int, correlationId string,v ...interface{}){
+func (store *LogsService) saveToDb(Fid int, BatchId int, correlationId string, v ...interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			beego.Info("saveToDb is error !", r)
@@ -85,7 +81,7 @@ func (store *LogsService) saveToDb(Fid int,BatchId int, correlationId string,v .
 		msg = fmt.Sprintf(msg, v...)
 	}
 
-	logs := models.NewLogsInit(Fid,BatchId,correlationId,msg)
+	logs := models.NewLogsInit(Fid, BatchId, correlationId, msg)
 	orm := orm.NewOrm()
 	id, err := orm.Insert(logs)
 
