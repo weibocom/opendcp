@@ -101,7 +101,7 @@ $pageAction='setpool';
 
 <div class="modal-footer">
     <button class="btn btn-default" data-dismiss="modal">取消</button>
-    <button class="btn btn-success" data-dismiss="modal" id="btnSave" onclick="saveCronAndDependTask()" style="margin-bottom: 5px;">保存</button>
+    <button class="btn btn-success" data-dismiss="modal" id="btnSaveTask" onclick="saveCronAndDependTask()" style="margin-bottom: 5px;" disabled>保存</button>
 </div>
 <script>
     listCronOrDepen(<?php echo $myIdx;?>);
