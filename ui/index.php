@@ -126,28 +126,28 @@ require_once('include/navbar.php');
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-database"></i></div>
-                            <div class="count">168</div>
+                            <div id = "clusterCount" class="count">168</div>
                             <h3>Cluster Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-laptop"></i></div>
-                            <div class="count">2860</div>
+                            <div id = "machineCount" class="count">2860</div>
                             <h3>Machine Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-cubes"></i></div>
-                            <div class="count">5188</div>
-                            <h3>Container Count</h3>
+                            <div id = "poolCount" class="count">5188</div>
+                            <h3>Pool Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-tasks"></i></div>
-                            <div class="count">10068</div>
+                            <div id = "taskCount" class="count">10068</div>
                             <h3>Schedual Task</h3>
                         </div>
                     </div>
