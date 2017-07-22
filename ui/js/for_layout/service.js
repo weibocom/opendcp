@@ -19,8 +19,6 @@ cache = {
     exec_task_id: 0,
 }
 
-//使用一个全局变量存储有错误行的tr
-var error_tr_list=[];
 var cronRowNum = 1;
 var dependRowNum = 1;
 var reset = function(){
@@ -1407,11 +1405,17 @@ function  checkSave(){
             var num_val=tdArr.eq(3).find("input").val();
             if(Time == "1"||time_val==''){
                 flag=false;
-                break;
+                if(time_val==''){
+                    tdArr.eq(2).find("input").css('border','1px solid #CE5454');
+                    tdArr.eq(2).find("input").attr("name","1");
+                }
             }
             if(Num == "1" || num_val==''){
                 flag=false;
-                break;
+                if(num_val==''){
+                    tdArr.eq(3).find("input").css('border','1px solid #CE5454');
+                    tdArr.eq(3).find("input").attr("name","1");
+                }
             }
         }
     }
@@ -1421,21 +1425,30 @@ function  checkSave(){
             var tdArr = trList.eq(i).find("td");
             var Time = tdArr.eq(2).find("input").attr("name");//执行时间
             var time_val=tdArr.eq(2).find("input").val();
-            var Ratio = tdArr.eq(3).find("input").attr("name");//最大并发数
+            var Ratio = tdArr.eq(3).find("input").attr("name");
             var ratio_val = tdArr.eq(3).find("input").val();//最大并发数
-            var Num = tdArr.eq(4).find("input").attr("name");//最大并发比例数
-            var num_var= tdArr.eq(4).find("input").val();
+            var Num = tdArr.eq(4).find("input").attr("name");
+            var num_val= tdArr.eq(4).find("input").val();//最大并发比例数
             if(Time == "1" ||time_val==''){
                 flag=false;
-                break;
+                if(time_val==''){
+                    tdArr.eq(2).find("input").css('border','1px solid #CE5454');
+                    tdArr.eq(2).find("input").attr("name","1");
+                }
             }
             if(Ratio == "1" ||ratio_val==''){
                 flag=false;
-                break;
+                if(ratio_val==''){
+                    tdArr.eq(3).find("input").css('border','1px solid #CE5454');
+                    tdArr.eq(3).find("input").attr("name","1");
+                }
             }
             if(Num == "1"||num_val==''){
                 flag=false;
-                break;
+                if(num_val==''){
+                    tdArr.eq(4).find("input").css('border','1px solid #CE5454');
+                    tdArr.eq(4).find("input").attr("name","1");
+                }
             }
         }
     }
@@ -1444,18 +1457,24 @@ function  checkSave(){
     var trList = $("#depend_body").children("tr");
     for (var i=0;i<trList.length;i++) {
         var tdArr = trList.eq(i).find("td");
-        var Ratio = tdArr.eq(3).find("input").attr("name");//比例
-        var ratio_val=tdArr.eq(3).find("input").val();
-        var Count = tdArr.eq(4).find("input").attr("name");//机器冗余数量
-        var count_val =tdArr.eq(4).find("input").val();
+        var Ratio = tdArr.eq(3).find("input").attr("name");
+        var ratio_val=tdArr.eq(3).find("input").val();//比例
+        var Count = tdArr.eq(4).find("input").attr("name");
+        var count_val =tdArr.eq(4).find("input").val();//机器冗余数量
 
         if(Ratio == "1" || ratio_val==''){
             flag=false;
-            break;
+            if(ratio_val==''){
+                tdArr.eq(3).find("input").css('border','1px solid #CE5454');
+                tdArr.eq(3).find("input").attr("name","1");
+            }
         }
         if(Count == "1"||count_val==''){
             flag=false;
-            break;
+            if(count_val==''){
+                tdArr.eq(4).find("input").css('border','1px solid #CE5454');
+                tdArr.eq(4).find("input").attr("name","1");
+            }
         }
     }
     if(flag){
@@ -1464,11 +1483,10 @@ function  checkSave(){
         $("#btnSaveTask").attr('disabled',true);
     }
 }
+
 function delRow(rowId){
-    var taskType = $('#task_type').val();
-    var time = $("#"+rowId).find("td").eq(2).find("input").val();
-    var cur_name=$("#"+rowId).find("td").eq(2).find("input").attr("name");
     $("#"+rowId).remove();
+    compTime();
     checkSave();
     if(rowId.indexOf("cron")>=0){
         cronRowNum--;
@@ -1480,12 +1498,16 @@ function delRow(rowId){
 
 function isRatio(){
     var value=event.target.value;
-    var tr =  event.target.parentNode.parentNode.id;
     if($.isNumeric(value)){
-        num = parseInt(value);
-        if(num >0 && num <= 100){
-            event.target.style.border='1px solid #cccccc';
-            event.target.name="0";
+        if(event.target.value.indexOf(".")==-1){
+            num = parseInt(value);
+            if(num >0 && num <= 100){
+                event.target.style.border='1px solid #cccccc';
+                event.target.name="0";
+            }else{
+                event.target.style.border="1px solid #CE5454";
+                event.target.name="1";
+            }
         }else{
             event.target.style.border="1px solid #CE5454";
             event.target.name="1";
@@ -1513,7 +1535,6 @@ function isFloat(){
     checkSave();
 }
 function isNum(){
-    var tr =  event.target.parentNode.parentNode.id;
     if($.isNumeric(event.target.value)){
         if(event.target.value.indexOf(".")==-1){
             num = parseInt(event.target.value);
@@ -1529,51 +1550,42 @@ function isNum(){
     }
     checkSave();
 }
-function compTime(repeated_time){
-    var taskType = $('#task_type').val();
+function compTime(){
     var trList = $("#cron_body").children("tr");
     var total_num=0;
+    var allTime=[];
     for (var i=0;i<trList.length;i++) {
+        var tdArr = trList.eq(i).find("td");
+        var row_time = tdArr.eq(2).find("input").val();//执行时间
+        allTime.push(row_time);
+    }
+    for (var i=0;i<trList.length;i++){
         var row_id=trList.eq(i).attr("id");
         var tdArr = trList.eq(i).find("td");
         var time_val=tdArr.eq(2).find("input").val();
-        if(repeated_time == time_val){
-            total_num++;
+        for(var j=0;j<allTime.length;j++){
+            if(time_val == allTime[j]){
+                total_num++;
+            }
         }
-    }
-    if(total_num>1){
-        return false;
-    }else{
-        return true;
+        if(total_num>1){
+            tdArr.eq(2).find("input").css('border','1px solid #CE5454');
+            tdArr.eq(2).find("input").attr("name","1");
+        }else{
+            tdArr.eq(2).find("input").css('border','1px solid #cccccc');
+            tdArr.eq(2).find("input").attr("name","0");
+        }
+        total_num=0;
     }
 }
 function checkTime(){
     var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/;
     var regExp = new RegExp(reg);
-    var cur_id = event.target.parentNode.parentNode.id;
     if(!regExp.test(event.target.value)){
         event.target.style.border="1px solid #CE5454";
         event.target.name="1";
     }else{
-        var r_time = event.target.value.replace(/\s/g, "");
-        if($('#task_type').val()=="uploadList"){
-            if(compTime(r_time,cur_id)){
-                event.target.style.border='1px solid #cccccc';
-                event.target.name="0";
-            }else{
-                event.target.style.border="1px solid #CE5454";
-                event.target.name="1";
-            }
-        }
-        if($('#task_type').val()=="expandList"){
-            if(compTime(r_time)){
-                event.target.style.border='1px solid #cccccc';
-                event.target.name="0";
-            }else{
-                event.target.style.border="1px solid #CE5454";
-                event.target.name="1";
-            }
-        }
+        compTime();
     }
     checkSave();
 }
@@ -1660,8 +1672,7 @@ function addOpt(rid){
 
 //获取依赖任务和定时任务数据
 var listCronOrDepen= function(idx) {
-    error_tr_list=[];
-    $("#btnSaveTask").attr('disabled',false);
+    $("#btnSaveTask").attr('disabled',true);
     cache.pool_id = idx;
     $('.popovers').each(function(){$(this).popover('hide');});
     if($('#task_type').val()=="expandList"){
@@ -1745,6 +1756,7 @@ var listCronOrDepen= function(idx) {
 var processCronList = function(data){
     var cron_body = $("#cron_body");//定时任务的内容
     cron_body.empty();
+    $("#btnSaveTask").attr('disabled',true);
     cronRowNum = 1;
     var arr_week=["每天","星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
     if($('#task_type').val()=="expandList") {
@@ -1777,7 +1789,6 @@ var processCronList = function(data){
         }
     }
     if($('#task_type').val()=="uploadList"){
-        // alert($('#task_type').val());
         for (var i = 0; i < data.length; i++) {
             var rowData = data[i];
             var row = '<tr id ="cron_row_' + cronRowNum + '">';
@@ -1908,7 +1919,6 @@ var saveCronAndDependTask = function(){
             var concurr_ratio = tdArr.eq(3).find("input").val();//最大并发数
             var concurr_num = tdArr.eq(4).find("input").val();//最大并发比例数
             var ignore = tdArr.eq(4).find("input");//  是否忽略
-            // alert("ignore" + ignore.checked);
             var isIgnore = 0;
             if(ignore.is(':checked')){
                 isIgnore = 1
@@ -1983,7 +1993,6 @@ var saveCronAndDependTask = function(){
             }else{
                 pageNotify('warning','【任务设置保存】操作失败！','错误信息，服务器出错！');
             }
-
         },
         error: function (){
             pageNotify('error','【任务设置保存】操作失败！','错误信息：接口不可用');
