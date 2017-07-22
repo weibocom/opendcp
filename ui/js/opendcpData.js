@@ -214,8 +214,16 @@ var theme = {
 };
 var theme2 = {
     color: [
-        '#26B99A', '#34495E', '#BDC3C7', '#3498DB',
-        '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+        '#d87c7c',
+        '#919e8b',
+        '#d7ab82',
+        '#61a0a8',
+        '#6e7074',
+        '#efa18d',
+        '#787464',
+        '#cc7e63',
+        '#724e58',
+        '#4b565b'
     ],
 
     title: {
@@ -443,6 +451,7 @@ $(document).ready(function() {
     window.setTimeout('getInstanceCount()',200);
     window.setTimeout('getClusterCount()',400);
     window.setTimeout('getPoolCount()',600);
+    // testMachineChart();
     changeTime(0);
     // setInterval('getTask(1)',intervalminute*60*1000);
     // setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
@@ -587,42 +596,21 @@ var loadAllData = function (time){
                         }
                         var flag = false;
                         for(var p = 0; p < line_data.length; p++){
-                            if(line_data[p].name == name || (name == "all" && line_data[p].name == "机器总量")){
+                            if(name != "time" && line_data[p].name == name){
                                 line_data[p].data.push(parseInt(v))
                                 flag = true;
                             }
-
                         }
-                        if(!flag){
-                            if(name=="all"){
-                                var theLine = {
-                                    'name':'机器总量',
-                                    'type':'line',
-                                    'smooth': true,
-                                    'label': {'normal': {'show': true, 'position': 'top'}},
-                                    'areaStyle': {'normal': {}},
-                                    'data':[parseInt(v)]
-                                }
-                                line_data.push(theLine);
-                            }else if(name!="time"){
-                                var theLine = {
-                                    'name':name,
-                                    'type':'line',
-                                    'smooth': true,
-                                    'areaStyle': {'normal': {}},
-                                    'data':[parseInt(v)]
-                                }
-                                line_data.push(theLine);
+                        if(name != "time" && !flag){
+                            var theLine = {
+                                'name':name,
+                                'data':[parseInt(v)]
                             }
+                            line_data.push(theLine);
                         }
                     });
                 }
-                alert(line_data[0].data.length);
-                alert(line_data[1].data.length);
-                alert(line_data[2].data.length);
-                alert(line_data[3].data.length);
-                alert(line_time.length);
-                iniMachineLineChart(line_data,line_time);
+                testMachineChart(line_data,line_time);
                 // initMachineLine(line_data, time);
                 initMachinePieChart(pie_data);
             }else{
@@ -666,6 +654,74 @@ var iniMachineLineChart = function (macheineData, time) {
             }
         ],
         series : macheineData
+    });
+}
+
+var testMachineChart = function(macheineData, xaixs_time){
+    var echartPie = echarts.init(document.getElementById('container'), theme2);
+    echartPie.setOption({
+        title: {
+            text: null
+        },
+        tooltip : {
+            trigger: 'axis',
+        },
+        legend: {
+            enabled:false,
+        },
+        toolbox: {
+            show: false,
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : xaixs_time
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value'
+            }
+        ],
+        series :  (function () {
+            // generate an array of random data
+            var data = [];
+            for(var i = 0; i < macheineData.length; i++){
+                var line = {
+                    name:macheineData[i].name,
+                    type:'line',
+                    smooth: true,
+                    stack: '总量',
+                    areaStyle: {normal: {}},
+                    data:macheineData[i].data
+                }
+                if(macheineData[i].name == "all"){
+                    line = {
+                        name:'机器总量',
+                        type:'line',
+                        smooth: true,
+                        stack: '总量',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        areaStyle: {normal: {}},
+                        data:macheineData[i].data
+                    }
+                }
+                data.push(line);
+            }
+            return data;
+        }())
     });
 }
 var initMachinePieChart = function(pie_data){
