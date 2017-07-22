@@ -194,10 +194,7 @@ require_once('include/navbar.php');
                                 </div>
                             </div>
                             <div class="x_content">
-
-
-                                <div id="container" style="height:240px; width;auto; "></div>
-
+                                <div id="container" style="height:300px; width;auto; "></div>
                             </div>
                         </div>
                     </div>
@@ -225,7 +222,7 @@ require_once('include/navbar.php');
                             </div>
                             <div class="x_content">
 
-                                <div id="echart_pie" style="height:300px; width:auto"></div>
+                                <div id="echart_pie" style="height:360px; width:auto"></div>
                             </div>
                         </div>
                     </div>
@@ -405,10 +402,10 @@ require_once('include/navbar.php');
 <script src="gentelella/vendors/echarts/dist/echarts.min.js"></script>
 <script src="gentelella/vendors/echarts/map/js/world.js"></script>
 <!-- highCharts -->
-<script src="highcharts/highcharts.js"></script>
-<script src="highcharts/exporting.js"></script>
-<script src="highcharts/data.js"></script>
-
+<!--<script src="highcharts/highcharts.js"></script>-->
+<!--<script src="highcharts/exporting.js"></script>-->
+<!--<script src="highcharts/data.js"></script>-->
+<!--<script src="js/vintage.js"></script>-->
 <!-- cookie -->
 <script type="text/javascript" src="gentelella/vendors/jquery.cookie/jquery.cookie.js"></script>
 <!-- Page walkthrough -->
