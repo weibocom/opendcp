@@ -158,7 +158,7 @@ require_once('include/navbar.php');
                     <div class="col-md-8 col-sm-8 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>弹性扩容<small> 机器数量</small></h2>
+                                <h2>弹性扩容</h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
@@ -193,8 +193,8 @@ require_once('include/navbar.php');
                                     </div>
                                 </div>
                             </div>
-                            <div class="x_content">
-                                <div id="container" style="height:300px; width;auto; "></div>
+                            <div class="x_content" style="margin-top: -45px">
+                                <div id="container" style="height:350px;"></div>
                             </div>
                         </div>
                     </div>
@@ -221,7 +221,6 @@ require_once('include/navbar.php');
                                 <div class="clearfix"></div>
                             </div>
                             <div class="x_content">
-
                                 <div id="echart_pie" style="height:360px; width:auto"></div>
                             </div>
                         </div>
