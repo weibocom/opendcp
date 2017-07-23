@@ -79,7 +79,6 @@ func (driver awsProvider) ListInternetChargeType() []string {
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	zone := aws.String(input.Zone.ZoneName)
 	cre := credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
-	driver.client.Config.Region = zone
 	driver.client.Endpoint = *zone
 	driver.client.Config.Credentials = cre
 
@@ -565,7 +564,9 @@ func new() (provider.ProviderDriver, error) {
 
 func newProvider() (provider.ProviderDriver, error) {
 	//client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
-	sess := session.Must(session.NewSession())
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("cn-north-1"),
+	}))
 	client := ec2.New(sess)
 
 	ret := awsProvider{
