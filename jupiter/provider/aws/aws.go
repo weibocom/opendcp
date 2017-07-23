@@ -80,7 +80,7 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	zone := aws.String(input.Zone.ZoneName)
 	cre := credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
 	driver.client.Config.Region = zone
-	//driver.client.Endpoint = *zone
+	driver.client.Endpoint = *zone
 	driver.client.Config.Credentials = cre
 
 	fmt.Println(*zone)
