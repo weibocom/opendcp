@@ -34,6 +34,7 @@ import (
 	"weibo.com/opendcp/jupiter/provider"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"weibo.com/opendcp/jupiter/conf"
+	"fmt"
 )
 
 func init() {
@@ -77,6 +78,7 @@ func (driver awsProvider) ListInternetChargeType() []string {
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
+	fmt.Println(input.Network.Id, " ", input.KeyName)
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
@@ -84,14 +86,14 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		InstanceType: aws.String(input.InstanceType),
 		MinCount:     aws.Int64(int64(number)),
 		MaxCount:     aws.Int64(int64(number)),
-		//KeyName:      aws.String(input.KeyName),
+		KeyName:      aws.String(input.KeyName),
 		Monitoring: &ec2.RunInstancesMonitoringEnabled{
 			Enabled: aws.Bool(true),
 		},
 		//SecurityGroupIds: []*string{
 		//	aws.String(input.Network.SecurityGroup),
 		//},
-		//SubnetId: aws.String(input.Network.SubnetId),
+		SubnetId: aws.String(input.Network.SubnetId),
 		//BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 		//	{
 		//		DeviceName: aws.String("/dev/sdh"),
