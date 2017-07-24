@@ -115,6 +115,9 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		return nil, []error{err}
 	}
 	var instanceIds []string
+
+	time.Sleep(time.Minute)
+
 	for i := 0; i < len(runResult.Instances); i++ {
 		beego.Debug("Created instance", *runResult.Instances[i].InstanceId)
 		instanceIds = append(instanceIds, *(runResult.Instances[i].InstanceId))
@@ -221,7 +224,7 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 		DryRun: aws.Bool(false),
 		InstanceId: aws.String(instanceId),
 	}
-	ret, err := driver.client.DescribeInstanceAttribute(params)
+	_, err := driver.client.DescribeInstanceAttribute(params)
 	if err != nil {
 		beego.Error(err.Error())
 		return nil, err
@@ -240,8 +243,9 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 	//}
 	//beego.Info(resp)
 	//return resp, nil
-	var instance models.Instance
+	//var instance models.Instance
 
+	return nil, err
 
 }
 
