@@ -126,28 +126,28 @@ require_once('include/navbar.php');
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-database"></i></div>
-                            <div id = "clusterCount" class="count">168</div>
+                            <div id = "clusterCount" class="count">0</div>
                             <h3>Cluster Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-laptop"></i></div>
-                            <div id = "machineCount" class="count">2860</div>
+                            <div id = "machineCount" class="count">0</div>
                             <h3>Machine Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-cubes"></i></div>
-                            <div id = "poolCount" class="count">5188</div>
+                            <div id = "poolCount" class="count">0</div>
                             <h3>Pool Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-tasks"></i></div>
-                            <div id = "taskCount" class="count">10068</div>
+                            <div id = "taskCount" class="count">0</div>
                             <h3>Schedual Task</h3>
                         </div>
                     </div>
@@ -158,7 +158,7 @@ require_once('include/navbar.php');
                     <div class="col-md-8 col-sm-8 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>弹性扩容</h2>
+                                <h2>弹性扩容<small>机器数量</small></h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
@@ -193,7 +193,7 @@ require_once('include/navbar.php');
                                     </div>
                                 </div>
                             </div>
-                            <div class="x_content" style="margin-top: -45px">
+                            <div class="x_content" style="margin-top: -35px">
                                 <div id="container" style="height:350px;"></div>
                             </div>
                         </div>
@@ -221,7 +221,7 @@ require_once('include/navbar.php');
                                 <div class="clearfix"></div>
                             </div>
                             <div class="x_content">
-                                <div id="echart_pie" style="height:360px; width:auto"></div>
+                                <div id="echart_pie" style="height:370px; width:auto"></div>
                             </div>
                         </div>
                     </div>
