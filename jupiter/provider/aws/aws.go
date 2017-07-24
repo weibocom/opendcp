@@ -224,7 +224,7 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 		DryRun: aws.Bool(false),
 		InstanceId: aws.String(instanceId),
 	}
-	ret, err := driver.client.DescribeInstanceAttribute(params)
+	attr, err := driver.client.DescribeInstanceAttribute(params)
 	if err != nil {
 		beego.Error(err.Error())
 		return nil, err
@@ -244,10 +244,10 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 	//beego.Info(resp)
 	//return resp, nil
 	var instance models.Instance
-	instance.InstanceId = *ret.InstanceId
+	instance.InstanceId = *attr.InstanceId
 	instance.Provider = "aws"
-	instance.CreateTime = ret.
-	instance.InstanceType = *ret.InstanceType.Value
+	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05","", time.Local)
+	instance.InstanceType = *attr.InstanceType.Value
 	instance.VpcId = ""
 	instance.SubnetId = ""
 	instance.SecurityGroupId = ""
