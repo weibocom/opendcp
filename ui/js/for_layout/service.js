@@ -1521,7 +1521,7 @@ function isRatio(){
 function isFloat(){
     if($.isNumeric(event.target.value)){
         num = parseFloat(event.target.value);
-        if(num > 0 && num < 1){
+        if(num > 0){
             event.target.style.border='1px solid #cccccc';
             event.target.name="0";
         }else{
@@ -1631,7 +1631,7 @@ function addTaskDepen(){
     row += "</select></td>"
     row+='<td><input type="text" class = "form-control" style="font-size:13px" oninput="isFloat()" name="0" placeholder="0.6"></td>';
     row+='<td><input type="text" class = "form-control" style="font-size:13px" oninput="isNum()" name="0" placeholder="1"></td>';
-    row+='<td style="vertical-align: middle;"><input type="checkbox"></td>';
+    row+='<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox"></td>';
     row+='<td style="vertical-align: middle;"><a class="text-danger tooltips" title="删除" onclick="delRow(\''+"depend_row_"+dependRowNum+'\')"><i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
     row+="</td></tr>";
     $("#depend_body").append(row);
@@ -1866,9 +1866,9 @@ var processDependList  = function(data) {
         row += '<td><input type="name" class = "form-control" style="font-size:13px" oninput="isFloat()" name="0"value="'+data[k].ratio+'"></td>';
         row += '<td><input type="name" class = "form-control" style="font-size:13px" oninput="isNum()" name="0" value="'+data[k].elastic_count+'"></td>';
         if(data[k].ignore){
-            row += '<td style="vertical-align: middle;"><input type="checkbox" checked></td>';
+            row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox" checked></td>';
         }else{
-            row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
+            row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox"></td>';
         }
         row += '<td style="vertical-align: middle;">' +
             '<a class="text-danger tooltips" title="删除" onclick="delRow(\'' + "depend_row_" + dependRowNum + '\')">' +
