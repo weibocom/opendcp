@@ -79,7 +79,7 @@ func (driver awsProvider) ListInternetChargeType() []string {
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	zone := aws.String(input.Zone.ZoneName)
 	cre := credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
-	driver.client.Endpoint = *zone
+	driver.client.Config.Region = zone
 	driver.client.Config.Credentials = cre
 
 	fmt.Println(*zone)
@@ -98,10 +98,10 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		Monitoring: &ec2.RunInstancesMonitoringEnabled{
 			Enabled: aws.Bool(true),
 		},
-		SecurityGroupIds: []*string{
-			aws.String(input.Network.SecurityGroup),
-		},
-		SubnetId: aws.String(input.Network.SubnetId),
+		//SecurityGroupIds: []*string{
+		//	aws.String(input.Network.SecurityGroup),
+		//},
+		//SubnetId: aws.String(input.Network.SubnetId),
 		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 			{
 				Ebs: &ec2.EbsBlockDevice{
@@ -564,9 +564,7 @@ func new() (provider.ProviderDriver, error) {
 
 func newProvider() (provider.ProviderDriver, error) {
 	//client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("cn-north-1"),
-	}))
+	sess := session.Must(session.NewSession())
 	client := ec2.New(sess)
 
 	ret := awsProvider{
