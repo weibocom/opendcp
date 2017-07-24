@@ -95,5 +95,19 @@ fi
 #47.93.162.228
 docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4"  --net=host --name octans-agent registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:latest
 
+#检查octans是否启动
+TIMES=5
+PORT=8000
+for((i=0;i<$TIMES;i++));
+do
+        echo "check $PORT time $i ..."
+        res=`netstat -an | grep LISTEN | grep -e "$PORT"`
+        if [ "" != "$res" ]; then
+                echo "OK"
+                break
+        fi
+        sleep 2
+done
+
 echo "[DONE] --------------"
 echo "###################end:"`date +%Y%m%d" "%H":"%M":"%S`
