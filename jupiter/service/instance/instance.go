@@ -90,6 +90,7 @@ func StopOne(instanceId string) (bool, error) {
 }
 
 func DeleteOne(instanceId, correlationId string) error {
+	logstore.Info(correlationId, instanceId,"1. Begin to delete instance")
 	err := dao.UpdateDeletingStatus(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleting status err:", err)
@@ -100,6 +101,7 @@ func DeleteOne(instanceId, correlationId string) error {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
+	logstore.Info(correlationId, instanceId,"2. Delete instance from cloud")
 	if ins.Provider != PhyDev {
 		providerDriver, err := provider.New(ins.Provider)
 		if err != nil {
@@ -112,9 +114,9 @@ func DeleteOne(instanceId, correlationId string) error {
 				//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
 				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
 			} else {
+				logstore.Error(correlationId, instanceId, "delete instance, err:", err)
 				return err
 			}
-			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
 		}
 		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
 		usageHours, err := bill.GetUsageHours(instanceId)
@@ -129,6 +131,7 @@ func DeleteOne(instanceId, correlationId string) error {
 			return err
 		}
 	}
+	logstore.Info(correlationId, instanceId,"3. Update db instance status to deleted")
 	err = dao.UpdateDeletedStatus(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleted status, err:", err)
@@ -428,15 +431,17 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 }
 
 func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+	logstore.Info(correlationId, instanceId, "(1) Begin to generate the ssk keys and init the ssh connection")
 	sshErr := StartSshService(instanceId, ip, password, correlationId)
 	if sshErr != nil {
 		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
 		dao.UpdateInstanceStatus(ip, models.InitTimeout)
 		return ssh.Output{}, sshErr
 	}
+	logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
 	cli, err := getSSHClient(ip, "", password)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
-	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
+	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
@@ -444,13 +449,14 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
+	logstore.Info(correlationId, instanceId, "Download script result:",ret)
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
 	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
 		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
 	cmdOut := fmt.Sprintf("sh /root/manage_device.sh mysql://****:****@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
 		  dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
-	logstore.Info(correlationId, instanceId, "###Third### Exec init operaration："+cmdOut)
+	logstore.Info(correlationId, instanceId, "(3) Execute init operaration in instance："+cmdOut)
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
@@ -458,6 +464,23 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
-	logstore.Info(correlationId, instanceId, ret)
+	logstore.Info(correlationId, instanceId, "Execute script result:", ret)
 	return ret, nil
+}
+
+func ListAllInstances() ([]models.Instance, error) {
+	instances, err := dao.GetAllRunningInstance()
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}
+
+
+func GetClusterInstances(clusterId int64)  ([]models.Instance, error){
+	instances, err := dao.GetAllInstanceByClusterId(clusterId)
+	if err != nil {
+		return nil, err
+	}
+	return instances, err
 }

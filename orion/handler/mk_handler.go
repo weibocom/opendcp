@@ -17,7 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package handler
 
 import (
@@ -89,21 +88,21 @@ func (v *MockH) Handle(action *ActionImpl, actionParams map[string]interface{},
 	result := make([]*NodeResult, len(nodes))
 	switch action.Name {
 	case "ok", "long_ok":
-		for i, _ := range nodes {
+		for i := range nodes {
 			result[i] = &NodeResult{
 				Code: CODE_SUCCESS,
 				Data: "DATA" + fmt.Sprint(i),
 			}
 		}
 	case "fail":
-		for i, _ := range nodes {
+		for i := range nodes {
 			result[i] = &NodeResult{
 				Code: CODE_ERROR,
 				Data: "DATA" + fmt.Sprint(i),
 			}
 		}
 	case "half_fail":
-		for i, _ := range nodes {
+		for i := range nodes {
 			code := CODE_SUCCESS
 			if i%2 == 1 {
 				code = CODE_ERROR
@@ -114,7 +113,7 @@ func (v *MockH) Handle(action *ActionImpl, actionParams map[string]interface{},
 			}
 		}
 	case "one_fail":
-		for i, _ := range nodes {
+		for i := range nodes {
 			code := CODE_SUCCESS
 			if i == 0 {
 				code = CODE_ERROR
@@ -126,7 +125,7 @@ func (v *MockH) Handle(action *ActionImpl, actionParams map[string]interface{},
 		}
 	case "may_fail":
 		r, _ := u.ToInt(actionParams["ratio"])
-		for i, _ := range nodes {
+		for i := range nodes {
 			v := rand.Intn(r)
 			code := CODE_SUCCESS
 			if v == 0 {

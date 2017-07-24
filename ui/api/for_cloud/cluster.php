@@ -77,6 +77,29 @@ class myself{
     return $ret;
   }
 
+  function getMachines($myUser = '', $namespace = '', $method = 'GET', $id = ''){
+      global $thisClass;
+      $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+      if($strList = $thisClass->get($myUser, $this->module.'/'.$namespace, $method, '' ,$id)){
+          $arrList = json_decode($strList,true);
+          if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['content'])){
+              $ret = array(
+                  'code' => 0,
+                  'msg' => 'success',
+                  'content' => array(),
+              );
+              $ret['content']=$arrList['content'];
+          }else{
+              $ret['code'] = 1;
+              $arrList = json_decode($strList,true);
+              $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+              $ret['remote'] = $strList;
+          }
+      }
+      $ret['ret'] = $strList;
+      return $ret;
+  }
+
   function getInfo($myUser = '', $idx = ''){
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
@@ -188,6 +211,13 @@ if($hasLimit){
         $retArr=$mySelf->update($myUser, 'DELETE', $arrJson, $arrJson['id']);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
+      break;
+    case 'machine':
+        $logFlag = false;//本操作不记录日志
+        if(isset($arrJson) && !empty($arrJson)){
+            $retArr=$mySelf->getMachines($myUser, $arrJson["action"],'GET', $arrJson["hour"]);
+            $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+        }
       break;
   }
 }else{
