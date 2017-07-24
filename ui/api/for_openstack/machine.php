@@ -320,7 +320,7 @@ if($hasLimit){
                 'local_gb_used'=>0,
                 'machine_count'=>0,
         );
-        if(!empty($arr_hyper['hypervisors'])){s
+        if(!empty($arr_hyper['hypervisors'])){
                 foreach($arr_hyper['hypervisors'] as $onehyper){ 
                         if($onehyper['state']=='up' && $onehyper['status']=='enabled'){
                                 $arr_ret['machine_count'] += 1;
