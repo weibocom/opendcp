@@ -17,7 +17,7 @@
  *    along with Opendcp; if not, write to the Free Software
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
-
+/*测设容器映射*/
 
 header('Content-type: application/json');
 include_once('../../include/config.inc.php');

@@ -13,6 +13,10 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
+	_ "weibo.com/opendcp/jupiter/provider/openstack"
+	"weibo.com/opendcp/jupiter/service/cluster"
+	"time"
+	"weibo.com/opendcp/jupiter/logstore"
 )
 
 const DEFAULT_CPU = 1
@@ -127,7 +131,7 @@ func (ic *InstanceController) UpdateInstanceStatus() {
 	var insStat models.InstanceIdStatus
 	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &insStat)
 	if err != nil {
-		beego.Error("Could parase request before crate instance: ", err)
+		beego.Error("Could parase request before create instance: ", err)
 		ic.RespInputError()
 		return
 	}
@@ -158,6 +162,14 @@ func (ic *InstanceController) DeleteMulti() {
 	for i := 0; i < len(instanceIdsArray); i++ {
 		go instance.DeleteOne(instanceIdsArray[i], correlationId)
 	}
+	go func() {
+		time.Sleep(time.Second*10)
+		cluster.UpdateInstanceDetail()
+		time.Sleep(time.Minute)
+		cluster.UpdateInstanceDetail()
+		time.Sleep(time.Minute*2)
+		cluster.UpdateInstanceDetail()
+	}()
 	resp := ApiResponse{}
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
@@ -575,6 +587,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		ins.PublicIpAddress = info.PublicIp
 		ins.PrivateIpAddress = info.PrivateIp
 
+		logstore.Info(correlationId, ins.InstanceId, "1. Insert the instance into db")
 		ins, err = instance.InputPhyDev(ins)
 
 		if err != nil {
@@ -583,9 +596,12 @@ func (ic *InstanceController) ManagePhyDev() {
 		} else {
 			successCount++
 			// asynchronous manage
+			logstore.Info(correlationId, ins.InstanceId, "Insert the instance into db successfully")
+			logstore.Info(correlationId, ins.InstanceId, "2. Begin to execute init operation in the instance")
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
 		}
 	}
+	go cluster.UpdateInstanceDetail()
 
 	// 3. response
 	resp := ApiResponse{}
@@ -600,5 +616,31 @@ func (ic *InstanceController) ManagePhyDev() {
 	} else {
 		ic.Status = SERVICE_ERRROR
 	}
+	ic.RespJsonWithStatus()
+}
+
+
+// @Title Update machine status
+// @Description change openstack config
+// @router /openstack [post]
+
+func (ic *InstanceController) ChangeOpenStackConf() {
+	var OpConf models.OpenStackConf
+	err := json.Unmarshal(ic.Ctx.Input.RequestBody, &OpConf)
+	if err != nil {
+		beego.Error("Could not parase openstack conf request : ", err)
+		ic.RespInputError()
+		return
+	}
+	err = instance.ChangeOpenStackConf(&OpConf)
+	if err != nil{
+		beego.Error("Could not change hosts: ", err)
+		ic.RespInputError()
+		return
+	}
+	resp := ApiResponse{}
+	resp.Content = OpConf
+	ic.ApiResponse = resp
+	ic.Status = SERVICE_SUCCESS
 	ic.RespJsonWithStatus()
 }

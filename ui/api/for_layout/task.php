@@ -26,167 +26,201 @@ include_once('../../include/func_session.php');
 include_once('../../include/layout.php');
 $thisClass = $layout;
 
-class myself{
-  private $module = 'task';
+class myself
+{
+    private $module = 'task';
 
-  function getList($myUser = '', $param = array()){
-    global $thisClass;
-    $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($strList = $thisClass->get($myUser, $this->module, 'list', $param)){
-      $arrList = json_decode($strList,true);
-      if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
-        $ret = array(
-          'code' => 0,
-          'msg' => 'success',
-          'title' => array(
-            '#',
-            '名称',
-            '状态',
-            //'模板',
-            '用户',
-            '创建时间',
-            '#',
-            ),
-          'content' => array(),
-        );
-        $ret['count'] = (isset($arrList['query_count'])) ? $arrList['query_count'] : count($arrList['data']);
-        $ret['pageCount'] = (isset($arrList['page_size'])) ? ceil($ret['count'] / $arrList['page_size']) : 1;
-        $ret['page'] = (isset($arrList['page'])) ? $arrList['page'] : 1;
-        $i=0;
-        foreach($arrList['data'] as $k => $v){
-          $i++;
-          $tArr = array();
-          $tArr['i'] = $i;
-          foreach($v as $key => $value){
-            $tArr[$key] = $value;
-          }
-          $ret['content'][] = $tArr;
+    function getList($myUser = '', $param = array())
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($strList = $thisClass->get($myUser, $this->module, 'list', $param)) {
+            $arrList = json_decode($strList, true);
+            if (isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])) {
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'title' => array(
+                        '#',
+                        '名称',
+                        '状态',
+                        //'模板',
+                        '用户',
+                        '创建时间',
+                        '#',
+                    ),
+                    'content' => array(),
+                );
+                $ret['count'] = (isset($arrList['query_count'])) ? $arrList['query_count'] : count($arrList['data']);
+                $ret['pageCount'] = (isset($arrList['page_size'])) ? ceil($ret['count'] / $arrList['page_size']) : 1;
+                $ret['page'] = (isset($arrList['page'])) ? $arrList['page'] : 1;
+                $i = 0;
+                foreach ($arrList['data'] as $k => $v) {
+                    $i++;
+                    $tArr = array();
+                    $tArr['i'] = $i;
+                    foreach ($v as $key => $value) {
+                        $tArr[$key] = $value;
+                    }
+                    $ret['content'][] = $tArr;
+                }
+            } else {
+                $ret['code'] = 1;
+                $arrList = json_decode($strList, true);
+                $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                $ret['remote'] = $strList;
+            }
         }
-      }else{
-        $ret['code'] = 1;
-        $arrList = json_decode($strList,true);
-        $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
-        $ret['remote'] = $strList;
-      }
+        $ret['ret'] = $strList;
+        return $ret;
     }
-    $ret['ret'] = $strList;
-    return $ret;
-  }
 
-  function getInfo($myUser = '', $idx=''){
-    global $thisClass;
-    $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($strList = $thisClass->get($myUser, $this->module, $idx)){
-      $arrList = json_decode($strList,true);
-      if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
-        $ret = array(
-          'code' => 0,
-          'msg' => 'success',
-          'content' => array(),
-        );
-        $ret['content']=$arrList['data'];
-      }else{
-        $ret['code'] = 1;
-        $arrList = json_decode($strList,true);
-        $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
-        $ret['remote'] = $strList;
-      }
-    }
-    $ret['ret'] = $strList;
-    return $ret;
-  }
-
-  function getResult($myUser = '', $idx=''){
-    global $thisClass;
-    $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($strList = $thisClass->get($myUser, $this->module.'/node/'.$idx,'log')){
-      $arrList = json_decode($strList,true);
-      if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
-        $ret = array(
-          'code' => 0,
-          'msg' => 'success',
-          'content' => array(),
-        );
-        $ret['content']=$arrList['data'];
-      }else{
-        $ret['code'] = 1;
-        $arrList = json_decode($strList,true);
-        $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
-        $ret['remote'] = $strList;
-      }
-    }
-    $ret['ret'] = $strList;
-    return $ret;
-  }
-
-  function getTaskNode($myUser = '', $idx=''){
-    global $thisClass;
-    $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($strList = $thisClass->get($myUser, $this->module.'/'.$idx, 'detail')){
-      $arrList = json_decode($strList,true);
-      if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
-        $ret = array(
-          'code' => 0,
-          'msg' => 'success',
-          'content' => array(),
-        );
-        $ret['content']=$arrList['data'];
-      }else{
-        $ret['code'] = 1;
-        $arrList = json_decode($strList,true);
-        $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
-        $ret['remote'] = $strList;
-      }
-    }
-    $ret['ret'] = $strList;
-    return $ret;
-  }
-
-  function update($myUser = '', $action = '', $param = array(), $id=''){
-    global $thisClass;
-    $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($action){
-      if($strList = $thisClass->get($myUser, $this->module, $action, $param, $id)){
-        $arrList = json_decode($strList,true);
-        if(isset($arrList['code']) && $arrList['code'] == 0){
-          $ret = array(
-            'code' => 0,
-            'msg' => 'success',
-          );
-        }else{
-          $ret['code'] = 1;
-          $arrList = json_decode($strList,true);
-          $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
-          $ret['remote'] = $strList;
+    function getInfo($myUser = '', $idx = '')
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($strList = $thisClass->get($myUser, $this->module, $idx)) {
+            $arrList = json_decode($strList, true);
+            if (isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])) {
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'content' => array(),
+                );
+                $ret['content'] = $arrList['data'];
+            } else {
+                $ret['code'] = 1;
+                $arrList = json_decode($strList, true);
+                $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                $ret['remote'] = $strList;
+            }
         }
-      }
-      $ret['ret'] = $strList;
+        $ret['ret'] = $strList;
+        return $ret;
     }
-    return $ret;
-  }
 
-  function getTaskLog($myUser = '', $idx=''){
-    global $thisClass;
-    $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($strList = $thisClass->get($myUser, $this->module.'/flow/'.$idx,'log')){
-      $arrList = json_decode($strList,true);
-      if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
-        $ret = array(
-            'code' => 0,
-            'msg' => 'success',
-            'content' => array(),
-        );
-        $ret['content']=$arrList['data'];
-      }else{
-        $ret['code'] = 1;
-        $arrList = json_decode($strList,true);
-        $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
-        $ret['remote'] = $strList;
-      }
+    function getResult($myUser = '', $idx = '')
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($strList = $thisClass->get($myUser, $this->module . '/node/' . $idx, 'log')) {
+            $arrList = json_decode($strList, true);
+            if (isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])) {
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'content' => array(),
+                );
+                $ret['content'] = $arrList['data'];
+            } else {
+                $ret['code'] = 1;
+                $arrList = json_decode($strList, true);
+                $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                $ret['remote'] = $strList;
+            }
+        }
+        $ret['ret'] = $strList;
+        return $ret;
     }
-    $ret['ret'] = $strList;
-    return $ret;
-  }
+
+    function getTaskNode($myUser = '', $idx = '')
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($strList = $thisClass->get($myUser, $this->module . '/' . $idx, 'detail')) {
+            $arrList = json_decode($strList, true);
+            if (isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])) {
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'content' => array(),
+                );
+                $ret['content'] = $arrList['data'];
+            } else {
+                $ret['code'] = 1;
+                $arrList = json_decode($strList, true);
+                $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                $ret['remote'] = $strList;
+            }
+        }
+        $ret['ret'] = $strList;
+        return $ret;
+    }
+
+    function update($myUser = '', $action = '', $param = array(), $id = '')
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($action) {
+            if ($strList = $thisClass->get($myUser, $this->module, $action, $param, $id)) {
+                $arrList = json_decode($strList, true);
+                if (isset($arrList['code']) && $arrList['code'] == 0) {
+                    $ret = array(
+                        'code' => 0,
+                        'msg' => 'success',
+                    );
+                } else {
+                    $ret['code'] = 1;
+                    $arrList = json_decode($strList, true);
+                    $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                    $ret['remote'] = $strList;
+                }
+            }
+            $ret['ret'] = $strList;
+        }
+        return $ret;
+    }
+
+    function getTaskLog($myUser = '', $idx = '')
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($strList = $thisClass->get($myUser, $this->module . '/flow/' . $idx, 'log')) {
+            $arrList = json_decode($strList, true);
+            if (isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])) {
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'content' => array(),
+                );
+                $ret['content'] = $arrList['data'];
+            } else {
+                $ret['code'] = 1;
+                $arrList = json_decode($strList, true);
+                $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                $ret['remote'] = $strList;
+            }
+        }
+        $ret['ret'] = $strList;
+        return $ret;
+    }
+
+    function getExpandOrUploadList($myUser = '', $action = '', $param = array(), $pool_id = '')
+    {
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if ($action) {
+            if ($strList = $thisClass->get($myUser, $this->module, $action, $param, $pool_id)) {
+                $arrList = json_decode($strList, true);
+                if (isset($arrList['code']) && $arrList['code'] == 0) {
+                    $ret = array(
+                        'code' => 0,
+                        'msg' => 'success',
+                        'content' => array(),
+                    );
+                    $ret['content'] = $arrList['data'];
+                } else {
+                    $ret['code'] = 1;
+                    $arrList = json_decode($strList, true);
+                    $ret['msg'] = (isset($arrList['msg'])) ? $arrList['msg'] : $strList;
+                    $ret['remote'] = $strList;
+                }
+            }
+            $ret['ret'] = $strList;
+        }
+        return $ret;
+
+    }
 }
 $mySelf=new myself();
 
@@ -306,6 +340,33 @@ if($hasLimit){
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
       break;
+    case 'expandList':
+          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+          $arrRecodeLog['t_action'] = '扩容';
+          if(isset($arrJson) && !empty($arrJson)){
+              if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
+              $retArr=$mySelf->getExpandOrUploadList($myUser, 'expandList', $arrJson, $arrJson['pool_id']);
+              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+          }
+       break;
+    case 'uploadList':
+          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+          $arrRecodeLog['t_action'] = '上线';
+          if(isset($arrJson) && !empty($arrJson)){
+              if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
+              $retArr=$mySelf->getExpandOrUploadList($myUser, 'uploadList', $arrJson, $arrJson['pool_id']);
+              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+          }
+       break;
+    case 'saveTask':
+          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+          $arrRecodeLog['t_action'] = '保存任务';
+          if(isset($arrJson) && !empty($arrJson)){
+              if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
+              $retArr=$mySelf->update($myUser, 'saveTask', $arrJson, '');
+              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+          }
+          break;
     case 'tasklog':
       $logFlag = false;//本操作不记录日志
       $retArr = $mySelf->getTaskLog($myUser,$fIdx);

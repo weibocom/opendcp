@@ -17,7 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package executor
 
 import (
@@ -47,8 +46,8 @@ func (w *Worker) loop() {
 			// queue closed
 			break
 		}
-
-		w.safeRun(job)
+		//修改使任务并行运行
+		go w.safeRun(job)
 	}
 }
 

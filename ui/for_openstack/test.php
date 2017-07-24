@@ -24,6 +24,7 @@ require_once('../include/function.php');
 require_once('../include/func_session.php');
 require_once('../include/navbar.php');
 require_once('../include/openstack.php');
+
 require_once('../include/cloud.php');
 
 $mycloud = new cloud();
@@ -37,6 +38,7 @@ $ret = $mycloud->get('root', 'instance/openstack', 'conf', array(
 var_dump($ret);
 
 exit;
+
 openstack::needOpenstackLogin();
 $ret = openstack::updatePorts('0fa8856c-a110-44f8-bc44-939b6c7b7dad', array('security_groups'=>array(), 'port_security_enabled'=>false));
 var_dump($ret);exit;

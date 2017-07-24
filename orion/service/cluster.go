@@ -17,12 +17,12 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+
 	"weibo.com/opendcp/orion/models"
 )
 
@@ -52,7 +52,7 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool) []int {
 }
 
 // SearchPoolByIP returs the pool id of the ip given, if it exists
-func (c* ClusterService) SearchPoolByIP(ips []string) map[string]int {
+func (c *ClusterService) SearchPoolByIP(ips []string) map[string]int {
 
 	result := make(map[string]int)
 	for _, ip := range ips {
@@ -66,4 +66,17 @@ func (c* ClusterService) SearchPoolByIP(ips []string) map[string]int {
 	}
 
 	return result
+}
+
+func (c *ClusterService) ListNodesByType(pool_id int, node_type string) ([]models.Node, error) {
+	o := orm.NewOrm()
+
+	list := make([]models.Node, 0)
+
+	_, err := o.QueryTable(&models.Node{}).Filter("Pool", pool_id).Filter("NodeType", node_type).All(&list)
+
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }

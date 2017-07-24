@@ -21,6 +21,7 @@ $arr_type = array(
 	),
 );
 
+
 $arr = node_init::getNodeInitList();
 foreach($arr['data'] as $oneinit){
 	if($oneinit['status']!=0){
@@ -123,6 +124,7 @@ foreach($arr['data'] as $oneinit){
 	doaddlog($oneinit['id'], '创建初始化任务完成', 1, '');
 	break;
 }
+
 
 function dolog($msg){
         global $logid;

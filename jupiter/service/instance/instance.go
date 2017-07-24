@@ -34,9 +34,13 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+	"os/exec"
 )
 
-const PhyDev = "phydev"
+const (
+	PhyDev = "phydev"
+	OPENSTACK = "openstack"
+)
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -44,16 +48,22 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		return "", err
 	}
 	instanceIds, errs := providerDriver.Create(cluster, 1)
-	if errs != nil {
+	if len(errs) != 0 {
 		return "", errs[0]
 	}
+	//if errs != nil {
+	//	return "", errs[0]
+	//}
+	fmt.Println("getting instance")
 	ins, err := providerDriver.GetInstance(instanceIds[0])
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("insert into database")
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
+	fmt.Println("have inserted")
 	return instanceIds[0], nil
 }
 
@@ -90,6 +100,7 @@ func StopOne(instanceId string) (bool, error) {
 }
 
 func DeleteOne(instanceId, correlationId string) error {
+	logstore.Info(correlationId, instanceId,"1. Begin to delete instance")
 	err := dao.UpdateDeletingStatus(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleting status err:", err)
@@ -100,6 +111,7 @@ func DeleteOne(instanceId, correlationId string) error {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
+	logstore.Info(correlationId, instanceId,"2. Delete instance from cloud")
 	if ins.Provider != PhyDev {
 		providerDriver, err := provider.New(ins.Provider)
 		if err != nil {
@@ -112,9 +124,11 @@ func DeleteOne(instanceId, correlationId string) error {
 				//实例已经被删除，可能在其他系统中删除的，需要继续往下走，删除系统数据库的记录
 				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
 			} else {
+				logstore.Error(correlationId, instanceId, "delete instance, err:", err)
+				_, e := UpdateInstanceStatus(instanceId, models.StatusError)
+				logstore.Error(correlationId, instanceId, "Update instance status err:", e)
 				return err
 			}
-			logstore.Error(correlationId, instanceId, "delete instance, err:", err)
 		}
 		logstore.Info(correlationId, instanceId, "delete instance", instanceId, "success")
 		usageHours, err := bill.GetUsageHours(instanceId)
@@ -129,6 +143,7 @@ func DeleteOne(instanceId, correlationId string) error {
 			return err
 		}
 	}
+	logstore.Info(correlationId, instanceId,"3. Update db instance status to deleted")
 	err = dao.UpdateDeletedStatus(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleted status, err:", err)
@@ -428,29 +443,101 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 }
 
 func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+	logstore.Info(correlationId, instanceId, "(1) Begin to generate the ssk keys and init the ssh connection")
 	sshErr := StartSshService(instanceId, ip, password, correlationId)
 	if sshErr != nil {
 		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
 		dao.UpdateInstanceStatus(ip, models.InitTimeout)
 		return ssh.Output{}, sshErr
 	}
+	logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
 	cli, err := getSSHClient(ip, "", password)
-	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+
+	octanUrl := conf.Config.Ansible.GetOctansUrl
+
+	ins, err := dao.GetInstance(instanceId)
+	if err != nil {
+		return ssh.Output{}, err
+	}
+
+	if strings.EqualFold(ins.Provider, OPENSTACK){
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
+	} else {
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
+	}
+
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
+	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
+
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
+		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err)
+		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
+	logstore.Info(correlationId, instanceId, "Download script result:",ret)
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
-	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s > /root/result.out",
-		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip)
-	logstore.Info(correlationId, instanceId, cmd)
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	cmdOut := fmt.Sprintf("sh /root/manage_device.sh mysql://****:****@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
+		  dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	logstore.Info(correlationId, instanceId, "(3) Execute init operaration in instance："+cmdOut)
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
+		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err)
+		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
-	logstore.Info(correlationId, instanceId, ret)
+	logstore.Info(correlationId, instanceId, "Execute script result:", ret)
 	return ret, nil
 }
+
+
+func ChangeOpenStackConf(OpConf *models.OpenStackConf) error{
+	//修改hosts文件的controller域名
+
+	op := fmt.Sprintf("awk '{if($2==\"controller\") {$1=\"%s\"} print}' /etc/hosts > /etc/hostsbak",  OpConf.OpIp)
+	cmd := exec.Command("/bin/sh", "-c", op)
+	err := cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "cp /etc/hostsbak /etc/hosts")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "rm /etc/hostsbak")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+
+	conf.Config.OpIp = OpConf.OpIp
+	conf.Config.OpPort = OpConf.OpPort
+	conf.Config.OpUserName = OpConf.OpUserName
+	conf.Config.OpPassWord = OpConf.OpPassWord
+	return err
+
+}
+
+func ListAllInstances() ([]models.Instance, error) {
+	instances, err := dao.GetAllRunningInstance()
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}
+
+
+func GetClusterInstances(clusterId int64)  ([]models.Instance, error){
+	instances, err := dao.GetAllInstanceByClusterId(clusterId)
+	if err != nil {
+		return nil, err
+	}
+	return instances, err
+}
+

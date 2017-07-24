@@ -1,7 +1,7 @@
  version: '2'
  services:
    proxy:
-     image: $REPO/opendcp/proxy:latest
+     image: $REPO/opendcp/proxy:$VER
      depends_on:
         - hubble
         - web
@@ -10,6 +10,8 @@
         - ./conf/rsyncd.conf:/etc/rsyncd.conf
         - ./logs:/data1/logs:rw
         - ./data/Runtime:/data1/hubble/Runtime:rw
+        - ./conf/manage_device.conf:/etc/nginx/conf.d/manage_device.conf
+        - ./manage_device:/data1/manage_device
      volumes_from:
         - hubble
         - web
@@ -19,13 +21,14 @@
         - "8888:8888"
         - "8080:8080"
         - "873:873"
+        - "8999:8999"
    web:
-     image: $REPO/opendcp/ui:latest
+     image: $REPO/opendcp/ui:$VER
      volumes:
         - ./conf/web.conf:/etc/nginx/conf.d/web.conf:rw
         - ./conf/web_conf.php:/data1/web/include/config.inc.php
    orion:
-     image: $REPO/opendcp/orion:latest
+     image: $REPO/opendcp/orion:$VER
      volumes:
         - ./wait-for-it.sh:/wait-for-it.sh
         - ./conf/orion.conf:/go/src/weibo.com/opendcp/orion/conf/app.conf
@@ -38,7 +41,7 @@
         - db_init
      entrypoint: /wait-for-it.sh db_init:11111 -t 25 -- ./run.sh
    octans:
-     image: $REPO/opendcp/octans:latest
+     image: $REPO/opendcp/octans:$VER
      volumes:
         - ./wait-for-it.sh:/wait-for-it.sh
         - ./conf/octans.yml:/data/octans/config.yml
@@ -50,7 +53,7 @@
         - db_init
      entrypoint: /wait-for-it.sh db_init:11111 -t 25 -- ./run.sh
    jupiter:
-     image: $REPO/opendcp/jupiter:latest
+     image: $REPO/opendcp/jupiter:$VER
      volumes:
         - ./wait-for-it.sh:/wait-for-it.sh
         - ./conf/jupiter.json:/go/src/weibo.com/opendcp/jupiter/conf/jupiter.json
@@ -62,16 +65,16 @@
        - db_init
      entrypoint: /wait-for-it.sh db_init:11111 -t 25 -- ./run.sh
    hubble:
-     image: $REPO/opendcp/hubble:latest
+     image: $REPO/opendcp/hubble:$VER
      volumes:
         - ./conf/hubble_nginx.conf:/etc/nginx/conf.d/hubble.conf:rw
         - ./conf/hubble_conf.php:/data1/hubble/Application/Common/Conf/config.php:rw
    imagebuild:
-     image: $REPO/opendcp/imagebuild:latest
+     image: $REPO/opendcp/imagebuild:$VER
      privileged: true
      volumes:
         - ./logs/imagebuild:/tmp
-        - ./data/project:/imagebuild/project
+        - ./data/project:/imagebuild/$VER
      ports:
         - "8084:8080"
      environment:
@@ -88,7 +91,7 @@
         - HARBOR_PASSWORD=Harbor12345
         - CLUSTERLIST_ADDRESS=orion:8080
    db_init:
-     image: $REPO/opendcp/db_init:latest
+     image: $REPO/opendcp/db_init:$VER
      environment:
        - MYSQL_ROOT_PASSWORD=12345
        - DB_HOST=db
