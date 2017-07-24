@@ -96,9 +96,9 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		Monitoring: &ec2.RunInstancesMonitoringEnabled{
 			Enabled: aws.Bool(true),
 		},
-		//SecurityGroupIds: []*string{
-		//	aws.String(input.Network.SecurityGroup),
-		//},
+		SecurityGroupIds: []*string{
+			aws.String(input.Network.SecurityGroup),
+		},
 		SubnetId: aws.String(input.Network.SubnetId),
 		//BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 		//	{
@@ -224,7 +224,7 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 		DryRun: aws.Bool(false),
 		InstanceId: aws.String(instanceId),
 	}
-	_, err := driver.client.DescribeInstanceAttribute(params)
+	ret, err := driver.client.DescribeInstanceAttribute(params)
 	if err != nil {
 		beego.Error(err.Error())
 		return nil, err
@@ -243,9 +243,22 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 	//}
 	//beego.Info(resp)
 	//return resp, nil
-	//var instance models.Instance
+	var instance models.Instance
+	instance.InstanceId = *ret.InstanceId
+	instance.Provider = "aws"
+	instance.CreateTime = ret.
+	instance.InstanceType = *ret.InstanceType.Value
+	instance.VpcId = ""
+	instance.SubnetId = ""
+	instance.SecurityGroupId = ""
+	instance.PrivateIpAddress = ""
+	instance.PublicIpAddress = ""
+	instance.RegionId = ""
+	instance.ZoneId = ""
+	instance.NatIpAddress = ""
+	instance.CostWay = ""
 
-	return nil, err
+	return &instance, err
 
 }
 
@@ -561,7 +574,13 @@ func (driver awsProvider) AttachGateway(input *models.AttachGateway) (bool, erro
 }
 
 func (driver awsProvider) AllocatePublicIpAddress(instanceId string) (string, error) {
-	return "", nil
+	input := &ec2.DescribeAddressesInput{}
+	result, err := driver.client.DescribeAddresses(input)
+	if err != nil {
+		beego.Error("Fail to get public Ip", err)
+	}
+
+	return *result.Addresses[0].PrivateIpAddress, nil
 }
 
 func (driver awsProvider) WaitForInstanceToStop(instanceId string) bool {
@@ -582,6 +601,7 @@ func newProvider() (provider.ProviderDriver, error) {
 		Region: aws.String("cn-north-1"),
 	}))
 	client := ec2.New(sess)
+	client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
 
 	ret := awsProvider{
 		client: client,
