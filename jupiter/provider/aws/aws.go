@@ -101,6 +101,7 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		SubnetId: aws.String(input.Network.SubnetId),
 		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 			{
+				DeviceName: aws.String("/dev/sdh"),
 				Ebs: &ec2.EbsBlockDevice{
 					VolumeSize: aws.Int64(int64(input.DataDiskSize)),
 					VolumeType: aws.String(input.DataDiskCategory),
