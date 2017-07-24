@@ -64,7 +64,7 @@ LOCK TABLES `tbl_hubble_alteration_type` WRITE;
 
 INSERT INTO `tbl_hubble_alteration_type` (`id`, `name`, `type`, `content`, `create_time`, `update_time`, `opr_user`, `biz_id`)
 VALUES
-	(1,'default_service_name','NGINX','{"group_id":"1","name":"default.upstream","port":"80","weight":"20","script_id":"2"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system',0);
+	(1,'default_service_name','NGINX','{"group_id":"1","name":"default.upstream","port":"8080","weight":"20","script_id":"2"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system',0);
 
 /*!40000 ALTER TABLE `tbl_hubble_alteration_type` ENABLE KEYS */;
 UNLOCK TABLES;
