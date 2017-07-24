@@ -593,7 +593,7 @@ var changeOpenTime = function(timeUnit){
     if($.isNumeric(time_data)){
         var time = parseInt(time_data)*timeHour;
         cache.stackTime = time;
-        loadOpenStackData()
+        loadOpenStackData();
     }
 }
 
