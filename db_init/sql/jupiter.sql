@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS `log` (
 LOCK TABLES `network` WRITE;
 INSERT INTO `network` VALUES 
     (1,'','',NULL,'PayByBandwidth',5),
-    (2,'vpc-62a57d06','subnet-a2cf28c6',NULL,'PayByBandwidth',5);
+    (2,'vpc-62a57d06','subnet-f303e897',NULL,'PayByBandwidth',5);
 UNLOCK TABLES;
 
 LOCK TABLES `zone` WRITE;
@@ -162,7 +162,7 @@ INSERT INTO `cluster` VALUES
     (1,'16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
     (2,'4Core8G经典网',  'aliyun',0,'',NOW(),NULL,4, 8, 'ecs.n2.large', 'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
     (3,'1Core1G经典网',  'aliyun',0,'',NOW(),NULL,1, 1, 'ecs.n1.tiny',  'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
-    (4,'1Core-2Gib',    'aws',   0,'',NOW(),NULL,1, 2, 't2.nano',      'ami-0220b23b',                           '','key',2,3,'sc1'             ,100,1,'sc1'             )
+    (4,'1Core-2Gib',    'aws',   0,'',NOW(),NULL,1, 2, 't2.nano',      'ami-0220b23b',                           '','timkey',2,3,'standard'     ,100,1,'standard'        )
     ;
 UNLOCK TABLES;
 
