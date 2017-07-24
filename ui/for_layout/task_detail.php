@@ -513,7 +513,7 @@ $arrIdx=array(
     $("select.form-control").select2({width:'100%'});
     cache.task_id=<?php echo $myIdx;?>;
     window.setTimeout('getTask(\'info\');',200);
-    setInterval('getTask(\'info\');',10000);
+    cache.refreshInterval = setInterval('getTask(\'info\');',10000);
     getList();
     $('#fIdx').bind('keypress',function(event){
       if(event.keyCode == "13"){
