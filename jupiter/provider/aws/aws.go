@@ -34,7 +34,6 @@ import (
 	"weibo.com/opendcp/jupiter/provider"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"weibo.com/opendcp/jupiter/conf"
-	"fmt"
 )
 
 func init() {
@@ -48,6 +47,7 @@ type awsProvider struct {
 
 var instanceTypesInAws = map[string]string{
 	"1Core-0.5Gib":  "t2.nano",
+	"1Core-1Gib":	 "t2.micro",
 	"1Core-2GiB":    "t2.small",
 	"2Cores-8GiB":   "t2.large",
 	"8Cores-15GiB":  "c4.2xlarge",
@@ -78,7 +78,13 @@ func (driver awsProvider) ListInternetChargeType() []string {
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
-	fmt.Println(input.Network.Id, " ", input.KeyName)
+
+	allocRes, err := driver.client.AllocateAddress(&ec2.AllocateAddressInput{
+		Domain: aws.String("vpc"),
+	})
+	if err != nil {
+		beego.Error("Unable to allocate IP address, %v", err)
+	}
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
@@ -112,6 +118,15 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	for i := 0; i < len(runResult.Instances); i++ {
 		beego.Debug("Created instance", *runResult.Instances[i].InstanceId)
 		instanceIds = append(instanceIds, *(runResult.Instances[i].InstanceId))
+
+		_, err := driver.client.AssociateAddress(&ec2.AssociateAddressInput{
+			AllocationId: allocRes.AllocationId,
+			InstanceId:   runResult.Instances[i].InstanceId,
+		})
+		if err != nil {
+			beego.Error("Unable to associate IP address with %s, %v",
+				runResult.Instances[i].InstanceId, err)
+		}
 	}
 	return instanceIds, nil
 }
@@ -202,18 +217,17 @@ func (driver awsProvider) ListInstanceTypes() ([]string, error) {
 }
 
 func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, error) {
-	//params := &ec2.DescribeInstancesInput{
-	//	DryRun: aws.Bool(false),
-	//	InstanceIds: []*string{
-	//		aws.String(instanceId),
-	//	},
-	//}
-	//ret, err := driver.client.DescribeInstanceAttribute(params)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//var resp models.ListInstancesResp
+	params := &ec2.DescribeInstanceAttributeInput{
+		DryRun: aws.Bool(false),
+		InstanceId: aws.String(instanceId),
+	}
+	ret, err := driver.client.DescribeInstanceAttribute(params)
+	if err != nil {
+		beego.Error(err.Error())
+		return nil, err
+	}
+
+	//var resp models.ListInstancesResponse
 	//respJson, err := json.Marshal(ret)
 	//if err != nil {
 	//	beego.Error(err.Error())
@@ -225,7 +239,10 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 	//	return nil, err
 	//}
 	//beego.Info(resp)
-	return nil, nil
+	//return resp, nil
+	var instance models.Instance
+
+
 }
 
 func (driver awsProvider) CreateSecurityGroup(input *models.CreateSecurityGroupParam) (*models.SecurityGroupResp, error) {
