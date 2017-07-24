@@ -1,5 +1,7 @@
 FROM golang:latest
 
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' > /etc/timezone
+
 ADD . $GOPATH/src/weibo.com/opendcp/jupiter
 
 WORKDIR $GOPATH/src/weibo.com/opendcp/jupiter
