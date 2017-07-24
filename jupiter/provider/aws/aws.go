@@ -77,13 +77,7 @@ func (driver awsProvider) ListInternetChargeType() []string {
 }
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
-	cre := credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
-	driver.client.Config.Credentials = cre
-
-	fmt.Println(*driver.client.Config.Region)
-	fmt.Println(driver.client.Config)
-	fmt.Println(driver.client.Config.Credentials)
-
+	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
@@ -98,16 +92,16 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		//SecurityGroupIds: []*string{
 		//	aws.String(input.Network.SecurityGroup),
 		//},
-		SubnetId: aws.String(input.Network.SubnetId),
-		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
-			{
-				DeviceName: aws.String("/dev/sdh"),
-				Ebs: &ec2.EbsBlockDevice{
-					VolumeSize: aws.Int64(int64(input.DataDiskSize)),
-					VolumeType: aws.String(input.DataDiskCategory),
-				},
-			},
-		},
+		//SubnetId: aws.String(input.Network.SubnetId),
+		//BlockDeviceMappings: []*ec2.BlockDeviceMapping{
+		//	{
+		//		DeviceName: aws.String("/dev/sdh"),
+		//		Ebs: &ec2.EbsBlockDevice{
+		//			VolumeSize: aws.Int64(int64(input.DataDiskSize)),
+		//			VolumeType: aws.String(input.DataDiskCategory),
+		//		},
+		//	},
+		//},
 	})
 	if err != nil {
 		beego.Error("Could not create instance", err)
