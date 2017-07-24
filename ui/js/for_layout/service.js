@@ -1516,6 +1516,7 @@ function isRatio(){
         event.target.style.border="1px solid #CE5454";
         event.target.name="1";
     }
+
     checkSave();
 }
 function isFloat(){
