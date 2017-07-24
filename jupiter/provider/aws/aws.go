@@ -101,7 +101,7 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		//SecurityGroupIds: []*string{
 		//	aws.String(input.Network.SecurityGroup),
 		//},
-		//SubnetId: aws.String(input.Network.SubnetId),
+		SubnetId: aws.String(input.Network.SubnetId),
 		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 			{
 				Ebs: &ec2.EbsBlockDevice{
