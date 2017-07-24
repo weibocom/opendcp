@@ -36,6 +36,7 @@ import (
 	"weibo.com/opendcp/imagebuild/code/service"
 	"weibo.com/opendcp/imagebuild/code/util"
 	"strings"
+	"time"
 )
 
 /**
@@ -101,58 +102,69 @@ func (p *PluggedProject) View(lang string) string {
 	t.Execute(&htmlContent, config)
 	return htmlContent.String()
 }
-
+//构建镜像
 func (p *PluggedProject) BuildImage() bool {
-
 	projectPath := env.PROJECT_CONFIG_BASEDIR
 	dockerFilePath := projectPath + p.Name + "/tmp/"
 	util.ClearFolder(dockerFilePath)
-
 	// create docker file
 	if !p.DockerFileGenerator.Handle() {
 		return false
 	}
-
 	return true
 }
-
-func (p *PluggedProject) BuildAndPushImage(tag string) bool {
+//构建镜像并推送镜像到Harobor仓库
+func (p *PluggedProject) BuildAndPushImage(tag string, projectId int64) bool {
+	buildHistoryService := service.GetBuildHistoryServiceInstance()
 	registry := env.HARBOR_ADDRESS
 	fullImageName := registry + "/" + p.Cluster + "/" + p.Name + ":" + tag
 
 	projectPath := env.PROJECT_CONFIG_BASEDIR
 	dockerFilePath := projectPath + p.Name + "/tmp/"
+	//第一步创建镜像
+	log.Info("BuildImage dockerFilePath: " + dockerFilePath + " fullImageName:" + fullImageName)
+	p.AppendLog("BuildImage dockerFilePath: " + dockerFilePath + "\nBuildImage fullImageName: " + fullImageName, "Info")
 
-	log.Info("BuildImage dockerFilePath:" + dockerFilePath + " fullImageName:" + fullImageName)
+	buildHistoryService.UpdateRecord(projectId, p.GetLog(), service.BUILDING)
 
 	logStr, err := service.GetDockerOperatorInstance().BuildImage(dockerFilePath, fullImageName)
-
-	p.appendLog(logStr)
+	p.logs = append(p.logs, p.timeNow() + "\t[Info]\t" + logStr)
 
 	if err != nil {
 		log.Error("Build Image with error:", err)
-		p.appendLog("Build Image with error:" + err.Error())
+		p.AppendLog("Build Image with error:" + err.Error(),"Error")
 		return false
 	}
 
-	log.Info("Login Harbor")
+	//第二步登录仓库
+	log.Info("Begin login Harbor")
+	p.AppendLog("Begin login Harbor", "Info")
+
+	buildHistoryService.UpdateRecord(projectId, p.GetLog(), service.BUILDING)
+
 	if err := service.GetDockerOperatorInstance().LoginHarbor(); err != nil {
 		log.Error("Login Harbor with error:", err)
-		p.appendLog("Login Harbor with error:" + err.Error())
+		p.AppendLog("Login Harbor with error:" + err.Error(), "Error")
 		return false
 	}
+	p.AppendLog("Login haror success", "Info")
+	//第三步推送镜像到仓库
+	log.Info("Begin push image to Harbor")
+	p.AppendLog("Begin push image to Harbor", "Info")
 
-	p.appendLog("login haror success ...")
+	buildHistoryService.UpdateRecord(projectId, p.GetLog(), service.BUILDING)
 
 	logStr, err = service.GetDockerOperatorInstance().PushImage(dockerFilePath, fullImageName)
 
-	p.appendLog(logStr)
+	p.logs = append(p.logs, p.timeNow() +"\t[Info]\t" + logStr)
 
 	if err != nil {
-		log.Error("Push Image with error:", err)
+		log.Error("Push Image to harbor with error:", err)
+		p.AppendLog("Push Image to harbor with error:" + err.Error(), "Error")
 		return false
 	}
-
+	log.Info("Push image to harbor success")
+	p.AppendLog("Push image to harbor success", "Info")
 	return true
 }
 
@@ -160,7 +172,7 @@ func (p *PluggedProject) Save(configs []map[string]interface{}) bool {
 	p.DockerFileGenerator.Save(configs, p.DockerfilePlugins)
 	return true
 }
-
+//获取构建的镜像信息
 func (p *PluggedProject) readInfo() {
 	// load project info
 	content, error := ioutil.ReadFile(env.PROJECT_CONFIG_BASEDIR + p.Name + "/" + "info")
@@ -177,15 +189,15 @@ func (p *PluggedProject) readInfo() {
 	p.Cluster = infoMap["cluster"]
 	p.DefineDockerFileType = infoMap["defineDockerFileType"]
 }
-
-func (p *PluggedProject) appendLog(line string) {
-	p.logs = append(p.logs, line+"\n")
+//增加日志
+func (p *PluggedProject) AppendLog(line string, logLevel string) {
+	p.logs = append(p.logs, p.timeNow() + "\t[" + logLevel + "]\t" + line+"\n")
 }
-
+//获取日志
 func (p *PluggedProject) GetLog() string {
 	return strings.Join(p.logs,"")
 }
-
+//清空日志
 func (p *PluggedProject) ClearLog() {
 	p.logs = make([]string, 0)
 }
@@ -222,4 +234,8 @@ func BuildPluginProject(projectName string,
 	project.BuildPlugins = buildPlugins
 
 	return project
+}
+//获取当前时间
+func (p *PluggedProject) timeNow() string {
+	return time.Now().Format("2006-01-02 15:04:05") + "\t"
 }

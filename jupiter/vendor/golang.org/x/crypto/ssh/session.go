@@ -288,6 +288,7 @@ func (s *Session) Start(cmd string) error {
 // *ExitError. Other error types may be returned for I/O problems.
 func (s *Session) Run(cmd string) error {
 	err := s.Start(cmd)
+	fmt.Println("err when session run:", err)
 	if err != nil {
 		return err
 	}

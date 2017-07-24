@@ -9,6 +9,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/dao"
 	"weibo.com/opendcp/jupiter/future"
+	"weibo.com/opendcp/jupiter/service/cluster"
 )
 
 func main() {
@@ -16,6 +17,7 @@ func main() {
 	beego.SetLogger("file", `{"filename":"logs/jupiter.log"}`)
 	conf.InitConf()
 	future.InitExec()
+	cluster.InitInstanceDetailCron()
 	dao.InitDB()
 	if beego.BConfig.RunMode == "dev" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
