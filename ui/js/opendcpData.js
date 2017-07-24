@@ -212,6 +212,225 @@ var theme = {
         fontFamily: 'Arial, Verdana, sans-serif'
     }
 };
+var theme2 = {
+    color: [
+        '#d87c7c',
+        '#919e8b',
+        '#d7ab82',
+        '#61a0a8',
+        '#6e7074',
+        '#efa18d',
+        '#787464',
+        '#cc7e63',
+        '#724e58',
+        '#4b565b'
+    ],
+
+    title: {
+        itemGap: 8,
+        textStyle: {
+            fontWeight: 'normal',
+            color: '#408829'
+        }
+    },
+
+    dataRange: {
+        color: ['#1f610a', '#97b58d']
+    },
+
+    toolbox: {
+        color: ['#408829', '#408829', '#408829', '#408829']
+    },
+
+    tooltip: {
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        axisPointer: {
+            type: 'line',
+            lineStyle: {
+                color: '#408829',
+                type: 'dashed'
+            },
+            crossStyle: {
+                color: '#408829'
+            },
+            shadowStyle: {
+                color: 'rgba(200,200,200,0.3)'
+            }
+        }
+    },
+
+    dataZoom: {
+        dataBackgroundColor: '#eee',
+        fillerColor: 'rgba(64,136,41,0.2)',
+        handleColor: '#408829'
+    },
+    grid: {
+        borderWidth: 0
+    },
+
+    categoryAxis: {
+        axisLine: {
+            lineStyle: {
+                color: '#408829'
+            }
+        },
+        splitLine: {
+            lineStyle: {
+                color: ['#eee']
+            }
+        }
+    },
+
+    valueAxis: {
+        axisLine: {
+            lineStyle: {
+                color: '#408829'
+            }
+        },
+        splitArea: {
+            show: true,
+            areaStyle: {
+                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+            }
+        },
+        splitLine: {
+            lineStyle: {
+                color: ['#eee']
+            }
+        }
+    },
+    timeline: {
+        lineStyle: {
+            color: '#408829'
+        },
+        controlStyle: {
+            normal: {color: '#408829'},
+            emphasis: {color: '#408829'}
+        }
+    },
+
+    k: {
+        itemStyle: {
+            normal: {
+                color: '#68a54a',
+                color0: '#a9cba2',
+                lineStyle: {
+                    width: 1,
+                    color: '#408829',
+                    color0: '#86b379'
+                }
+            }
+        }
+    },
+    map: {
+        itemStyle: {
+            normal: {
+                areaStyle: {
+                    color: '#ddd'
+                },
+                label: {
+                    textStyle: {
+                        color: '#c12e34'
+                    }
+                }
+            },
+            emphasis: {
+                areaStyle: {
+                    color: '#99d2dd'
+                },
+                label: {
+                    textStyle: {
+                        color: '#c12e34'
+                    }
+                }
+            }
+        }
+    },
+    force: {
+        itemStyle: {
+            normal: {
+                linkStyle: {
+                    strokeColor: '#408829'
+                }
+            }
+        }
+    },
+    chord: {
+        padding: 4,
+        itemStyle: {
+            normal: {
+                lineStyle: {
+                    width: 1,
+                    color: 'rgba(128, 128, 128, 0.5)'
+                },
+                chordStyle: {
+                    lineStyle: {
+                        width: 1,
+                        color: 'rgba(128, 128, 128, 0.5)'
+                    }
+                }
+            },
+            emphasis: {
+                lineStyle: {
+                    width: 1,
+                    color: 'rgba(128, 128, 128, 0.5)'
+                },
+                chordStyle: {
+                    lineStyle: {
+                        width: 1,
+                        color: 'rgba(128, 128, 128, 0.5)'
+                    }
+                }
+            }
+        }
+    },
+    gauge: {
+        startAngle: 225,
+        endAngle: -45,
+        axisLine: {
+            show: true,
+            lineStyle: {
+                color: [[0.2, '#86b379'], [0.8, '#68a54a'], [1, '#408829']],
+                width: 8
+            }
+        },
+        axisTick: {
+            splitNumber: 10,
+            length: 12,
+            lineStyle: {
+                color: 'auto'
+            }
+        },
+        axisLabel: {
+            textStyle: {
+                color: 'auto'
+            }
+        },
+        splitLine: {
+            length: 18,
+            lineStyle: {
+                color: 'auto'
+            }
+        },
+        pointer: {
+            length: '90%',
+            color: 'auto'
+        },
+        title: {
+            textStyle: {
+                color: '#333'
+            }
+        },
+        detail: {
+            textStyle: {
+                color: 'auto'
+            }
+        }
+    },
+    textStyle: {
+        fontFamily: 'Arial, Verdana, sans-serif'
+    }
+};
 var cache = {
     index:[],
     page: 1,
@@ -228,14 +447,16 @@ var intervalminute = 1;//表示1分钟刷新一次整体数据
 
 $(document).ready(function() {
     getTask(1);
+    // iniMachineLineChart();
     window.setTimeout('getInstanceCount()',200);
     window.setTimeout('getClusterCount()',400);
     window.setTimeout('getPoolCount()',600);
+    // testMachineChart();
     changeTime(0);
-    setInterval('getTask(1)',intervalminute*60*1000);
-    setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
-    setInterval('getClusterCount()',intervalminute*60*1000 + 400);
-    setInterval('getPoolCount()',intervalminute*60*1000 + 600);
+    // setInterval('getTask(1)',intervalminute*60*1000);
+    // setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
+    // setInterval('getClusterCount()',intervalminute*60*1000 + 400);
+    // setInterval('getPoolCount()',intervalminute*60*1000 + 600);
 });
 
 var refreshTaskCountView = function(){
@@ -352,10 +573,10 @@ var loadAllData = function (time){
             //请求成功时执行该函数内容，result即为服务器返回的json对象
             if (result.code == 0) {
                 var line_data = [];
+                var line_time = [];
                 var pie_data = [];
                 for(var i = 0; i < result.content.length; i++){
                     var map = eval(result.content[i]); //数组
-                    var x = "", y = "";
                     if(i == result.content.length -1){
                         $.each(map, function (k, v) {
                             var name = k + "";
@@ -370,28 +591,145 @@ var loadAllData = function (time){
                     }
                     $.each(map, function (k, v) {
                         var name = k + "";
-                        if(name=="all"){y = v}
-                        if(name=="time") {x = v}
+                        if(name=="time") {
+                            line_time.push(v);
+                        }
+                        var flag = false;
+                        for(var p = 0; p < line_data.length; p++){
+                            if(name != "time" && line_data[p].name == name){
+                                line_data[p].data.push(parseInt(v))
+                                flag = true;
+                            }
+                        }
+                        if(name != "time" && !flag){
+                            var theLine = {
+                                'name':name,
+                                'data':[parseInt(v)]
+                            }
+                            line_data.push(theLine);
+                        }
                     });
-                    var point = {
-                        'x':x,
-                        'y':parseInt(y)
-                    };
-                    line_data.push(point);
                 }
-                initMachineLine(line_data, time);
+                testMachineChart(line_data,line_time);
+                // initMachineLine(line_data, time);
                 initMachinePieChart(pie_data);
             }else{
                 var line_data = [];
                 var pie_data = [];
-                initMachineLine(line_data, time);
-                initMachinePieChart(pie_data);
+
+                // initMachineLine(line_data, time);
+                // initMachinePieChart(pie_data);
                 pageNotify('error','数据加载失败！','错误信息：接口出错');
             }
         },
         error : function() {
             pageNotify('error','加载失败！','错误信息：接口不可用');
         }
+    });
+}
+
+var iniMachineLineChart = function (macheineData, time) {
+    var echartPie = echarts.init(document.getElementById('container'), theme2);
+    echartPie.setOption({
+        tooltip : {
+            trigger: 'axis',
+        },
+        calculable: true,
+        legend: {
+            enabled:false,
+        },
+        toolbox: {
+            show: false,
+        },
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : time,
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value'
+            }
+        ],
+        series : macheineData
+    });
+}
+
+var testMachineChart = function(macheineData, xaixs_time){
+    // alert(JSON.stringify(macheineData));
+    var echartPie = echarts.init(document.getElementById('container'), theme2);
+    echartPie.setOption({
+        title: {
+            text: null
+        },
+        tooltip : {
+            trigger: 'axis',
+        },
+        legend: {
+            x: 'center',
+            y: 20,
+            data:(function () {
+                // generate an array of random data
+                var data = [];
+                for(var i = 0; i < macheineData.length; i++){
+                    if(macheineData[i].name == "all"){
+                        data.push("机器总量");
+                    }else{
+                        data.push(macheineData[i].name);
+                    }
+                }
+                return data;
+            }())
+        },
+        toolbox: {
+            show: false,
+        },
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : xaixs_time
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value'
+            }
+        ],
+        series :  (function () {
+            // generate an array of random data
+            var data = [];
+            for(var i = 0; i < macheineData.length; i++){
+                var line = {
+                    name:macheineData[i].name,
+                    type:'line',
+                    smooth: true,
+                    stack: '总量',
+                    areaStyle: {normal: {}},
+                    data:macheineData[i].data
+                }
+                if(macheineData[i].name == "all"){
+                    line = {
+                        name:'机器总量',
+                        type:'line',
+                        smooth: true,
+                        stack: '总量',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        areaStyle: {normal: {}},
+                        data:macheineData[i].data
+                    }
+                }
+                data.push(line);
+            }
+            return data;
+        }())
     });
 }
 var initMachinePieChart = function(pie_data){
@@ -541,11 +879,6 @@ var initMachineLine = function (line_data, time) {
             }())
         }]
     });
-}
-var showMachineLine = function(linedata){
-
-
-
 }
 //获取任务列表
 var getTask=function(page){
