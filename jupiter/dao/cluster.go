@@ -134,3 +134,14 @@ func GetDetailByTime(specificTime time.Time) (*models.Detail, error)  {
 	}
 	return &detail, err
 }
+
+func GetProviders() ([]string, error) {
+	o := GetOrmer()
+	var providers []string
+	sql := fmt.Sprintf("SELECT DISTINCT PROVIDER FROM %s ", CLUSTER_TABLE)
+	_, err := o.Raw(sql).QueryRows(&providers)
+	if err != nil {
+		return nil, err
+	}
+	return providers,nil
+}

@@ -213,23 +213,21 @@ func GetLatestDetail() (map[string]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	instanceInfo["all"] = len(allIns)
+	instanceInfo["total"] = len(allIns)
 
-	clusters, err := ListClusters()
+	providers, err := ListProviders()
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
-
-	for _, c := range clusters {
-		clusterIns, err := instance.GetClusterInstances(c.Id)
-		if err != nil  {
-			return  nil, err
+	for _, p := range providers {
+		providerIns, err := dao.GetInstancesByProvider(p)
+		if err != nil {
+			return nil, err
 		}
-		instanceInfo[c.Name] = len(clusterIns)
+		instanceInfo[p] = len(providerIns)
 	}
 	return instanceInfo, nil
 }
-
 
 func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
 	details := make([]models.InstanceDetail,0)
@@ -279,5 +277,14 @@ func InitInstanceDetailCron()  {
 	if detailCron != nil {
 		future.Exec.Submit(detailCron)
 	}
+}
+
+func ListProviders() ([]string, error) {
+	providers, err := dao.GetProviders()
+	if err != nil {
+		return nil, err
+	}
+	return providers, nil
+
 }
 
