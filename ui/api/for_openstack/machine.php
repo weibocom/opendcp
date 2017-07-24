@@ -292,6 +292,19 @@ if($hasLimit){
       $ip = keydata::getContentByKey('controller_ip');
       echo $ip;
       exit;
+
+    case 'getcomputepowerbytime':
+        include_once('../../include/computepower.php');
+        $time = $_REQUEST['time'];
+        $thetime = time() - $time*3600;
+        $arr_ret = computepower::getListByTime($thetime);
+        foreach($arr_ret as $k=>$v){
+                $arr_ret[$k]['data'] = @json_decode($v['data'], true);
+                $arr_ret[$k]['create_time'] = date('Y-m-d H:i:s', $v['create_time']);
+        }
+        echo json_encode(array('code'=>0, 'data'=>$arr_ret,));
+        exit;
+
     case 'getcomputepower':
         include_once('../../include/openstack.php');
         openstack::needOpenstackLogin();

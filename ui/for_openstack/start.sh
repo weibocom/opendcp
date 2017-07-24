@@ -7,5 +7,12 @@ do
 #        echo 'hasmake'
 #fi
 
+if test $( pgrep -f "php for_openstack/getcomputepower.php" | wc -l ) -eq 0
+then
+        cd /data1/web && nohup php for_openstack/getcomputepower.php >> /tmp/computepower.log &
+else
+        echo 'haspower'
+fi
+
 sleep 10
 done
