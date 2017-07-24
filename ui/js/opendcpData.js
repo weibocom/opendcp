@@ -439,24 +439,26 @@ var cache = {
     machineCount:0,
     clusterCount:0,
     poolCount:0,
+    expandTime:0,
+    stackTime:0,
 
 }
-var machineLineChart = null;
-var intervalRefreshLineChart = null;
+
 var intervalminute = 1;//表示1分钟刷新一次整体数据
 
 $(document).ready(function() {
     getTask(1);
-    // iniMachineLineChart();
-    window.setTimeout('getInstanceCount()',200);
-    window.setTimeout('getClusterCount()',400);
-    window.setTimeout('getPoolCount()',600);
-    // testMachineChart();
     changeTime(0);
-    // setInterval('getTask(1)',intervalminute*60*1000);
-    // setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
-    // setInterval('getClusterCount()',intervalminute*60*1000 + 400);
-    // setInterval('getPoolCount()',intervalminute*60*1000 + 600);
+    changeOpenTime(0);
+    window.setTimeout('getInstanceCount()',200);
+    window.setTimeout('getClusterCount()',300);
+    window.setTimeout('getPoolCount()',400);
+    setInterval('getTask(1)',intervalminute*60*1000);
+    setInterval('loadAllData()',intervalminute*60*1000);
+    setInterval('loadOpenStackData()',intervalminute*60*1000);
+    setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
+    setInterval('getClusterCount()',intervalminute*60*1000 + 400);
+    setInterval('getPoolCount()',intervalminute*60*1000 + 600);
 });
 
 var refreshTaskCountView = function(){
@@ -532,6 +534,7 @@ var getPoolCount = function () {
         }
     });
 }
+
 var changeTime = function(timeUnit){
     var timeHour = 0;
     if(timeUnit == 0){
@@ -558,10 +561,97 @@ var changeTime = function(timeUnit){
     var time_data = $("#time_nume").val();
     if($.isNumeric(time_data)){
         var time = parseInt(time_data)*timeHour;
-        loadAllData(time);
+        cache.expandTime = time;
+        loadAllData();
     }
 }
-var loadAllData = function (time){
+
+var changeOpenTime = function(timeUnit){
+    var timeHour = 0;
+    if(timeUnit == 0){
+        $("#time_open_unit").html('<a onclick="changeTime(0)">小时 </a><span class="caret"></span>');
+        timeHour = 1;
+    }
+    if(timeUnit == 1){
+        $("#time_open_unit").html('<a onclick="changeTime(1)">天 </a><span class="caret"></span>');
+        timeHour = 1*24;
+    }
+    if(timeUnit == 2){
+        $("#time_open_unit").html('<a onclick="changeTime(2)">周 </a><span class="caret"></span>');
+        timeHour = 1*24*7;
+    }
+    if(timeUnit == 3){
+        $("#time_open_unit").html('<a onclick="changeTime(3)">月 </a><span class="caret"></span>');
+        timeHour = 1*24*31;
+    }
+    if(timeUnit == 4){
+        $("#time_open_unit").html('<a onclick="changeTime(4)">年 </a><span class="caret"></span>');
+        timeHour = 1*24*31*365;
+
+    }
+    var time_data = $("#time_open_nume").val();
+    if($.isNumeric(time_data)){
+        var time = parseInt(time_data)*timeHour;
+        cache.stackTime = time;
+        loadOpenStackData()
+    }
+}
+
+var loadOpenStackData = function () {
+    var time = cache.stackTime;
+    var url = '/api/for_openstack/machine.php?action=getcomputepowerbytime&time='+ time;
+    $.ajax({
+        type : "post",
+        async : true,
+        url : url,
+        data : {},
+        dataType : "json",
+        success : function(result) {
+            //请求成功时执行该函数内容，result即为服务器返回的json对象
+            if (result.code == 0) {
+                var line_open_data = [];
+                var line_open_time = [];
+                for(var i = 0; i < result.data.length; i++){
+                    var cpusCout = result.data[i].data.vcpus;
+                    var memory = result.data[i].data.memory_gb;
+                    var machine_count = result.data[i].data.machine_count;
+                    line_open_time.push(result.data[i].create_time);
+                    if(i == 0){
+                        var element = {
+                            "name":"CPU个数",
+                            "data":[parseInt(cpusCout)]
+                        }
+                        var element2 = {
+                            "name":"Memory容量(G)",
+                            "data":[parseFloat(memory)]
+                        }
+                        line_open_data.push(element);
+                        line_open_data.push(element2);
+                    }else{
+                        line_open_data[0].data.push(parseInt(cpusCout));
+                        line_open_data[1].data.push(parseFloat(memory));
+                    }
+                }
+                testMachineStackChart(line_open_data,line_open_time);
+                // initMachineLine(line_data, time);
+                //initMachinePieChart(pie_data);
+            }else{
+                var line_data = [];
+                var pie_data = [];
+
+                // initMachineLine(line_data, time);
+                // initMachinePieChart(pie_data);
+                pageNotify('error','数据加载失败！','错误信息：接口出错');
+            }
+        },
+        error : function() {
+            pageNotify('error','加载失败！','错误信息：接口不可用');
+        }
+    });
+}
+
+var loadAllData = function (){
+    var time = cache.expandTime;
     var postData = {'action':'number','hour':time};
     $.ajax({
         type : "post",
@@ -612,7 +702,7 @@ var loadAllData = function (time){
                 }
                 testMachineChart(line_data,line_time);
                 // initMachineLine(line_data, time);
-                initMachinePieChart(pie_data);
+                //initMachinePieChart(pie_data);
             }else{
                 var line_data = [];
                 var pie_data = [];
@@ -628,34 +718,34 @@ var loadAllData = function (time){
     });
 }
 
-var iniMachineLineChart = function (macheineData, time) {
-    var echartPie = echarts.init(document.getElementById('container'), theme2);
-    echartPie.setOption({
-        tooltip : {
-            trigger: 'axis',
-        },
-        calculable: true,
-        legend: {
-            enabled:false,
-        },
-        toolbox: {
-            show: false,
-        },
-        xAxis : [
-            {
-                type : 'category',
-                boundaryGap : false,
-                data : time,
-            }
-        ],
-        yAxis : [
-            {
-                type : 'value'
-            }
-        ],
-        series : macheineData
-    });
-}
+// var iniMachineLineChart = function (macheineData, time) {
+//     var echartPie = echarts.init(document.getElementById('container'), theme2);
+//     echartPie.setOption({
+//         tooltip : {
+//             trigger: 'axis',
+//         },
+//         calculable: true,
+//         legend: {
+//             enabled:false,
+//         },
+//         toolbox: {
+//             show: false,
+//         },
+//         xAxis : [
+//             {
+//                 type : 'category',
+//                 boundaryGap : false,
+//                 data : time,
+//             }
+//         ],
+//         yAxis : [
+//             {
+//                 type : 'value'
+//             }
+//         ],
+//         series : macheineData
+//     });
+// }
 
 var testMachineChart = function(macheineData, xaixs_time){
     // alert(JSON.stringify(macheineData));
@@ -732,29 +822,84 @@ var testMachineChart = function(macheineData, xaixs_time){
         }())
     });
 }
-var initMachinePieChart = function(pie_data){
-    var echartPie = echarts.init(document.getElementById('echart_pie'), theme);
+
+var testMachineStackChart = function(macheineData, xaixs_time){
+    var echartPie = echarts.init(document.getElementById('container_stack'), theme2);
     echartPie.setOption({
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        title: {
+            text: null
+        },
+        tooltip : {
+            trigger: 'axis',
         },
         legend: {
-            enabled:false
+            x: 'center',
+            y: 20,
+            data:(function () {
+                // generate an array of random data
+                var data = [];
+                for(var i = 0; i < macheineData.length; i++){
+                    data.push(macheineData[i].name);
+                }
+                return data;
+            }())
         },
         toolbox: {
             show: false,
         },
-        calculable: true,
-        series: [{
-            name: '模板比例',
-            type: 'pie',
-            radius: '55%',
-            center: ['50%', '48%'],
-            data: pie_data
-        }]
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : xaixs_time
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value'
+            }
+        ],
+        series :  (function () {
+            // generate an array of random data
+            var data = [];
+            for(var i = 0; i < macheineData.length; i++){
+                var line = {
+                    name:macheineData[i].name,
+                    type:'line',
+                    smooth: true,
+                    stack: '总量',
+                    areaStyle: {normal: {}},
+                    data:macheineData[i].data
+                }
+                data.push(line);
+            }
+            return data;
+        }())
     });
 }
+// var initMachinePieChart = function(pie_data){
+//     var echartPie = echarts.init(document.getElementById('echart_pie'), theme);
+//     echartPie.setOption({
+//         tooltip: {
+//             trigger: 'item',
+//             formatter: "{a} <br/>{b} : {c} ({d}%)"
+//         },
+//         legend: {
+//             enabled:false
+//         },
+//         toolbox: {
+//             show: false,
+//         },
+//         calculable: true,
+//         series: [{
+//             name: '模板比例',
+//             type: 'pie',
+//             radius: '55%',
+//             center: ['50%', '48%'],
+//             data: pie_data
+//         }]
+//     });
+// }
 var initMachineLine = function (line_data, time) {
     Highcharts.setOptions({global: {useUTC: false}});
     machineLineChart = new Highcharts.Chart('container', {
