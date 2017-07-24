@@ -1353,7 +1353,7 @@ function addTaskCron(){
             '<option value="6">星期五</option>' +
             '<option value="7">星期六</option>' +
             '</select></td>';
-        row += '<td><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="checkTime()"  placeholder="00:00:00"></td>';
+        row += '<td><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="checkTime()"  placeholder="00:00"></td>';
         row += '<td><input type="name" class = "form-control" style="font-size:13px" name="0" oninput="isNum()"  placeholder="1"></td>';
         row += '<td style="vertical-align: middle;"><input type="checkbox"></td>';
         row += '<td style="vertical-align: middle;">' +
@@ -1376,7 +1376,7 @@ function addTaskCron(){
             '<option value="6">星期五</option>' +
             '<option value="7">星期六</option>' +
             '</select></td>';
-        row += '<td><input type="name" class = "form-control" oninput="checkTime()" style="font-size:13px" name="0"  placeholder="00:00:00"></td>';
+        row += '<td><input type="name" class = "form-control" oninput="checkTime()" style="font-size:13px" name="0"  placeholder="00:00"></td>';
         row += '<td><input type="name" class = "form-control" oninput="isNum()" style="font-size:13px" name="0"   placeholder="1"></td>';
         row += '<td><input type="name" class = "form-control" oninput="isRatio()" style="font-size:13px" name="0"  placeholder="1"></td>';
         row += '<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox" ></td>';
@@ -1579,7 +1579,7 @@ function compTime(){
     }
 }
 function checkTime(){
-    var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/;
+    var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d$/;
     var regExp = new RegExp(reg);
     if(!regExp.test(event.target.value)){
         event.target.style.border="1px solid #CE5454";
@@ -1678,8 +1678,8 @@ var listCronOrDepen= function(idx) {
     if($('#task_type').val()=="expandList"){
         $('#cron_head').empty();
         tr="<tr><th>#</th>"+
-            "<th >执行日期</th>"+
-            "<th >执行时间</th>"+
+            "<th>执行日期</th>"+
+            "<th>执行时间</th>"+
             "<th>机器数量</th>"+
             "<th>忽略</th>"+
             "<th>#</th></tr>";
@@ -1688,8 +1688,8 @@ var listCronOrDepen= function(idx) {
     if ($('#task_type').val()=="uploadList"){
         $('#cron_head').empty();
         tr="<tr><th>#</th>"+
-            "<th >执行日期</th>"+
-            "<th >执行时间</th>"+
+            "<th>执行日期</th>"+
+            "<th>执行时间</th>"+
             "<th>最大并发数</th>"+
             "<th>最大并发比例数</th>"+
             "<th>忽略</th>"+
