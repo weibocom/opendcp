@@ -361,6 +361,7 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node, operatio
 		nodes[i].s.Pool = pool
 		nodes[i].s.Log = ""
 		nodes[i].s.Steps = "[]"
+		nodes[i].s.CreatedTime = time.Now()
 
 		if nodes[i].s.LastOp != operation {
 			// Reset step num if current operation is different from last operation.
