@@ -96,9 +96,9 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		Monitoring: &ec2.RunInstancesMonitoringEnabled{
 			Enabled: aws.Bool(true),
 		},
-		SecurityGroupIds: []*string{
-			aws.String(input.Network.SecurityGroup),
-		},
+		//SecurityGroupIds: []*string{
+		//	aws.String(input.Network.SecurityGroup),
+		//},
 		SubnetId: aws.String(input.Network.SubnetId),
 		//BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 		//	{
