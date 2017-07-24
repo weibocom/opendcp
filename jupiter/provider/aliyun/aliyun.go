@@ -32,6 +32,7 @@ import (
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"errors"
 )
 
 func init() {
@@ -41,6 +42,7 @@ func init() {
 const (
 	CN_BEIJING_C = "cn-beijing-c"
 	IO_OPTIMIZED = "optimized"
+	TIMES_DEL 	 = 2
 )
 
 var instanceTypesInAliyun = map[string]string{
@@ -215,12 +217,15 @@ func (driver aliyunProvider) Delete(instanceId string) (time.Time, error) {
 	if err != nil {
 		return time.Now(), err
 	}
+
+	times := 1
 	if result.Status != "Stopped" {
 		_, _ = driver.client.Instance.StopInstance(map[string]interface{}{
 			"InstanceId": instanceId,
 			"ForceStop":  "true",
 		})
 		waitForSpecific(func() bool {
+			times++
 			status, err := driver.client.Instance.DescribeInstanceAttribute(map[string]interface{}{
 				"InstanceId": instanceId,
 			})
@@ -228,16 +233,27 @@ func (driver aliyunProvider) Delete(instanceId string) (time.Time, error) {
 				return false
 			}
 			return status.Status == "Stopped"
-		}, 10, 6*time.Second)
+		}, 20, 6*time.Second)
+		if times >= 20 {
+			return time.Now(), errors.New("It already has timed out to wait instance to stop")
+		}
 	}
-	time.Sleep(5 * time.Second)
-	_, err = driver.client.Instance.DeleteInstance(map[string]interface{}{
-		"InstanceId": instanceId,
-	})
-	if err != nil {
-		return time.Now(), err
+
+	for i:=1; i<=TIMES_DEL; i++ {
+		_, err = driver.client.Instance.DeleteInstance(map[string]interface{}{
+			"InstanceId": instanceId,
+		})
+		if err == nil {     		//删除成功返回
+			return time.Now(), nil
+		} else {
+			if i == TIMES_DEL {    //重试删除TIMES_DEL次后失败
+				msg := fmt.Sprintf("Retry to delete instance %d times failed, err: %s", TIMES_DEL, err.Error())
+				return time.Now(), errors.New(msg)
+			}
+		}
 	}
-	return time.Now(), nil
+
+	return time.Now(), err
 }
 
 func waitForSpecific(f func() bool, maxAttempts int, waitInterval time.Duration) error {
