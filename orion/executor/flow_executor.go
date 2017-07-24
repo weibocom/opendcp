@@ -362,6 +362,8 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow) error {
 			exec.SetFlowStatus(flow, models.STATUS_SUCCESS)
 			return nil
 		}
+		exec.SetFlowStatus(flow, models.STATUS_FAILED)
+		return nil
 	}
 
 	// execute flow by batch
