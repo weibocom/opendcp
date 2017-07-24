@@ -32,7 +32,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"weibo.com/opendcp/jupiter/conf"
 )
