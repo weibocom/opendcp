@@ -658,6 +658,7 @@ var iniMachineLineChart = function (macheineData, time) {
 }
 
 var testMachineChart = function(macheineData, xaixs_time){
+    // alert(JSON.stringify(macheineData));
     var echartPie = echarts.init(document.getElementById('container'), theme2);
     echartPie.setOption({
         title: {
@@ -667,16 +668,23 @@ var testMachineChart = function(macheineData, xaixs_time){
             trigger: 'axis',
         },
         legend: {
-            enabled:false,
+            x: 'center',
+            y: 20,
+            data:(function () {
+                // generate an array of random data
+                var data = [];
+                for(var i = 0; i < macheineData.length; i++){
+                    if(macheineData[i].name == "all"){
+                        data.push("机器总量");
+                    }else{
+                        data.push(macheineData[i].name);
+                    }
+                }
+                return data;
+            }())
         },
         toolbox: {
             show: false,
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
         },
         xAxis : [
             {
