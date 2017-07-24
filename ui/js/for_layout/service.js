@@ -1579,7 +1579,7 @@ function compTime(){
     }
 }
 function checkTime(){
-    var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/;
+    var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d$/;
     var regExp = new RegExp(reg);
     if(!regExp.test(event.target.value)){
         event.target.style.border="1px solid #CE5454";
@@ -1631,7 +1631,7 @@ function addTaskDepen(){
     row += "</select></td>"
     row+='<td><input type="text" class = "form-control" style="font-size:13px" oninput="isFloat()" name="0" placeholder="0.6"></td>';
     row+='<td><input type="text" class = "form-control" style="font-size:13px" oninput="isNum()" name="0" placeholder="1"></td>';
-    row+='<td style="vertical-align: middle;"><input type="checkbox"></td>';
+    row+='<td style="vertical-align: middle;"><input oninput="isNgore()" type="checkbox"></td>';
     row+='<td style="vertical-align: middle;"><a class="text-danger tooltips" title="删除" onclick="delRow(\''+"depend_row_"+dependRowNum+'\')"><i class="fa fa-trash-o" style="vertical-align: middle;"></i></a>';
     row+="</td></tr>";
     $("#depend_body").append(row);
