@@ -64,7 +64,7 @@ func Expand(poolId int, num int, opUser string, biz_id int) error {
 		return errors.New("first step of expand template is not create_vm: " + flow.Steps)
 	}
 
-	if num < 0 || num > 20 {
+	if num < 0 || num > 200 {
 		return errors.New("Bad num: " + strconv.Itoa(num))
 	}
 
