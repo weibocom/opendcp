@@ -212,6 +212,225 @@ var theme = {
         fontFamily: 'Arial, Verdana, sans-serif'
     }
 };
+var theme2 = {
+    color: [
+        '#d87c7c',
+        '#919e8b',
+        '#d7ab82',
+        '#61a0a8',
+        '#6e7074',
+        '#efa18d',
+        '#787464',
+        '#cc7e63',
+        '#724e58',
+        '#4b565b'
+    ],
+
+    title: {
+        itemGap: 8,
+        textStyle: {
+            fontWeight: 'normal',
+            color: '#408829'
+        }
+    },
+
+    dataRange: {
+        color: ['#1f610a', '#97b58d']
+    },
+
+    toolbox: {
+        color: ['#408829', '#408829', '#408829', '#408829']
+    },
+
+    tooltip: {
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        axisPointer: {
+            type: 'line',
+            lineStyle: {
+                color: '#408829',
+                type: 'dashed'
+            },
+            crossStyle: {
+                color: '#408829'
+            },
+            shadowStyle: {
+                color: 'rgba(200,200,200,0.3)'
+            }
+        }
+    },
+
+    dataZoom: {
+        dataBackgroundColor: '#eee',
+        fillerColor: 'rgba(64,136,41,0.2)',
+        handleColor: '#408829'
+    },
+    grid: {
+        borderWidth: 0
+    },
+
+    categoryAxis: {
+        axisLine: {
+            lineStyle: {
+                color: '#408829'
+            }
+        },
+        splitLine: {
+            lineStyle: {
+                color: ['#eee']
+            }
+        }
+    },
+
+    valueAxis: {
+        axisLine: {
+            lineStyle: {
+                color: '#408829'
+            }
+        },
+        splitArea: {
+            show: true,
+            areaStyle: {
+                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+            }
+        },
+        splitLine: {
+            lineStyle: {
+                color: ['#eee']
+            }
+        }
+    },
+    timeline: {
+        lineStyle: {
+            color: '#408829'
+        },
+        controlStyle: {
+            normal: {color: '#408829'},
+            emphasis: {color: '#408829'}
+        }
+    },
+
+    k: {
+        itemStyle: {
+            normal: {
+                color: '#68a54a',
+                color0: '#a9cba2',
+                lineStyle: {
+                    width: 1,
+                    color: '#408829',
+                    color0: '#86b379'
+                }
+            }
+        }
+    },
+    map: {
+        itemStyle: {
+            normal: {
+                areaStyle: {
+                    color: '#ddd'
+                },
+                label: {
+                    textStyle: {
+                        color: '#c12e34'
+                    }
+                }
+            },
+            emphasis: {
+                areaStyle: {
+                    color: '#99d2dd'
+                },
+                label: {
+                    textStyle: {
+                        color: '#c12e34'
+                    }
+                }
+            }
+        }
+    },
+    force: {
+        itemStyle: {
+            normal: {
+                linkStyle: {
+                    strokeColor: '#408829'
+                }
+            }
+        }
+    },
+    chord: {
+        padding: 4,
+        itemStyle: {
+            normal: {
+                lineStyle: {
+                    width: 1,
+                    color: 'rgba(128, 128, 128, 0.5)'
+                },
+                chordStyle: {
+                    lineStyle: {
+                        width: 1,
+                        color: 'rgba(128, 128, 128, 0.5)'
+                    }
+                }
+            },
+            emphasis: {
+                lineStyle: {
+                    width: 1,
+                    color: 'rgba(128, 128, 128, 0.5)'
+                },
+                chordStyle: {
+                    lineStyle: {
+                        width: 1,
+                        color: 'rgba(128, 128, 128, 0.5)'
+                    }
+                }
+            }
+        }
+    },
+    gauge: {
+        startAngle: 225,
+        endAngle: -45,
+        axisLine: {
+            show: true,
+            lineStyle: {
+                color: [[0.2, '#86b379'], [0.8, '#68a54a'], [1, '#408829']],
+                width: 8
+            }
+        },
+        axisTick: {
+            splitNumber: 10,
+            length: 12,
+            lineStyle: {
+                color: 'auto'
+            }
+        },
+        axisLabel: {
+            textStyle: {
+                color: 'auto'
+            }
+        },
+        splitLine: {
+            length: 18,
+            lineStyle: {
+                color: 'auto'
+            }
+        },
+        pointer: {
+            length: '90%',
+            color: 'auto'
+        },
+        title: {
+            textStyle: {
+                color: '#333'
+            }
+        },
+        detail: {
+            textStyle: {
+                color: 'auto'
+            }
+        }
+    },
+    textStyle: {
+        fontFamily: 'Arial, Verdana, sans-serif'
+    }
+};
 var cache = {
     index:[],
     page: 1,
@@ -220,19 +439,23 @@ var cache = {
     machineCount:0,
     clusterCount:0,
     poolCount:0,
+    expandTime:0,
+    stackTime:0,
 
 }
-var machineLineChart = null;
-var intervalRefreshLineChart = null;
+
 var intervalminute = 1;//表示1分钟刷新一次整体数据
 
 $(document).ready(function() {
     getTask(1);
-    window.setTimeout('getInstanceCount()',200);
-    window.setTimeout('getClusterCount()',400);
-    window.setTimeout('getPoolCount()',600);
     changeTime(0);
+    changeOpenTime(0);
+    window.setTimeout('getInstanceCount()',200);
+    window.setTimeout('getClusterCount()',300);
+    window.setTimeout('getPoolCount()',400);
     setInterval('getTask(1)',intervalminute*60*1000);
+    setInterval('loadAllData()',intervalminute*60*1000);
+    setInterval('loadOpenStackData()',intervalminute*60*1000);
     setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
     setInterval('getClusterCount()',intervalminute*60*1000 + 400);
     setInterval('getPoolCount()',intervalminute*60*1000 + 600);
@@ -241,7 +464,6 @@ $(document).ready(function() {
 var refreshTaskCountView = function(){
     $("#taskCount").html(cache.taskCount);
 }
-
 var refreshMachineCountView = function(){
     $("#machineCount").html(cache.machineCount);
 }
@@ -251,6 +473,7 @@ var refreshClusterCountView = function(){
 var refreshPoolCountView = function () {
     $("#poolCount").html(cache.poolCount);
 }
+
 var getInstanceCount = function () {
     var url='/api/for_cloud/ecs.php?action=list';
     var postData={'pagesize':1000};
@@ -311,6 +534,7 @@ var getPoolCount = function () {
         }
     });
 }
+
 var changeTime = function(timeUnit){
     var timeHour = 0;
     if(timeUnit == 0){
@@ -337,56 +561,78 @@ var changeTime = function(timeUnit){
     var time_data = $("#time_nume").val();
     if($.isNumeric(time_data)){
         var time = parseInt(time_data)*timeHour;
-        loadAllData(time);
+        cache.expandTime = time;
+        loadAllData();
     }
 }
-var loadAllData = function (time){
-    var postData = {'action':'number','hour':time};
+
+var changeOpenTime = function(timeUnit){
+    var timeHour = 0;
+    if(timeUnit == 0){
+        $("#time_open_unit").html('<a onclick="changeTime(0)">小时 </a><span class="caret"></span>');
+        timeHour = 1;
+    }
+    if(timeUnit == 1){
+        $("#time_open_unit").html('<a onclick="changeTime(1)">天 </a><span class="caret"></span>');
+        timeHour = 1*24;
+    }
+    if(timeUnit == 2){
+        $("#time_open_unit").html('<a onclick="changeTime(2)">周 </a><span class="caret"></span>');
+        timeHour = 1*24*7;
+    }
+    if(timeUnit == 3){
+        $("#time_open_unit").html('<a onclick="changeTime(3)">月 </a><span class="caret"></span>');
+        timeHour = 1*24*31;
+    }
+    if(timeUnit == 4){
+        $("#time_open_unit").html('<a onclick="changeTime(4)">年 </a><span class="caret"></span>');
+        timeHour = 1*24*31*365;
+
+    }
+    var time_data = $("#time_open_nume").val();
+    if($.isNumeric(time_data)){
+        var time = parseInt(time_data)*timeHour;
+        cache.stackTime = time;
+        loadOpenStackData();
+    }
+}
+
+var loadOpenStackData = function () {
+    var time = cache.stackTime;
+    var url = '/api/for_openstack/machine.php?action=getcomputepowerbytime&time='+ time;
     $.ajax({
         type : "post",
-        async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-        url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
-        data : {"data":JSON.stringify(postData)},
-        dataType : "json",        //返回数据形式为json
+        async : true,
+        url : url,
+        data : {},
+        dataType : "json",
         success : function(result) {
             //请求成功时执行该函数内容，result即为服务器返回的json对象
             if (result.code == 0) {
-                var line_data = [];
-                var pie_data = [];
-                for(var i = 0; i < result.content.length; i++){
-                    var map = eval(result.content[i]); //数组
-                    var x = "", y = "";
-                    if(i == result.content.length -1){
-                        $.each(map, function (k, v) {
-                            var name = k + "";
-                            if(name != "time" && name != "all"){
-                                var element = {
-                                    "name":name,
-                                    "value":parseInt(v)
-                                }
-                                pie_data.push(element);
-                            }
-                        });
+                var line_open_data = [];
+                var line_open_time = [];
+                for(var i = 0; i < result.data.length; i++){
+                    var cpusCout = result.data[i].data.vcpus;
+                    var memory = result.data[i].data.memory_gb;
+                    var machine_count = result.data[i].data.machine_count;
+                    line_open_time.push(result.data[i].create_time);
+                    if(i == 0){
+                        var element = {
+                            "name":"CPU(个)",
+                            "data":[parseInt(cpusCout)]
+                        }
+                        var element2 = {
+                            "name":"Memory(G)",
+                            "data":[parseFloat(memory)]
+                        }
+                        line_open_data.push(element);
+                        line_open_data.push(element2);
+                    }else{
+                        line_open_data[0].data.push(parseInt(cpusCout));
+                        line_open_data[1].data.push(parseFloat(memory));
                     }
-                    $.each(map, function (k, v) {
-                        var name = k + "";
-                        if(name=="all"){y = v}
-                        if(name=="time") {x = v}
-                    });
-                    var point = {
-                        'x':x,
-                        'y':parseInt(y)
-                    };
-                    line_data.push(point);
                 }
-                initMachineLine(line_data, time);
-                initMachinePieChart(pie_data);
-            }else{
-                var line_data = [];
-                var pie_data = [];
-                initMachineLine(line_data, time);
-                initMachinePieChart(pie_data);
-                pageNotify('error','数据加载失败！','错误信息：接口出错');
+                testMachineStackChart(line_open_data,line_open_time);
             }
         },
         error : function() {
@@ -394,159 +640,238 @@ var loadAllData = function (time){
         }
     });
 }
-var initMachinePieChart = function(pie_data){
-    var echartPie = echarts.init(document.getElementById('echart_pie'), theme);
+
+var loadAllData = function (){
+    var time = cache.expandTime;
+    var postData = {'action':'number','hour':time};
+    $.ajax({
+        type : "post",
+        async : true,
+        url : '/api/for_cloud/cluster.php?action=machine',
+        data : {"data":JSON.stringify(postData)},
+        dataType : "json",
+        success : function(result) {
+            if (result.code == 0) {
+                var line_data = [];
+                var line_time = [];
+                for(var i = 0; i < result.content.length; i++){
+                    var map = eval(result.content[i]); //数组
+                    $.each(map, function (k, v) {
+                        var name = k + "";
+                        if(name=="time") {
+                            line_time.push(v);
+                        }
+                        var flag = false;
+                        for(var p = 0; p < line_data.length; p++){
+                            if(name != "time" && line_data[p].name == name){
+                                line_data[p].data.push(parseInt(v))
+                                flag = true;
+                            }
+                        }
+                        if(name != "time" && !flag){
+                            var theLine = {
+                                'name':name,
+                                'data':[parseInt(v)]
+                            }
+                            line_data.push(theLine);
+                        }
+                    });
+                }
+                testMachineChart(line_data,line_time);
+            }
+        },
+        error : function() {
+            pageNotify('error','加载失败！','错误信息：接口不可用');
+        }
+    });
+}
+
+// var iniMachineLineChart = function (macheineData, time) {
+//     var echartPie = echarts.init(document.getElementById('container'), theme2);
+//     echartPie.setOption({
+//         tooltip : {
+//             trigger: 'axis',
+//         },
+//         calculable: true,
+//         legend: {
+//             enabled:false,
+//         },
+//         toolbox: {
+//             show: false,
+//         },
+//         xAxis : [
+//             {
+//                 type : 'category',
+//                 boundaryGap : false,
+//                 data : time,
+//             }
+//         ],
+//         yAxis : [
+//             {
+//                 type : 'value'
+//             }
+//         ],
+//         series : macheineData
+//     });
+// }
+
+var testMachineChart = function(macheineData, xaixs_time){
+    // alert(JSON.stringify(macheineData));
+    var echartPie = echarts.init(document.getElementById('container'), theme2);
     echartPie.setOption({
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        title: {
+            text: null
+        },
+        tooltip : {
+            trigger: 'axis',
         },
         legend: {
-            enabled:false
+            x: 'center',
+            y: 20,
+            data:(function () {
+                // generate an array of random data
+                var data = [];
+                var totalIndex = -1;
+                for(var i = 0; i < macheineData.length; i++){
+                    if(macheineData[i].name == "total"){
+                        totalIndex = i;
+                    }else{
+                        data.push(macheineData[i].name);
+                    }
+                }
+                if(totalIndex != -1){
+                    data.push(macheineData[totalIndex].name);
+                }
+                return data;
+            }())
         },
         toolbox: {
             show: false,
         },
-        calculable: true,
-        series: [{
-            name: '模板比例',
-            type: 'pie',
-            radius: '55%',
-            center: ['50%', '48%'],
-            data: pie_data
-        }]
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : xaixs_time
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value'
+            }
+        ],
+        series :  (function () {
+            // generate an array of random data
+            var data = [];
+            for(var i = 0; i < macheineData.length; i++){
+                var line = {
+                    name:macheineData[i].name,
+                    type:'line',
+                    smooth: true,
+                    stack: '总量',
+                    areaStyle: {normal: {}},
+                    data:macheineData[i].data
+                }
+                if(macheineData[i].name == "total"){
+                    line = {
+                        name:macheineData[i].name,
+                        type:'line',
+                        smooth: true,
+                        stack: '总量',
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        areaStyle: {normal: {}},
+                        data:macheineData[i].data
+                    }
+                }
+                data.push(line);
+            }
+            return data;
+        }())
     });
 }
-var initMachineLine = function (line_data, time) {
-    Highcharts.setOptions({global: {useUTC: false}});
-    machineLineChart = new Highcharts.Chart('container', {
-        chart:{
-            type: 'spline',
-            animation: Highcharts.svg, // don't animate in IE < IE 10.
-            marginRight: 10,
-            events: {
-                load: function () {
-                    var loadData = function() {
-                        loadAllData(time);
-                    }
-                    if(intervalRefreshLineChart != null) clearInterval(intervalRefreshLineChart);
-                    intervalRefreshLineChart = setInterval(loadData, intervalminute*60*1000);
-                }
-            }
-        },
+
+var testMachineStackChart = function(macheineData, xaixs_time){
+    var echartPie = echarts.init(document.getElementById('container_stack'), theme2);
+    echartPie.setOption({
         title: {
-            text: '',
-            x: -20
+            text: null
         },
-        subtitle: {
-            text: '',
-            x: -20
-        },
-        xAxis: {
-            title: {
-                text: null
-            },
-            labels: {
-                formatter: function () {
-                    return this.value;
-                }
-            },
-            categories: (function () {
-                // generate an array of random data
-                var data = [],time = (new Date()).getTime(),i;
-                for(var i = 0; i < line_data.length; i++){
-                    data.push(line_data[i].x);
-                }
-                return data;
-            }())
-        },
-        yAxis: {
-            title: {
-                text: ''
-            },
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
+        tooltip : {
+            trigger: 'axis',
         },
         legend: {
-            enabled: false
-        },
-        credits: {
-            enabled:false
-        },
-        exporting: {
-            enabled:false
-        },
-        tooltip: {
-            trigger: 'axis'
-        },
-        plotOptions: {
-            series: {
-                cursor: 'pointer',
-                point: {
-                    events: {
-                        // 数据点点击事件
-                        // 其中 e 变量为事件对象，this 为当前数据点对象
-                        click: function (e) {
-                            var postData = {'action':'oldnumber','hour':e.point.category.replace(" ", "%20")};
-                            $.ajax({
-                                type : "post",
-                                async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-                                url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
-                                data :  {"data":JSON.stringify(postData)},
-                                dataType : "json",        //返回数据形式为json
-                                success : function(result) {
-                                    //请求成功时执行该函数内容，result即为服务器返回的json对象
-                                    if (result.code == 0) {
-                                        var json = eval(result.content); //数组
-                                        var pie_data = [];
-                                        $.each(json, function (k, v) {
-                                            var name = k + "";
-                                            if(name != "time" && name != "all"){
-                                                var element = {};
-                                                element["name"] = name;
-                                                element["value"] = parseInt(v);
-                                                pie_data.push(element);
-                                            }
-                                        });
-                                        initMachinePieChart(pie_data);
-                                    }else{
-                                        pageNotify('warning','数据获取失败！','错误信息：接口错误');
-                                    }
-                                },
-                                error : function() {
-                                    pageNotify('error','加载失败！','错误信息：接口不可用');
-                                }
-                            });
-                        }
-                    }
-                },
-                marker: {
-                    lineWidth: 1
-                }
-            }
-        },
-        series: [{
-            name: '机器数量',
-            type:"spline",
-            data: (function () {
+            x: 'center',
+            y: 20,
+            data:(function () {
                 // generate an array of random data
-                var data = [],time = (new Date()).getTime(),i;
-                for(var i = 0; i < line_data.length; i++){
-                    data.push(line_data[i].y);
+                var data = [];
+                for(var i = 0; i < macheineData.length; i++){
+                    data.push(macheineData[i].name);
                 }
                 return data;
             }())
-        }]
+        },
+        toolbox: {
+            show: false,
+        },
+        xAxis : [
+            {
+                type : 'category',
+                boundaryGap : false,
+                data : xaixs_time
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value'
+            }
+        ],
+        series :  (function () {
+            // generate an array of random data
+            var data = [];
+            for(var i = 0; i < macheineData.length; i++){
+                var line = {
+                    name:macheineData[i].name,
+                    type:'line',
+                    smooth: true,
+                    stack: '总量',
+                    areaStyle: {normal: {}},
+                    data:macheineData[i].data
+                }
+                data.push(line);
+            }
+            return data;
+        }())
     });
 }
-var showMachineLine = function(linedata){
-
-
-
-}
+// var initMachinePieChart = function(pie_data){
+//     var echartPie = echarts.init(document.getElementById('echart_pie'), theme);
+//     echartPie.setOption({
+//         tooltip: {
+//             trigger: 'item',
+//             formatter: "{a} <br/>{b} : {c} ({d}%)"
+//         },
+//         legend: {
+//             enabled:false
+//         },
+//         toolbox: {
+//             show: false,
+//         },
+//         calculable: true,
+//         series: [{
+//             name: '模板比例',
+//             type: 'pie',
+//             radius: '55%',
+//             center: ['50%', '48%'],
+//             data: pie_data
+//         }]
+//     });
+// }
 //获取任务列表
 var getTask=function(page){
     var url='/api/for_layout/task.php?action=list';
@@ -575,9 +900,6 @@ var getTask=function(page){
                 paginate.html("");
                 head.html("");
                 body.html("");
-                //生成页面
-                //生成分页
-                //生成分页
                 listdata.title = ["#","服务池名称","任务名称","执行中","暂停","成功","失败","总计","成功率","执行时间"];
                 processPage(listdata, pageinfo, paginate);
                 //生成列表

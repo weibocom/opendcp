@@ -241,16 +241,19 @@ var updateEle=function(o,idx){
         case 2: $('#state').html('<span class="badge bg-green">已完成</span>');
                 if(cache.refreshInterval != null) {
                     clearInterval(cache.refreshInterval);
+                    cache.refreshInterval = null;
                 }
                 break;
         case 3: $('#state').html('<span class="badge bg-red">失败</span>');
                 if(cache.refreshInterval != null) {
                     clearInterval(cache.refreshInterval);
+                    cache.refreshInterval = null;
                 }
                 break;
         case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>');
             if(cache.refreshInterval != null) {
                 clearInterval(cache.refreshInterval);
+                cache.refreshInterval = null;
             }
             break;
         default: $('#state').html('<span class="badge bg-red" title="'+ idx +'">未知</span>'); break;
@@ -545,6 +548,7 @@ var change=function(){
       }else{
           if(cache.refreshInterval != null){
               clearInterval(cache.refreshInterval);
+              cache.refreshInterval = null;
           }
           pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
       }
@@ -561,6 +565,7 @@ var change=function(){
     error: function (){
       if(cache.refreshInterval != null){
           clearInterval(cache.refreshInterval);
+          cache.refreshInterval = null;
       }
       pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
     }
