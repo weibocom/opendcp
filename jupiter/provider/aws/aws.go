@@ -593,11 +593,37 @@ func (driver awsProvider) AllocatePublicIpAddress(instanceId string) (string, er
 }
 
 func (driver awsProvider) WaitForInstanceToStop(instanceId string) bool {
-	return false
-}
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			aws.String(instanceId),
+		},
+		DryRun: aws.Bool(false),
+	}
+
+	err := driver.client.WaitUntilInstanceStopped(input)
+	if err != nil {
+		beego.Error("the wait instance err:", err)
+		return false
+	}
+
+	return true
+	}
 
 func (driver awsProvider) WaitToStartInstance(instanceId string) bool {
-	return false
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			aws.String(instanceId),
+		},
+		DryRun: aws.Bool(false),
+	}
+
+	err := driver.client.WaitUntilInstanceRunning(input)
+	if err != nil {
+		beego.Error("the wait instance err:", err)
+		return false
+	}
+
+	return true
 }
 
 func new() (provider.ProviderDriver, error) {
