@@ -1393,6 +1393,7 @@ function isNgore(){
     checkSave();
 }
 function  checkSave(){
+    compDepenService();
     var taskType = $('#task_type').val();
     var flag=true;
     if(taskType == "expandList"){
@@ -1457,11 +1458,16 @@ function  checkSave(){
     var trList = $("#depend_body").children("tr");
     for (var i=0;i<trList.length;i++) {
         var tdArr = trList.eq(i).find("td");
+        var depenService = tdArr.eq(1).find("select").val();
+        var service_name= tdArr.eq(1).find("select").attr("name");
         var Ratio = tdArr.eq(3).find("input").attr("name");
         var ratio_val=tdArr.eq(3).find("input").val();//比例
         var Count = tdArr.eq(4).find("input").attr("name");
         var count_val =tdArr.eq(4).find("input").val();//机器冗余数量
+        if(depenService == ''|| service_name=='1'){
+            flag=false;
 
+        }
         if(Ratio == "1" || ratio_val==''){
             flag=false;
             if(ratio_val==''){
@@ -1578,6 +1584,35 @@ function compTime(){
         total_num=0;
     }
 }
+
+function compDepenService(){
+    var trList = $("#depend_body").children("tr");
+    var total_num=0;
+    var allService=[];
+    for (var i=0;i<trList.length;i++) {
+        var tdArr = trList.eq(i).find("td");
+        var row_service = tdArr.eq(1).find("select").val();//执行时间
+        allService.push(row_service);
+    }
+
+    for (var i=0;i<trList.length;i++){
+        var tdArr = trList.eq(i).find("td");
+        var service_val=tdArr.eq(1).find("select").val();
+        for(var j=0;j<allService.length;j++){
+            if(service_val == allService[j]){
+                total_num++;
+            }
+        }
+        if(total_num>1){
+            tdArr.eq(1).find("select").css('border','1px solid #CE5454');
+            tdArr.eq(1).find("select").attr("name","1");
+        }else{
+            tdArr.eq(1).find("select").css('border','1px solid #cccccc');
+            tdArr.eq(1).find("select").attr("name","0");
+        }
+        total_num=0;
+    }
+}
 function checkTime(){
     var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d$/;
     var regExp = new RegExp(reg);
@@ -1594,7 +1629,7 @@ function addTaskDepen(){
     $("#btnSaveTask").attr('disabled',true);
     var row = '<tr id ="depend_row_'+dependRowNum+'">';
     row+='<td style="vertical-align: middle;" name = "0">'+dependRowNum+'</td>';
-    row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
+    row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" name="0" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
 
     var firstIndexPool = -1;
     for(var i = 0; i <cache.poolList.length; i++){
@@ -1668,6 +1703,7 @@ function addOpt(rid){
         row += '<option value ="'+step.steps[i].name+'">'+step.steps[i].name+'</option>';
     }
     current_step_select.append(row);
+    checkSave();
 }
 
 //获取依赖任务和定时任务数据
@@ -1827,7 +1863,7 @@ var processDependList  = function(data) {
     for(var k = 0; k < data.length; k++){
         var row = '<tr id ="depend_row_'+dependRowNum+'">';
         row+='<td style="vertical-align: middle;" name = "' + data[k].id + '">'+dependRowNum+'</td>';
-        row+='<td><select id ="upload_pool_'+dependRowNum+'" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
+        row+='<td><select id ="upload_pool_'+dependRowNum+'" name="0" class="form-control" style="font-size:13px" onchange="addOpt('+dependRowNum+')">';
         var  currentThePool = {};
         for(var i = 0; i < cache.poolList.length; i++){
             if(data[k].pool.id == cache.poolList[i].id){
