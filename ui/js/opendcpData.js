@@ -654,28 +654,66 @@ var loadAllData = function (){
             if (result.code == 0) {
                 var line_data = [];
                 var line_time = [];
+                var phydevCount = 0;
+                var lineName = [];
+
                 for(var i = 0; i < result.content.length; i++){
-                    var map = eval(result.content[i]); //数组
+                    var map = eval(result.content[i]);
+                    $.each(map, function (k, v) {
+                        var name = k + "";
+                        var flag = false;
+                        for(var k = 0; k < lineName.length; k++){
+                            if(name == lineName[k]){
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if(!flag){
+                            lineName.push(name);
+                        }
+                    });
+                }
+                for(var i = 0; i < lineName.length; i++){
+                    if(lineName[i] == "time" || lineName[i] == "phydev"){
+                        continue;
+                    }
+                    var theLine = {
+                        'name':lineName[i] ,
+                        'data':[]
+                    }
+                    line_data.push(theLine);
+                }
+
+                for(var i = 0; i < result.content.length; i++){
+                    var map = eval(result.content[i]);
                     $.each(map, function (k, v) {
                         var name = k + "";
                         if(name=="time") {
                             line_time.push(v);
                         }
-                        var flag = false;
-                        for(var p = 0; p < line_data.length; p++){
-                            if(name != "time" && line_data[p].name == name){
-                                line_data[p].data.push(parseInt(v))
-                                flag = true;
-                            }
-                        }
-                        if(name != "time" && !flag){
-                            var theLine = {
-                                'name':name,
-                                'data':[parseInt(v)]
-                            }
-                            line_data.push(theLine);
+                        if(name=="phydev") {
+                            phydevCount = parseInt(v);
                         }
                     });
+                    var current_data_length = 0;
+                    $.each(map, function (k, v) {
+                        var name = k + "";
+                        for(var p = 0; p < line_data.length; p++){
+                            if(line_data[p].name == name){
+                                if(name == "total"){
+                                    line_data[p].data.push(parseInt(v)-phydevCount);
+                                    current_data_length = line_data[p].data.length;
+                                }else{
+                                    line_data[p].data.push(parseInt(v));
+                                }
+                            }
+                        }
+                    });
+                    for(var p = 0; p < line_data.length; p++){
+                        if(line_data[p].data.length < current_data_length){
+                            line_data[p].data.push(0);
+                        }
+                    }
                 }
                 testMachineChart(line_data,line_time);
             }
@@ -733,6 +771,9 @@ var testMachineChart = function(macheineData, xaixs_time){
                 var data = [];
                 var totalIndex = -1;
                 for(var i = 0; i < macheineData.length; i++){
+                    if(macheineData[i].name == "phydev"){
+                        continue;
+                    }
                     if(macheineData[i].name == "total"){
                         totalIndex = i;
                     }else{
@@ -764,6 +805,9 @@ var testMachineChart = function(macheineData, xaixs_time){
             // generate an array of random data
             var data = [];
             for(var i = 0; i < macheineData.length; i++){
+                if(macheineData[i].name == "phydev"){
+                    continue;
+                }
                 var line = {
                     name:macheineData[i].name,
                     type:'line',
