@@ -25,6 +25,10 @@ OpenDCP简介视频：
 
 [![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/video2.png)](https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1)
 
+<a href="https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1" target="_blank">
+![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/video2.png)]
+</a>
+
 ## 作者
 -   Fu Wen([@itfuwen](https://github.com/itfuwen))
 -   Zhang Yingeng([@goodidle](https://github.com/goodidle))
