@@ -1,7 +1,9 @@
 {
     "Password": "ASDqwe123",
-    "KeyId": "your_key_id",
-    "KeySecret": "your_secret",
+    "KeyId": "your_aliyun_key_id",
+    "KeySecret": "your_aliyun_secret",
+    "AwsKeyId":  "your_aws_key_id",
+    "AwsKeySecret": "your_aws_key_secret",
     "BufferSize": 40,
     "KeyDir": "./keys",
     "Ansible": {
