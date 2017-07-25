@@ -220,15 +220,22 @@ func (driver awsProvider) ListInstanceTypes() ([]string, error) {
 }
 
 func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, error) {
-	params := &ec2.DescribeInstanceAttributeInput{
+
+	resp, err := driver.client.DescribeInstances(&ec2.DescribeInstancesInput{
 		DryRun: aws.Bool(false),
-		InstanceId: aws.String(instanceId),
-	}
-	attr, err := driver.client.DescribeInstanceAttribute(params)
+		InstanceIds: [] *string {&instanceId},
+	})
 	if err != nil {
 		beego.Error(err.Error())
 		return nil, err
 	}
+
+	res := resp.Reservations[0].Instances[0]
+
+	//ret, err := driver.client.DescribeAddresses(&ec2.DescribeAddressesInput{
+	//	DryRun: aws.Bool(false),
+	//
+	//})
 
 	//var resp models.ListInstancesResponse
 	//respJson, err := json.Marshal(ret)
@@ -243,20 +250,22 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 	//}
 	//beego.Info(resp)
 	//return resp, nil
+
 	var instance models.Instance
-	instance.InstanceId = *attr.InstanceId
+	instance.InstanceId = *res.InstanceId
 	instance.Provider = "aws"
-	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05","", time.Local)
-	instance.InstanceType = *attr.InstanceType.Value
-	instance.VpcId = ""
-	instance.SubnetId = ""
-	instance.SecurityGroupId = ""
-	instance.PrivateIpAddress = ""
-	instance.PublicIpAddress = ""
-	instance.RegionId = ""
-	instance.ZoneId = ""
-	instance.NatIpAddress = ""
-	instance.CostWay = ""
+	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05", res.LaunchTime.String(), time.Local)
+	instance.ImageId = *res.ImageId
+	instance.InstanceType = *res.InstanceType
+	instance.VpcId = *res.VpcId
+	instance.SubnetId = *res.SubnetId
+	instance.SecurityGroupId = *res.SecurityGroups[0].GroupId
+	instance.PrivateIpAddress = *res.PrivateIpAddress
+	instance.PublicIpAddress = *res.PublicIpAddress
+	instance.RegionId = "aws region "
+	instance.ZoneId = "aws zone"
+	instance.NatIpAddress = "aws nia"
+	instance.CostWay = "aws costway"
 
 	return &instance, err
 
