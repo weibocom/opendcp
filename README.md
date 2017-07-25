@@ -47,3 +47,11 @@ opendcp交流qq群：369485460
 ## 授权
 
 OpenDCP 使用[GPL-2.0](https://www.gnu.org/licenses/gpl-2.0.txt)授权协议进行授权
+
+
+<video id="video" class="wrap" controls="" preload="none" poster="http://pic1.win4000.com/wallpaper/c/55efffdb0373b.jpg" type="video/mp4" style="display: block;width: 100%;">  
+<source src="static.hdslb.com/miniloader.swf?aid=12568817&page=1">
+</video>
+
+
+
