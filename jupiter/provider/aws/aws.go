@@ -34,7 +34,6 @@ import (
 	"weibo.com/opendcp/jupiter/provider"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"weibo.com/opendcp/jupiter/conf"
-	"fmt"
 )
 
 func init() {
@@ -78,7 +77,7 @@ func (driver awsProvider) ListInternetChargeType() []string {
 }
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
-	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
+	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.AwsKeyId, conf.Config.AwsKeySecret, "")
 
 	allocRes, err := driver.client.AllocateAddress(&ec2.AllocateAddressInput{
 		Domain: aws.String("vpc"),
@@ -621,10 +620,6 @@ func newProvider() (provider.ProviderDriver, error) {
 		Region: aws.String("cn-north-1"),
 	}))
 	client := ec2.New(sess)
-	fmt.Println(conf.Config.KeyId)
-	fmt.Println(conf.Config.KeySecret)
-	fmt.Println(conf.Config.AwsKeyId)
-	fmt.Println(conf.Config.AwsKeySecret)
 	client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
 	ret := awsProvider{
 		client: client,
