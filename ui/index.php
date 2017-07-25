@@ -75,7 +75,7 @@ require_once('include/navbar.php');
                                 <a><i class="fa fa-home"></i> Home </a>
                                 <ul class="nav child_menu" style="display: block;">
                                     <!--<li class="current-page"><a href="/">Dashboard</a></li>-->
-                                    <li class="current-page"><a href="/">平台数据</a></li>
+                                    <li class="current-page"><a href="/">Dashboard</a></li>
                                 </ul>
 
                             </li>
