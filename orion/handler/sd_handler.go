@@ -157,7 +157,9 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		ips[i] = node.Ip
+		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id){
+			ips[i] = node.Ip
+		}
 	}
 
 	data := make(map[string]interface{})
