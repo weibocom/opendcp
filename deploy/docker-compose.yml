@@ -71,7 +71,7 @@
      privileged: true
      volumes:
         - ./logs/imagebuild:/tmp
-        - ./data/project:/imagebuild/$VER
+        - ./data/imagebuild/project:/imagebuild/project:rw
      ports:
         - "8084:8080"
      environment:
