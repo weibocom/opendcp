@@ -81,6 +81,7 @@ func (s *scheduler) load() error {
 // Create creates a new task by given config, it will update the database
 // and launch the backgroud task.
 func (s *scheduler) Create(cfg *models.ExecTask) error {
+	beego.Info(".....create task before lock.....")
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.stopped {
@@ -128,6 +129,7 @@ func (s *scheduler) Delete(cfg *models.ExecTask) error {
 
 // Update updates the config of the task and restart the task to apply config
 func (s *scheduler) Update(cfg *models.ExecTask) error {
+	beego.Info(".....update task before lock.....")
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.stopped {

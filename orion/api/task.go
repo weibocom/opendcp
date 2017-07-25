@@ -106,7 +106,7 @@ DependItem add chekc for depend pool unique
 */
 
 func (c *TaskApi) SaveTask() {
-	beego.Info(".....SaveTask.....")
+	beego.Info(".....SaveTask begin.....")
 	save_exe_task := exec_task_struct{}
 	err := c.Body2Json(&save_exe_task)
 	if err != nil {
@@ -121,7 +121,9 @@ func (c *TaskApi) SaveTask() {
 	pool := &models.Pool{Id: save_exe_task.PoolId}
 	err = service.Cluster.GetBase(pool)
 	if err != nil {
+		beego.Error("1 Get pool error:", err)
 		c.ReturnFailed(err.Error(), 500)
+		return
 	}
 	exec_task.Pool = pool
 
@@ -140,6 +142,7 @@ func (c *TaskApi) SaveTask() {
 		cronItem.ExecTask = exec_task
 		if _, ok := timeMap[cron.Time]; ok {
 			c.ReturnFailed("Cron time "+cron.Time+" is duplicate!", 500)
+			return
 		} else {
 			timeMap[cron.Time] = true
 		}
@@ -157,6 +160,7 @@ func (c *TaskApi) SaveTask() {
 
 		cronItems = append(cronItems, cronItem)
 	}
+	beego.Info(".....SaveTask cron item ready.....")
 
 	for _, depend := range save_exe_task.DependItems {
 		dependItem := &models.DependItem{}
@@ -169,10 +173,13 @@ func (c *TaskApi) SaveTask() {
 		pool := &models.Pool{Id: depend.PoolId}
 		err = service.Cluster.GetBase(pool)
 		if err != nil {
+			beego.Error("2 Get pool error:", err)
 			c.ReturnFailed(err.Error(), 500)
+			return
 		}
 		if _, ok := dependPoolMap[pool.Name]; ok {
 			c.ReturnFailed("Depend pool "+pool.Name+" is duplicate!", 500)
+			return
 		} else {
 			dependPoolMap[pool.Name] = true
 		}
@@ -183,20 +190,26 @@ func (c *TaskApi) SaveTask() {
 		dependItem.ExecTask = exec_task
 		dependItems = append(dependItems, dependItem)
 	}
+	beego.Info(".....SaveTask depend item ready.....")
 	exec_task.CronItems = cronItems
 	exec_task.DependItems = dependItems
 
 	if exec_task.Id != 0 {
 		err := sched.Scheduler.Update(exec_task)
 		if err != nil {
+			beego.Error("update exec_task error:",err)
 			c.ReturnFailed(err.Error(), 500)
+			return
 		}
 	} else {
 		err := sched.Scheduler.Create(exec_task)
 		if err != nil {
+			beego.Error("create exec_task error:",err)
 			c.ReturnFailed(err.Error(), 500)
+			return
 		}
 	}
+	beego.Info(".....SaveTask  finish.....")
 	c.ReturnSuccess(true)
 }
 
