@@ -162,7 +162,7 @@ INSERT INTO `cluster` VALUES
     (1,'16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
     (2,'4Core8G经典网',  'aliyun',0,'',NOW(),NULL,4, 8, 'ecs.n2.large', 'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
     (3,'1Core1G经典网',  'aliyun',0,'',NOW(),NULL,1, 1, 'ecs.n1.tiny',  'centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency'),
-    (4,'1Core-1Gib',    'aws',   0,'',NOW(),NULL,1, 1, 't2.micro',     'ami-00dc086d',                           '','zhaowei9',2,3,'standard'     ,100,1,'standard'        )
+    (4,'1Core-1Gib',    'aws',   0,'',NOW(),NULL,1, 1, 't2.micro',     'ami-3d805750',                           '','zhaowei9',2,3,'standard'     ,100,1,'standard'        )
     ;
 UNLOCK TABLES;
 
