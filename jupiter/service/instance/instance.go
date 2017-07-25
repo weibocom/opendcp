@@ -37,6 +37,7 @@ import (
 )
 
 const PhyDev = "phydev"
+const SSH_AWS = "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem"
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -312,17 +313,7 @@ func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
 }
 
 func StartSshService(instanceId string, ip string, password string, correlationId string) error {
-	ins, _:= dao.GetInstance(instanceId)
-
-	var sshCli *ssh.Client
-	var err error
-
-	if ins.Provider == "aliyun" {
-		sshCli, err = getSSHClient(ip, "", password)
-	} else if ins.Provider == "aws" {
-		sshCli, err = getSSHClient(ip, "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem", password)
-	}
-
+	sshCli, err := getSSHClient(ip, "","", password)
 	if err != nil {
 		return err
 	}
@@ -334,7 +325,7 @@ func StartSshService(instanceId string, ip string, password string, correlationI
 	return nil
 }
 
-func getSSHClient(ip string, path string, password string) (*ssh.Client, error) {
+func getSSHClient(ip string, path string,user, password string) (*ssh.Client, error) {
 	var auth ssh.Auth
 	if path == "" {
 		auth = ssh.Auth{
@@ -346,7 +337,7 @@ func getSSHClient(ip string, path string, password string) (*ssh.Client, error) 
 		}
 	}
 	port := 22
-	sshCli, err := ssh.NewClient("root", ip, port, &auth)
+	sshCli, err := ssh.NewClient(user, ip, port, &auth)
 	if err != nil {
 		return nil, err
 	}
@@ -439,13 +430,45 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 }
 
 func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
-	sshErr := StartSshService(instanceId, ip, password, correlationId)
-	if sshErr != nil {
-		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
-		dao.UpdateInstanceStatus(ip, models.InitTimeout)
-		return ssh.Output{}, sshErr
+	ins, err := dao.GetInstance(instanceId)
+	if err != nil {
+		logstore.Error(correlationId, instanceId, "Get instance info err:", err)
+		return ssh.Output{}, err
 	}
-	cli, err := getSSHClient(ip, "", password)
+	var sshPath string = ""
+	var cli *ssh.Client
+	if strings.EqualFold(ins.Provider, "aws") {
+		sshPath = SSH_AWS
+		cli, err = getSSHClient(ip, sshPath, "centos", password)
+		shText := fmt.Sprintf("\"#!/bin/bash\nsudo passwd root << EOF\n%s\n%s\nEOF\n\"",conf.Config.Password, conf.Config.Password)
+		cmd := fmt.Sprintf("echo -e %s > init_root.sh && chmod +x init_root.sh && sh init_root.sh", shText)
+		logstore.Info(correlationId,instanceId,"Init root env:"+cmd)
+		_, err := cli.Run(cmd)
+		if err != nil {
+			dao.UpdateInstanceStatus(ip, models.StatusError)
+			result := fmt.Sprintf("Exec init root cmd %s fail: %s", cmd, err)
+			logstore.Error(correlationId,instanceId,result)
+			return ssh.Output{}, err
+		}
+		cmd = "sudo sed -i \"s/#PermitRootLogin/PermitRootLogin/g\" /etc/ssh/sshd_config && sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
+		logstore.Info(correlationId,instanceId,"Init ssh config:"+cmd)
+		_,err = cli.Run(cmd)
+		if err != nil {
+			dao.UpdateInstanceStatus(ip, models.StatusError)
+			result := fmt.Sprintf("Exec init ssh cmd %s fail: %s", cmd, err)
+			logstore.Error(correlationId, instanceId, result)
+			return ssh.Output{}, err
+		}
+	} else {
+		sshErr := StartSshService(instanceId, ip, password, correlationId)
+		if sshErr != nil {
+			logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
+			dao.UpdateInstanceStatus(ip, models.InitTimeout)
+			return ssh.Output{}, sshErr
+		}
+	}
+
+	cli, err = getSSHClient(ip, sshPath, "root", password)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
 	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
 	ret, err := cli.Run(cmd)
