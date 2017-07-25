@@ -464,7 +464,6 @@ $(document).ready(function() {
 var refreshTaskCountView = function(){
     $("#taskCount").html(cache.taskCount);
 }
-
 var refreshMachineCountView = function(){
     $("#machineCount").html(cache.machineCount);
 }
@@ -474,6 +473,7 @@ var refreshClusterCountView = function(){
 var refreshPoolCountView = function () {
     $("#poolCount").html(cache.poolCount);
 }
+
 var getInstanceCount = function () {
     var url='/api/for_cloud/ecs.php?action=list';
     var postData={'pagesize':1000};
@@ -618,11 +618,11 @@ var loadOpenStackData = function () {
                     line_open_time.push(result.data[i].create_time);
                     if(i == 0){
                         var element = {
-                            "name":"CPU个数",
+                            "name":"CPU(个)",
                             "data":[parseInt(cpusCout)]
                         }
                         var element2 = {
-                            "name":"Memory容量(G)",
+                            "name":"Memory(G)",
                             "data":[parseFloat(memory)]
                         }
                         line_open_data.push(element);
@@ -633,15 +633,6 @@ var loadOpenStackData = function () {
                     }
                 }
                 testMachineStackChart(line_open_data,line_open_time);
-                // initMachineLine(line_data, time);
-                //initMachinePieChart(pie_data);
-            }else{
-                var line_data = [];
-                var pie_data = [];
-
-                // initMachineLine(line_data, time);
-                // initMachinePieChart(pie_data);
-                pageNotify('error','数据加载失败！','错误信息：接口出错');
             }
         },
         error : function() {
@@ -655,30 +646,16 @@ var loadAllData = function (){
     var postData = {'action':'number','hour':time};
     $.ajax({
         type : "post",
-        async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-        url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
+        async : true,
+        url : '/api/for_cloud/cluster.php?action=machine',
         data : {"data":JSON.stringify(postData)},
-        dataType : "json",        //返回数据形式为json
+        dataType : "json",
         success : function(result) {
-            //请求成功时执行该函数内容，result即为服务器返回的json对象
             if (result.code == 0) {
                 var line_data = [];
                 var line_time = [];
-                var pie_data = [];
                 for(var i = 0; i < result.content.length; i++){
                     var map = eval(result.content[i]); //数组
-                    if(i == result.content.length -1){
-                        $.each(map, function (k, v) {
-                            var name = k + "";
-                            if(name != "time" && name != "all"){
-                                var element = {
-                                    "name":name,
-                                    "value":parseInt(v)
-                                }
-                                pie_data.push(element);
-                            }
-                        });
-                    }
                     $.each(map, function (k, v) {
                         var name = k + "";
                         if(name=="time") {
@@ -701,15 +678,6 @@ var loadAllData = function (){
                     });
                 }
                 testMachineChart(line_data,line_time);
-                // initMachineLine(line_data, time);
-                //initMachinePieChart(pie_data);
-            }else{
-                var line_data = [];
-                var pie_data = [];
-
-                // initMachineLine(line_data, time);
-                // initMachinePieChart(pie_data);
-                pageNotify('error','数据加载失败！','错误信息：接口出错');
             }
         },
         error : function() {
@@ -763,12 +731,16 @@ var testMachineChart = function(macheineData, xaixs_time){
             data:(function () {
                 // generate an array of random data
                 var data = [];
+                var totalIndex = -1;
                 for(var i = 0; i < macheineData.length; i++){
-                    if(macheineData[i].name == "all"){
-                        data.push("机器总量");
+                    if(macheineData[i].name == "total"){
+                        totalIndex = i;
                     }else{
                         data.push(macheineData[i].name);
                     }
+                }
+                if(totalIndex != -1){
+                    data.push(macheineData[totalIndex].name);
                 }
                 return data;
             }())
@@ -800,9 +772,9 @@ var testMachineChart = function(macheineData, xaixs_time){
                     areaStyle: {normal: {}},
                     data:macheineData[i].data
                 }
-                if(macheineData[i].name == "all"){
+                if(macheineData[i].name == "total"){
                     line = {
-                        name:'机器总量',
+                        name:macheineData[i].name,
                         type:'line',
                         smooth: true,
                         stack: '总量',
@@ -900,131 +872,6 @@ var testMachineStackChart = function(macheineData, xaixs_time){
 //         }]
 //     });
 // }
-var initMachineLine = function (line_data, time) {
-    Highcharts.setOptions({global: {useUTC: false}});
-    machineLineChart = new Highcharts.Chart('container', {
-        chart:{
-            type: 'spline',
-            animation: Highcharts.svg, // don't animate in IE < IE 10.
-            marginRight: 10,
-            events: {
-                load: function () {
-                    var loadData = function() {
-                        loadAllData(time);
-                    }
-                    if(intervalRefreshLineChart != null) clearInterval(intervalRefreshLineChart);
-                    intervalRefreshLineChart = setInterval(loadData, intervalminute*60*1000);
-                }
-            }
-        },
-        title: {
-            text: '',
-            x: -20
-        },
-        subtitle: {
-            text: '',
-            x: -20
-        },
-        xAxis: {
-            title: {
-                text: null
-            },
-            labels: {
-                formatter: function () {
-                    return this.value;
-                }
-            },
-            categories: (function () {
-                // generate an array of random data
-                var data = [],time = (new Date()).getTime(),i;
-                for(var i = 0; i < line_data.length; i++){
-                    data.push(line_data[i].x);
-                }
-                return data;
-            }())
-        },
-        yAxis: {
-            title: {
-                text: ''
-            },
-            plotLines: [{
-                value: 0,
-                width: 1,
-                color: '#808080'
-            }]
-        },
-        legend: {
-            enabled: false
-        },
-        credits: {
-            enabled:false
-        },
-        exporting: {
-            enabled:false
-        },
-        tooltip: {
-            trigger: 'axis'
-        },
-        plotOptions: {
-            series: {
-                cursor: 'pointer',
-                point: {
-                    events: {
-                        // 数据点点击事件
-                        // 其中 e 变量为事件对象，this 为当前数据点对象
-                        click: function (e) {
-                            var postData = {'action':'oldnumber','hour':e.point.category.replace(" ", "%20")};
-                            $.ajax({
-                                type : "post",
-                                async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
-                                url : '/api/for_cloud/cluster.php?action=machine',    //请求发送到TestServlet处
-                                data :  {"data":JSON.stringify(postData)},
-                                dataType : "json",        //返回数据形式为json
-                                success : function(result) {
-                                    //请求成功时执行该函数内容，result即为服务器返回的json对象
-                                    if (result.code == 0) {
-                                        var json = eval(result.content); //数组
-                                        var pie_data = [];
-                                        $.each(json, function (k, v) {
-                                            var name = k + "";
-                                            if(name != "time" && name != "all"){
-                                                var element = {};
-                                                element["name"] = name;
-                                                element["value"] = parseInt(v);
-                                                pie_data.push(element);
-                                            }
-                                        });
-                                        initMachinePieChart(pie_data);
-                                    }else{
-                                        pageNotify('warning','数据获取失败！','错误信息：接口错误');
-                                    }
-                                },
-                                error : function() {
-                                    pageNotify('error','加载失败！','错误信息：接口不可用');
-                                }
-                            });
-                        }
-                    }
-                },
-                marker: {
-                    lineWidth: 1
-                }
-            }
-        },
-        series: [{
-            name: '机器数量',
-            type:"spline",
-            data: (function () {
-                // generate an array of random data
-                var data = [],time = (new Date()).getTime(),i;
-                for(var i = 0; i < line_data.length; i++){
-                    data.push(line_data[i].y);
-                }
-                return data;
-            }())
-        }]
-    });
-}
 //获取任务列表
 var getTask=function(page){
     var url='/api/for_layout/task.php?action=list';
@@ -1053,9 +900,6 @@ var getTask=function(page){
                 paginate.html("");
                 head.html("");
                 body.html("");
-                //生成页面
-                //生成分页
-                //生成分页
                 listdata.title = ["#","服务池名称","任务名称","执行中","暂停","成功","失败","总计","成功率","执行时间"];
                 processPage(listdata, pageinfo, paginate);
                 //生成列表
