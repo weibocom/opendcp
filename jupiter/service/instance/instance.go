@@ -312,7 +312,17 @@ func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
 }
 
 func StartSshService(instanceId string, ip string, password string, correlationId string) error {
-	sshCli, err := getSSHClient(ip, "", password)
+	ins, _:= dao.GetInstance(instanceId)
+
+	var sshCli *ssh.Client
+	var err error
+
+	if ins.Provider == "aliyun" {
+		sshCli, err = getSSHClient(ip, "", password)
+	} else if ins.Provider == "aws" {
+		sshCli, err = getSSHClient(ip, "~\\.ssh\\zhaowei9.pem", password)
+	}
+
 	if err != nil {
 		return err
 	}
