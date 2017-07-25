@@ -51,6 +51,7 @@ opendcp交流qq群：369485460
 二维码加入：  
  ![](document/media/opendcp_qq_group.png)
 
+
 ## 授权
 
 OpenDCP 使用[GPL-2.0](https://www.gnu.org/licenses/gpl-2.0.txt)授权协议进行授权
