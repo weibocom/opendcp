@@ -178,7 +178,7 @@ func (c *TaskApi) SaveTask() {
 		}
 		dependItem.Pool = pool
 		dependItem.Ratio = depend.Ratio
-		dependItem.ElasticCount = depend.ExecTaskId
+		dependItem.ElasticCount = depend.ElasticCount
 		dependItem.StepName = depend.StepName
 		dependItem.ExecTask = exec_task
 		dependItems = append(dependItems, dependItem)
