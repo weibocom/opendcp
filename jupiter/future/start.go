@@ -56,9 +56,16 @@ func (sf *StartFuture) Run() error {
 	logstore.Info(sf.CorrelationId,sf.InstanceId,"###First### create vm")
 	for j := 0; j < INTERVAL; j++ {
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
-		if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
-			break
+		if sf.ProviderName == "aliyun" {
+			if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
+				break
+			}
+		} else if sf.ProviderName == "aws" {
+			if providerDriver.WaitToStartInstance(sf.InstanceId) {
+				return nil
+			}
 		}
+
 		time.Sleep(TIME4WAIT * time.Second)
 	}
 	ins, err := providerDriver.GetInstance(sf.InstanceId)

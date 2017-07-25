@@ -116,11 +116,15 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	}
 	var instanceIds []string
 
-	time.Sleep(2 * time.Minute)
+	time.Sleep(time.Minute)
 
 	for i := 0; i < len(runResult.Instances); i++ {
 		beego.Debug("Created instance", *runResult.Instances[i].InstanceId)
 		instanceIds = append(instanceIds, *(runResult.Instances[i].InstanceId))
+
+		if driver.WaitToStartInstance(*runResult.Instances[i].InstanceId) == false {
+			beego.Error("Failed to start instance")
+		}
 
 		_, err := driver.client.AssociateAddress(&ec2.AssociateAddressInput{
 			AllocationId: allocRes.AllocationId,
