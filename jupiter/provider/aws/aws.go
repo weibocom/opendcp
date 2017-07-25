@@ -236,25 +236,6 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 
 	res := resp.Reservations[0].Instances[0]
 
-	//ret, err := driver.client.DescribeAddresses(&ec2.DescribeAddressesInput{
-	//	DryRun: aws.Bool(false),
-	//
-	//})
-
-	//var resp models.ListInstancesResponse
-	//respJson, err := json.Marshal(ret)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//err = json.Unmarshal(respJson, &resp)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//beego.Info(resp)
-	//return resp, nil
-
 	var instance models.Instance
 	instance.InstanceId = *res.InstanceId
 	instance.Provider = "aws"
@@ -635,12 +616,11 @@ func new() (provider.ProviderDriver, error) {
 }
 
 func newProvider() (provider.ProviderDriver, error) {
-	//client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String("cn-north-1"),
 	}))
 	client := ec2.New(sess)
-	client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
+	client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.AwsKeyId, conf.Config.AwsKeySecret, "")
 
 	ret := awsProvider{
 		client: client,
