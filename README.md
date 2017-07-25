@@ -53,5 +53,5 @@ OpenDCP 使用[GPL-2.0](https://www.gnu.org/licenses/gpl-2.0.txt)授权协议进
 
 
 
-[![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/cover.png)](https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1)
+[![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/video.png)](https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1)
 
