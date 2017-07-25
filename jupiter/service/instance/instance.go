@@ -125,6 +125,8 @@ func DeleteOne(instanceId, correlationId string) error {
 				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
 			} else {
 				logstore.Error(correlationId, instanceId, "delete instance, err:", err)
+				_, e := UpdateInstanceStatus(instanceId, models.StatusError)
+				logstore.Error(correlationId, instanceId, "Update instance status err:", e)
 				return err
 			}
 		}

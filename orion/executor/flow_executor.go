@@ -362,6 +362,8 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow) error {
 			exec.SetFlowStatus(flow, models.STATUS_SUCCESS)
 			return nil
 		}
+		exec.SetFlowStatus(flow, models.STATUS_FAILED)
+		return nil
 	}
 
 	// execute flow by batch
@@ -867,15 +869,16 @@ func (exec *FlowExecutor) createNodeStates(flow *models.Flow, nodes []*models.No
 	states := make([]*models.NodeState, len(nodes))
 	for i, node := range nodes {
 		state := &models.NodeState{
-			Ip:      node.Ip,
-			VmId:    node.VmId,
-			Node:    node,
-			Flow:    flow,
-			Pool:    node.Pool,
-			Status:  models.STATUS_INIT,
-			Log:     "",
-			Steps:   "[]",
-			StepNum: 0,
+			Ip:          node.Ip,
+			VmId:        node.VmId,
+			Node:        node,
+			Flow:        flow,
+			Pool:        node.Pool,
+			Status:      models.STATUS_INIT,
+			Log:         "",
+			Steps:       "[]",
+			StepNum:     0,
+			CreatedTime: time.Now(),
 		}
 
 		// TODO batch insert all states
