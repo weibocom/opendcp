@@ -320,7 +320,7 @@ func StartSshService(instanceId string, ip string, password string, correlationI
 	if ins.Provider == "aliyun" {
 		sshCli, err = getSSHClient(ip, "", password)
 	} else if ins.Provider == "aws" {
-		sshCli, err = getSSHClient(ip, "/root/.ssh/zhaowei9.pem", password)
+		sshCli, err = getSSHClient(ip, "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem", password)
 	}
 
 	if err != nil {
