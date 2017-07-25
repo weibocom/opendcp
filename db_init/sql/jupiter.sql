@@ -169,3 +169,13 @@ INSERT INTO `bill` VALUES
     (3,3,0,10);
 UNLOCK TABLES;
 
+
+# Dump of table detail
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `instance_number` longtext NOT NULL DEFAULT '',
+  `running_time` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

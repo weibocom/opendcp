@@ -17,18 +17,17 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package utils
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-errors/errors"
 	"io/ioutil"
 	"path/filepath"
 	"sync"
-	log "github.com/astaxie/beego"
 	"unicode"
+
+	log "github.com/astaxie/beego"
 )
 
 const tempplate_path string = "orion/template.json"
@@ -47,19 +46,19 @@ func GetValidateUtil() *ValidateUtil {
 				path, err := filepath.Abs(tempplate_path)
 				if err != nil {
 					log.Debug("filepath abs with err:", err)
-					panic(errors.New(err))
+					panic(err)
 				}
 				fmt.Println("path:", path)
 				bytes, err := ioutil.ReadFile(path)
 				if err != nil {
 					log.Debug("ioutil ReadFile with err:", err)
-					panic(errors.New(err))
+					panic(err)
 				}
 				template := make(map[string]interface{})
 				err = json.Unmarshal(bytes, &template)
 				if err != nil {
 					log.Debug("json Unmarshal with err:", err)
-					panic(errors.New(err))
+					panic(err)
 				}
 				validate = &ValidateUtil{template: template}
 			}
@@ -70,7 +69,7 @@ func GetValidateUtil() *ValidateUtil {
 
 /**
 判断jsonString是否符合模板样式
- */
+*/
 func (validate *ValidateUtil) ValidateString(jsonString string) bool {
 	jsonMap := make(map[string]interface{})
 	err := json.Unmarshal([]byte(jsonString), &jsonMap)
@@ -82,7 +81,7 @@ func (validate *ValidateUtil) ValidateString(jsonString string) bool {
 
 /**
 判断jsonMap是否符合模板样式
- */
+*/
 func (validate *ValidateUtil) ValidateMap(jsonMap map[string]interface{}) bool {
 	result := false
 	for k, v := range validate.template {
@@ -102,7 +101,7 @@ func (validate *ValidateUtil) ValidateMap(jsonMap map[string]interface{}) bool {
 
 /**
 是否包含中文
- */
+*/
 func (validate *ValidateUtil) IsChineseChar(str string) bool {
 	for _, r := range str {
 		if unicode.Is(unicode.Scripts["Han"], r) {

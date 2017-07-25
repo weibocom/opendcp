@@ -35,6 +35,10 @@ import (
 	"errors"
 	"github.com/astaxie/beego"
 	"strings"
+	"unsafe"
+	"reflect"
+	"encoding/json"
+	"weibo.com/opendcp/jupiter/service/instance"
 )
 
 func GetCluster(clusterId int64) (*models.Cluster, error) {
@@ -71,7 +75,6 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 		ram , _ := strconv.Atoi(strs[2])
 		cluster.Ram = ram / 1024
 	}
-
 	id, err := dao.InsertCluster(cluster)
 	_, err = bill.InsertBill(cluster)
 	return id, err
@@ -91,6 +94,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+	beego.Info("First. Begin to create instances from cloud")
 	instanceIds, errs := providerDriver.Create(cluster, num)
 	if len(instanceIds) == 0 {
 		return nil, errs[0]
@@ -99,6 +103,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		beego.Error("Expand failed number is", len(errs), "errors is", errs)
 	}
 	beego.Info("The instance ids is", instanceIds)
+	beego.Info("Second. Begin to start and init instances ----")
 	c := make(chan int)
 	for i := 0; i < len(instanceIds); i++ {
 		go func(i int) {
@@ -113,11 +118,13 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 					}
 				}
 			}()
+			logstore.Info(correlationId, instanceIds[i], "1. Begin to insert instances into db")
 			ins, err := providerDriver.GetInstance(instanceIds[i])
 			if err != nil {
 				logstore.Error(correlationId, instanceIds[i], "get instance info error:", err)
 				c <- i
 			}
+			logstore.Info(correlationId, instanceIds[i], "get instance info successfully")
 			ins.Cluster = cluster
 			ins.Cpu = cluster.Cpu
 			ins.Ram = cluster.Ram
@@ -131,6 +138,8 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 				logstore.Error(correlationId, instanceIds[i], "insert instance to db error:", err)
 				c <- i
 			}
+			logstore.Info(correlationId, instanceIds[i], "insert instance into db successfully")
+			logstore.Info(correlationId, instanceIds[i], "2. Begin start instance in future")
 			startFuture := future.NewStartFuture(instanceIds[i], cluster.Provider, true, ins.PrivateIpAddress, correlationId)
 			future.Exec.Submit(startFuture)
 			c <- i
@@ -141,6 +150,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		case <-c:
 		}
 	}
+	go UpdateInstanceDetail()
 	return instanceIds, nil
 }
 
@@ -151,3 +161,136 @@ func ListClusters() ([]models.Cluster, error) {
 	}
 	return clusters, nil
 }
+
+
+
+func UpdateInstanceDetail() error {
+	instanceInfo, err := GetLatestDetail()
+	if err != nil {
+		return err
+	}
+
+	instanceData, err := json.Marshal(instanceInfo)
+	if err != nil {
+		return err
+	}
+
+	detail := &models.Detail{
+		InstanceNumber:	string(instanceData),
+		RunningTime:	time.Now(),
+	}
+
+	err = dao.InsertDetail(detail)
+	return err
+}
+
+func GetRecentDetail(beginTime, endTime  time.Time) ([]models.Detail, error) {
+	begin := beginTime.Format("2006-01-02 15:04:05")
+	end := endTime.Format("2006-01-02 15:04:05")
+	details, err := dao.GetDetailByTimePeriod(begin, end)
+	if err != nil {
+		return nil, err
+	}
+
+	return details, nil
+}
+
+func GetRecentInstanceDetail(hour int) ([]models.InstanceDetail, error) {
+	endTime := time.Now()
+	beginTime := endTime.Add(-time.Duration(hour)*time.Hour)
+	beego.Info("Get the instances number from begin time", beginTime,"to end time", endTime)
+	details, err := GetRecentDetail(beginTime, endTime)
+	if err != nil {
+		return nil, err
+	}
+	insDetails := make([]models.InstanceDetail,0)
+	for _, v := range details {
+		bytes := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&v.InstanceNumber))))
+		number := make(map[string] int)
+		err := json.Unmarshal(bytes, &number)
+		if err != nil {
+			return nil, err
+		}
+		insDetail := models.InstanceDetail{
+			InstanceNumber: number,
+			RunningTime:	GetCstTime(v.RunningTime),
+		}
+		insDetails = append(insDetails, insDetail)
+	}
+	return insDetails, nil
+}
+
+func GetLatestDetail() (map[string]int, error) {
+	instanceInfo := make(map[string] int)
+	allIns, err := instance.ListAllInstances()
+	if err != nil {
+		return nil, err
+	}
+	instanceInfo["all"] = len(allIns)
+
+	clusters, err := ListClusters()
+	if err != nil {
+		return  nil, err
+	}
+
+	for _, c := range clusters {
+		clusterIns, err := instance.GetClusterInstances(c.Id)
+		if err != nil  {
+			return  nil, err
+		}
+		instanceInfo[c.Name] = len(clusterIns)
+	}
+	return instanceInfo, nil
+}
+
+
+func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
+	details := make([]models.InstanceDetail,0)
+	instanceInfo, err := GetLatestDetail()
+	if err != nil {
+		return nil, err
+	}
+
+	instanceDetail := models.InstanceDetail{
+		InstanceNumber: instanceInfo,
+		RunningTime: 	GetCstTime(time.Now()),
+	}
+	details = append(details, instanceDetail)
+	return details, nil
+}
+
+func GetPastInstanceDetail(specificTime string) (*models.InstanceDetail, error)  {
+	theTime, err := time.ParseInLocation("2006-01-02 15:04:05", specificTime, time.Local)
+	convertTime := theTime.Add(-time.Duration(8)*time.Hour)
+	if err != nil {
+		return nil, err
+	}
+	detail, err := dao.GetDetailByTime(convertTime)
+	if err != nil {
+		return nil, err
+	}
+	bytes := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&detail.InstanceNumber))))
+	number := make(map[string] int)
+	err = json.Unmarshal(bytes, &number)
+	if err != nil {
+		return nil, err
+	}
+	insDetail := &models.InstanceDetail{
+		InstanceNumber: number,
+		RunningTime:	GetCstTime(detail.RunningTime),
+	}
+	return insDetail, nil
+}
+
+func GetCstTime(converTime time.Time) string  {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	return converTime.In(loc).Format("2006-01-02 15:04:05")
+}
+
+func InitInstanceDetailCron()  {
+	detailCron := future.NewCronbFuture("Instance detail task", future.DETAIL_INTERVAL, UpdateInstanceDetail)
+	if detailCron != nil {
+		future.Exec.Submit(detailCron)
+	}
+}
+

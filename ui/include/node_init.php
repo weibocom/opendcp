@@ -21,7 +21,7 @@ class node_init {
 		return $query->fetch_array(MYSQL_ASSOC);
 	}
 	static function getOneTaskByIp($ip){
-		$sql = 'select * from '.self::$table.' where ip=\''.@mysql_escape_string($ip).'\' and status=1 order by id asc limit 1';
+		$sql = 'select * from '.self::$table.' where ip=\''.@mysql_escape_string($ip).'\' and status=1 order by id desc limit 1';
 		global $db;
 		$query = $db->query($sql);
 		$arrRet=array();
