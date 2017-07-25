@@ -51,19 +51,7 @@ OpenDCP 使用[GPL-2.0](https://www.gnu.org/licenses/gpl-2.0.txt)授权协议进
 
 
 
-[![Alt text for your video](https://img.youtube.com/vi/T-D1KVIuvjA/0.jpg)](http://www.youtube.com/watch?v=T-D1KVIuvjA)
 
 
+[![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/cover.png)](https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1)
 
-
-
-[![](http://imgstore.cdn.sogou.com/app/a/100540002/451690.png)](https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1)
-
-(http://wx1.sinaimg.cn/large/006qpCDTly1fhwatcum9vj30qo0gogmn.jpg)
-
-
-![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/cover.png)
-
-<a href="https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1">
-<img src="http://imgstore.cdn.sogou.com/app/a/100540002/451690.png" style="height:100px;width:100px;" />
-</a>
