@@ -21,7 +21,7 @@ OpenDCP是一个基于Docker的云资源管理与调度平台，集镜像仓库�
 
 ## 视频
 
-OpenDCP简介视频：
+OpenDCP入门简介视频：
 
 [![image](https://github.com/CUBEGWZ/opendcp/raw/master/ui/video2.png)](https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1)
 
