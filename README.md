@@ -49,20 +49,10 @@ opendcp交流qq群：369485460
 OpenDCP 使用[GPL-2.0](https://www.gnu.org/licenses/gpl-2.0.txt)授权协议进行授权
 
 
-<video id="video" class="wrap" controls="" preload="none" poster="http://pic1.win4000.com/wallpaper/c/55efffdb0373b.jpg" type="video/mp4" style="display: block;width: 100%;">  
-<source src="static.hdslb.com/miniloader.swf?aid=12568817&page=1">
-</video>
-
-
-[![Alt text for your video](http://img.youtube.com/vi/T-D1KVIuvjA/0.jpg)](http://www.youtube.com/watch?v=T-D1KVIuvjA)
-
-
-<embed height="415" width="544" quality="high" allowfullscreen="true" type="application/x-shockwave-flash" src="//static.hdslb.com/miniloader.swf" flashvars="aid=12568817&page=1" pluginspage="//www.adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash"></embed>
-
-
-http://www.bilibili.com/video/av12568817/
 
 
 
-<iframe src=\"https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1\" frameborder="0" width="640" height="430" allowfullscreen></iframe>
+
+
+<iframe src="https://www.bilibili.com/html/html5player.html?aid=12568817&cid=20679828&as_wide=1" frameborder="0" width="640" height="430" allowfullscreen></iframe>
 
