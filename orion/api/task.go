@@ -25,6 +25,7 @@ import (
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/sched"
 	"weibo.com/opendcp/orion/service"
+	"fmt"
 )
 
 /**
@@ -124,6 +125,18 @@ func (c *TaskApi) SaveTask() {
 		c.ReturnFailed(err.Error(), 500)
 	}
 	exec_task.Pool = pool
+
+	//check the exec_task and it's pool_id is exist in db
+	if exec_task.Id != 0 {
+		dbExec_task := &models.ExecTask{Id: exec_task.Id}
+		err = service.Cluster.GetBase(dbExec_task)
+		if err != nil {
+			c.ReturnFailed(err.Error(), 500)
+		}
+		if dbExec_task.Pool.Id != exec_task.Pool.Id{
+			c.ReturnFailed(fmt.Sprintf("the current exec_task: %d, pool id: %d is wrong", dbExec_task.Id, dbExec_task.Pool.Id), 500)
+		}
+	}
 
 	exec_task.Type = save_exe_task.Type
 	exec_task.ExecType = save_exe_task.ExecType
