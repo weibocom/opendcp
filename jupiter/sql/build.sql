@@ -34,6 +34,7 @@ CREATE TABLE `cluster` (
   `data_disk_size` int(11) NOT NULL DEFAULT '0',
   `data_disk_num` int(11) NOT NULL DEFAULT '0',
   `data_disk_category` varchar(255) NOT NULL DEFAULT '',
+  'falvor_id' varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -84,6 +85,9 @@ CREATE TABLE `instance` (
   `status` int(11) NOT NULL DEFAULT '0',
   `public_key` longtext,
   `private_key` longtext,
+  'tenant_id' varchar(255) NOT NULL DEFAULT '',
+  'user_id'   varchar(255) NOT NULL DEFAULT '',
+  'name'    varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

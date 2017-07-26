@@ -87,7 +87,7 @@ func (clusterController *ClusterController) CreateCluster() {
 	body := clusterController.Ctx.Input.RequestBody
 	err := json.Unmarshal(body, &theCluster)
 	if err != nil {
-		beego.Error("Could parase request before crate cluster: ", err)
+		beego.Error("Could parase request before create cluster: ", err)
 		clusterController.RespInputError()
 		return
 	}

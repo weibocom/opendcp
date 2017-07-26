@@ -34,9 +34,13 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+	"os/exec"
 )
 
-const PhyDev = "phydev"
+const (
+	PhyDev = "phydev"
+	OPENSTACK = "openstack"
+)
 
 func CreateOne(cluster *models.Cluster) (string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
@@ -44,16 +48,22 @@ func CreateOne(cluster *models.Cluster) (string, error) {
 		return "", err
 	}
 	instanceIds, errs := providerDriver.Create(cluster, 1)
-	if errs != nil {
+	if len(errs) != 0 {
 		return "", errs[0]
 	}
+	//if errs != nil {
+	//	return "", errs[0]
+	//}
+	fmt.Println("getting instance")
 	ins, err := providerDriver.GetInstance(instanceIds[0])
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("insert into database")
 	if err := dao.InsertInstance(ins); err != nil {
 		return "", err
 	}
+	fmt.Println("have inserted")
 	return instanceIds[0], nil
 }
 
@@ -442,8 +452,23 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	}
 	logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
 	cli, err := getSSHClient(ip, "", password)
-	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", conf.Config.Ansible.GetOctansUrl)
+
+	octanUrl := conf.Config.Ansible.GetOctansUrl
+
+	ins, err := dao.GetInstance(instanceId)
+	if err != nil {
+		return ssh.Output{}, err
+	}
+
+	if strings.EqualFold(ins.Provider, OPENSTACK){
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
+	} else {
+		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
+	}
+
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
 	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
+
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
@@ -470,6 +495,35 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	return ret, nil
 }
 
+
+func ChangeOpenStackConf(OpConf *models.OpenStackConf) error{
+	//修改hosts文件的controller域名
+
+	op := fmt.Sprintf("awk '{if($2==\"controller\") {$1=\"%s\"} print}' /etc/hosts > /etc/hostsbak",  OpConf.OpIp)
+	cmd := exec.Command("/bin/sh", "-c", op)
+	err := cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "cp /etc/hostsbak /etc/hosts")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+	cmd = exec.Command("/bin/sh", "-c", "rm /etc/hostsbak")
+	err = cmd.Run()
+	if err != nil{
+		return err
+	}
+
+	conf.Config.OpIp = OpConf.OpIp
+	conf.Config.OpPort = OpConf.OpPort
+	conf.Config.OpUserName = OpConf.OpUserName
+	conf.Config.OpPassWord = OpConf.OpPassWord
+	return err
+
+}
+
 func ListAllInstances() ([]models.Instance, error) {
 	instances, err := dao.GetAllRunningInstance()
 	if err != nil {
@@ -486,3 +540,4 @@ func GetClusterInstances(clusterId int64)  ([]models.Instance, error){
 	}
 	return instances, err
 }
+
