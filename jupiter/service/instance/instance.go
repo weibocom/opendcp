@@ -435,6 +435,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 		logstore.Error(correlationId, instanceId, "Get instance info err:", err)
 		return ssh.Output{}, err
 	}
+	ip = ins.PublicIpAddress
 	var sshPath string = ""
 	var cli *ssh.Client
 	if strings.EqualFold(ins.Provider, "aws") {

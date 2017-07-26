@@ -116,7 +116,7 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	}
 	var instanceIds []string
 
-	time.Sleep(time.Minute)
+	time.Sleep(1.5 * time.Minute)
 
 	for i := 0; i < len(runResult.Instances); i++ {
 		beego.Debug("Created instance", *runResult.Instances[i].InstanceId)
