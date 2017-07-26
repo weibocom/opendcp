@@ -769,19 +769,12 @@ var testMachineChart = function(macheineData, xaixs_time){
             data:(function () {
                 // generate an array of random data
                 var data = [];
-                var totalIndex = -1;
                 for(var i = 0; i < macheineData.length; i++){
-                    if(macheineData[i].name == "phydev"){
+                    if(macheineData[i].name == "phydev" || macheineData[i].name == "total"){
                         continue;
-                    }
-                    if(macheineData[i].name == "total"){
-                        totalIndex = i;
                     }else{
                         data.push(macheineData[i].name);
                     }
-                }
-                if(totalIndex != -1){
-                    data.push(macheineData[totalIndex].name);
                 }
                 return data;
             }())
@@ -804,13 +797,8 @@ var testMachineChart = function(macheineData, xaixs_time){
         series :  (function () {
             // generate an array of random data
             var data = [];
-            var totalIndex = -1;
             for(var i = 0; i < macheineData.length; i++){
-                if(macheineData[i].name == "phydev"){
-                    continue;
-                }
-                if(macheineData[i].name == "total"){
-                    totalIndex = i;
+                if(macheineData[i].name == "phydev" || macheineData[i].name == "total"){
                     continue;
                 }
                 var line = {
@@ -820,23 +808,6 @@ var testMachineChart = function(macheineData, xaixs_time){
                     stack: '总量',
                     areaStyle: {normal: {}},
                     data:macheineData[i].data
-                }
-                data.push(line);
-            }
-            if(totalIndex != -1){
-                var line = {
-                    name:macheineData[totalIndex].name,
-                    type:'line',
-                    smooth: true,
-                    stack: '总量',
-                    label: {
-                        normal: {
-                            show: true,
-                            position: 'top'
-                        }
-                    },
-                    areaStyle: {normal: {}},
-                    data:macheineData[totalIndex].data
                 }
                 data.push(line);
             }
