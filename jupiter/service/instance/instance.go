@@ -441,7 +441,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	if strings.EqualFold(ins.Provider, "aws") {
 		sshPath = SSH_AWS
 		cli, err = getSSHClient(ip, sshPath, "centos", password)
-		cmd := "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config && service sshd restart &&sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
+		cmd := "sudo sed -i \"s/PasswordAuthentication no/PasswordAuthentication yes/g\" /etc/ssh/sshd_config && service sshd restart &&sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
 		logstore.Info(correlationId,instanceId,"Init ssh config:"+cmd)
 		ret, err := cli.Run(cmd)
 		if err != nil {
