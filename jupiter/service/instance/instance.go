@@ -441,22 +441,12 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	if strings.EqualFold(ins.Provider, "aws") {
 		sshPath = SSH_AWS
 		cli, err = getSSHClient(ip, sshPath, "centos", password)
-		shText := fmt.Sprintf("\"#!/bin/bash\nsudo passwd root << EOF\n%s\n%s\nEOF\n\"",conf.Config.Password, conf.Config.Password)
-		cmd := fmt.Sprintf("echo -e %s > init_root.sh && chmod +x init_root.sh && sh init_root.sh", shText)
-		logstore.Info(correlationId,instanceId,"Init root env:"+cmd)
-		_, err := cli.Run(cmd)
-		if err != nil {
-			dao.UpdateInstanceStatus(ip, models.StatusError)
-			result := fmt.Sprintf("Exec init root cmd %s fail: %s", cmd, err)
-			logstore.Error(correlationId,instanceId,result)
-			return ssh.Output{}, err
-		}
-		cmd = "sudo sed -i \"s/#PermitRootLogin/PermitRootLogin/g\" /etc/ssh/sshd_config && sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
+		cmd := "sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
 		logstore.Info(correlationId,instanceId,"Init ssh config:"+cmd)
-		_,err = cli.Run(cmd)
+		ret, err := cli.Run(cmd)
 		if err != nil {
 			dao.UpdateInstanceStatus(ip, models.StatusError)
-			result := fmt.Sprintf("Exec init ssh cmd %s fail: %s", cmd, err)
+			result := fmt.Sprintf("Exec init ssh cmd %s fail: %s", cmd, err, ret)
 			logstore.Error(correlationId, instanceId, result)
 			return ssh.Output{}, err
 		}
@@ -475,7 +465,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
-		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err)
+		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err, ret)
 		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
@@ -489,7 +479,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
-		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err)
+		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err, ret)
 		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
