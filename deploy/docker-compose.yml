@@ -10,6 +10,8 @@
         - ./conf/rsyncd.conf:/etc/rsyncd.conf
         - ./logs:/data1/logs:rw
         - ./data/Runtime:/data1/hubble/Runtime:rw
+        - ./conf/manage_device.conf:/etc/nginx/conf.d/manage_device.conf
+        - ./manage_device:/data1/manage_device
      volumes_from:
         - hubble
         - web
@@ -19,6 +21,7 @@
         - "8888:8888"
         - "8080:8080"
         - "873:873"
+        - "8999:8999"
    web:
      image: $REPO/opendcp/ui:$VER
      volumes:

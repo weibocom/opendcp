@@ -546,6 +546,8 @@ func (aliyunProvider) AttachGateway(input *models.AttachGateway) (bool, error) {
 	return true, nil
 }
 
+
+
 func new() (provider.ProviderDriver, error) {
 	return newProvider()
 }
