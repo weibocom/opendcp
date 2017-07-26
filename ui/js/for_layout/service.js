@@ -1755,6 +1755,7 @@ var listCronOrDepen= function(idx) {
                 var the_depend_itmes = [];
 
                 if(listdata.content == null){
+                    cache.exec_task_id = 0;
                     NProgress.done();
                     return;
                 }
