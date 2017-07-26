@@ -68,7 +68,7 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 	// cancel point
 	select {
 	case <-ctx.Done():
-		beego.Info("task(%d) canceled", cfg.Id)
+		beego.Info("task(%d) pool(%d) canceled", cfg.Id, cfg.Pool.Id)
 		return
 	default:
 	}
@@ -156,7 +156,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 
 	defer func() {
 		if err != nil {
-			beego.Error("scalePool exit on error:", err)
+			beego.Error("scalePool pool(%d) exit on error:", err, pool.Id)
 			if expand == isdep {
 				dependc <- &dependNotice{pid: pool.Id, num: len(ok)}
 			}
@@ -174,7 +174,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 			picked = append(picked, nn...)
 		}
 		if len(picked) == 0 {
-			beego.Info(fmt.Sprintf("id(%d) has enough nodes online", pool.Id))
+			beego.Info(fmt.Sprintf("pool(%d) has enough nodes online", pool.Id))
 			if isdep {
 				dependc <- &dependNotice{pid: pool.Id, num: should}
 			}
@@ -197,7 +197,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 			}
 		}
 	default:
-		err = fmt.Errorf("id(%d) has a bug!!! should(%d) online(%d) expand(%v)",
+		err = fmt.Errorf("pool(%d) has a bug!!! should(%d) online(%d) expand(%v)",
 			pool.Id, should, len(online), expand)
 		return
 	}
@@ -277,6 +277,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 	// cancel point
 	select {
 	case <-ctx.Done():
+		lg.Infof("pool(%d) task canceled", pool.Id)
 		executor.Executor.SetFlowStatus(ff, models.STATUS_STOPPED)
 		return
 	default:
@@ -447,11 +448,12 @@ func actionImpls(steps []*models.StepOption) ([]*models.ActionImpl, error) {
 func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 	steps []*models.StepOption, actions []*models.ActionImpl, dependc chan *dependNotice) (oknum, failednum, status int) {
 	var (
-		depidx = -1
-		finidx = len(actions) - 1
-		expand = ctx.Value("expand").(bool)
-		isdep  = ctx.Value("isdep").(bool)
-		lg     = ctx.Value("lg").(*logger)
+		stopped bool
+		depidx  = -1
+		finidx  = len(actions) - 1
+		expand  = ctx.Value("expand").(bool)
+		isdep   = ctx.Value("isdep").(bool)
+		lg      = ctx.Value("lg").(*logger)
 	)
 
 	if expand && !isdep {
@@ -465,6 +467,7 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 	for idx, action := range actions {
 		var picked []*models.NodeState
 
+		lg.Infof("batch(%d) run step %s(%d)", batch.Id, action.Name, idx)
 		for i := 0; i < len(nodes); i++ {
 			if nodes[i].s.StepNum == idx {
 				picked = append(picked, &nodes[i].s)
@@ -474,7 +477,18 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 		// check stopped
 		flow, _ := service.Flow.GetFlowWithRel(batch.Flow.Id)
 		if flow.Status == models.STATUS_STOPPED {
-			lg.Infof("batch(%d) stopped", batch.Id)
+			stopped = true
+		}
+
+		// cancel point
+		select {
+		case <-ctx.Done():
+			stopped = true
+		default:
+		}
+
+		if stopped {
+			lg.Infof("batch(%d) stopped at step %s(%d)", batch.Id, action.Name, idx)
 			status = models.STATUS_STOPPED
 			updateNode(picked, idx, status, action.Name)
 			updateBatch(batch, idx, status)
@@ -482,7 +496,7 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 		}
 
 		if idx == depidx {
-			should := waitDependNotice(dependc, lg)
+			should := waitDependNotice(ctx, dependc, lg)
 			lg.Infof("batch(%d) %d step(%s) got depend should(%d), picked(%d)",
 				batch.Id, idx, action.Name, should, len(picked))
 			if should < len(picked) {
@@ -502,7 +516,7 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 		// check again
 		flow, _ = service.Flow.GetFlowWithRel(batch.Flow.Id)
 		if flow.Status == models.STATUS_STOPPED {
-			lg.Infof("batch(%d) stopped", batch.Id)
+			lg.Infof("batch(%d) stopped at step %s(%d)", batch.Id, action.Name, idx)
 			status = models.STATUS_STOPPED
 			updateNode(picked, idx, status, action.Name)
 			updateBatch(batch, idx, status)
@@ -570,7 +584,7 @@ func doEachStep(ctx context.Context, nodes []*Node, batch *models.FlowBatch,
 	return
 }
 
-func waitDependNotice(dependc chan *dependNotice, lg *logger) int {
+func waitDependNotice(ctx context.Context, dependc chan *dependNotice, lg *logger) int {
 	select {
 	case n, ok := <-dependc:
 		if !ok {
@@ -579,6 +593,8 @@ func waitDependNotice(dependc chan *dependNotice, lg *logger) int {
 		return n.num
 	case <-time.After(30 * time.Minute):
 		lg.Infof("wait depend signal timeout")
+	case <-ctx.Done():
+		lg.Infof("wait depend canceled")
 	}
 	return 0
 }
