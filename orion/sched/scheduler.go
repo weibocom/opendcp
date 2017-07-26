@@ -146,7 +146,9 @@ func (s *scheduler) Update(cfg *models.ExecTask) error {
 	}
 
 	if old.ExecType == models.Crontab {
+		beego.Debug("delete task(%d) ...", cfg.Id)
 		s.delTask(old.Id)
+		beego.Debug("delete task(%d) done", cfg.Id)
 	}
 
 	beego.Debug(spew.Sprintf("update task from (%+v) to (%+v)", old, cfg))
