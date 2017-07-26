@@ -174,7 +174,7 @@ require_once('include/navbar.php');
                                 <div class="clearfix"></div>
                             </div>
                             <div class="x_content">
-                                <div class="col-sm-3 navbar-right" style="padding-right:0px;">
+                                <div class="col-sm-4 navbar-right" style="padding-right:0px;">
                                     <div class="input-group">
                                         <input type="name" id="time_nume" class="form-control" placeholder="输入时间" value = "1">
                                         <span class="input-group-btn dropdown">
@@ -192,8 +192,8 @@ require_once('include/navbar.php');
                                     </div>
                                 </div>
                             </div>
-                            <div class="x_content" style="margin-top: -35px">
-                                <div id="container" style="height:350px;"></div>
+                            <div class="x_content" style="margin-top: -30px;">
+                                <div id="container" style="height:310px; margin-right: -50px; margin-bottom: -35px;"></div>
                             </div>
                         </div>
                     </div>
@@ -220,7 +220,7 @@ require_once('include/navbar.php');
                                 <div class="clearfix"></div>
                             </div>
                             <div class="x_content">
-                                <div class="col-sm-3 navbar-right" style="padding-right:0px;">
+                                <div class="col-sm-4 navbar-right" style="padding-right:0px;">
                                     <div class="input-group">
                                         <input type="name" id="time_open_nume" class="form-control" placeholder="输入时间" value = "1">
                                         <span class="input-group-btn dropdown">
@@ -238,8 +238,8 @@ require_once('include/navbar.php');
                                     </div>
                                 </div>
                             </div>
-                            <div class="x_content" style="margin-top: -35px">
-                                <div id="container_stack" style="height:350px;"></div>
+                            <div class="x_content" style="margin-top: -30px">
+                                <div id="container_stack" style="height:310px; margin-right: -50px;margin-bottom: -35px;""></div>
                             </div>
                         </div>
                     </div>
