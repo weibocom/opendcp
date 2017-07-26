@@ -123,6 +123,7 @@ func (c *TaskApi) SaveTask() {
 	err = service.Cluster.GetBase(pool)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 500)
+		return
 	}
 	exec_task.Pool = pool
 
@@ -132,9 +133,11 @@ func (c *TaskApi) SaveTask() {
 		err = service.Cluster.GetBase(dbExec_task)
 		if err != nil {
 			c.ReturnFailed(err.Error(), 500)
+			return
 		}
 		if dbExec_task.Pool.Id != exec_task.Pool.Id{
 			c.ReturnFailed(fmt.Sprintf("the current exec_task: %d, pool id: %d is wrong", dbExec_task.Id, dbExec_task.Pool.Id), 500)
+			return
 		}
 	}
 
