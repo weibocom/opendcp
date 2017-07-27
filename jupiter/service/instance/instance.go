@@ -450,6 +450,11 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 			logstore.Error(correlationId, instanceId, result)
 			return ssh.Output{}, err
 		}
+		err = cli.StoreSSHKey(instanceId)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, err)
+		}
+		logstore.Info(correlationId, instanceId, "ssh key pair end for instance: ", instanceId)
 	} else {
 		sshErr := StartSshService(instanceId, ip, password, correlationId)
 		if sshErr != nil {
