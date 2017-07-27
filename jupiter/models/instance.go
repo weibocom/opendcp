@@ -93,6 +93,7 @@ type ListInstancesResponse struct {
 }
 
 type Instance struct {
+
 	Id                 int      `orm:"pk;auto"`
 	Cluster            *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
 	Provider           string
@@ -126,6 +127,10 @@ type Instance struct {
 	Status             InstanceStatus
 	PublicKey          string `orm:"type(text);null" json:"-"`
 	PrivateKey         string `orm:"type(text);null" json:"-"`
+	//OpenStack attr
+	TenantID string `mapstructure:"tenant_id"`
+	UserID string `mapstructure:"user_id"`
+	Name string
 }
 
 type SshKey struct {
@@ -196,6 +201,16 @@ type InstanceAllIn struct {
 	VpcAttributes       VpcAttributesTypeAllin       `json:"VpcAttributes"`
 	EipAddress          EipAddressAssociateTypeAllin `json:"EipAddress"`
 	ExpiredTime         string                       `json:"ExpiredTime"` // 过期时间，按照ISO8601标准表示，并需要使用UTC时间。格式为：YYYY-MM-DDThh:mmZ
+	TenantId  	    string 			 `json:"TenantId"`
+	UserId   	    string 			 `json:"UserID"`
+	Name		    string			 `json:"Name"`
+}
+
+type OpenStackConf struct {
+	OpIp		string			`"json:OpIp"`
+	OpPort		string  		`"json:OpPort"`
+	OpUserName	string			`"json:OpUserName"`
+	OpPassWord	string			`"json:OpPassWord'`
 }
 
 // Describes an IP range.

@@ -27,6 +27,8 @@ type Cluster struct {
 	DataDiskSize       int
 	DataDiskNum        int
 	DataDiskCategory   string
+	//OpenStack参数
+	FlavorId	   string
 }
 
 type Replication struct {
@@ -78,5 +80,5 @@ type Detail struct {
 
 type InstanceDetail struct {
 	InstanceNumber   map[string]int	`json:"number"`
-	RunningTime	 string		`json:"time"`
+	RunningTime		 string			`json:"time"`
 }

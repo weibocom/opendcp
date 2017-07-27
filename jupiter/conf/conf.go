@@ -45,6 +45,10 @@ type Configuration struct {
 	KeySecret    string
 	AwsKeyId     string
 	AwsKeySecret string
+	OpIp         string
+	OpPort       string
+	OpUserName   string
+	OpPassWord   string
 	BufferSize   int
 	Ansible      *Ansible
 	KeyDir       string

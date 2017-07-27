@@ -90,7 +90,7 @@ $arrIdx=array(
                 <a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <!--<li class="current-page"><a href="/">Dashboard</a></li>-->
-                    <li class="current-page"><a href="/">平台数据</a></li>
+                    <li class="current-page"><a href="/">Dashboard</a></li>
                 </ul>
               </li>
               <?php echo $navLeft;?>
@@ -513,7 +513,7 @@ $arrIdx=array(
     $("select.form-control").select2({width:'100%'});
     cache.task_id=<?php echo $myIdx;?>;
     window.setTimeout('getTask(\'info\');',200);
-    setInterval('getTask(\'info\');',10000);
+    cache.refreshInterval = setInterval('getTask(\'info\');',10000);
     getList();
     $('#fIdx').bind('keypress',function(event){
       if(event.keyCode == "13"){

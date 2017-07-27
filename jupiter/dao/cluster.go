@@ -61,7 +61,9 @@ func InsertNetwork(network *models.Network) (int64, error) {
 		o.QueryTable(NETWORK_TABLE).Filter("subnet_id", network.SubnetId).
 			Filter("security_group", network.SecurityGroup).
 			Filter("internet_charge_type", network.InternetChargeType).
-			Filter("internet_max_bandwidth_out", network.InternetMaxBandwidthOut).RelatedSel().One(&networkModel)
+			Filter("internet_max_bandwidth_out", network.InternetMaxBandwidthOut).
+			Filter("vpc_id", network.VpcId).
+			RelatedSel().One(&networkModel)
 		id = networkModel.Id
 	}
 	return id, nil
@@ -133,4 +135,15 @@ func GetDetailByTime(specificTime time.Time) (*models.Detail, error)  {
 		return nil, err
 	}
 	return &detail, err
+}
+
+func GetProviders() ([]string, error) {
+	o := GetOrmer()
+	var providers []string
+	sql := fmt.Sprintf("SELECT DISTINCT PROVIDER FROM %s ", CLUSTER_TABLE)
+	_, err := o.Raw(sql).QueryRows(&providers)
+	if err != nil {
+		return nil, err
+	}
+	return providers,nil
 }

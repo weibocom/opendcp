@@ -34,6 +34,7 @@ import (
 	"weibo.com/opendcp/jupiter/logstore"
 	"errors"
 	"github.com/astaxie/beego"
+	"strings"
 	"unsafe"
 	"reflect"
 	"encoding/json"
@@ -54,14 +55,26 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	instanceTypeModel := cluster.InstanceType
-	validNumber := regexp.MustCompile("[0-9]")
-	cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
-	cluster.InstanceType = providerDriver.GetInstanceType(instanceTypeModel)
-	cpu, _ := strconv.Atoi(cpuAndRam[0])
-	ram, _ := strconv.Atoi(cpuAndRam[1])
-	cluster.Cpu = cpu
-	cluster.Ram = ram
+
+	//在openstack中，Flavor的名称就是对应的类型，不需要再进行转换
+	if(cluster.Provider == "aliyun") {
+		instanceTypeModel := cluster.InstanceType
+		validNumber := regexp.MustCompile("[0-9]")
+		cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
+		cluster.InstanceType = providerDriver.GetInstanceType(instanceTypeModel)
+		cpu, _ := strconv.Atoi(cpuAndRam[0])
+		ram, _ := strconv.Atoi(cpuAndRam[1])
+		cluster.Cpu = cpu
+		cluster.Ram = ram
+	}else if(cluster.Provider == "openstack"){
+		cluster.FlavorId = cluster.InstanceType
+		resp := providerDriver.GetInstanceType(cluster.InstanceType)
+		strs := strings.Split(resp, "#")
+		cluster.InstanceType = strs[0]
+		cluster.Cpu, _ = strconv.Atoi(strs[1])
+		ram , _ := strconv.Atoi(strs[2])
+		cluster.Ram = ram / 1024
+	}
 	id, err := dao.InsertCluster(cluster)
 	_, err = bill.InsertBill(cluster)
 	return id, err
@@ -81,6 +94,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+	beego.Info("First. Begin to create instances from cloud")
 	instanceIds, errs := providerDriver.Create(cluster, num)
 	if len(instanceIds) == 0 {
 		return nil, errs[0]
@@ -89,6 +103,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		beego.Error("Expand failed number is", len(errs), "errors is", errs)
 	}
 	beego.Info("The instance ids is", instanceIds)
+	beego.Info("Second. Begin to start and init instances ----")
 	c := make(chan int)
 	for i := 0; i < len(instanceIds); i++ {
 		go func(i int) {
@@ -103,11 +118,13 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 					}
 				}
 			}()
+			logstore.Info(correlationId, instanceIds[i], "1. Begin to insert instances into db")
 			ins, err := providerDriver.GetInstance(instanceIds[i])
 			if err != nil {
 				logstore.Error(correlationId, instanceIds[i], "get instance info error:", err)
 				c <- i
 			}
+			logstore.Info(correlationId, instanceIds[i], "get instance info successfully")
 			ins.Cluster = cluster
 			ins.Cpu = cluster.Cpu
 			ins.Ram = cluster.Ram
@@ -121,6 +138,8 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 				logstore.Error(correlationId, instanceIds[i], "insert instance to db error:", err)
 				c <- i
 			}
+			logstore.Info(correlationId, instanceIds[i], "insert instance into db successfully")
+			logstore.Info(correlationId, instanceIds[i], "2. Begin start instance in future")
 			startFuture := future.NewStartFuture(instanceIds[i], cluster.Provider, true, ins.PrivateIpAddress, correlationId)
 			future.Exec.Submit(startFuture)
 			c <- i
@@ -206,23 +225,21 @@ func GetLatestDetail() (map[string]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	instanceInfo["all"] = len(allIns)
+	instanceInfo["total"] = len(allIns)
 
-	clusters, err := ListClusters()
+	providers, err := ListProviders()
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
-
-	for _, c := range clusters {
-		clusterIns, err := instance.GetClusterInstances(c.Id)
-		if err != nil  {
-			return  nil, err
+	for _, p := range providers {
+		providerIns, err := dao.GetInstancesByProvider(p)
+		if err != nil {
+			return nil, err
 		}
-		instanceInfo[c.Name] = len(clusterIns)
+		instanceInfo[p] = len(providerIns)
 	}
 	return instanceInfo, nil
 }
-
 
 func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
 	details := make([]models.InstanceDetail,0)
@@ -272,5 +289,14 @@ func InitInstanceDetailCron()  {
 	if detailCron != nil {
 		future.Exec.Submit(detailCron)
 	}
+}
+
+func ListProviders() ([]string, error) {
+	providers, err := dao.GetProviders()
+	if err != nil {
+		return nil, err
+	}
+	return providers, nil
+
 }
 
