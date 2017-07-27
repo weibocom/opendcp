@@ -162,9 +162,9 @@ func (c *InitApi) CreateCSP(vm_type_id int, service_discovery_id int, biz_id int
 			sql = fmt.Sprintf(sql,vm_type_id,biz_id)
 			sql = strings.Replace(sql,"host_ip",beego.AppConfig.String("octans_host"),-1)
 		}else if index ==3 {
-			sql = fmt.Sprintf(sql,vm_type_id,service_discovery_id,biz_id)
+			sql = fmt.Sprintf(sql,vm_type_id,biz_id)
 		}else if index ==4 {
-			sql = fmt.Sprintf(sql,service_discovery_id,vm_type_id,biz_id)
+			sql = fmt.Sprintf(sql,vm_type_id,biz_id)
 		}else{
 			sql = fmt.Sprintf(sql,biz_id)
 		}
