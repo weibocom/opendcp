@@ -61,9 +61,7 @@ func (sf *StartFuture) Run() error {
 				break
 			}
 		} else if sf.ProviderName == "aws" {
-			if providerDriver.WaitToStartInstance(sf.InstanceId) {
 				return nil
-			}
 		}
 
 		time.Sleep(TIME4WAIT * time.Second)
