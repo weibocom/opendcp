@@ -67,7 +67,7 @@ const (
 
 var (
 	jupiterAddr = beego.AppConfig.String("vm_mgr_addr")
-	timeout     = 90 * 5
+	timeout     = 120 * 5
 
 	apiCreate = "http://%s" + beego.AppConfig.String("vm_create_url")
 	apiReturn = "http://%s" + beego.AppConfig.String("vm_return_url")
