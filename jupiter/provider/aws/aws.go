@@ -566,6 +566,7 @@ func (driver awsProvider) AttachGateway(input *models.AttachGateway) (bool, erro
 	return true, nil
 }
 
+
 func (driver awsProvider) AllocatePublicIpAddress(instanceId string) (string, error) {
 	input := &ec2.DescribeAddressesInput{}
 	result, err := driver.client.DescribeAddresses(input)
@@ -611,7 +612,7 @@ func (driver awsProvider) WaitToStartInstance(instanceId string) bool {
 }
 
 func new() (provider.ProviderDriver, error) {
-	return newProvider()
+	return  newProvider()
 }
 
 func newProvider() (provider.ProviderDriver, error) {

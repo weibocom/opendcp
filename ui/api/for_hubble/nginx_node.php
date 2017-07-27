@@ -146,6 +146,10 @@ $fIdx=(isset($_POST['fIdx'])&&!empty($_POST['fIdx']))?trim($_POST['fIdx']):((iss
 $myJson=(isset($_POST['data'])&&!empty($_POST['data']))?trim($_POST['data']):((isset($_GET['data'])&&!empty($_GET['data']))?trim($_GET['data']):'');
 $arrJson=($myJson)?json_decode($myJson,true):array();
 
+$sid=(isset($_POST['sid'])&&!empty($_POST['sid']))?trim($_POST['sid']):((isset($_GET['sid'])&&!empty($_GET['sid']))?trim($_GET['sid']):'');
+$nodeips=(isset($_POST['nodeips'])&&!empty($_POST['nodeips']))?trim($_POST['nodeips']):((isset($_GET['nodeips'])&&!empty($_GET['nodeips']))?trim($_GET['nodeips']):'');
+
+
 //记录操作日志
 $logFlag = true;
 $logDesc = '';
@@ -181,6 +185,26 @@ if($hasLimit){
       if($retArr['page'] > $retArr['pageCount']) $retArr['page'] = 1;
     break;
     case 'insert':
+      //添加节点
+      if(isset($nodeips) && !empty($nodeips)){
+        $arrJson['ips']=$nodeips;
+        $con = new mysqli(DB_HOST, DB_USER, DB_PW,'hubble');
+        if (!mysqli_connect_errno()) {
+          $sql='SELECT content FROM tbl_hubble_alteration_type WHERE id='.$sid.';';
+          if ($result=$con->query($sql)){
+            if($row=$result->fetch_row()){
+              $data=json_decode($row[0], true);
+              $sql='SELECT id FROM tbl_hubble_nginx_unit WHERE group_id='.$data['group_id'];
+              if ($result=$con->query($sql)){
+                if($row=$result->fetch_row()){
+                  $arrJson['unit_id']=$row[0];
+                }
+              }
+            }
+          }
+        }
+        $con->close();
+      }
       if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
       $arrRecodeLog['t_action'] = '添加';
       if(isset($arrJson) && !empty($arrJson)){
@@ -194,6 +218,25 @@ if($hasLimit){
       }
     break;
     case 'delete':
+      //删除节点
+      if(isset($nodeips) && !empty($nodeips)){
+        $con = new mysqli(DB_HOST, DB_USER, DB_PW,'hubble');
+        $arrJson['nodes']='';
+        if (!mysqli_connect_errno()) {
+          $arr=explode(",",$mySelf->checkParam('ips', $nodeips));
+          for($i=0;$i<count($arr);$i++){
+            $sql='SELECT id,unit_id FROM tbl_hubble_nginx_node WHERE ip="'.$arr[$i].'";';
+            if ($result=$con->query($sql)){
+              if($row=$result->fetch_row()){
+                $arrJson['nodes'].=$row[0].',';
+                $arrJson['unit_id']=$row[1];
+              }
+            }
+          }
+          $arrJson['nodes'] = substr($arrJson['nodes'],0,strlen($str)-1);
+        }
+        $con->close();
+      }
       if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
       $arrRecodeLog['t_action'] = '删除';
       if(isset($arrJson) && !empty($arrJson)){

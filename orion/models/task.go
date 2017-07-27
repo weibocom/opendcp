@@ -19,7 +19,11 @@
 
 package models
 
-import "time"
+import (
+	"strconv"
+	"strings"
+	"time"
+)
 
 const (
 	STATUS_INIT = iota
@@ -33,20 +37,27 @@ const (
 	Manual  = "manual"
 	Crontab = "crontab"
 	Depend  = "depend"
+	Mock    = "mock"
+)
+
+const (
+	TaskExpend  = "expand"
+	TaskShrink  = "shrink"
+	TaskDdeploy = "deploy"
 )
 
 type ExecTask struct {
 	Id          int           `json:"id" orm:"pk;auto"`
 	Pool        *Pool         `json:"pool" orm:"rel(fk)"`               //服务池id
-	CronItems   []*CronItem   `json:"cron_itmes" orm:"reverse(many)"`   //定时任务列表
-	DependItems []*DependItem `json:"depend_itmes" orm:"reverse(many)"` //依赖任务列表
+	CronItems   []*CronItem   `json:"cron_items" orm:"reverse(many)"`   //定时任务列表
+	DependItems []*DependItem `json:"depend_items" orm:"reverse(many)"` //依赖任务列表
 	Type        string        `json:"type"`                             //模版任务类型 expand/upload
 	ExecType    string        `json:"exec_type"`                        //执行任务类型 crontab/depend
 }
 
 type CronItem struct {
 	Id           int       `json:"id" orm:"pk;auto"`
-	ExecTask     *ExecTask `json:"task" orm:"rel(fk)"`        //定时任务
+	ExecTask     *ExecTask `json:"-" orm:"rel(fk)"`           //定时任务
 	InstanceNum  int       `json:"instance_num"`              //扩容缩容使用作为机器的数量
 	ConcurrRatio int       `json:"concurr_ratio"`             //上线使用作为最大并发比例
 	ConcurrNum   int       `json:"concurr_num"`               //上线使用作为最大并发数
@@ -55,9 +66,31 @@ type CronItem struct {
 	Ignore       bool      `json:"ignore" orm:"default(0)"`   //是否忽略定时任务 0 不忽略，1 忽略
 }
 
+type CronItemSlice []*CronItem
+
+func (s CronItemSlice) Len() int      { return len(s) }
+func (s CronItemSlice) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s CronItemSlice) Less(i, j int) bool {
+	if s[i].WeekDay != s[j].WeekDay {
+		return s[i].WeekDay < s[j].WeekDay
+	}
+
+	itokens := strings.Split(s[i].Time, ":")
+	jtokens := strings.Split(s[j].Time, ":")
+	ih, _ := strconv.Atoi(itokens[0])
+	im, _ := strconv.Atoi(itokens[1])
+	jh, _ := strconv.Atoi(jtokens[0])
+	jm, _ := strconv.Atoi(jtokens[1])
+
+	if ih == jh {
+		return im < jm
+	}
+	return ih < jh
+}
+
 type DependItem struct {
 	Id           int       `json:"id" orm:"pk;auto"`
-	ExecTask     *ExecTask `json:"task" orm:"rel(fk)"`      //依赖任务
+	ExecTask     *ExecTask `json:"-" orm:"rel(fk)"`         //依赖任务
 	Pool         *Pool     `json:"pool"  orm:"rel(fk)"`     //依赖服务池id
 	Ratio        float64   `json:"ratio"`                   //依赖比例
 	ElasticCount int       `json:"elastic_count"`           //冗余机器数量
@@ -104,7 +137,8 @@ type NodeState struct {
 	Status      int        `json:"state"`
 	Steps       string     `json:"steps" orm:"type(text)"`
 	StepNum     int        `json:"step_num"`
-	Log         string     `orm:"type(text)"`
+	Log         string     `json:"log" orm:"type(text)"`
+	LastOp      string     `json:"last_op"`
 	CreatedTime time.Time  `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time  `json:"updated" orm:"auto_now_add;type(datetime)"`
 }
