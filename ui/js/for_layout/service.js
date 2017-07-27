@@ -1582,6 +1582,12 @@ function compTime(){
             tdArr.eq(2).find("input").css('border','1px solid #cccccc');
             tdArr.eq(2).find("input").attr("name","0");
         }
+        var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d$/;
+        var regExp = new RegExp(reg);
+        if(!regExp.test(time_val)){
+            tdArr.eq(2).find("input").css('border','1px solid #CE5454');
+            tdArr.eq(2).find("input").attr("name","1");
+        }
         total_num=0;
     }
 }
