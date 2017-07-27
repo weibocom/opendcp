@@ -184,9 +184,9 @@ func (sshCli *Client) StoreSSHKey(instanceId string) error {
 	}
 
 	if strings.EqualFold(ins.Provider, "aws") {
-		kp.PrivateKey = []byte(`
-		
-		`)
+		outputBytes, _ := ioutil.ReadFile(SSH_AWS)
+		privateBlock, _ := pem.Decode(outputBytes)
+		kp.PrivateKey = privateBlock.Bytes
 	}
 
 	if err != nil {
