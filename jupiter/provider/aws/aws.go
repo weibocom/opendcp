@@ -79,13 +79,6 @@ func (driver awsProvider) ListInternetChargeType() []string {
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.AwsKeyId, conf.Config.AwsKeySecret, "")
 
-	allocRes, err := driver.client.AllocateAddress(&ec2.AllocateAddressInput{
-		Domain: aws.String("vpc"),
-	})
-	if err != nil {
-		beego.Error("Unable to allocate IP address, %v", err)
-	}
-
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
 		ImageId:      aws.String(input.ImageId),
@@ -122,15 +115,22 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 		beego.Debug("Created instance", *runResult.Instances[i].InstanceId)
 		instanceIds = append(instanceIds, *(runResult.Instances[i].InstanceId))
 
-		if driver.WaitToStartInstance(*runResult.Instances[i].InstanceId) == false {
-			beego.Error("Failed to start instance")
+		allocRes, err := driver.client.AllocateAddress(&ec2.AllocateAddressInput{
+			Domain: aws.String("vpc"),
+		})
+		if allocRes.PublicIp == nil {
+			beego.Error("Unable to allow prublic IP", err)
 		}
 
-		_, err := driver.client.AssociateAddress(&ec2.AssociateAddressInput{
+		if err != nil {
+			beego.Error("Unable to allocate IP address, %v", err)
+		}
+
+		_, errAssociate := driver.client.AssociateAddress(&ec2.AssociateAddressInput{
 			AllocationId: allocRes.AllocationId,
 			InstanceId:   runResult.Instances[i].InstanceId,
 		})
-		if err != nil {
+		if errAssociate != nil {
 			beego.Error("Unable to associate IP address with %s, %v",
 				runResult.Instances[i].InstanceId, err)
 		}
@@ -230,7 +230,7 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 		InstanceIds: [] *string {&instanceId},
 	})
 	if err != nil {
-		beego.Error(err.Error())
+		beego.Error("Unable to describe instance", err)
 		return nil, err
 	}
 
@@ -253,7 +253,6 @@ func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, erro
 	instance.CostWay = "aws costway"
 
 	return &instance, err
-
 }
 
 func (driver awsProvider) CreateSecurityGroup(input *models.CreateSecurityGroupParam) (*models.SecurityGroupResp, error) {
