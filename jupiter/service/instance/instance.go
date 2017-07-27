@@ -474,15 +474,16 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	} else if strings.EqualFold(ins.Provider, OPENSTACK){
 		sshErr := StartSshService(instanceId, ip, password, correlationId)
 		if sshErr != nil {
-		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
-		dao.UpdateInstanceStatus(ip, models.InitTimeout)
-		return ssh.Output{}, sshErr
+			logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
+			dao.UpdateInstanceStatus(ip, models.InitTimeout)
+			return ssh.Output{}, sshErr
 		}
 		logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
 		cli, err = getSSHClient(ip, "", "root",password)
 
 		octansUrl = fmt.Sprintf(octansUrl + "/manage_device_%s.sh", OPENSTACK)
 	} else {
+		octansUrl = fmt.Sprintf(octansUrl + "/manage_device.sh")
 		sshErr := StartSshService(instanceId, ip, password, correlationId)
 		if sshErr != nil {
 			logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
