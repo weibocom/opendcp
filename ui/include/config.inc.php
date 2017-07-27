@@ -89,7 +89,7 @@ $myPageCount=1;//总页数
 //页脚
 $myFooter='<footer>'."\n";
 $myFooter.='  <div class="pull-right">'."\n";
-$myFooter.='    2016 - 2016 &copy; Powered by: OpenDCP平台研发 '."\n";
+$myFooter.='     '."\n";
 $myFooter.='  </div>'."\n";
 $myFooter.='  <div class="clearfix"></div>'."\n";
 $myFooter.='</div>'."\n";

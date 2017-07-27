@@ -163,7 +163,6 @@ func ListClusters() ([]models.Cluster, error) {
 }
 
 
-
 func UpdateInstanceDetail() error {
 	instanceInfo, err := GetLatestDetail()
 	if err != nil {

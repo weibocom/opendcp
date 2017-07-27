@@ -54,19 +54,28 @@ func (sf *StartFuture) Run() error {
 		return err
 	}
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "----- Begin start instance in future -----")
-  logstore.Info(sf.CorrelationId,sf.InstanceId,"(1). Wait the instance stop")
-
-	if(sf.ProviderName=="aliyun") {
-		for j := 0; j < INTERVAL; j++ {
-			logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"(1). wait for instances to start")
+	for j := 0; j < INTERVAL; j++ {
+		logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)
+		if sf.ProviderName == "aliyun" {
 			if providerDriver.WaitForInstanceToStop(sf.InstanceId) {
 				break
 			}
-			time.Sleep(TIME4WAIT * time.Second)
-    }
-    logstore.Info(sf.CorrelationId,sf.InstanceId,"(2). Get the instance info and update ip info in db")
-		ins, err := providerDriver.GetInstance(sf.InstanceId)
-		if err != nil {
+		} else if sf.ProviderName == "aws" {
+				return nil
+		}
+
+		time.Sleep(TIME4WAIT * time.Second)
+	}
+	ins, err := providerDriver.GetInstance(sf.InstanceId)
+	logstore.Info(sf.CorrelationId,sf.InstanceId,"(2). Get the instance info and update ip info in db")
+	if err != nil {
+		return err
+	}
+	// 支持专有网和经典网
+	if len(ins.PrivateIpAddress) > 0 {
+		sf.Ip = ins.PrivateIpAddress
+		if err := dao.UpdateInstancePrivateIp(ins.InstanceId, ins.PrivateIpAddress); err != nil {
 			return err
 		}
 		// 支持专有网和经典网
