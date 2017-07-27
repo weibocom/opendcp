@@ -58,23 +58,39 @@ func (initController *InitController) InitDB() {
 
 	sqlAccount := "insert into account(biz_id,credit,provider,key_id,key_secret) values(%d,%f,%s,%s,%s)"
 
+	//sql3 :=
+	//	"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +
+	//		"cpu,ram,instance_type,image_id,post_script,key_name,network_id,zone_id,system_disk_category," +
+	//		"data_disk_size,data_disk_num,data_disk_category,biz_id) " +
+	//	"values('16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
+	//
+	//sql2 :=
+	//	"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +
+	//		"cpu,ram,instance_type,image_id,post_script,key_name,network_id,zone_id,system_disk_category," +
+	//		"data_disk_size,data_disk_num,data_disk_category,biz_id) " +
+	//		"values('4Core8G经典网','aliyun',0,'',NOW(),NULL,4,8,'ecs.n2.large','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
+	//sql1 :=
+	//	"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +
+	//		"cpu,ram,instance_type,image_id,post_script,key_name,network_id,zone_id,system_disk_category," +
+	//		"data_disk_size,data_disk_num,data_disk_category,biz_id) " +
+	//		"values('1Core1G经典网','aliyun',0,'',NOW(),NULL,1,1,'ecs.n1.tiny','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
+
 	sql3 :=
 		"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +
 			"cpu,ram,instance_type,image_id,post_script,key_name,network_id,zone_id,system_disk_category," +
 			"data_disk_size,data_disk_num,data_disk_category,biz_id) " +
-		"values('16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
+			"values('16Core16G经典网','aliyun',0,'',NOW(),NULL,16,16,'ecs.c2.medium','centos_7_03_64_40G_alibase_20170710.vhd','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
 
 	sql2 :=
 		"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +
 			"cpu,ram,instance_type,image_id,post_script,key_name,network_id,zone_id,system_disk_category," +
 			"data_disk_size,data_disk_num,data_disk_category,biz_id) " +
-			"values('4Core8G经典网','aliyun',0,'',NOW(),NULL,4,8,'ecs.n2.large','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
+			"values('4Core8G经典网','aliyun',0,'',NOW(),NULL,4,8,'ecs.n2.large','centos_7_03_64_40G_alibase_20170710.vhd','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
 	sql1 :=
 		"insert into cluster(`name`,provider,lastest_part_num,`desc`,create_time,delete_time," +
 			"cpu,ram,instance_type,image_id,post_script,key_name,network_id,zone_id,system_disk_category," +
 			"data_disk_size,data_disk_num,data_disk_category,biz_id) " +
-			"values('1Core1G经典网','aliyun',0,'',NOW(),NULL,1,1,'ecs.n1.tiny','centos7u2_64_40G_cloudinit_20160728.raw','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
-
+			"values('1Core1G经典网','aliyun',0,'',NOW(),NULL,1,1,'ecs.n1.tiny','centos_7_03_64_40G_alibase_20170710.vhd','','key',1,1,'cloud_efficiency',100,1,'cloud_efficiency',%d)"
 
 	sqlCluster := make([]string,3)
 	sqlCluster[0] = sql1

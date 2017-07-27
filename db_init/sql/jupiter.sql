@@ -165,11 +165,11 @@ CREATE TABLE IF NOT EXISTS `log` (
 # ------------------------------------------------------------
 LOCK TABLES `network` WRITE;
 INSERT INTO `network` VALUES 
-    (1,'','',NULL,'PayByBandwidth',5);
+    (1,'','','','PayByBandwidth',5);
 UNLOCK TABLES;
 
 LOCK TABLES `zone` WRITE;
-INSERT INTO `zone` VALUES (1,'cn-beijing','cn-beijing-c');
+INSERT INTO `zone` VALUES (1,'cn-beijing','cn-beijing-a');
 UNLOCK TABLES;
 
 
