@@ -384,14 +384,9 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*Node, operatio
 			}
 		}
 
-		if nodes[i].s.Id == 0 {
-			if _, err := o.Insert(&nodes[i].s); err != nil {
-				return fmt.Errorf("nodestate insert %d failed %v", i, err)
-			}
-		} else {
-			if _, err := o.Update(&nodes[i].s); err != nil {
-				return fmt.Errorf("nodestate insert %d failed %v", i, err)
-			}
+		nodes[i].s.Id = 0
+		if _, err := o.Insert(&nodes[i].s); err != nil {
+			return fmt.Errorf("nodestate insert %d failed %v", i, err)
 		}
 	}
 	return nil
