@@ -32,10 +32,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"weibo.com/opendcp/jupiter/conf"
 )
 
 func init() {
-	//provider.RegisterProviderDriver("aws", new)
+	provider.RegisterProviderDriver("aws", new)
 }
 
 type awsProvider struct {
@@ -45,6 +47,7 @@ type awsProvider struct {
 
 var instanceTypesInAws = map[string]string{
 	"1Core-0.5Gib":  "t2.nano",
+	"1Core-1Gib":	 "t2.micro",
 	"1Core-2GiB":    "t2.small",
 	"2Cores-8GiB":   "t2.large",
 	"8Cores-15GiB":  "c4.2xlarge",
@@ -74,37 +77,63 @@ func (driver awsProvider) ListInternetChargeType() []string {
 }
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
+	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.AwsKeyId, conf.Config.AwsKeySecret, "")
+
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
 		ImageId:      aws.String(input.ImageId),
 		InstanceType: aws.String(input.InstanceType),
 		MinCount:     aws.Int64(int64(number)),
 		MaxCount:     aws.Int64(int64(number)),
-		//KeyName:      aws.String(input.KeyName),
+		KeyName:      aws.String(input.KeyName),
 		Monitoring: &ec2.RunInstancesMonitoringEnabled{
 			Enabled: aws.Bool(true),
 		},
-		SecurityGroupIds: []*string{
-			aws.String(input.Network.SecurityGroup),
-		},
+		//SecurityGroupIds: []*string{
+		//	aws.String(input.Network.SecurityGroup),
+		//},
 		SubnetId: aws.String(input.Network.SubnetId),
-		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
-			{
-				Ebs: &ec2.EbsBlockDevice{
-					VolumeSize: aws.Int64(int64(input.DataDiskSize)),
-					VolumeType: aws.String(input.DataDiskCategory),
-				},
-			},
-		},
+		//BlockDeviceMappings: []*ec2.BlockDeviceMapping{
+		//	{
+		//		DeviceName: aws.String("/dev/sdh"),
+		//		Ebs: &ec2.EbsBlockDevice{
+		//			VolumeSize: aws.Int64(int64(input.DataDiskSize)),
+		//			VolumeType: aws.String(input.DataDiskCategory),
+		//		},
+		//	},
+		//},
 	})
 	if err != nil {
 		beego.Error("Could not create instance", err)
 		return nil, []error{err}
 	}
 	var instanceIds []string
+
+	time.Sleep(180 * time.Second)
+
 	for i := 0; i < len(runResult.Instances); i++ {
 		beego.Debug("Created instance", *runResult.Instances[i].InstanceId)
 		instanceIds = append(instanceIds, *(runResult.Instances[i].InstanceId))
+
+		allocRes, err := driver.client.AllocateAddress(&ec2.AllocateAddressInput{
+			Domain: aws.String("vpc"),
+		})
+		if allocRes.PublicIp == nil {
+			beego.Error("Unable to allow prublic IP", err)
+		}
+
+		if err != nil {
+			beego.Error("Unable to allocate IP address, %v", err)
+		}
+
+		_, errAssociate := driver.client.AssociateAddress(&ec2.AssociateAddressInput{
+			AllocationId: allocRes.AllocationId,
+			InstanceId:   runResult.Instances[i].InstanceId,
+		})
+		if errAssociate != nil {
+			beego.Error("Unable to associate IP address with %s, %v",
+				runResult.Instances[i].InstanceId, err)
+		}
 	}
 	return instanceIds, nil
 }
@@ -195,30 +224,35 @@ func (driver awsProvider) ListInstanceTypes() ([]string, error) {
 }
 
 func (driver awsProvider) GetInstance(instanceId string) (*models.Instance, error) {
-	//params := &ec2.DescribeInstancesInput{
-	//	DryRun: aws.Bool(false),
-	//	InstanceIds: []*string{
-	//		aws.String(instanceId),
-	//	},
-	//}
-	//ret, err := driver.client.DescribeInstanceAttribute(params)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//var resp models.ListInstancesResp
-	//respJson, err := json.Marshal(ret)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//err = json.Unmarshal(respJson, &resp)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//beego.Info(resp)
-	return nil, nil
+
+	resp, err := driver.client.DescribeInstances(&ec2.DescribeInstancesInput{
+		DryRun: aws.Bool(false),
+		InstanceIds: [] *string {&instanceId},
+	})
+	if err != nil {
+		beego.Error("Unable to describe instance", err)
+		return nil, err
+	}
+
+	res := resp.Reservations[0].Instances[0]
+
+	var instance models.Instance
+	instance.InstanceId = *res.InstanceId
+	instance.Provider = "aws"
+	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05", res.LaunchTime.String(), time.Local)
+	instance.ImageId = *res.ImageId
+	instance.InstanceType = *res.InstanceType
+	instance.VpcId = *res.VpcId
+	instance.SubnetId = *res.SubnetId
+	instance.SecurityGroupId = *res.SecurityGroups[0].GroupId
+	instance.PrivateIpAddress = *res.PrivateIpAddress
+	instance.PublicIpAddress = *res.PublicIpAddress
+	instance.RegionId = "aws region "
+	instance.ZoneId = "aws zone"
+	instance.NatIpAddress = "aws nia"
+	instance.CostWay = "aws costway"
+
+	return &instance, err
 }
 
 func (driver awsProvider) CreateSecurityGroup(input *models.CreateSecurityGroupParam) (*models.SecurityGroupResp, error) {
@@ -534,15 +568,47 @@ func (driver awsProvider) AttachGateway(input *models.AttachGateway) (bool, erro
 
 
 func (driver awsProvider) AllocatePublicIpAddress(instanceId string) (string, error) {
-	return "", nil
+	input := &ec2.DescribeAddressesInput{}
+	result, err := driver.client.DescribeAddresses(input)
+	if err != nil {
+		beego.Error("Fail to get public Ip", err)
+	}
+
+	return *result.Addresses[0].PrivateIpAddress, nil
 }
 
 func (driver awsProvider) WaitForInstanceToStop(instanceId string) bool {
-	return false
-}
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			aws.String(instanceId),
+		},
+		DryRun: aws.Bool(false),
+	}
+
+	err := driver.client.WaitUntilInstanceStopped(input)
+	if err != nil {
+		beego.Error("the wait instance err:", err)
+		return false
+	}
+
+	return true
+	}
 
 func (driver awsProvider) WaitToStartInstance(instanceId string) bool {
-	return false
+	input := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{
+			aws.String(instanceId),
+		},
+		DryRun: aws.Bool(false),
+	}
+
+	err := driver.client.WaitUntilInstanceRunning(input)
+	if err != nil {
+		beego.Error("the wait instance err:", err)
+		return false
+	}
+
+	return true
 }
 
 func new() (provider.ProviderDriver, error) {
@@ -550,7 +616,11 @@ func new() (provider.ProviderDriver, error) {
 }
 
 func newProvider() (provider.ProviderDriver, error) {
-	client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("cn-north-1"),
+	}))
+	client := ec2.New(sess)
+	client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
 	ret := awsProvider{
 		client: client,
 	}

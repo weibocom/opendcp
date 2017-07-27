@@ -6,6 +6,7 @@ deploy/data/project/
 hubble/Application/Runtime
 orion/orion
 jupiter/conf/jupiter.json
+jupiter/conf/zhaowei9.pem
 orion/conf/app.conf
 
 
