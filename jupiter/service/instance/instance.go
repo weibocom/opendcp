@@ -470,6 +470,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 			logstore.Error(correlationId, instanceId, err)
 		}
 		logstore.Info(correlationId, instanceId, "ssh key pair end for instance: ", instanceId)
+		octansUrl = fmt.Sprintf(octansUrl + "/manage_device.sh")
 	} else if strings.EqualFold(ins.Provider, OPENSTACK){
 		sshErr := StartSshService(instanceId, ip, password, correlationId)
 		if sshErr != nil {
