@@ -17,8 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package conf
 
 import (
@@ -42,23 +40,25 @@ var (
 )
 
 type Configuration struct {
-	Password   string
-	KeyId      string
-	KeySecret  string
-	OpIp	   string
-	OpPort   string
-	OpUserName string
-	OpPassWord string
-	BufferSize int
-	Ansible    *Ansible
-	KeyDir     string
+	Password     string
+	KeyId        string
+	KeySecret    string
+	AwsKeyId     string
+	AwsKeySecret string
+	OpIp         string
+	OpPort       string
+	OpUserName   string
+	OpPassWord   string
+	BufferSize   int
+	Ansible      *Ansible
+	KeyDir       string
 }
 
 type Ansible struct {
-	Url         string
+	Url          string
 	GetOctansUrl string
-	DefaultRole string
-	ForkNum     int
+	DefaultRole  string
+	ForkNum      int
 }
 
 func GetConfig() (*Configuration, error) {

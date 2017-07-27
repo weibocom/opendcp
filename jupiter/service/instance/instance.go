@@ -40,6 +40,7 @@ import (
 const (
 	PhyDev = "phydev"
 	OPENSTACK = "openstack"
+    SSH_AWS = "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem"
 )
 
 func CreateOne(cluster *models.Cluster) (string, error) {
@@ -326,7 +327,7 @@ func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
 }
 
 func StartSshService(instanceId string, ip string, password string, correlationId string) error {
-	sshCli, err := getSSHClient(ip, "", password)
+	sshCli, err := getSSHClient(ip, "", "root", password)
 	if err != nil {
 		return err
 	}
@@ -338,7 +339,7 @@ func StartSshService(instanceId string, ip string, password string, correlationI
 	return nil
 }
 
-func getSSHClient(ip string, path string, password string) (*ssh.Client, error) {
+func getSSHClient(ip string, path string,user, password string) (*ssh.Client, error) {
 	var auth ssh.Auth
 	if path == "" {
 		auth = ssh.Auth{
@@ -350,7 +351,7 @@ func getSSHClient(ip string, path string, password string) (*ssh.Client, error) 
 		}
 	}
 	port := 22
-	sshCli, err := ssh.NewClient("root", ip, port, &auth)
+	sshCli, err := ssh.NewClient(user, ip, port, &auth)
 	if err != nil {
 		return nil, err
 	}
@@ -443,36 +444,87 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 }
 
 func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
-	logstore.Info(correlationId, instanceId, "(1) Begin to generate the ssk keys and init the ssh connection")
-	sshErr := StartSshService(instanceId, ip, password, correlationId)
-	if sshErr != nil {
+	ins, err := dao.GetInstance(instanceId)
+	if err != nil {
+		logstore.Error(correlationId, instanceId, "Get instance info err:", err)
+		return ssh.Output{}, err
+	}
+	ip = ins.PublicIpAddress
+	var sshPath string = ""
+	var cli *ssh.Client
+	octansUrl := conf.Config.Ansible.GetOctansUrl
+	if strings.EqualFold(ins.Provider, "aws") {
+		sshPath = SSH_AWS
+		cli, err = getSSHClient(ip, sshPath, "centos", password)
+		cmd := "sudo sed -i \"s/PasswordAuthentication no/PasswordAuthentication yes/g\" /etc/ssh/sshd_config && sudo service sshd restart &&sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
+		logstore.Info(correlationId,instanceId,"Init ssh config:"+cmd)
+		ret, err := cli.Run(cmd)
+		if err != nil {
+			dao.UpdateInstanceStatus(ip, models.StatusError)
+			result := fmt.Sprintf("Exec init ssh cmd %s fail: %s", cmd, err, ret)
+			logstore.Error(correlationId, instanceId, result)
+			return ssh.Output{}, err
+		}
+		err = cli.StoreSSHKey(instanceId)
+		if err != nil {
+			logstore.Error(correlationId, instanceId, err)
+		}
+		logstore.Info(correlationId, instanceId, "ssh key pair end for instance: ", instanceId)
+	} else if strings.EqualFold(ins.Provider, OPENSTACK){
+		sshErr := StartSshService(instanceId, ip, password, correlationId)
+		if sshErr != nil {
 		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
 		dao.UpdateInstanceStatus(ip, models.InitTimeout)
 		return ssh.Output{}, sshErr
-	}
-	logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
-	cli, err := getSSHClient(ip, "", password)
+		}
+		logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
+		cli, err = getSSHClient(ip, "", "root",password)
 
-	octanUrl := conf.Config.Ansible.GetOctansUrl
-
-	ins, err := dao.GetInstance(instanceId)
-	if err != nil {
-		return ssh.Output{}, err
-	}
-
-	if strings.EqualFold(ins.Provider, OPENSTACK){
-		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
+		octansUrl = fmt.Sprintf(octansUrl + "/manage_device_%s.sh", OPENSTACK)
 	} else {
-		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
+		sshErr := StartSshService(instanceId, ip, password, correlationId)
+		if sshErr != nil {
+			logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
+			dao.UpdateInstanceStatus(ip, models.InitTimeout)
+			return ssh.Output{}, sshErr
+		}
 	}
 
-	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
-	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
-
+	cli, err = getSSHClient(ip, sshPath, "root", password)
+	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octansUrl)
+	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
+//=======
+//	logstore.Info(correlationId, instanceId, "(1) Begin to generate the ssk keys and init the ssh connection")
+//	sshErr := StartSshService(instanceId, ip, password, correlationId)
+//	if sshErr != nil {
+//		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
+//		dao.UpdateInstanceStatus(ip, models.InitTimeout)
+//		return ssh.Output{}, sshErr
+//	}
+//	logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
+//	cli, err := getSSHClient(ip, "", password)
+//
+//	octanUrl := conf.Config.Ansible.GetOctansUrl
+//
+//	ins, err := dao.GetInstance(instanceId)
+//	if err != nil {
+//		return ssh.Output{}, err
+//	}
+//
+//	if strings.EqualFold(ins.Provider, OPENSTACK){
+//		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
+//	} else {
+//		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
+//	}
+//
+//	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
+//	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
+//
+//>>>>>>> 1930dd2b9789f5c69077dad334f41d363a8aac2f
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
-		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err)
+		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err, ret)
 		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
@@ -487,7 +539,7 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
-		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err)
+		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err, ret)
 		logstore.Error(correlationId,instanceId,result)
 		return ssh.Output{}, err
 	}
