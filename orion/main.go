@@ -24,11 +24,9 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-
 	_ "github.com/go-sql-driver/mysql"
 	. "weibo.com/opendcp/orion/models"
 	_ "weibo.com/opendcp/orion/routers"
-	"weibo.com/opendcp/orion/sched"
 )
 
 func main() {
@@ -43,9 +41,6 @@ func init() {
 
 	initOrm()
 
-	if err := sched.Initial(); err != nil {
-		panic(err)
-	}
 	beego.SetLogger("file", `{"filename":"logs/orion.log"}`)
 }
 
