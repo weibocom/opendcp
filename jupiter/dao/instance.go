@@ -232,13 +232,3 @@ func GetAllInstanceByClusterId(clusterId int64) (instances []models.Instance, er
 
 	return instances, nil
 }
-
-func GetInstancesByProvider(provider string) ([]models.Instance, error) {
-	o := GetOrmer()
-	var instances []models.Instance
-	_, err := o.QueryTable(INSTANCE_TABLE).Filter("provider", provider).Exclude("status", models.Deleted).All(&instances)
-	if err != nil {
-		return nil, err
-	}
-	return instances, nil
-}

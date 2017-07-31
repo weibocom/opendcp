@@ -80,5 +80,5 @@ type Detail struct {
 
 type InstanceDetail struct {
 	InstanceNumber   map[string]int	`json:"number"`
-	RunningTime		 string			`json:"time"`
+	RunningTime	 string		`json:"time"`
 }

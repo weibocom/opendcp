@@ -867,16 +867,15 @@ func (exec *FlowExecutor) createNodeStates(flow *models.Flow, nodes []*models.No
 	states := make([]*models.NodeState, len(nodes))
 	for i, node := range nodes {
 		state := &models.NodeState{
-			Ip:          node.Ip,
-			VmId:        node.VmId,
-			Node:        node,
-			Flow:        flow,
-			Pool:        node.Pool,
-			Status:      models.STATUS_INIT,
-			Log:         "",
-			Steps:       "[]",
-			StepNum:     0,
-			CreatedTime: time.Now(),
+			Ip:      node.Ip,
+			VmId:    node.VmId,
+			Node:    node,
+			Flow:    flow,
+			Pool:    node.Pool,
+			Status:  models.STATUS_INIT,
+			Log:     "",
+			Steps:   "[]",
+			StepNum: 0,
 		}
 
 		// TODO batch insert all states

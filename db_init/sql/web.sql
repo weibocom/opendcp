@@ -137,13 +137,6 @@ CREATE TABLE `keydata` (
 
 INSERT INTO keydata (datakey, datacontent) VALUES ('controller_ip', '""');
 
-CREATE TABLE `compute_power` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `data` text NOT NULL,
-  `create_time` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

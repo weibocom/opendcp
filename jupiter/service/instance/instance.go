@@ -125,8 +125,6 @@ func DeleteOne(instanceId, correlationId string) error {
 				logstore.Info(correlationId, instanceId, "the instance already deleted, err:", err)
 			} else {
 				logstore.Error(correlationId, instanceId, "delete instance, err:", err)
-				_, e := UpdateInstanceStatus(instanceId, models.StatusError)
-				logstore.Error(correlationId, instanceId, "Update instance status err:", e)
 				return err
 			}
 		}
@@ -349,7 +347,7 @@ func getSSHClient(ip string, path string, password string) (*ssh.Client, error) 
 			Keys: []string{path},
 		}
 	}
-	port := 22
+	port := 26018
 	sshCli, err := ssh.NewClient("root", ip, port, &auth)
 	if err != nil {
 		return nil, err
