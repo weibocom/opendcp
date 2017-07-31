@@ -126,28 +126,28 @@ require_once('include/navbar.php');
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-database"></i></div>
-                            <div class="count">168</div>
+                            <div id = "clusterCount" class="count">0</div>
                             <h3>Cluster Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-laptop"></i></div>
-                            <div class="count">2860</div>
+                            <div id = "machineCount" class="count">0</div>
                             <h3>Machine Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-cubes"></i></div>
-                            <div class="count">5188</div>
-                            <h3>Container Count</h3>
+                            <div id = "poolCount" class="count">0</div>
+                            <h3>Pool Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-tasks"></i></div>
-                            <div class="count">10068</div>
+                            <div id = "taskCount" class="count">0</div>
                             <h3>Schedual Task</h3>
                         </div>
                     </div>
@@ -155,10 +155,10 @@ require_once('include/navbar.php');
 
                 <div class="clearfix"></div>
                 <div class="row">
-                    <div class="col-md-8 col-sm-8 col-xs-12">
+                    <div class="col-md-6 col-sm-6 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>弹性扩容<small> 机器数量</small></h2>
+                                <h2>弹性扩容<small>机器数量</small></h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
@@ -172,7 +172,6 @@ require_once('include/navbar.php');
                                     </li>
                                 </ul>
                                 <div class="clearfix"></div>
-
                             </div>
                             <div class="x_content">
                                 <div class="col-sm-3 navbar-right" style="padding-right:0px;">
@@ -193,19 +192,16 @@ require_once('include/navbar.php');
                                     </div>
                                 </div>
                             </div>
-                            <div class="x_content">
-
-
-                                <div id="container" style="height:240px; width;auto; "></div>
-
+                            <div class="x_content" style="margin-top: -35px">
+                                <div id="container" style="height:350px;"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-4 col-sm-4 col-xs-12">
+                    <div class="col-md-6 col-sm-6 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>云厂商机器</h2>
+                                <h2>虚拟化<small>机器详情</small></h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
@@ -224,8 +220,26 @@ require_once('include/navbar.php');
                                 <div class="clearfix"></div>
                             </div>
                             <div class="x_content">
-
-                                <div id="echart_pie" style="height:300px; width:auto"></div>
+                                <div class="col-sm-3 navbar-right" style="padding-right:0px;">
+                                    <div class="input-group">
+                                        <input type="name" id="time_open_nume" class="form-control" placeholder="输入时间" value = "1">
+                                        <span class="input-group-btn dropdown">
+                                            <button id="time_open_unit" data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button" aria-expanded="false">
+                                                <a onclick="changeOpenTime(0)">小时 </a><span class="caret"></span>
+                                            </button>
+                                            <ul role="menu" class="dropdown-menu col-sm-3 navbar-right">
+                                              <li><a onclick="changeOpenTime(0)">小时</a></li>
+                                              <li><a onclick="changeOpenTime(1)">天</a></li>
+                                              <li><a onclick="changeOpenTime(2)">周</a></li>
+                                              <li><a onclick="changeOpenTime(3)">月</a></li>
+                                              <li><a onclick="changeOpenTime(4)">年</a> </li>
+                                            </ul>
+                                         </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="x_content" style="margin-top: -35px">
+                                <div id="container_stack" style="height:350px;"></div>
                             </div>
                         </div>
                     </div>
@@ -405,10 +419,10 @@ require_once('include/navbar.php');
 <script src="gentelella/vendors/echarts/dist/echarts.min.js"></script>
 <script src="gentelella/vendors/echarts/map/js/world.js"></script>
 <!-- highCharts -->
-<script src="highcharts/highcharts.js"></script>
-<script src="highcharts/exporting.js"></script>
-<script src="highcharts/data.js"></script>
-
+<!--<script src="highcharts/highcharts.js"></script>-->
+<!--<script src="highcharts/exporting.js"></script>-->
+<!--<script src="highcharts/data.js"></script>-->
+<!--<script src="js/vintage.js"></script>-->
 <!-- cookie -->
 <script type="text/javascript" src="gentelella/vendors/jquery.cookie/jquery.cookie.js"></script>
 <!-- Page walkthrough -->

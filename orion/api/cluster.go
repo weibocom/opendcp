@@ -489,12 +489,12 @@ func (c *ClusterApi) PoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &liststruct[i].Tasks)
 		liststruct[i].ServiceId = fi.Service.Id
 
-		count, err = service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
+		nodeCount, err := service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
 		if err != nil {
 			c.ReturnFailed(err.Error(), 400)
 			return
 		}
-		liststruct[i].Nodecount = count
+		liststruct[i].Nodecount = nodeCount
 
 	}
 
@@ -729,12 +729,12 @@ func (c *ClusterApi) AllPoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &liststruct[i].Tasks)
 		liststruct[i].ServiceId = fi.Service.Id
 
-		count, err = service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
+		nodeCount, err := service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
 		if err != nil {
 			c.ReturnFailed(err.Error(), 400)
 			return
 		}
-		liststruct[i].Nodecount = count
+		liststruct[i].Nodecount = nodeCount
 
 	}
 	c.ReturnPageContent(page, pageSize, count, liststruct)
