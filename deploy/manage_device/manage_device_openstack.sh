@@ -71,11 +71,11 @@ service docker restart
 echo "4、下载octans-agent镜像"
 #4、下载octans-agent镜像
 
-docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:openstack
+docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:latest
 
 echo "5、检查镜像是否下载成功"
 #5、检查镜像是否下载成功
-checkImage registry.cn-beijing.aliyuncs.com/opendcp/octans-agent  openstack
+checkImage registry.cn-beijing.aliyuncs.com/opendcp/octans-agent  latest
 
 
 #6、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)
@@ -94,7 +94,7 @@ fi
 #10.85.41.168:8083
 #i-2zeen6mal4s9qvpqb4iq
 #47.93.162.228
-docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4"  --net=host --name octans-agent registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:openstack
+docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4"  --net=host --name octans-agent registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:latest
 
 echo "[DONE] --------------"
 echo "###################end:"`date +%Y%m%d" "%H":"%M":"%S`
