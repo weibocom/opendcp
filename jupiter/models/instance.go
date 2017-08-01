@@ -17,8 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package models
 
 import (
@@ -93,21 +91,20 @@ type ListInstancesResponse struct {
 }
 
 type Instance struct {
-
-	Id                 int      `orm:"pk;auto"`
-	Cluster            *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
-	Provider           string
-	CreateTime         time.Time `orm:"auto_now_add;type(datetime)"`
-	Cpu                int
-	Ram                int
-	InstanceId         string
-	ImageId            string
-	InstanceType       string
-	KeyName            string
+	Id           int      `orm:"pk;auto"`
+	Cluster      *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
+	Provider     string
+	CreateTime   time.Time `orm:"auto_now_add;type(datetime)"`
+	Cpu          int
+	Ram          int
+	InstanceId   string
+	ImageId      string
+	InstanceType string
+	KeyName      string
 	// The ID of the VPC.
-	VpcId              string
+	VpcId string
 	// The ID of the subnet.
-	SubnetId           string
+	SubnetId string
 	// The ID of the security group
 	SecurityGroupId    string
 	RegionId           string
@@ -119,29 +116,30 @@ type Instance struct {
 	CostWay            string
 	PreBuyMonth        int
 	// The IP address of the network interface within the subnet.
-	PrivateIpAddress   string
+	PrivateIpAddress string
 	// The public IP address or Elastic IP address bound to the network interface.
-	PublicIpAddress    string
-	NatIpAddress       string
+	PublicIpAddress string
+	NatIpAddress    string
 	// The status of the instance.
-	Status             InstanceStatus
-	PublicKey          string `orm:"type(text);null" json:"-"`
-	PrivateKey         string `orm:"type(text);null" json:"-"`
+	Status     InstanceStatus
+	PublicKey  string `orm:"type(text);null" json:"-"`
+	PrivateKey string `orm:"type(text);null" json:"-"`
 	//OpenStack attr
 	TenantID string `mapstructure:"tenant_id"`
-	UserID string `mapstructure:"user_id"`
-	Name string
+	UserID   string `mapstructure:"user_id"`
+	Name     string
 }
 
 type SshKey struct {
-	PublicKey string
+	PublicKey  string
 	PrivateKey string
 }
 
 type PhyAuth struct {
-	PublicIp string
+	PublicIp  string
 	PrivateIp string
-	Password string
+	Password  string
+	Port      int
 }
 
 type PhyDev struct {
@@ -151,14 +149,14 @@ type PhyDev struct {
 }
 
 type InstanceIdStatus struct {
-	InstanceId     string
-	Status         InstanceStatus
+	InstanceId string
+	Status     InstanceStatus
 }
 
 type StatusResp struct {
-	InstanceId       string         `json:"instance_id"`
-	Status           InstanceStatus `json:"status"`
-	IpAddress        string         `json:"ip_address"`
+	InstanceId string         `json:"instance_id"`
+	Status     InstanceStatus `json:"status"`
+	IpAddress  string         `json:"ip_address"`
 }
 
 type SecurityGroupIdSetTypeAllin struct {
@@ -201,16 +199,16 @@ type InstanceAllIn struct {
 	VpcAttributes       VpcAttributesTypeAllin       `json:"VpcAttributes"`
 	EipAddress          EipAddressAssociateTypeAllin `json:"EipAddress"`
 	ExpiredTime         string                       `json:"ExpiredTime"` // 过期时间，按照ISO8601标准表示，并需要使用UTC时间。格式为：YYYY-MM-DDThh:mmZ
-	TenantId  	    string 			 `json:"TenantId"`
-	UserId   	    string 			 `json:"UserID"`
-	Name		    string			 `json:"Name"`
+	TenantId            string                       `json:"TenantId"`
+	UserId              string                       `json:"UserID"`
+	Name                string                       `json:"Name"`
 }
 
 type OpenStackConf struct {
-	OpIp		string			`"json:OpIp"`
-	OpPort		string  		`"json:OpPort"`
-	OpUserName	string			`"json:OpUserName"`
-	OpPassWord	string			`"json:OpPassWord'`
+	OpIp       string `"json:OpIp"`
+	OpPort     string `"json:OpPort"`
+	OpUserName string `"json:OpUserName"`
+	OpPassWord string `"json:OpPassWord'`
 }
 
 // Describes an IP range.
