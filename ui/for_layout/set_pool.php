@@ -49,7 +49,7 @@ $pageAction='setpool';
                 </div>
                 <div class="col-md-5">
                     <div class="btn-group pull-right">
-                        <span id="addCron" class="btn btn-success" style="border-radius: 3px;margin-right:5px;" onclick="addTaskCron()"><i class="fa fa-plus"></i> 定时任务</span>
+                        <span id="addCron" class="btn btn-success" style="border-radius: 3px;margin-right:5px;" onclick="addTaskCron(<?php echo $myIdx;?>)" disabled><i class="fa fa-plus"></i> 定时任务</span>
                         <span id="addDepen" class="btn btn-success" style="border-radius: 3px;margin-left:5px" onclick="addTaskDepen()"><i class="fa fa-plus"></i> 依赖任务</span>
                     </div>
                 </div>
