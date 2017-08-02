@@ -24,12 +24,33 @@ import (
 	"github.com/astaxie/beego/orm"
 
 	"weibo.com/opendcp/orion/models"
+	"fmt"
 )
 
 type ClusterService struct {
 	BaseService
 }
 
+func (c *ClusterService) GetAllExecTask() ([]*models.ExecTask, error){
+	var (
+		taskList []*models.ExecTask
+		o = orm.NewOrm()
+	)
+	if _, err := o.QueryTable(&models.ExecTask{}).
+		RelatedSel().All(&taskList); err != nil {
+		return nil, fmt.Errorf("db load ExecTask failed: %v", err)
+	}
+	for _, task := range taskList {
+		if _, err := o.LoadRelated(task, "CronItems"); err != nil {
+			return nil, fmt.Errorf("db load %d CronItems failed: %v", task.Id, err)
+		}
+		if _, err := o.LoadRelated(task, "DependItems"); err != nil {
+			return nil, fmt.Errorf("db load %d DependItems failed: %v", task.Id, err)
+		}
+	}
+
+	return taskList, nil
+}
 func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool) []int {
 	o := orm.NewOrm()
 
