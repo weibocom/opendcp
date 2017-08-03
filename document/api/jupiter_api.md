@@ -2841,8 +2841,8 @@ curl -X POST "http://HOST/v1/instance/openstack"  \
 {
   "code": 0,
   "msg": null,
-  "content": {配置信息}，
-  "ext": null
+  "content": {配置信息},
+  "ext":null
 }
 ```
 
