@@ -2,30 +2,41 @@
 ## 打包系统
 
 ### 1.创建项目接口
+
 创建项目
+
 #### 请求地址
+
 | POST方法                      |
 | --------------------------- |
 | http://HOST/api/project/new |
+
 #### 请求参数
 | 名称          | 类型     | 是否必须 | 描述        |
 | ----------- | ------ | ---- | --------- |
 | projectName | string | 是    | 当前创建的项目名称 |
 | operator    | string | 是    | 操作用户      |
+
 #### 返回参数
+
 | 名称      | 类型     | 示例值  | 描述     |
 | ------- | ------ | ---- | ------ |
 | code    | int    | 1000 | 返回码    |
 | errMsg  | string | ""   | 接口返回信息 |
 | content | object | ""   | 数据结果   |
+
 #### 请求示例
+
 ```php
 curl -X POST "http://HOST/api/project/new "  \
 -H "Content-type: application/json"  \
 -d '{"projectName":"myweb","operator":"root"}'
 ```
+
 #### 响应示例
+
 正常返回结果：
+
 ```json
 {
     "code": 10000,
@@ -33,7 +44,9 @@ curl -X POST "http://HOST/api/project/new "  \
     "content": "",
 }
 ```
+
 异常返回结果：
+
 ```json
 {
     "code": 10006,
@@ -41,6 +54,7 @@ curl -X POST "http://HOST/api/project/new "  \
     "content": -1,
 }
 ```
+
 ```json
 {
     "code": 10100,
@@ -48,18 +62,25 @@ curl -X POST "http://HOST/api/project/new "  \
     "content": -1,
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述          |
 | ----- | ---- | ----------- |
 | 10000 | 执行成功 |             |
 | 10006 | 执行失败 | 参数非法，参数传入有误 |
 | 10100 | 执行失败 | 接口内部出错      |
+
 ### 2.删除项目接口
+
 删除项目
+
 #### 请求地址
+
 | POST方法                         |
 | ------------------------------ |
 | http://HOST/api/project/delete |
+
 #### 请求参数
 | 名称          | 类型     | 是否必须 | 描述   |
 | ----------- | ------ | ---- | ---- |
@@ -67,19 +88,25 @@ curl -X POST "http://HOST/api/project/new "  \
 | operator    | string | 是    | 创建用户 |
 
 #### 返回参数
+
 | 名称      | 类型     | 示例值      | 描述     |
 | ------- | ------ | -------- | ------ |
 | code    | int    | 0        | 返回码    |
 | errMsg  | strng  | "sucess" | 接口返回信息 |
 | content | string |          | 数据结果   |
+
 #### 请求示例
+
 ```php
 curl -X POST 'http://HOST/api/project/delete' \
 -H "Content-type: application/json" \
 -d '{"projectName":"myweb","operator":"root"}' 
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
     "code": 10000,
@@ -87,7 +114,9 @@ curl -X POST 'http://HOST/api/project/delete' \
     "content": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
      "code": 10006,
@@ -95,7 +124,9 @@ curl -X POST 'http://HOST/api/project/delete' \
      "content": -1,
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述                      |
 | ----- | ---- | ----------------------- |
 | 10000 | 执行成功 |                         |
@@ -103,25 +134,33 @@ curl -X POST 'http://HOST/api/project/delete' \
 | 10100 | 执行失败 | 接口内部出错                  |
 
 ### 3.克隆项目接口
+
 项目克隆
+
 #### 请求地址
+
 | POST方法                        |
 | ----------------------------- |
 | http://HOST/api/project/clone |
 
 #### 请求参数
+
 | 名称             | 类型     | 是否必须 | 描述      |
 | -------------- | ------ | ---- | ------- |
 | srcProjectName | string | 是    | 克隆源项目名称 |
 | dstProjectName | string | 是    | 克隆项目名称  |
 | operator       | string | 是    | 操作者     |
+
 #### 返回参数
+
 | 名称      | 类型     | 示例值   | 描述     |
 | ------- | ------ | ----- | ------ |
 | code    | int    | 10000 | 返回码    |
 | errMsg  | strng  | ""    | 接口返回信息 |
 | content | object |       |        |
+
 #### 请求示例
+
 ```php
 curl -X POST 'http://HOST/api/project/clone ' \
 -H "Content-type: application/json" \
@@ -129,8 +168,11 @@ curl -X POST 'http://HOST/api/project/clone ' \
  "dstProjectName":"target", 
  "operator": "root"}' 
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
     "code": 10000,
@@ -138,7 +180,9 @@ curl -X POST 'http://HOST/api/project/clone ' \
     "content": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 10006,
@@ -146,6 +190,7 @@ curl -X POST 'http://HOST/api/project/clone ' \
     "content": -1,
 }
 ```
+
 ```json
 {
     "code": 10003,
@@ -153,6 +198,7 @@ curl -X POST 'http://HOST/api/project/clone ' \
     "content": -1,
 }
 ```
+
 ```json
 {
     "code": 10002,
@@ -160,7 +206,9 @@ curl -X POST 'http://HOST/api/project/clone ' \
     "content": -1,
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述          |
 | ----- | ---- | ----------- |
 | 10000 | 执行成功 |             |
@@ -168,6 +216,7 @@ curl -X POST 'http://HOST/api/project/clone ' \
 | 10100 | 执行失败 | 接口内部出错      |
 | 10002 | 执行失败 | 克隆源项目不存在    |
 | 10003 | 执行失败 | 项目删除时，项目不存在 |
+
 ### 4.项目详情接口
 
 获取项目详情
@@ -177,6 +226,7 @@ curl -X POST 'http://HOST/api/project/clone ' \
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/api/project/info?projectName=myweb&operator=admin |
+
 #### 请求参数
 | 名称          | 类型     | 示例值  | 描述   |
 | ----------- | ------ | ---- | ---- |
@@ -207,7 +257,9 @@ content参数
 curl -X GET 'http://$HOST/api/project/info' \
 -H "Content-type: application/json" 
 ```
+
 #### 响应示例
+
 正常响应结果
 ```json
 {
@@ -216,7 +268,9 @@ curl -X GET 'http://$HOST/api/project/info' \
     "data": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 10008,
@@ -224,7 +278,9 @@ curl -X GET 'http://$HOST/api/project/info' \
     "data": null,
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述          |
 | ----- | ---- | ----------- |
 | 0     | 执行成功 |             |
@@ -234,6 +290,7 @@ curl -X GET 'http://$HOST/api/project/info' \
 
 
 ### 5.获取项目列表接口
+
 获取项目列表
 
 #### 请求地址
@@ -243,12 +300,15 @@ curl -X GET 'http://$HOST/api/project/info' \
 | http://HOST/api/project/list?page=1&page_size=10&projectName=myweb |
 
 #### 请求参数
+
 | 名称          | 类型   | 是否必须 | 描述    |
 | ----------- | ---- | ---- | ----- |
 | projectName | int  | 是    | 项目名称  |
 | page        | int  | 是    | 页码    |
 | page_size   | int  | 是    | 当前页大小 |
+
 #### 返回参数
+
 | 名称          | 类型     | 示例值   | 描述            |
 | ----------- | ------ | ----- | ------------- |
 | code        | int    | 10000 | 返回码           |
@@ -269,14 +329,19 @@ data参数
 | lastModifyOperator   | string |      | 最后一次修改者        |
 | Cluster              | string |      | 隶属镜像集群         |
 | DefineDockerFileType | string |      | dockerfile定义类型 |
+
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X POST 'http://$HOST/api/project/list' 
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
     "code": 10000,
@@ -284,7 +349,9 @@ curl
     "content": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 10006,
@@ -292,19 +359,26 @@ curl
     "content": -1,
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述          |
 | ----- | ---- | ----------- |
 | 10000 | 执行成功 |             |
 | 10006 | 执行失败 | 参数非法，参数传入有误 |
 
 ### 6.项目保存接口
+
 保存项目
+
 #### 请求地址
+
 | POST方法                       |
 | ---------------------------- |
 | http://HOST/api/project/save |
+
 #### 请求参数
+
 | 名称                   | 类型     | 是否必须 | 描述           |
 | -------------------- | ------ | ---- | ------------ |
 | project              | string | 是    | 项目名称         |
@@ -312,13 +386,17 @@ curl
 | DefineDockerFileType | string | 是    | dockerfile类型 |
 | addOrUpdate          | string | 是    | 操作用户         |
 | $$plugin             | array  | 是    | 项目所用插件       |
+
 #### 返回参数
+
 | 名称      | 类型     | 示例值   | 描述     |
 | ------- | ------ | ----- | ------ |
 | code    | int    | 10000 | 返回码    |
 | errMsg  | strng  | ""    | 接口返回信息 |
 | content | object |       | 返回结果   |
+
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
@@ -332,8 +410,11 @@ curl
   }]
 }"
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
     "code": 10000,
@@ -341,7 +422,9 @@ curl
     "content": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 10006,
@@ -349,6 +432,7 @@ curl
     "content": "project: aaa already exist ""
 }
 ```
+
 ```json
 {
     "code": 10001,
@@ -356,6 +440,7 @@ curl
     "content": "projectName contains special char: *"
 }
 ```
+
 ```json
 {
     "code": 10100,
@@ -363,7 +448,9 @@ curl
     "content": ""
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述             |
 | ----- | ---- | -------------- |
 | 10000 | 执行成功 |                |
@@ -371,33 +458,45 @@ curl
 | 10100 | 执行失败 | 接口内部出错         |
 
 ### 7.构建项目接口
+
 构建项目
+
 #### 请求地址
+
 | POST方法                        |
 | ----------------------------- |
 | http://HOST/api/project/build |
+
 #### 请求参数
+
 | 名称          | 类型     | 示例值  | 描述   |
 | ----------- | ------ | ---- | ---- |
 | projectName | string | 是    | 项目名称 |
 | operator    | string | 是    | 创建者  |
 | tag         | string | 是    | 镜像版本 |
+
 #### 返回参数
+
 | 名称      | 类型     | 示例值      | 描述     |
 | ------- | ------ | -------- | ------ |
 | code    | int    | 10000    | 返回码    |
 | errmsg  | strng  | "sucess" | 接口返回信息 |
 | content | object | null     | 返回结果   |
+
 content参数
+
 | 名称    | 类型     | 示例值  | 描述   |
 | ----- | ------ | ---- | ---- |
 | idStr | string | 0    | id   |
+
 #### 请求示例
 ```php
 curl -X POST 'http://$HOST/api/project/build' \
 -H "Content-type: application/json" 
 ```
+
 #### 响应示例
+
 正常响应结果
 
 ```json
@@ -407,6 +506,7 @@ curl -X POST 'http://$HOST/api/project/build' \
     "data": "",
 }
 ```
+
 异常响应结果
 
 ```json
@@ -418,6 +518,7 @@ curl -X POST 'http://$HOST/api/project/build' \
 ```
 
 #### 返回码解释
+
 | 返回码   | 状态   | 描述          |
 | ----- | ---- | ----------- |
 | 0     | 执行成功 |             |
@@ -426,30 +527,40 @@ curl -X POST 'http://$HOST/api/project/build' \
 | 10100 | 执行失败 | 接口内部出错      |
 
 ### 8.获取项目构建结果接口
+
 获取项目构建结果
+
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/api/project/buildHistory?projectName=myweb&operator=admin |
+
 #### 请求参数
 | 名称          | 类型     | 是否必须 | 描述   |
 | ----------- | ------ | ---- | ---- |
 | projectName | string | 是    | 项目名称 |
 | operator    | string | 是    | 操作者  |
 #### 返回参数
+
 | 名称      | 类型     | 示例值   | 描述     |
 | ------- | ------ | ----- | ------ |
 | code    | int    | 10000 | 返回码    |
 | errMsg  | string | ""    | 接口返回信息 |
 | content | object |       |        |
+
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X POST 'http://HOST/api/project/buildHistory?projectName=myweb&operator=admin' 
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
     "code": 10000,
@@ -457,7 +568,9 @@ curl
     "content": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 10006,
@@ -472,6 +585,7 @@ curl
     "content": "projectName contains special char: *",
 }
 ```
+
 ```json
 {
     "code": 10100,
@@ -479,7 +593,9 @@ curl
     "content": "",
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述             |
 | ----- | ---- | -------------- |
 | 10000 | 执行成功 |                |
@@ -487,23 +603,31 @@ curl
 | 10100 | 执行失败 | 接口内部出错         |
 
 ### 9.项目插件扩展接口
+
 插件扩展接口
+
 #### 请求地址
+
 | POST方法                                   |
 | ---------------------------------------- |
 | http://HOST/api/plugin/extension/interface |
+
 #### 请求参数
 | 名称     | 类型     | 是否必须 | 描述   |
 | ------ | ------ | ---- | ---- |
 | plugin | string | 是    |      |
 | method | string | 是    | 操作者  |
+
 #### 返回参数
+
 | 名称      | 类型     | 示例值   | 描述     |
 | ------- | ------ | ----- | ------ |
 | code    | int    | 10000 | 返回码    |
 | errMsg  | strng  | ""    | 接口返回信息 |
 | content | object |       |        |
+
 #### 请求示例
+
 ```php
 curl -H "Content-type: application/json" \
 -X POST 'http://HOST/api/plugin/extension/interface' \
@@ -512,8 +636,11 @@ curl -H "Content-type: application/json" \
 -d '{  
 }'
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
     "code": 10000,
@@ -521,7 +648,9 @@ curl -H "Content-type: application/json" \
     "content": null
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 10004,
@@ -529,6 +658,7 @@ curl -H "Content-type: application/json" \
     "content": {},
 }
 ```
+
 ```json
 {
     "code": 10100,
@@ -536,7 +666,9 @@ curl -H "Content-type: application/json" \
     "content": {},
 }
 ```
+
 #### 返回码解释
+
 | 返回码   | 状态   | 描述     |
 | ----- | ---- | ------ |
 | 10000 | 执行成功 |        |
@@ -544,27 +676,37 @@ curl -H "Content-type: application/json" \
 | 10100 | 执行失败 | 接口内部出错 |
 
 ### 10.获取项目配置页面
+
 获取项目构建镜像配置信息
+
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/view/config/independent?projectName=aaa |
+
 #### 请求参数
+
 | 名称          | 类型     | 是否必须 | 描述   |
 | ----------- | ------ | ---- | ---- |
 | projectName | string | 是    | 项目名称 |
+
 #### 返回参数
+
 | 名称   | 类型     | 示例值  | 描述data     |
 | ---- | ------ | ---- | ---------- |
 | data | string |      | 返回配置页面HTML |
 
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X GET 'http://HOST/view/config/independent'
 ```
+
 #### 响应示例
+
 正常响应结果
 ```json
 {
@@ -581,10 +723,13 @@ curl
 ### 1.获取项目列表接口
 获取项目集群列表
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HarborHOST/projects?page=1&page_size=10&project_name=myweb |
+
 #### 请求参数
+
 | 名称           | 类型     | 是否必须 | 描述        |
 | ------------ | ------ | ---- | --------- |
 | page         | string | 否    | 当前页       |
@@ -597,12 +742,15 @@ curl
 | data | object |      | 返回项目列表 |
 
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X GET 'http://HarborHOST/projects?page=1&page_size=10&project_name=yweb' 
 ```
+
 #### 响应示例
+
 正常响应结果
 ```json
 [{
@@ -621,34 +769,46 @@ curl
 },
 ]
 ```
+
 #### 返回码解释
 
 ### 2.获取镜像列表
+
 获取镜像列表
+
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/repositories?page=1&page_size=10&project_id=1&q= |
+
 #### 请求参数
+
 | 名称         | 类型     | 是否必须 | 描述   |
 | ---------- | ------ | ---- | ---- |
 | page       | string | 是    | 项目名称 |
 | page_size  | string | 是    | 项目名称 |
 | project_id | string | 是    | 项目名称 |
 | q          | string | 是    | 项目名称 |
+
 #### 返回参数
+
 | 名称   | 类型    | 示例值  | 描述data |
 | ---- | ----- | ---- | ------ |
 | data | array |      | 返回镜像结果 |
 
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X GET 'http://HOST/repositories?page=1&page_size=10&project_id=1&q=' 
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 [{
   "name": "default_cluster/myweb"
@@ -657,29 +817,39 @@ curl
 #### 返回码解释
 
 ### 3.获取镜像标签列表
+
 获取镜像标签列表
+
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/repositories/tags?page=1&page_size=10&project_id=1&repo_name=abc |
+
 #### 请求参数
+
 | 名称        | 类型     | 是否必须 | 描述   |
 | --------- | ------ | ---- | ---- |
 | page      | int    | 是    | 项目名称 |
 | pagesize  | int    | 是    | 项目名称 |
 | repo_name | string | 是    | 项目名称 |
+
 #### 返回参数
+
 | 名称   | 类型    | 示例值  | 描述data |
 | ---- | ----- | ---- | ------ |
 | data | array |      | 返回镜像结果 |
 
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X POST 'http://HOST/repositories/tags?page=1&page_size=10&project_id=1&repo_name=abc'
 ```
+
 #### 响应示例
+
 正常响应结果
 ```json
 [{
@@ -689,58 +859,77 @@ curl
   "name": "1.2"
 }]
 ```
+
 #### 返回码解释
 
 ### 4.获取镜像详细信息
+
 获取镜像详细信息
+
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/repositories/manifests?repo_name=myweb&tag=1.1 |
 #### 请求参数
+
 | 名称        | 类型     | 是否必须 | 描述   |
 | --------- | ------ | ---- | ---- |
 | repo_name | string | 是    | 项目名称 |
 | tag       | string | 是    | 镜像标签 |
 
 #### 返回参数
+
 | 名称   | 类型     | 示例值  | 描述data     |
 | ---- | ------ | ---- | ---------- |
 | data | string |      | 返回配置页面HTML |
 
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
 -X POST 'http://HOST/repositories/manifests?repo_name=myweb&tag=1.1'
 ```
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
   "config":"{...}",
   "manifest":{}
 }
 ```
+
 #### 返回码解释
 
 ### 5.删除镜像标签
+
 删除镜像标签
+
 #### 请求地址
+
 | DELETE方法                 |
 | ------------------------ |
 | http://HOST/repositories |
+
 #### 请求参数
+
 | 名称          | 类型     | 是否必须 | 描述   |
 | ----------- | ------ | ---- | ---- |
 | repoName    | string | 是    | 标签   |
 | projectName | string | 是    | 项目名称 |
+
 #### 返回参数
+
 | 名称   | 类型     | 示例值  | 描述data |
 | ---- | ------ | ---- | ------ |
 | code | int    |      | 返回码    |
 | msg  | string |      | 返回信息   |
+
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
@@ -749,6 +938,7 @@ curl
 -d '{"repoName":"1.1","projectName":"myweb"}'  
 ```
 #### 响应示例
+
 正常响应结果
 ```json
 {
