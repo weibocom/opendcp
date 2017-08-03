@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/rs/xid"
+	"os/exec"
 	"strings"
 	"time"
 	"weibo.com/opendcp/jupiter/conf"
@@ -34,13 +35,12 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
-	"os/exec"
 )
 
 const (
-	PhyDev = "phydev"
+	PhyDev    = "phydev"
 	OPENSTACK = "openstack"
-    SSH_AWS = "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem"
+	SSH_AWS   = "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem"
 )
 
 func CreateOne(cluster *models.Cluster) (string, error) {
@@ -101,7 +101,7 @@ func StopOne(instanceId string) (bool, error) {
 }
 
 func DeleteOne(instanceId, correlationId string) error {
-	logstore.Info(correlationId, instanceId,"1. Begin to delete instance")
+	logstore.Info(correlationId, instanceId, "1. Begin to delete instance")
 	err := dao.UpdateDeletingStatus(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleting status err:", err)
@@ -112,7 +112,7 @@ func DeleteOne(instanceId, correlationId string) error {
 		logstore.Error(correlationId, instanceId, "get instance in db err:", err)
 		return err
 	}
-	logstore.Info(correlationId, instanceId,"2. Delete instance from cloud")
+	logstore.Info(correlationId, instanceId, "2. Delete instance from cloud")
 	if ins.Provider != PhyDev {
 		providerDriver, err := provider.New(ins.Provider)
 		if err != nil {
@@ -144,7 +144,7 @@ func DeleteOne(instanceId, correlationId string) error {
 			return err
 		}
 	}
-	logstore.Info(correlationId, instanceId,"3. Update db instance status to deleted")
+	logstore.Info(correlationId, instanceId, "3. Update db instance status to deleted")
 	err = dao.UpdateDeletedStatus(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "update deleted status, err:", err)
@@ -326,8 +326,8 @@ func ListInstancesByClusterId(clusterId int64) ([]models.Instance, error) {
 	return instances, nil
 }
 
-func StartSshService(instanceId string, ip string, password string, correlationId string) error {
-	sshCli, err := getSSHClient(ip, "", "root", password)
+func StartSshService(instanceId string, ip string, password string, correlationId string, port int) error {
+	sshCli, err := getSSHClient(ip, "", "root", password, port)
 	if err != nil {
 		return err
 	}
@@ -339,7 +339,7 @@ func StartSshService(instanceId string, ip string, password string, correlationI
 	return nil
 }
 
-func getSSHClient(ip string, path string,user, password string) (*ssh.Client, error) {
+func getSSHClient(ip string, path string, user, password string, port int) (*ssh.Client, error) {
 	var auth ssh.Auth
 	if path == "" {
 		auth = ssh.Auth{
@@ -350,7 +350,6 @@ func getSSHClient(ip string, path string,user, password string) (*ssh.Client, er
 			Keys: []string{path},
 		}
 	}
-	port := 22
 	sshCli, err := ssh.NewClient(user, ip, port, &auth)
 	if err != nil {
 		return nil, err
@@ -443,7 +442,14 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 	return status, nil
 }
 
-func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, error) {
+func ManageDev(ip, password, instanceId, correlationId string, port int) (ssh.Output, error) {
+	logstore.Info(correlationId, instanceId, "(1) Begin to generate the ssk keys and init the ssh connection")
+	var sshPort int
+	if port == 0 {
+		sshPort = 22
+	} else {
+		sshPort = port
+	}
 	ins, err := dao.GetInstance(instanceId)
 	if err != nil {
 		logstore.Error(correlationId, instanceId, "Get instance info err:", err)
@@ -452,12 +458,11 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 	ip = ins.PublicIpAddress
 	var sshPath string = ""
 	var cli *ssh.Client
-	octansUrl := conf.Config.Ansible.GetOctansUrl
 	if strings.EqualFold(ins.Provider, "aws") {
 		sshPath = SSH_AWS
-		cli, err = getSSHClient(ip, sshPath, "centos", password)
+		cli, err = getSSHClient(ip, sshPath, "centos", password, sshPort)
 		cmd := "sudo sed -i \"s/PasswordAuthentication no/PasswordAuthentication yes/g\" /etc/ssh/sshd_config && sudo service sshd restart &&sudo cp /home/centos/.ssh/authorized_keys /root/.ssh"
-		logstore.Info(correlationId,instanceId,"Init ssh config:"+cmd)
+		logstore.Info(correlationId, instanceId, "Init ssh config:"+cmd)
 		ret, err := cli.Run(cmd)
 		if err != nil {
 			dao.UpdateInstanceStatus(ip, models.StatusError)
@@ -470,103 +475,66 @@ func ManageDev(ip, password, instanceId, correlationId string) (ssh.Output, erro
 			logstore.Error(correlationId, instanceId, err)
 		}
 		logstore.Info(correlationId, instanceId, "ssh key pair end for instance: ", instanceId)
-		octansUrl = fmt.Sprintf(octansUrl + "/manage_device.sh")
-	} else if strings.EqualFold(ins.Provider, OPENSTACK){
-		sshErr := StartSshService(instanceId, ip, password, correlationId)
-		if sshErr != nil {
-			logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
-			dao.UpdateInstanceStatus(ip, models.InitTimeout)
-			return ssh.Output{}, sshErr
-		}
-		logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
-		cli, err = getSSHClient(ip, "", "root",password)
-
-		octansUrl = fmt.Sprintf(octansUrl + "/manage_device_%s.sh", OPENSTACK)
 	} else {
-		octansUrl = fmt.Sprintf(octansUrl + "/manage_device.sh")
-		sshErr := StartSshService(instanceId, ip, password, correlationId)
+		sshErr := StartSshService(instanceId, ip, password, correlationId, sshPort)
 		if sshErr != nil {
 			logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
 			dao.UpdateInstanceStatus(ip, models.InitTimeout)
 			return ssh.Output{}, sshErr
 		}
 	}
+	octansUrl := conf.Config.Ansible.GetOctansUrl
+	if strings.EqualFold(ins.Provider, OPENSTACK) {
+		octansUrl = fmt.Sprintf(octansUrl+"/manage_device_%s.sh", OPENSTACK)
+	}
+	octansUrl = fmt.Sprintf(octansUrl + "/manage_device.sh")
 
-	cli, err = getSSHClient(ip, sshPath, "root", password)
+	cli, err = getSSHClient(ip, sshPath, "root", password, sshPort)
 	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octansUrl)
-	logstore.Info(correlationId,instanceId,"###Second### Get init script:"+cmd)
-//=======
-//	logstore.Info(correlationId, instanceId, "(1) Begin to generate the ssk keys and init the ssh connection")
-//	sshErr := StartSshService(instanceId, ip, password, correlationId)
-//	if sshErr != nil {
-//		logstore.Error(correlationId, instanceId, "ssh instance: ", instanceId, "failed: ", sshErr)
-//		dao.UpdateInstanceStatus(ip, models.InitTimeout)
-//		return ssh.Output{}, sshErr
-//	}
-//	logstore.Info(correlationId, instanceId, "Store the ssk keys finished.")
-//	cli, err := getSSHClient(ip, "", password)
-//
-//	octanUrl := conf.Config.Ansible.GetOctansUrl
-//
-//	ins, err := dao.GetInstance(instanceId)
-//	if err != nil {
-//		return ssh.Output{}, err
-//	}
-//
-//	if strings.EqualFold(ins.Provider, OPENSTACK){
-//		octanUrl = fmt.Sprintf(octanUrl + "/manage_device_%s.sh", OPENSTACK)
-//	} else {
-//		octanUrl = fmt.Sprintf(octanUrl + "/manage_device.sh")
-//	}
-//
-//	cmd := fmt.Sprintf("curl %s -o /root/manage_device.sh && chmod +x /root/manage_device.sh", octanUrl)
-//	logstore.Info(correlationId,instanceId,"(2) Download the init script in instance:"+cmd)
-//
-//>>>>>>> 1930dd2b9789f5c69077dad334f41d363a8aac2f
+	logstore.Info(correlationId, instanceId, "(2) Download the init script in instance:"+cmd)
 	ret, err := cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
 		result := fmt.Sprintf("Exec cmd %s fail: %s", cmd, err, ret)
-		logstore.Error(correlationId,instanceId,result)
+		logstore.Error(correlationId, instanceId, result)
 		return ssh.Output{}, err
 	}
-	logstore.Info(correlationId, instanceId, "Download script result:",ret)
+	logstore.Info(correlationId, instanceId, "Download script result:", ret)
 	dbAddr := beego.AppConfig.String("host")
 	jupiterAddr := beego.AppConfig.String("host")
-	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
-		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
-	cmdOut := fmt.Sprintf("sh /root/manage_device.sh mysql://****:****@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s > /root/result.out",
-		  dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"))
+	cmd = fmt.Sprintf("sh /root/manage_device.sh mysql://%s:%s@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s %d > /root/result.out",
+		beego.AppConfig.String("mysqluser"), beego.AppConfig.String("mysqlpass"), dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"), sshPort)
+	cmdOut := fmt.Sprintf("sh /root/manage_device.sh mysql://****:****@%s:%s/octans?charset=utf8  http://%s:8083/v1/instance/sshkey/ %s:8083 %s %s %s %d > /root/result.out",
+		dbAddr, beego.AppConfig.String("mysqlport"), jupiterAddr, jupiterAddr, instanceId, ip, beego.AppConfig.String("harbor_registry"), sshPort)
 	logstore.Info(correlationId, instanceId, "(3) Execute init operaration in instance："+cmdOut)
 	ret, err = cli.Run(cmd)
 	if err != nil {
 		dao.UpdateInstanceStatus(ip, models.StatusError)
 		result := fmt.Sprintf("Exec cmd [ %s ] fail: %s", cmd, err, ret)
-		logstore.Error(correlationId,instanceId,result)
+		logstore.Error(correlationId, instanceId, result)
 		return ssh.Output{}, err
 	}
 	logstore.Info(correlationId, instanceId, "Execute script result:", ret)
 	return ret, nil
 }
 
-
-func ChangeOpenStackConf(OpConf *models.OpenStackConf) error{
+func ChangeOpenStackConf(OpConf *models.OpenStackConf) error {
 	//修改hosts文件的controller域名
 
-	op := fmt.Sprintf("awk '{if($2==\"controller\") {$1=\"%s\"} print}' /etc/hosts > /etc/hostsbak",  OpConf.OpIp)
+	op := fmt.Sprintf("awk '{if($2==\"controller\") {$1=\"%s\"} print}' /etc/hosts > /etc/hostsbak", OpConf.OpIp)
 	cmd := exec.Command("/bin/sh", "-c", op)
 	err := cmd.Run()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	cmd = exec.Command("/bin/sh", "-c", "cp /etc/hostsbak /etc/hosts")
 	err = cmd.Run()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	cmd = exec.Command("/bin/sh", "-c", "rm /etc/hostsbak")
 	err = cmd.Run()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
@@ -586,12 +554,10 @@ func ListAllInstances() ([]models.Instance, error) {
 	return instances, nil
 }
 
-
-func GetClusterInstances(clusterId int64)  ([]models.Instance, error){
+func GetClusterInstances(clusterId int64) ([]models.Instance, error) {
 	instances, err := dao.GetAllInstanceByClusterId(clusterId)
 	if err != nil {
 		return nil, err
 	}
 	return instances, err
 }
-

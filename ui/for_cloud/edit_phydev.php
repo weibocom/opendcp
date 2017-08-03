@@ -9,7 +9,7 @@
         <div class="col-md-8 col-md-offset-2">
             <label>输入列表</label>
             <textarea class="form-control" id="instancelist" name="InstanceList" onkeyup="checkPhyDev()" rows="3"
-                      placeholder="每行一个，按照 '{PublicIP},{PrivateIP},{Password}' 格式输入"></textarea>
+                      placeholder="每行一个，按照 'PublicIP,PrivateIP,Password,Port(可选)' 格式输入"></textarea>
         </div>
 
     </div>
