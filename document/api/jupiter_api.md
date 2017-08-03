@@ -91,7 +91,6 @@ curl -X GET "http://HOST/v1/cluster"  \
       "DataDiskCategory": "cloud_efficiency",
       "FlavorId": ""
     },
-     }
   ],
   "ext": null
 }
@@ -785,7 +784,7 @@ curl -X POST "http://HOST/v1/instance"  \
 {
   "code": 0,
   "msg": null,
-  "content": 10.41.52.201,
+  "content": "10.41.52.201",
   "ext": null
 }
 ```
@@ -2231,7 +2230,6 @@ curl -X GET "http://HOST/v1/instance/list"  \
         "DataDiskCategory": "standard",
         "FlavorId": ""
     },
-    {
       "Provider": "aws",
       "CreateTime": "2017-08-01T07:28:22Z",
       "Cpu": 1,
