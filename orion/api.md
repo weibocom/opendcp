@@ -12,7 +12,7 @@ curl -H "Content-type: application/json" -X POST http://$HOST/cluster/delete/:id
 
 ## 服务 
 # 创建服务
-curl -H "Content-type: application/json" -X POST -d '{"name":"test","desc":"Test服务","service_type":"Java","docker_image":"sample/test_service:latest","cluster_id":14}' http://$HOST/service/create
+    curl -H "Content-type: application/json" -X POST -d '{"name":"test","desc":"Test服务","service_type":"Java","docker_image":"sample/test_service:latest","cluster_id":14}' http://$HOST/service/create
 # 更改服务
 curl -H "Content-type: application/json" -X POST -d '{"name":"test","desc":"Test Service","service_type":"Java","docker_image":"sample/test_service:latest"}' http://$HOST/service/update/:id
 # 获取集群下服务列表
