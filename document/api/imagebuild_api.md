@@ -22,30 +22,30 @@
 ```php
 curl -X POST "http://HOST/api/project/new "  \
 -H "Content-type: application/json"  \
--d '{projectName:"myweb",operator:"root"}'
+-d '{"projectName":"myweb","operator":"root"}'
 ```
 #### 响应示例
 正常返回结果：
 ```json
 {
-    code: 10000,
-    errMsg: "ok",
-    content: "",
+    "code": 10000,
+    "errMsg": "ok",
+    "content": "",
 }
 ```
 异常返回结果：
 ```json
 {
-    code: 10006,
-    errMsg: "parameter invalid",
-    content: -1,
+    "code": 10006,
+    "errMsg": "parameter invalid",
+    "content": -1,
 }
 ```
 ```json
 {
-    code: 10100,
-    errMsg: "server internal error",
-    content: -1,
+    "code": 10100,
+    "errMsg": "server internal error",
+    "content": -1,
 }
 ```
 #### 返回码解释
@@ -76,23 +76,23 @@ curl -X POST "http://HOST/api/project/new "  \
 ```php
 curl -X POST 'http://HOST/api/project/delete' \
 -H "Content-type: application/json" \
--d '{projectName:"myweb",operator:"root"}' 
+-d '{"projectName":"myweb","operator":"root"}' 
 ```
 #### 响应示例
 正常响应结果
 ```json
 {
-    code: 10000,
-    errmsg: "ok",
-    content: "",
+    "code": 10000,
+    "errmsg": "ok",
+    "content": "",
 }
 ```
 异常响应结果
 ```json
 {
-     code: 10006,
-     errmsg: "parameter invalid",
-     content: -1,
+     "code": 10006,
+     "errmsg": "parameter invalid",
+     "content": -1,
 }
 ```
 #### 返回码解释
@@ -133,31 +133,31 @@ curl -X POST 'http://HOST/api/project/clone ' \
 正常响应结果
 ```json
 {
-    code: 10000,
-    errMsg: "success",
-    content: "",
+    "code": 10000,
+    "errMsg": "success",
+    "content": "",
 }
 ```
 异常响应结果
 ```json
 {
-    code: 10006,
-    msg: "parameter invalid",
-    content: -1,
+    "code": 10006,
+    "msg": "parameter invalid",
+    "content": -1,
 }
 ```
 ```json
 {
-    code: 10003,
-    msg: "project to delete not exist",
-    content: -1,
+    "code": 10003,
+    "msg": "project to delete not exist",
+    "content": -1,
 }
 ```
 ```json
 {
-    code: 10002,
-    msg: "src project not exist",
-    content: -1,
+    "code": 10002,
+    "msg": "src project not exist",
+    "content": -1,
 }
 ```
 #### 返回码解释
@@ -186,8 +186,9 @@ curl -X POST 'http://HOST/api/project/clone ' \
 | 名称      | 类型     | 示例值      | 描述     |
 | ------- | ------ | -------- | ------ |
 | code    | int    | 10000    | 返回码    |
-| errmsg  | strng  | "sucess" | 接口返回信息 |
+| errMsg  | strng  | "sucess" | 接口返回信息 |
 | content | object | null     |        |
+
 content参数
 
 | 名称                   | 类型     | 示例值  | 描述              |
@@ -210,17 +211,17 @@ curl -X GET 'http://$HOST/api/project/info' \
 正常响应结果
 ```json
 {
-    code: 10000,
-    msg: "success",
-    data: "",
+    "code": 10000,
+    "errMsg": "success",
+    "data": "",
 }
 ```
 异常响应结果
 ```json
 {
-    code: 10008,
-    msg: "Project: xxx  to query info not exist",
-    data: null,
+    "code": 10008,
+    "errMsg": "Project: xxx  to query info not exist",
+    "data": null,
 }
 ```
 #### 返回码解释
@@ -256,7 +257,9 @@ curl -X GET 'http://$HOST/api/project/info' \
 | page        | int    |       | 当前页，从1开始，默认为1 |
 | page_size   | int    |       | 当前页大小，默认为10   |
 | total_count | int    |       | 结果总数          |
+
 data参数
+
 | 名称                   | 类型     | 示例值  | 描述             |
 | -------------------- | ------ | ---- | -------------- |
 | creator              | string |      | 创建者            |
@@ -276,17 +279,17 @@ curl
 正常响应结果
 ```json
 {
-    code: 10000,
-    errMsg: "success",
-    content: "",
+    "code": 10000,
+    "errMsg": "success",
+    "content": "",
 }
 ```
 异常响应结果
 ```json
 {
-    code: 10006,
-    msg: "parameter invalid",
-    content: -1,
+    "code": 10006,
+    "msg": "parameter invalid",
+    "content": -1,
 }
 ```
 #### 返回码解释
@@ -333,31 +336,31 @@ curl
 正常响应结果
 ```json
 {
-    code: 10000,
-    errMsg: "success",
-    content: "",
+    "code": 10000,
+    "errMsg": "success",
+    "content": "",
 }
 ```
 异常响应结果
 ```json
 {
-    code: 10006,
-    errMsg: "project already exist",
-    content: "project: aaa already exist ",
+    "code": 10006,
+    "errMsg": "project already exist",
+    "content": "project: aaa already exist ""
 }
 ```
 ```json
 {
-    code: 10001,
-    errMsg: "parameter invalid",
-    content: "projectName contains special char: *",
+    "code": 10001,
+    "errMsg": "parameter invalid",
+    "content": "projectName contains special char: *"
 }
 ```
 ```json
 {
-    code: 10100,
-    errMsg: "server internal error",
-    content: "",
+    "code": 10100,
+    "errMsg": "server internal error",
+    "content": ""
 }
 ```
 #### 返回码解释
@@ -399,18 +402,18 @@ curl -X POST 'http://$HOST/api/project/build' \
 
 ```json
 {
-    code: 10000,
-    msg: "success",
-    data: "",
+    "code": 10000,
+    "msg": "success",
+    "data": "",
 }
 ```
 异常响应结果
 
 ```json
 {
-    code: 10008,
-    msg: "Project: xxx  to query info not exist",
-    data: null,
+    "code": 10008,
+    "msg": "Project: xxx  to query info not exist",
+    "data": null,
 }
 ```
 
@@ -449,31 +452,31 @@ curl
 正常响应结果
 ```json
 {
-    code: 10000,
-    errMsg: "success",
-    content: "",
+    "code": 10000,
+    "errMsg": "success",
+    "content": "",
 }
 ```
 异常响应结果
 ```json
 {
-    code: 10006,
-    errMsg: "project already exist",
-    content: "project: aaa already exist ",
+    "code": 10006,
+    "errMsg": "project already exist",
+    "content": "project: aaa already exist ",
 }
 ```
 ```json
 {
-    code: 10001,
-    errMsg: "parameter invalid",
-    content: "projectName contains special char: *",
+   "code": 10001,
+   "errMsg": "parameter invalid",
+    "content": "projectName contains special char: *",
 }
 ```
 ```json
 {
-    code: 10100,
-    errMsg: "server internal error",
-    content: "",
+    "code": 10100,
+    "errMsg": "server internal error",
+    "content": "",
 }
 ```
 #### 返回码解释
@@ -513,24 +516,24 @@ curl -H "Content-type: application/json" \
 正常响应结果
 ```json
 {
-    code: 10000,
-    errMsg: "ok",
-    content: null
+    "code": 10000,
+    "errMsg": "ok",
+    "content": null
 }
 ```
 异常响应结果
 ```json
 {
-    code: 10004,
-    errMsg: "param error",
-    content: {},
+    "code": 10004,
+    "errMsg": "param error",
+    "content": {},
 }
 ```
 ```json
 {
-    code: 10100,
-    errMsg: "server internal error",
-    content: {},
+    "code": 10100,
+    "errMsg": "server internal error",
+    "content": {},
 }
 ```
 #### 返回码解释
@@ -565,7 +568,7 @@ curl
 正常响应结果
 ```json
 {
-  data:"<html>....</html>"
+  "data":"<html>....</html>"
 }
 ```
 #### 返回码解释
@@ -603,18 +606,18 @@ curl
 正常响应结果
 ```json
 [{
-  Togglable:true，
-  creation_time:"2017-07-26T08:37:13Z"
-  creation_time_str:""
-  current_user_role_id:1
-  deleted:0
-  name:"base"
-  owner_id:1
-  owner_name:""
-  project_id:3
-  public:1
-  repo_count:0
-  update_time:"2017-07-26T08:37:13Z"
+  "Togglable":true,
+  "creation_time":"2017-07-26T08:37:13Z",
+  "creation_time_str":"",
+  "current_user_role_id":1,
+  "deleted":0,
+  "name":"base",
+  "owner_id":1,
+  "owner_name":"",
+  "project_id":3,
+  "public":1,
+  "repo_count":0,
+  "update_time":"2017-07-26T08:37:13Z"
 },
 ]
 ```
@@ -648,12 +651,12 @@ curl
 正常响应结果
 ```json
 [{
-  name: "default_cluster/myweb"
+  "name": "default_cluster/myweb"
 }]
 ```
 #### 返回码解释
 
-### 获取镜像标签列表
+### 3.获取镜像标签列表
 获取镜像标签列表
 #### 请求地址
 | GET方法                                    |
@@ -680,15 +683,15 @@ curl
 正常响应结果
 ```json
 [{
-  name: "1.0"
+  "name": "1.0"
 },
 {
-  name: "1.2"
+  "name": "1.2"
 }]
 ```
 #### 返回码解释
 
-### 3.获取镜像详细信息
+### 4.获取镜像详细信息
 获取镜像详细信息
 #### 请求地址
 | GET方法                                    |
@@ -715,13 +718,13 @@ curl
 正常响应结果
 ```json
 {
-  config:"{...}",
-  manifest:{}
+  "config":"{...}",
+  "manifest":{}
 }
 ```
 #### 返回码解释
 
-###4.删除镜像标签
+### 5.删除镜像标签
 删除镜像标签
 #### 请求地址
 | DELETE方法                 |
@@ -743,14 +746,14 @@ curl
 -H "Content-type: application/json" \
 -X POST 'http://HOST/repositories' \
 -d 'method=DELETE' \
--d '{repoName:"1.1",projectName:"myweb"}'  
+-d '{"repoName":"1.1","projectName":"myweb"}'  
 ```
 #### 响应示例
 正常响应结果
 ```json
 {
-  code:0,
-  msg:""
+  "code":0,
+  "msg":""
 }
 ```
 #### 返回码解释
