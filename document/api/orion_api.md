@@ -2030,16 +2030,16 @@ Logs参数说明
 | message        | string | Logs | 日志信息   |
 | ctime          | int    | Logs | 时间     |
 
-
-
-####请求示例
+####  请求示例
 
 ```php
 curl -X POST ' http://HOST/task/:id:int/log' \
 -H "Content-type: application/json" 
 ```
-####响应示例
+####  响应示例
+
 正常响应结果
+
 ```json
 {
     code: 0,
@@ -2055,7 +2055,9 @@ curl -X POST ' http://HOST/task/:id:int/log' \
     ],
 }
 ```
+
 异常响应结果
+
 ```json
 {
     code: 400,
@@ -2064,36 +2066,31 @@ curl -X POST ' http://HOST/task/:id:int/log' \
 }
 ```
 
-
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                         |
 | ---- | ---- | -------------------------- |
 | 0    | 执行成功 |                            |
 | 400  | 执行失败 | 获取任务日志失败，详细信息请查看返回结果的msg字段 |
 
-
-
-###获取任务列表
+###  获取任务列表
 
 获取所有的任务列表
 
-
-
-#### 请求地址
+####  请求地址
 
 | POST方法                |
 | --------------------- |
 | http://HOST/task/list |
 
 
-####请求参数
+#### 请求参数
 
 | 名称        | 类型   | 是否必须 | 描述    |
 | --------- | ---- | ---- | ----- |
 | page      | int  | 是    | 当前页   |
 | page_size | int  | 是    | 当前页大小 |
-####返回参数
+#### 返回参数
 | 名称          | 类型     | 示例值      | 描述     |
 | ----------- | ------ | -------- | ------ |
 | code        | int    | 0        | 返回码    |
@@ -2104,7 +2101,7 @@ curl -X POST ' http://HOST/task/:id:int/log' \
 | query_count | int    | 2        | 返回结果数  |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task/list' \
@@ -2113,7 +2110,7 @@ curl -X POST 'http://HOST/task/list' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2149,14 +2146,14 @@ curl -X POST 'http://HOST/task/list' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                     |
 | ---- | ---- | ---------------------- |
 | 0    | 执行成功 |                        |
 | 400  | 执行失败 | 获取列表，详细信息请查看返回结果的msg字段 |
 
-###获取任务
+### 获取任务
 
 
 #### 请求地址
@@ -2166,12 +2163,12 @@ curl -X POST 'http://HOST/task/list' \
 | http://HOST/task/:id:int |
 
 
-####请求参数
+#### 请求参数
 
 | 名称   | 类型   | 是否必须 | 描述   |
 | ---- | ---- | ---- | ---- |
 | id   | int  | 是    | 任务id |
-####返回参数
+#### 返回参数
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
@@ -2197,13 +2194,13 @@ data 中对象参数说明
 
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST ' http://HOST/task/:id:int' \
 -H "Content-type: application/json" \ 
 ```
-####响应示例
+#### 响应示例
 正常响应结果
 ```json
 {
@@ -2239,7 +2236,7 @@ curl -X POST ' http://HOST/task/:id:int' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                       |
 | ---- | ---- | ------------------------ |
@@ -2248,7 +2245,7 @@ curl -X POST ' http://HOST/task/:id:int' \
 
 
 
-###获取服务扩容任务列表
+### 获取服务扩容任务列表
 
 #### 请求地址
 | POST方法                                  |
@@ -2256,14 +2253,14 @@ curl -X POST ' http://HOST/task/:id:int' \
 | http://HOST/task/expandList/:poolId:int |
 
 
-####请求参数
+#### 请求参数
 
 | 名称     | 类型   | 是否必须 | 描述    |
 | ------ | ---- | ---- | ----- |
 | poolId | int  | 是    | 服务池id |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2272,7 +2269,7 @@ curl -X POST ' http://HOST/task/:id:int' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
@@ -2280,7 +2277,7 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2307,7 +2304,7 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                             |
 | ---- | ---- | ------------------------------ |
@@ -2316,7 +2313,7 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 
 
 
-###获取服务上线上线列表
+### 获取服务上线上线列表
 
 #### 请求地址
 | POST方法                                  |
@@ -2324,14 +2321,14 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 | http://HOST/task/uploadList/:poolId:int |
 
 
-####请求参数
+#### 请求参数
 
 | 名称   | 类型   | 是否必须 | 描述    |
 | ---- | ---- | ---- | ----- |
 | id   | int  | 是    | 服务池id |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2340,13 +2337,13 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 -H "Content-type: application/json" \
 ```
-####响应示例
+#### 响应示例
 正常响应结果
 ```json
 {
@@ -2372,7 +2369,7 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                                |
 | ---- | ---- | --------------------------------- |
@@ -2381,7 +2378,7 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 
 
 
-###获取任务包含的节点
+### 获取任务包含的节点
 
 #### 请求地址
 | POST方法                          |
@@ -2389,14 +2386,14 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 | http://HOST/task/:id:int/detail |
 
 
-####请求参数
+#### 请求参数
 
 | 名称   | 类型   | 是否必须 | 描述   |
 | ---- | ---- | ---- | ---- |
 | id   | int  | 是    | 任务id |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2405,7 +2402,7 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task/:id:int/detail ' \
@@ -2413,7 +2410,7 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2441,7 +2438,7 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                         |
 | ---- | ---- | -------------------------- |
@@ -2450,7 +2447,7 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 
 
 
-###保存定时任务
+### 保存定时任务
 
 #### 请求地址
 | POST方法                    |
@@ -2458,7 +2455,7 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 | http://HOST/task/saveTask |
 
 
-####请求参数
+####  请求参数
 
 | 名称           | 类型     | 是否必须 | 描述                |
 | ------------ | ------ | ---- | ----------------- |
@@ -2470,7 +2467,7 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 | exec_type    | string | 是    | 定时任务执行类型          |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2479,7 +2476,7 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task/saveTask ' \
@@ -2493,7 +2490,7 @@ curl -X POST 'http://HOST/task/saveTask ' \
  "exec_type":"crontab/depend"
  }' 
 ```
-####响应示例
+#### 响应示例
 正常响应结果
 ```json
 {
@@ -2510,7 +2507,7 @@ curl -X POST 'http://HOST/task/saveTask ' \
     data: {null},
 }
 ```
-####返回码解释
+#### 返回码解释
 | 返回码  | 状态   | 描述                         |
 | ---- | ---- | -------------------------- |
 | 0    | 执行成功 |                            |
@@ -2518,7 +2515,7 @@ curl -X POST 'http://HOST/task/saveTask ' \
 
 
 
-###获取每个节点日志
+### 获取每个节点日志
 
 
 
@@ -2527,11 +2524,13 @@ curl -X POST 'http://HOST/task/saveTask ' \
 | POST方法                         |
 | ------------------------------ |
 | http://HOST/task/;nsid"int/log |
-####请求参数
+
+#### 请求参数
 | 名称   | 类型   | 是否必须 | 描述   |
 | ---- | ---- | ---- | ---- |
 | nsid | int  | 是    | 节点id |
-####返回参数
+
+#### 返回参数
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
@@ -2539,15 +2538,14 @@ curl -X POST 'http://HOST/task/saveTask ' \
 | data | object |          |        |
 
 
-####请求示例
-
+#### 请求示例
 ```php
 curl -X POST 'http://HOST/task/;nsid"int/log' \
 -H "Content-type: application/json" 
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2584,7 +2582,7 @@ curl -X POST 'http://HOST/task/;nsid"int/log' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                         |
 | ---- | ---- | -------------------------- |
@@ -2595,19 +2593,18 @@ curl -X POST 'http://HOST/task/;nsid"int/log' \
 
 ## 任务模板接口
 
-###创建任务模板
+###  创建任务模板
 创建任务执行模板
 
 
-
-####请求地址
+####  请求地址
 
 | POST方法                      |
 | --------------------------- |
 | http://HOST/task_tpl/create |
 
 
-####请求参数
+####  请求参数
 
 | 名称    | 类型     | 是否必须 | 描述     |
 | ----- | ------ | ---- | ------ |
@@ -2617,7 +2614,7 @@ curl -X POST 'http://HOST/task/;nsid"int/log' \
 | steps | array  | 是    | 模板执行步骤 |
 
 
-####返回参数
+####   返回参数
 
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
@@ -2626,7 +2623,7 @@ curl -X POST 'http://HOST/task/;nsid"int/log' \
 | data | int   |          | 创建的模板id |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task_tpl/create' \
@@ -2640,7 +2637,7 @@ curl -X POST 'http://HOST/task_tpl/create' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2660,7 +2657,7 @@ curl -X POST 'http://HOST/task_tpl/create' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                       |
 | ---- | ---- | ------------------------ |
@@ -2669,20 +2666,20 @@ curl -X POST 'http://HOST/task_tpl/create' \
 
 
 
-###获取任务模板列表
+### 获取任务模板列表
 
 获取任务模板列表
 
 
 
-####请求地址
+#### 请求地址
 
 | POST方法                    |
 | ------------------------- |
 | http://HOST/task_tpl/list |
 
 
-####请求参数
+#### 请求参数
 
 | 名称        | 类型     | 是否必须 | 描述             |
 | --------- | ------ | ---- | -------------- |
@@ -2690,7 +2687,7 @@ curl -X POST 'http://HOST/task_tpl/create' \
 | page_size | string | 是    | 当前页大小 ，默认为10   |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2699,7 +2696,7 @@ curl -X POST 'http://HOST/task_tpl/create' \
 | data | object | ""       |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task_tpl/list \
@@ -2708,7 +2705,7 @@ curl -X POST 'http://HOST/task_tpl/list \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2735,7 +2732,7 @@ curl -X POST 'http://HOST/task_tpl/list \
 }
 
 ```
-####返回码解释
+#### 返回码解释
 | 返回码  | 状态   | 描述                           |
 | ---- | ---- | ---------------------------- |
 | 0    | 执行成功 |                              |
@@ -2743,23 +2740,23 @@ curl -X POST 'http://HOST/task_tpl/list \
 
 
 
-###删除任务模板
+### 删除任务模板
 
 删除任务模板
-####请求地址
+#### 请求地址
 | POST方法                              |
 | ----------------------------------- |
 | http://HOST/task_tpl/delete/:id:int |
 
 
-####请求参数
+#### 请求参数
 
 | 名称   | 类型   | 是否必须 | 描述   |
 | ---- | ---- | ---- | ---- |
 | id   | int  | 是    | 任务id |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2768,15 +2765,14 @@ curl -X POST 'http://HOST/task_tpl/list \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task_tpl/update/:id' \
 -H "Content-type: application/json" 
 ```
 
-
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2795,8 +2791,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 }
 ```
 
-
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述               |
 | ---- | ---- | ---------------- |
@@ -2805,23 +2800,23 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 
 
 
-###获取任务模板
+### 获取任务模板
 
 获取任务模板
-####请求地址
+#### 请求地址
 | POST方法                       |
 | ---------------------------- |
 | http://HOST/task_tpl/:id:int |
 
 
-####请求参数
+#### 请求参数
 
 | 名称   | 类型   | 是否必须 | 描述     |
 | ---- | ---- | ---- | ------ |
 | id   | int  | 是    | 获取任务模板 |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2830,7 +2825,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task_tpl/:id:int ' \
@@ -2838,7 +2833,7 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 ```
 
 
-####响应示例
+####  响应示例
 
 正常响应结果
 ```json
@@ -2867,9 +2862,7 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 ```
 
 
-
-
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述               |
 | ---- | ---- | ---------------- |
@@ -2878,16 +2871,16 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 
 
 
-###更新任务模板
+### 更新任务模板
 
 更新任务模板
-####请求地址
+####  请求地址
 | POST方法                              |
 | ----------------------------------- |
 | http://HOST/task_tpl/update/:id:int |
 
 
-####请求参数
+####  请求参数
 
 | 名称    | 类型     | 是否必须 | 描述     |
 | ----- | ------ | ---- | ------ |
@@ -2897,7 +2890,7 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 | steps | array  | 是    | 任务模板步骤 |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2906,7 +2899,7 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task_tpl/update/:id' \
@@ -2925,7 +2918,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -2945,7 +2938,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                       |
 | ---- | ---- | ------------------------ |
@@ -2958,16 +2951,16 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 
 
 
-###获取任务执行步骤列表
+### 获取任务执行步骤列表
 
 获取任务执行步骤列表
-####请求地址
+#### 请求地址
 | POST方法                     |
 | -------------------------- |
 | http://HOST/task_step/list |
 
 
-####请求参数
+#### 请求参数
 
 | 名称        | 类型   | 是否必须 | 描述         |
 | --------- | ---- | ---- | ---------- |
@@ -2975,7 +2968,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 | page_size | int  | 是    | 当前页大小      |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -2984,7 +2977,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/task_step/update/:id' \
@@ -2993,7 +2986,7 @@ curl -X POST 'http://HOST/task_step/update/:id' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -3016,9 +3009,7 @@ curl -X POST 'http://HOST/task_step/update/:id' \
 ```json
 
 ```
-
-
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述   |
 | ---- | ---- | ---- |
@@ -3026,31 +3017,27 @@ curl -X POST 'http://HOST/task_step/update/:id' \
 
 
 
-##远程步骤接口
-### 远程步骤列表接口
+## 远程步骤接口
+###  远程步骤列表接口
 
 获取所有远程步骤列表
 
 
-
-#### 请求地址
+####   请求地址
 
 | GET方法                        |
 | ---------------------------- |
 | http://HOST/remote_step/list |
 
 
-
-#### 请求参数
+####  请求参数
 
 | 名称        | 类型   | 是否必须 | 描述                                  |
 | --------- | ---- | ---- | ----------------------------------- |
 | page      | int  | 否    | 当前页码数，即本次API调用是获得结果的第几页，从1开始计数，默认为1 |
 | page_size | int  | 否    | 当前页包含的结果数，默认结果数为10                  |
 
-
-
-#### 返回参数
+####  返回参数
 
 | 名称          | 类型    | 示例值     | 描述    |
 | ----------- | ----- | ------- | ----- |
@@ -3059,8 +3046,6 @@ curl -X POST 'http://HOST/task_step/update/:id' \
 | page        | int   | 1       | 当前页   |
 | page_size   | int   | 10      | 当前页大小 |
 | query_count | int   | 2       | 结果数   |
-
-
 
 data 参数中object对象说明
 
@@ -3072,8 +3057,7 @@ data 参数中object对象说明
 | actions | []string | 0    | 命令顺序   |
 
 
-
-#### 请求示例
+####  请求示例
 
 ```php
 curl -X GET "http://HOST/remote_step/list"  \
@@ -3083,8 +3067,7 @@ curl -X GET "http://HOST/remote_step/list"  \
 ```
 
 
-
-#### 响应示例
+####   响应示例
 
 正常返回结果：
 
@@ -3121,8 +3104,7 @@ curl -X GET "http://HOST/remote_step/list"  \
 ```
 
 
-
-#### 返回码解释
+####  返回码解释
 
 | 返回码  | 状态   | 描述                        |
 | ---- | ---- | ------------------------- |
@@ -3131,7 +3113,7 @@ curl -X GET "http://HOST/remote_step/list"  \
 
 
 
-### 创建步骤接口
+###   创建步骤接口
 
 创建步骤
 
@@ -3140,7 +3122,6 @@ curl -X GET "http://HOST/remote_step/list"  \
 | POST方法                         |
 | ------------------------------ |
 | http://HOST/remote_step/create |
-
 
 
 #### 请求参数
@@ -3198,7 +3179,7 @@ curl -X POST 'http://HOST/remote_step/create' \
 
 
 
-#### 返回码解释
+####  返回码解释
 
 | 返回码  | 状态   | 描述                     |
 | ---- | ---- | ---------------------- |
@@ -3207,7 +3188,7 @@ curl -X POST 'http://HOST/remote_step/create' \
 
 
 
-### 修改远程步骤接口
+###  修改远程步骤接口
 
 修改步骤
 
@@ -3285,7 +3266,7 @@ curl -X POST 'http://HOST/remote_step/update/:id' \
 
 
 
-### 删除步骤接口
+###  删除步骤接口
 
 删除步骤
 
@@ -3297,7 +3278,7 @@ curl -X POST 'http://HOST/remote_step/update/:id' \
 
 
 
-#### 请求参数
+####  请求参数
 
 | 名称   | 类型   | 示例值  | 描述       |
 | ---- | ---- | ---- | -------- |
@@ -3355,9 +3336,9 @@ curl -X POST 'http://$HOST/remote_step/delete/:id' \
 | 0    | 执行成功 |                        |
 | 404  | 执行失败 | 删除失败，详细信息请查看返回结果的msg字段 |
 
-###  
+ 
 
-### 获取步骤详情
+###  获取步骤详情
 
 获取步骤详情
 
@@ -3461,7 +3442,7 @@ curl
 ### 远程命令列表接口
 
 获取所有远程命令列表
-#### 请求地址
+####  请求地址
 
 | GET方法                   |
 | ----------------------- |
@@ -3704,7 +3685,7 @@ curl -X POST 'http://HOST/action/update/:id' \
 
 
 
-### 删除远程命令接口
+###  删除远程命令接口
 
 删除远程命令
 
@@ -3775,7 +3756,7 @@ curl -X POST 'http://$HOST/action/delete/:id' \
 | 404  | 执行失败 | 删除失败，详细信息请查看返回结果的msg字段 |
 
 
-### 获取远程命令详情
+###   获取远程命令详情
 
 获取远程命令详情
 
@@ -3814,7 +3795,7 @@ data参数
 
 
 
-#### 请求示例
+####  请求示例
 
 ```php
 curl 
@@ -3861,20 +3842,20 @@ curl
 
 
 
-###创建远程命令任务模板实现接口
+###  创建远程命令任务模板实现接口
 
 创建任务执行模板
 
 
 
-####请求地址
+#### 请求地址
 
 | POST方法                         |
 | ------------------------------ |
 | http://HOST/action/impl/create |
 
 
-####请求参数
+#### 请求参数
 
 | 名称    | 类型     | 是否必须 | 描述     |
 | ----- | ------ | ---- | ------ |
@@ -3884,7 +3865,7 @@ curl
 | steps | array  | 是    | 模板执行步骤 |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
@@ -3893,7 +3874,7 @@ curl
 | data | int   |          | 创建的模板id |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/action/impl/create ' \
@@ -3907,7 +3888,7 @@ curl -X POST 'http://HOST/action/impl/create ' \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -3927,7 +3908,7 @@ curl -X POST 'http://HOST/action/impl/create ' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                       |
 | ---- | ---- | ------------------------ |
@@ -3936,16 +3917,16 @@ curl -X POST 'http://HOST/action/impl/create ' \
 
 
 
-###获取远程命令任务模板实现列表接口
+### 获取远程命令任务模板实现列表接口
 
 获取任务模板列表
-####请求地址
+#### 请求地址
 | POST方法                       |
 | ---------------------------- |
 | http://HOST/action/impl/list |
 
 
-####请求参数
+#### 请求参数
 
 | 名称        | 类型     | 是否必须 | 描述             |
 | --------- | ------ | ---- | -------------- |
@@ -3953,7 +3934,7 @@ curl -X POST 'http://HOST/action/impl/create ' \
 | page_size | string | 是    | 当前页大小 ，默认为10   |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -3962,7 +3943,7 @@ curl -X POST 'http://HOST/action/impl/create ' \
 | data | object | ""       |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/action/impl/list\
@@ -3971,7 +3952,7 @@ curl -X POST 'http://HOST/action/impl/list\
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常响应结果
 ```json
@@ -3999,7 +3980,7 @@ curl -X POST 'http://HOST/action/impl/list\
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                           |
 | ---- | ---- | ---------------------------- |
@@ -4008,27 +3989,27 @@ curl -X POST 'http://HOST/action/impl/list\
 
 
 
-###删除远程命令任务模板实现接口
+### 删除远程命令任务模板实现接口
 
 删除任务模板
 
 
 
-####请求地址
+#### 请求地址
 
 | POST方法                                 |
 | -------------------------------------- |
 | http://HOST/action/impl/delete/:id:int |
 
 
-####请求参数
+#### 请求参数
 
 | 名称   | 类型   | 是否必须 | 描述   |
 | ---- | ---- | ---- | ---- |
 | id   | int  | 是    | 任务id |
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
@@ -4037,13 +4018,13 @@ curl -X POST 'http://HOST/action/impl/list\
 | data | object |          |        |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X POST 'http://HOST/action/impl/delete/:id:int' \
 -H "Content-type: application/json" 
 ```
-####响应示例
+#### 响应示例
 正常响应结果
 ```json
 {
@@ -4062,7 +4043,7 @@ curl -X POST 'http://HOST/action/impl/delete/:id:int' \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述               |
 | ---- | ---- | ---------------- |
@@ -4073,7 +4054,7 @@ curl -X POST 'http://HOST/action/impl/delete/:id:int' \
 
 ## 远程命令实现接口
 
-###获取所有远程命令列表
+### 获取所有远程命令列表
 获取用户自定义的所有远程命令列表
 
 
@@ -4085,7 +4066,7 @@ curl -X POST 'http://HOST/action/impl/delete/:id:int' \
 | http://HOST/actimpl/list |
 
 
-####请求参数
+#### 请求参数
 
 | 名称        | 类型   | 是否必须 | 描述                                  |
 | --------- | ---- | ---- | ----------------------------------- |
@@ -4093,7 +4074,7 @@ curl -X POST 'http://HOST/action/impl/delete/:id:int' \
 | page_size | int  | 否    | 当前页包含的结果数，默认结果数为10                  |
 
 
-####返回参数
+#### 返回参数
 
 | 名称          | 类型    | 示例值     | 描述    |
 | ----------- | ----- | ------- | ----- |
@@ -4115,7 +4096,7 @@ data 参数中object对象说明
 | template  | map[string]interface{} | 0    | 模板     |
 
 
-####请求示例
+#### 请求示例
 
 ```php
 curl -X GET "http://HOST/actimpl/list"  \
@@ -4125,7 +4106,7 @@ curl -X GET "http://HOST/actimpl/list"  \
 ```
 
 
-####响应示例
+#### 响应示例
 
 正常返回结果：
 ```json
@@ -4159,7 +4140,7 @@ curl -X GET "http://HOST/actimpl/list"  \
 ```
 
 
-####返回码解释
+#### 返回码解释
 
 | 返回码  | 状态   | 描述                        |
 | ---- | ---- | ------------------------- |
@@ -4167,7 +4148,7 @@ curl -X GET "http://HOST/actimpl/list"  \
 | 400  | 执行失败 | 查询数据库失败，详细信息请查看返回结果的msg字段 |
 
 
-### 创建远程命令实现接口
+###  创建远程命令实现接口
 
 创建远程命令实现
 #### 请求地址
@@ -4187,7 +4168,7 @@ curl -X GET "http://HOST/actimpl/list"  \
 
 
 
-####返回参数
+#### 返回参数
 
 | 名称   | 类型    | 示例值      | 描述        |
 | ---- | ----- | -------- | --------- |
@@ -4297,7 +4278,7 @@ curl -X POST 'http://HOST/actimpl/update/:id' \
 | 400  | 执行失败 | 读取参数失败，详细信息请查看返回结果的msg字段 |
 
 
-### 删除远程命令实现接口
+###   删除远程命令实现接口
 
 删除远程命令实现
 #### 请求地址
@@ -4368,7 +4349,7 @@ curl -X POST 'http://$HOST/actimpl/delete/:id' \
 
 
 
-### 获取远程命令实现详情
+###  获取远程命令实现详情
 
 获取远程命令实现详情
 
