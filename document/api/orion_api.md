@@ -2339,7 +2339,7 @@ curl -X POST ' http://HOST/task/2' \
           "updated":"2017-07-27 13:41:00",
           "stat":[1,1,1,1,1],
           }],
-    "page:1,
+    "page":1,
     "page_size":10,
     "query_count":1
 }
@@ -2538,12 +2538,12 @@ curl -X POST 'http://HOST/task/:"id":int/detail ' \
     "msg": "success",
     "data": [{
       "id":1,
-      "ip:"127.0.0.1",
+      "ip":"127.0.0.1",
       "state":1,
       "steps":{},
       "pool_name":"pool",
       "vm_id":"3",
-      "created:""2017-07-27 13:39:55"
+      "created:"2017-07-27 13:39:55"
     }],
 }
 ```
@@ -2903,7 +2903,7 @@ curl -X POST 'http://HOST/task_tpl/update/2' \
 
 ```json
 {
-    "code": 404
+    "code": 404,
     "msg": "data not found",
     "data": {},
 }
@@ -3567,7 +3567,7 @@ curl -X GET "http://HOST/action/list"  \
             "id": 1,
             "name": "check_port",
             "desc": "检查端口",
-            "params:{"check_port":"integer","check_times":"integer"},
+            "params":{"check_port":"integer","check_times":"integer"},
      
         },
     ],
@@ -3843,8 +3843,8 @@ curl
     "data": {
      	     "id": 2,
             "name": "start_docker",
-            desc: "启动docker",
-            params:{"host":"string","name":"string","tag":"string"},
+            "desc": "启动docker",
+            "params":{"host":"string","name":"string","tag":"string"},
     },
 }
 ```
@@ -4128,19 +4128,19 @@ curl -X GET "http://HOST/actimpl/list"  \
     "msg": "success",
     "data": [{
             "id": 2,
-            "template: {"action":{"content":"docker run -d --net=\"{{host}}\" --name {{name}} {{tag}} ","module":"longscript"}},
+            "template": {"action":{"content":"docker run -d --net=\"{{host}}\" --name {{name}} {{tag}} ","module":"longscript"}},
             "type: "ansible",
-            "action_id"：2
+            "action_id"：2,
         }, {
             "id": 1,
-            "template": {"action":{"args":"echo {{echo_word}} ","module":"shell"}}
+            "template": {"action":{"args":"echo {{echo_word}} ","module":"shell"}},
             "type": "ansible",
-            "action_id"：4
+            "action_id"：4,
         },
     ],
     "page": 1,
     "page_size": 10,
-    "query_count": 2
+    "query_count": 2,
 }
 ```
 
