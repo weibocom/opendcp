@@ -1,17 +1,26 @@
 # 服务编排API
+
 ## 集群接口
+
 ### 集群列表接口
+
 获取用户创建的所有服务集群列表
+
 #### 请求地址
+
 | GET方法                                    |
 | ---------------------------------------- |
 | http://HOST/cluster/list?page=1&page_size=10 |
+
 #### 请求参数
+
 | 名称        | 类型   | 是否必须 | 描述                                  |
 | --------- | ---- | ---- | ----------------------------------- |
 | page      | int  | 否    | 当前页码数，即本次API调用是获得结果的第几页，从1开始计数，默认为1 |
 | page_size | int  | 否    | 当前页包含的结果数，默认结果数为10                  |
+
 #### 返回参数
+
 | 名称          | 类型    | 示例值      | 描述     |
 | ----------- | ----- | -------- | ------ |
 | code        | int   | 0        | 返回码    |
@@ -20,96 +29,123 @@
 | page        | int   | 1        | 当前页    |
 | page_size   | int   | 10       | 当前页大小  |
 | query_count | int   | 2        | 结果数    |
+
 data 参数中object对象说明
+
 | 名称   | 类型     | 示例值  | 描述   |
 | ---- | ------ | ---- | ---- |
 | id   | int    | 0    | 集群id |
 | name | string | 0    | 集群名称 |
 | desc | string | 0    | 集群描述 |
 | biz  | string | 0    | 产品线  |
+
 #### 请求示例
+
 ```php
 curl -X GET "http://HOST/cluster/list?page=1&page_size=10"  \
 -H "Content-type: application/json"  
 ```
+
 #### 响应示例
+
 正常返回结果：
+
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-            id: 2,
-            name: "openstack_cluster",
-            desc: "虚拟化集群",
-            biz: "1"
+    "code": 0,
+    "msg": "success",
+    "data": [{
+            "id": 2,
+            "name": "openstack_cluster",
+            "desc": "虚拟化集群",
+            "biz": "1"
         }, {
-            id: 2,
-            name: "openstack_cluster",
-            desc: "虚拟化集群",
-            biz: "1"
+            "id": 2,
+            "name": "openstack_cluster",
+            "desc": "虚拟化集群",
+            "biz": "1"
         },
     ],
-    page: 1,
-    page_size: 10,
-    query_count: 1
+    "page": 1,
+    "page_size": 10,
+    "query_count": 1
 }
 ```
+
 异常返回结果：
+
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: [],
+    "code": 400,
+    "msg": "db server lost...",
+    "data": [],
 }
 ```
+
 #### 返回码解释
+
 | 返回码  | 状态   | 描述                        |
 | ---- | ---- | ------------------------- |
 | 0    | 执行成功 |                           |
 | 400  | 执行失败 | 查询数据库失败，详细信息请查看返回结果的msg字段 |
+
 ### 创建集群接口
+
 创建服务集群
+
 #### 请求地址
+
 | POST方法                     |
 | -------------------------- |
 | http://HOST/cluster/create |
+
 #### 请求参数
+
 | 名称   | 类型     | 是否必须 | 描述       |
 | ---- | ------ | ---- | -------- |
 | name | string | 是    | 要增加的集群名称 |
 | desc | string | 是    | 集群描述     |
 | biz  | string | 是    | 产品线，通常为1 |
+
 #### 返回参数
+
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
 | code | int   | 0        | 返回码     |
 | msg  | strng | "sucess" | 接口返回信息  |
 | data | int   |          | 添加的集群id |
+
 #### 请求示例
+
 ```php
 curl -X POST 'http://HOST/cluster/create' \
 -H "Content-type: application/json" \
 -d '{"name":"SamplePlatform", "desc":"Sample Platform", "biz": "平台"}' 
 ```
+
 #### 响应示例
+
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: 1,
+    "code": 0,
+    "msg": "success",
+    "data": 1,
 }
 ```
+
 异常响应结果
+
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
+
 #### 返回码解释
+
 | 返回码  | 状态   | 描述                     |
 | ---- | ---- | ---------------------- |
 | 0    | 执行成功 |                        |
@@ -146,23 +182,28 @@ curl -X POST 'http://HOST/cluster/update/:id' \
  -d '{"name":"SamplePlatform", "desc":"Sample Platform", "biz": "平台"}' 
 ```
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 #### 返回码解释
+
 | 返回码  | 状态   | 描述                     |
 | ---- | ---- | ---------------------- |
 | 0    | 执行成功 |                        |
@@ -181,43 +222,53 @@ curl -X POST 'http://HOST/cluster/update/:id' \
 | 名称   | 类型   | 示例值  | 描述       |
 | ---- | ---- | ---- | -------- |
 | id   | int  | 0    | 要删除的集群id |
+
 #### 返回参数
+
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
 | msg  | strng  | "sucess" | 接口返回信息 |
 | data | object | null     |        |
+
 #### 请求示例
 
 ```php
 curl -X POST 'http://$HOST/cluster/delete/:id' \
 -H "Content-type: application/json" 
 ```
+
 #### 响应示例
+
 正常响应结果
+
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
+
 异常响应结果
+
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
+
 #### 返回码解释
+
 | 返回码  | 状态   | 描述                     |
 | ---- | ---- | ---------------------- |
 | 0    | 执行成功 |                        |
 | 400  | 执行失败 | 删除失败，详细信息请查看返回结果的msg字段 |
 
-
 ### 获取集群详情
+
 获取集群详情
 
 #### 请求地址
@@ -230,20 +281,26 @@ curl -X POST 'http://$HOST/cluster/delete/:id' \
 | 名称   | 类型   | 是否必须 | 描述       |
 | ---- | ---- | ---- | -------- |
 | id   | int  | 是    | 要增加的集群名称 |
+
 #### 返回参数
+
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
 | msg  | strng  | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
+
 data参数
+
 | 名称   | 类型     | 示例值  | 描述   |
 | ---- | ------ | ---- | ---- |
 | id   | int    | 0    | 服务Id |
 | name | strng  |      | 服务名称 |
 | desc | string |      | 服务描述 |
 | biz  | string |      | 产品线  |
+
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
@@ -251,35 +308,41 @@ curl
 ```
 
 #### 响应示例
+
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-      id: 1,
+    "code": 0,
+    "msg": "success",
+    "data": {
+      "id": 1,
       name:"default cluster",
       desc: "默认集群",
       biz:"1"
     },
 }
 ```
+
 异常响应结果
+
 ```json
 {
-    code: 400,
-    msg: "id is error...",
-    data: {},
+    "code": 400,
+    "msg": "id is error...",
+    "data": {},
 }
 ```
+
 ```json
 {
-    code: 404,
-    msg: "cluster in db not found",
-    data: {},
+    "code": 404,
+    "msg": "cluster in db not found",
+    "data": {},
 }
 ```
+
 #### 返回码解释
+
 | 返回码  | 状态   | 描述          |
 | ---- | ---- | ----------- |
 | 0    | 执行成功 |             |
@@ -287,18 +350,25 @@ curl
 | 404  | 执行失败 | 数据库中查询不到该集群 |
 
 ### 获取集群中服务列表接口
+
 获取该集群中包含的所有服务
+
 #### 请求地址
+
 | POST方法                                |
 | ------------------------------------- |
 | http://HOST/cluster/:id/list_services |
+
 #### 请求参数
+
 | 名称        | 类型   | 是否必须 | 描述            |
 | --------- | ---- | ---- | ------------- |
 | id        | int  | 是    | 要增加的集群名称      |
 | page      | int  | 否    | 当前页，从1开始，默认为1 |
 | page_size | int  | 否    | 当前页大小，默认为10   |
+
 #### 返回参数
+
 | 名称          | 类型     | 示例值      | 描述     |
 | ----------- | ------ | -------- | ------ |
 | code        | int    | 0        | 返回码    |
@@ -307,7 +377,9 @@ curl
 | page        | int    |          | 当前页    |
 | page_size   | int    |          | 当前页大小  |
 | query_count | int    |          | 结果个数   |
+
 data参数
+
 | 名称           | 类型     | 示例值  | 描述   |
 | ------------ | ------ | ---- | ---- |
 | id           | int    | 0    | 服务Id |
@@ -315,7 +387,9 @@ data参数
 | desc         | string |      | 集群描述 |
 | docker_image | string |      | 镜像地址 |
 | cluster_id   | int    |      | 集群id |
+
 #### 请求示例
+
 ```php
 curl 
 -H "Content-type: application/json" \
@@ -323,46 +397,50 @@ curl
 -d "page=1" \
 -d "page_size=10"
 ```
+
 #### 响应示例
+
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id: 1,
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id": 1,
       name:"service 1",
       desc: "服务1",
       docker_image: "registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest",
       cluster_id:1
     },{
-      id: 1,
+      "id": 1,
       name:"sevice 2",
       desc: "服务2",
       docker_image: "-",
       cluster_id:1
     }
     ],
-    page:1,
-    page_size:10
-    query_count:2
+    "page":1,
+    "page_size":10
+    "query_count":2
 }
 ```
+
 异常响应结果
+
 ```json
 {
-    code: 400,
-    msg: "error...",
-    data: {},
+    "code": 400,
+    "msg": "error...",
+    "data": {},
 }
 ```
+
 #### 返回码解释
+
 | 返回码  | 状态   | 描述             |
 | ---- | ---- | -------------- |
 | 0    | 执行成功 |                |
 | 400  | 执行失败 | 集群id有误，查询数据库失败 |
-
-
 
 ## 服务接口
 
@@ -388,6 +466,7 @@ curl
 
 
 #### 返回参数
+
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
@@ -414,10 +493,10 @@ curl -X GET "http://HOST/service/create"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-            id: 1
+    "code": 0,
+    "msg": "success",
+    "data": {
+            "id": 1
         }
 }
 ```
@@ -426,9 +505,9 @@ curl -X GET "http://HOST/service/create"  \
 
 ```json
 {
-    code: 400,
-    msg: "请求参数解析错误",
-    data: []
+    "code": 400,
+    "msg": "请求参数解析错误",
+    "data": []
 }
 ```
 
@@ -471,29 +550,29 @@ curl -X GET "http://HOST/service/create"  \
 curl -X DELETE "http://HOST/service/delete/1"  \
 -H "Content-type: application/json"   
 ```
-####响应示例
+#### 响应示例
 
 正常返回结果：
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 异常返回结果：
 ```json
 {
-    code: 400,
-    msg: "id is error",
-    data: []
+    "code": 400,
+    "msg": "id is error",
+    "data": []
 }
 ```
 ```json
 {
-    code: 404,
-    msg: "数据库操作失败",
-    data: []
+    "code": 404,
+    "msg": "数据库操作失败",
+    "data": []
 }
 ```
 
@@ -554,10 +633,10 @@ curl -X GET "http://HOST/service/1"  \
 正常返回结果：
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-            id: 1,
+    "code": 0,
+    "msg": "success",
+    "data": {
+            "id": 1,
             name: "web_service",
             desc: "web服务",
             service_type: "Java",
@@ -566,21 +645,24 @@ curl -X GET "http://HOST/service/1"  \
         }
 }
 ```
+
 异常返回结果：
+
 ```json
 {
-    code: 400,
-    msg: "id is error !",
-    data: []
+    "code": 400,
+    "msg": "id is error !",
+    "data": []
 }
 ```
 ```json
 {
-    code: 404,
-    msg: "db error",
-    data: []
+    "code": 404,
+    "msg": "db error",
+    "data": []
 }
 ```
+
 #### 返回码解释
 
 | 返回码  | 状态   | 描述       |
@@ -588,8 +670,6 @@ curl -X GET "http://HOST/service/1"  \
 | 0    | 执行成功 |          |
 | 404  | 执行失败 | 数据库记录不存在 |
 | 400  | 执行失败 | id校验错误   |
-
------
 
 ### 获取服务中服务池列表接口
 
@@ -619,7 +699,9 @@ curl -X GET "http://HOST/service/1"  \
 | page        | int    |          | 当前页    |
 | page_size   | int    |          | 当前页大小  |
 | query_count | int    |          | 结果个数   |
+
 data参数
+
 | 名称         | 类型     | 示例值  | 描述       |
 | ---------- | ------ | ---- | -------- |
 | id         | int    | 0    | 服务池Id    |
@@ -629,7 +711,6 @@ data参数
 | sd_id      | int    |      | 服务发现id   |
 | service_id | int    |      | 服务id     |
 | node_count | int    |      | 服务池中节点数目 |
-
 
 #### 请求示例
 
@@ -646,10 +727,10 @@ curl
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id: 1,
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id": 1,
       name:"web_pool",
       desc:"web服务池",
       vm_type:1,
@@ -657,9 +738,9 @@ curl
       service_id:1,
       node_count:2
     }],
-    page:1,
-    page_size:10
-    query_count:1
+    "page":1,
+    "page_size":10
+    "query_count":1
 }
 ```
 
@@ -667,9 +748,9 @@ curl
 
 ```json
 {
-    code: 400,
-    msg: "error...",
-    data: {},
+    "code": 400,
+    "msg": "error...",
+    "data": {},
 }
 ```
 
@@ -680,10 +761,9 @@ curl
 | 0    | 执行成功 |                |
 | 400  | 执行失败 | 集群id有误，查询数据库失败 |
 
-
 ## 服务池接口
 
-###创建服务池接口
+### 创建服务池接口
 
 服务池创建
 
@@ -731,19 +811,19 @@ curl -X GET "http://HOST/service/create"  \
 正常返回结果：
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-            id: 1
+    "code": 0,
+    "msg": "success",
+    "data": {
+            "id": 1
         }
 }
 ```
 异常返回结果：
 ```json
 {
-    code: 400,
-    msg: "请求参数解析错误",
-    data: []
+    "code": 400,
+    "msg": "请求参数解析错误",
+    "data": []
 }
 ```
 
@@ -793,9 +873,9 @@ curl -X DELETE "http://HOST/pool/delete/1"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 
@@ -803,23 +883,23 @@ curl -X DELETE "http://HOST/pool/delete/1"  \
 
 ```json
 {
-    code: 400,
-    msg: "data not found",
-    data: []
+    "code": 400,
+    "msg": "data not found",
+    "data": []
 }
 ```
 ```json
 {
-    code: 400,
-    msg: "node exists in this pool",
-    data: []
+    "code": 400,
+    "msg": "node exists in this pool",
+    "data": []
 }
 ```
 ```json
 {
-    code: 400,
-    msg: "fail to delete pool",
-    data: []
+    "code": 400,
+    "msg": "fail to delete pool",
+    "data": []
 }
 ```
 
@@ -874,9 +954,9 @@ curl -X DELETE "http://HOST/pool/update/1"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 
@@ -884,17 +964,17 @@ curl -X DELETE "http://HOST/pool/update/1"  \
 
 ```json
 {
-    code: 400,
-    msg: "参数解析错误",
-    data: []
+    "code": 400,
+    "msg": "参数解析错误",
+    "data": []
 }
 ```
 
 ```json
 {
-    code: 404,
-    msg: "数据库操作失败",
-    data: []
+    "code": 404,
+    "msg": "数据库操作失败",
+    "data": []
 }
 ```
 
@@ -905,9 +985,6 @@ curl -X DELETE "http://HOST/pool/update/1"  \
 | 0    | 执行成功 |          |
 | 400  | 执行失败 | 请求参数解析错误 |
 | 404  | 执行失败 | 数据库操作失败  |
-
-----------
-
 
 ### 获取服务池信息接口 
 
@@ -943,7 +1020,6 @@ data 参数中object对象说明
 | sd_id      | int    | 1        | 服务发现id    |
 | service_id | int    | 1        | 服务池所在服务id |
 
-
 #### 请求示例
 
 ```php
@@ -957,15 +1033,15 @@ curl -X GET "http://HOST/pool/1"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-            id: 1,
-            name: "web_pool",
-            desc: "web服务池",
-            vm_type: 1,
-            sd_id: 1,
-            service_id: 1
+    "code": 0,
+    "msg": "success",
+    "data": {
+            "id": 1,
+            "name": "web_pool",
+            "desc": "web服务池",
+            "vm_type": 1,
+            "sd_id": 1,
+            "service_id": 1
         }
 }
 ```
@@ -974,9 +1050,9 @@ curl -X GET "http://HOST/pool/1"  \
 
 ```json
 {
-    code: 404,
-    msg: "db error",
-    data: []
+    "code": 404,
+    "msg": "db error",
+    "data": []
 }
 ```
 
@@ -1017,7 +1093,9 @@ curl -X GET "http://HOST/pool/1"  \
 | page        | int    |          | 当前页    |
 | page_size   | int    |          | 当前页大小  |
 | query_count | int    |          | 结果个数   |
+
 data参数
+
 | 名称        | 类型     | 示例值  | 描述                         |
 | --------- | ------ | ---- | -------------------------- |
 | id        | int    | 0    | 节点Id                       |
@@ -1025,8 +1103,6 @@ data参数
 | vm_id     | string |      | 节点实例编号                     |
 | status    | int    |      | 节点状态（1 成功/3 失败）            |
 | node_type | int    |      | 节点类型（手动 manual/定时 crontab） |
-
-
 
 #### 请求示例
 
@@ -1043,18 +1119,18 @@ curl
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id: 1,
-      ip:"10.77.9.75",
-      vm_id:"i-2zeen6mal4s9qvpqb4iq",
-      status:1,
-      node_type:"manual"
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id": 1,
+      "ip":"10.77.9.75",
+      "vm_id":"i-2zeen6mal4s9qvpqb4iq",
+      "status":1,
+      "vnode_type":"manual"
     }],
-    page:1,
-    page_size:10,
-    query_count:1
+    "page":1,
+    "page_size":10,
+    "query_count":1
 }
 ```
 
@@ -1062,9 +1138,9 @@ curl
 
 ```json
 {
-    code: 400,
-    msg: "error...",
-    data: {},
+    "code": 400,
+    "msg": "error...",
+    "data": {},
 }
 ```
 
@@ -1075,10 +1151,7 @@ curl
 | 0    | 执行成功 |         |
 | 400  | 执行失败 | 查询数据库失败 |
 
------------
-
-
-###  服务池录入节点接口
+### 服务池录入节点接口
 
 服务池录入节点
 
@@ -1123,31 +1196,31 @@ curl -X GET "http://HOST/pool/1/add_nodes"  \
 正常返回结果：
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [1,2,3]
+    "code": 0,
+    "msg": "success",
+    "data": [1,2,3]
 }
 ```
 异常返回结果：
 ```json
 {
-    code: 404,
-    msg: "ip exists already",
-    data: []
+    "code": 404,
+    "msg": "ip exists already",
+    "data": []
 }
 ```
 ```json
 {
-    code: 404,
-    msg: "pool_id is not vaild",
-    data: []
+    "code": 404,
+    "msg": "pool_id is not vaild",
+    "data": []
 }
 ```
 ```json
 {
-    code: 404,
-    msg: "ip is empty",
-    data: []
+    "code": 404,
+    "msg": "ip is empty",
+    "data": []
 }
 ```
 
@@ -1201,9 +1274,9 @@ curl -X GET "http://HOST/pool/1/add_nodes"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 
@@ -1211,16 +1284,16 @@ curl -X GET "http://HOST/pool/1/add_nodes"  \
 
 ```json
 {
-    code: 400,
-    msg: "参数解析出错",
-    data: []
+    "code": 400,
+    "msg": "参数解析出错",
+    "data": []
 }
 ```
 ```json
 {
-    code: 404,
-    msg: "error when delete id...",
-    data: []
+    "code": 404,
+    "msg": "error when delete id...",
+    "data": []
 }
 ```
 
@@ -1275,9 +1348,9 @@ curl -X POST "http://HOST/pool/search_by_ip/10.85.41.160,10.85.41.161"  \
 正常返回结果：
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {"10.85.41.160":1,
+    "code": 0,
+    "msg": "success",
+    "data": {"10.85.41.160":1,
     "10.85.41.161":2
     }
 }
@@ -1331,9 +1404,9 @@ curl -X POST "http://HOST/pool/expand/1  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 
@@ -1341,9 +1414,9 @@ curl -X POST "http://HOST/pool/expand/1  \
 
 ```json
 {
-    code: 400,
-    msg: "扩容失败原因",
-    data: {}
+    "code": 400,
+    "msg": "扩容失败原因",
+    "data": {}
 }
 ```
 
@@ -1398,9 +1471,9 @@ curl -X POST "http://HOST/pool/shrink/1  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 
@@ -1408,9 +1481,9 @@ curl -X POST "http://HOST/pool/shrink/1  \
 
 ```json
 {
-    code: 400,
-    msg: "缩容失败原因",
-    data: {}
+    "code": 400,
+    "msg": "缩容失败原因",
+   "data": {}
 }
 ```
 
@@ -1466,9 +1539,9 @@ curl -X POST "http://HOST/pool/deploy/1  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {}
+    "code": 0,
+    "msg": "success",
+    "data": {}
 }
 ```
 
@@ -1476,9 +1549,9 @@ curl -X POST "http://HOST/pool/deploy/1  \
 
 ```json
 {
-    code: 400,
-    msg: "上线失败原因",
-    data: {}
+    "code": 400,
+    "msg": "上线失败原因",
+    "data": {}
 }
 ```
 #### 返回码解释
@@ -1487,11 +1560,6 @@ curl -X POST "http://HOST/pool/deploy/1  \
 | ---- | ---- | ------ |
 | 0    | 执行成功 |        |
 | 400  | 执行失败 | 上线失败原因 |
-
-
-
-
-
 
 
 ## 任务接口
@@ -1557,9 +1625,9 @@ curl -X GET "http://HOST/task/impl/create"  \
 
 ```json
 {
-    code: 0,
-    msg: "db server lost...",
-    data: 2,
+    "code": 0,
+    "msg": "db server lost...",
+    "data": 2,
 }
 ```
 
@@ -1567,16 +1635,16 @@ curl -X GET "http://HOST/task/impl/create"  \
 
 ```json
 {
-    code: 400,
-    msg: "json can not convert ",
-    data: {},
+    "code": 400,
+    "msg": "json can not convert ",
+    "data": {},
 }
 ```
 ```json
 {
-    code: 404,
-    msg: "step name not found",
-    data: {},
+    "code": 404,
+    "msg": "step name not found",
+    "data": {},
 }
 ```
 
@@ -1626,9 +1694,9 @@ curl -X POST 'http://HOST/task/impl/delete' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null,
+    "code": 0,
+    "msg": "success",
+    "data": null,
 }
 ```
 
@@ -1636,9 +1704,9 @@ curl -X POST 'http://HOST/task/impl/delete' \
 
 ```json
 {
-    code: 404,
-    msg: "task impl not found",
-    data: {},
+    "code": 404,
+    "msg": "task impl not found",
+    "data": {},
 }
 ```
 
@@ -1664,7 +1732,7 @@ curl -X POST 'http://HOST/task/impl/delete' \
 | 名称        | 类型   | 是否必须 | 描述                                  |
 | --------- | ---- | ---- | ----------------------------------- |
 | page      | int  | 否    | 当前页码数，即本次API调用是获得结果的第几页，从1开始计数，默认为1 |
-| page_size | int  | 否    | 当前页包含的结果数，默认结果数为10                  |
+| page_size | int  | 否    | 当前页包含的结果数，默认结果数为10|
 
 #### 返回参数
 
@@ -1676,7 +1744,9 @@ curl -X POST 'http://HOST/task/impl/delete' \
 | page        | int   | 1        | 当前页    |
 | page_size   | int   | 10       | 当前页大小  |
 | query_count | int   | 2        | 结果数    |
+
 data 参数中object对象说明
+
 | 名称    | 类型     | 示例值  | 描述       |
 | ----- | ------ | ---- | -------- |
 | id    | int    | 0    | 任务步骤id   |
@@ -1699,33 +1769,36 @@ curl -X GET "http://HOST/task/impl/list"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-            id: 2,
-            name: "expand_nginx",
-            desc: "扩容nginx服务",
-            steps: "[{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]"
+    "code": 0,
+    "msg": "success",
+    "data": [{
+            "id": 2,
+            "name": "expand_nginx",
+            "desc": "扩容nginx服务",
+            "steps": "[{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]"
         }, {
-            id: 2,
-            name: "undeploy_nginx",
-            desc: "缩容nginx服务",
-            steps: "[{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]"
+            "id": 2,
+            "name": "undeploy_nginx",
+            "desc": "缩容nginx服务",
+            "steps": "[{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]"
         },
     ],
-    page: 1,
-    page_size: 10,
-    query_count: 1
+    "page": 1,
+    "page_size": 10,
+    "query_count": 1
 }
-```
+``` 
+
 异常返回结果：
+
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: [],
+    "code": 400,
+    "msg": "db server lost...",
+    "data": [],
 }
 ```
+
 #### 返回码解释
 
 | 返回码  | 状态   | 描述                        |
@@ -1789,17 +1862,19 @@ curl -X GET "http://HOST/cluster/list"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null,
+    "code": 0,
+    "msg": "success",
+    "data": null,
 }
 ```
+
 异常返回结果：
+
 ```json
 {
-    code: 400,
-    msg: "error...",
-    data: [],
+    "code": 400,
+    "msg": "error...",
+    ""data":" [],
 }
 ```
 
@@ -1810,10 +1885,6 @@ curl -X GET "http://HOST/cluster/list"  \
 | 0    | 执行成功 |                   |
 | 400  | 执行失败 | 详细信息请查看返回结果的msg字段 |
 
-
-、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
-
-
 ### 开始任务
 
 开始执行任务
@@ -1822,7 +1893,7 @@ curl -X GET "http://HOST/cluster/list"  \
 
 | POST方法                         |
 | ------------------------------ |
-| http://HOST/task/start :id:int |
+| http://HOST/task/start :"id":int |
 
 #### 请求参数
 
@@ -1841,7 +1912,7 @@ curl -X GET "http://HOST/cluster/list"  \
 #### 请求示例
 
 ```php
-curl -X POST ' http://HOST/task/start :id:int' \
+curl -X POST ' http://HOST/task/start :"id":int' \
 -H "Content-type: application/json" \
  -d '{"id":1}' 
 ```
@@ -1852,9 +1923,9 @@ curl -X POST ' http://HOST/task/start :id:int' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null
+    "code": 0,
+    "msg": "success",
+    "data": null
 }
 ```
 
@@ -1862,9 +1933,9 @@ curl -X POST ' http://HOST/task/start :id:int' \
 
 ```json
 {
-    code: 400,
-    msg: "flow not found id 1",
-    data: {},
+    "code": 400,
+    "msg": "flow not found id 1",
+    "data": {},
 }
 ```
 
@@ -1883,7 +1954,7 @@ curl -X POST ' http://HOST/task/start :id:int' \
 
 | POST方法                        |
 | ----------------------------- |
-| http://HOST/task/pause:id:int |
+| http://HOST/task/pause:"id":int |
 
 #### 请求参数
 
@@ -1902,7 +1973,7 @@ curl -X POST ' http://HOST/task/start :id:int' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task/pause:id:int ' \
+curl -X POST 'http://HOST/task/pause:"id":int ' \
 -H "Content-type: application/json" \
  -d '{"id":1}' 
 ```
@@ -1913,9 +1984,9 @@ curl -X POST 'http://HOST/task/pause:id:int ' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null
+    "code": 0,
+    "msg": "success",
+    "data": null
 }
 ```
 
@@ -1923,9 +1994,9 @@ curl -X POST 'http://HOST/task/pause:id:int ' \
 
 ```json
 {
-    code: 400,
-    msg: "pause flow 1 fails:",
-    data: {},
+    "code": 400,
+    "msg": "pause flow 1 fails:",
+    "data": {},
 }
 ```
 
@@ -1941,10 +2012,10 @@ curl -X POST 'http://HOST/task/pause:id:int ' \
 #### 请求地址
 
 终止任务
+
 | POST方法                       |
 | ---------------------------- |
-| http://HOST/task/stop:id:int |
-
+| http://HOST/task/stop:"id":int |
 
 #### 请求参数
 
@@ -1963,7 +2034,7 @@ curl -X POST 'http://HOST/task/pause:id:int ' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task/stop:id:int' \
+curl -X POST 'http://HOST/task/stop:"id":int' \
 -H "Content-type: application/json" \
  -d '{"id":1}' 
 ```
@@ -1974,17 +2045,19 @@ curl -X POST 'http://HOST/task/stop:id:int' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null,
+    "code": 0,
+    "msg": "success",
+    "data": null,
 }
 ```
+
 异常响应结果
+
 ```json
 {
-    code: 400,
-    msg: "stop flow 1 fails:",
-    data: {},
+    "code": 400,
+    "msg": "stop flow 1 fails:",
+    "data": {},
 }
 ```
 
@@ -1995,6 +2068,7 @@ curl -X POST 'http://HOST/task/stop:id:int' \
 | 0    | 执行成功 |                          |
 | 400  | 执行失败 | 终止任务失败，详细信息请查看返回结果的msg字段 |
 
+
 ### 获取任务日志
 
 获取该任务执行的日志
@@ -2003,7 +2077,7 @@ curl -X POST 'http://HOST/task/stop:id:int' \
 
 | GET/ POST方法                  |
 | ---------------------------- |
-| http://HOST/task/:id:int/log |
+| http://HOST/task/:"id":int/log |
 
 #### 请求参数
 
@@ -2034,7 +2108,7 @@ Logs参数说明
 ####  请求示例
 
 ```php
-curl -X POST ' http://HOST/task/:id:int/log' \
+curl -X POST ' http://HOST/task/:"id":int/log' \
 -H "Content-type: application/json" 
 ```
 ####  响应示例
@@ -2043,10 +2117,10 @@ curl -X POST ' http://HOST/task/:id:int/log' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id":1
       fid:2
       batch_id:2
       correlation_id:2-2
@@ -2061,9 +2135,9 @@ curl -X POST ' http://HOST/task/:id:int/log' \
 
 ```json
 {
-    code: 400,
-    msg: "Flow not found",
-    data: {},
+    "code": 400,
+    "msg": "Flow not found",
+    "data": {},
 }
 ```
 
@@ -2116,10 +2190,10 @@ curl -X POST 'http://HOST/task/list' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-    id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+    "id":1
     template_id:2
     template_name:"aaa"
     task_name:"bb"
@@ -2140,9 +2214,9 @@ curl -X POST 'http://HOST/task/list' \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -2161,7 +2235,7 @@ curl -X POST 'http://HOST/task/list' \
 
 | POST方法                   |
 | ------------------------ |
-| http://HOST/task/:id:int |
+| http://HOST/task/:"id":int |
 
 
 #### 请求参数
@@ -2198,17 +2272,17 @@ data 中对象参数说明
 #### 请求示例
 
 ```php
-curl -X POST ' http://HOST/task/:id:int' \
+curl -X POST ' http://HOST/task/:"id":int' \
 -H "Content-type: application/json" \ 
 ```
 #### 响应示例
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-          id:1
+    "code": 0,
+    "msg": "success",
+    "data": {
+          "id":1
           template_id:2
           template_name:"aaa"
           task_name:"bb"
@@ -2230,9 +2304,9 @@ curl -X POST ' http://HOST/task/:id:int' \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -2283,10 +2357,10 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id":1
       pool:{}
       cron_items:[]
       depend_items:[]
@@ -2298,9 +2372,9 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "Bad pool id...",
-    data: {},
+    "code": 400,
+    "msg": "Bad pool id...",
+    "data": {},
 }
 ```
 
@@ -2348,10 +2422,10 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-        id:1,
+    "code": 0,
+    "msg": "success",
+    "data": [{
+        "id":1,
         pool:{},
         cron_items:[],
         depend_items:[],
@@ -2363,9 +2437,9 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "Bad pool id...",
-    data: {},
+    "code": 400,
+    "msg": "Bad pool id...",
+    "data": {},
 }
 ```
 
@@ -2384,7 +2458,7 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 #### 请求地址
 | POST方法                          |
 | ------------------------------- |
-| http://HOST/task/:id:int/detail |
+| http://HOST/task/:"id":int/detail |
 
 
 #### 请求参数
@@ -2406,7 +2480,7 @@ curl -X POST 'http://HOST/task/uploadList/:poolId:int' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task/:id:int/detail ' \
+curl -X POST 'http://HOST/task/:"id":int/detail ' \
 -H "Content-type: application/json"  
 ```
 
@@ -2416,10 +2490,10 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id":1
       ip:"127.0.0.1"
       state:1
       steps:"{}"
@@ -2432,9 +2506,9 @@ curl -X POST 'http://HOST/task/:id:int/detail ' \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -2495,17 +2569,17 @@ curl -X POST 'http://HOST/task/saveTask ' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: true,
+    "code": 0,
+    "msg": "success",
+    "data": true,
 }
 ```
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {null},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {null},
 }
 ```
 #### 返回码解释
@@ -2551,10 +2625,10 @@ curl -X POST 'http://HOST/task/;nsid"int/log' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-          id:1
+    "code": 0,
+    "msg": "success",
+    "data": {
+          "id":1
           template_id:2
           template_name:"aaa"
           task_name:"bb"
@@ -2576,9 +2650,9 @@ curl -X POST 'http://HOST/task/;nsid"int/log' \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -2643,17 +2717,17 @@ curl -X POST 'http://HOST/task_tpl/create' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: 2,
+    "code": 0,
+    "msg": "success",
+    "data": 2,
 }
 ```
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -2711,10 +2785,10 @@ curl -X POST 'http://HOST/task_tpl/list \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id":1
       name:"pool"
       desc:"pool name"
       steps::"{}"
@@ -2727,9 +2801,9 @@ curl -X POST 'http://HOST/task_tpl/list \
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 
 ```
@@ -2747,7 +2821,7 @@ curl -X POST 'http://HOST/task_tpl/list \
 #### 请求地址
 | POST方法                              |
 | ----------------------------------- |
-| http://HOST/task_tpl/delete/:id:int |
+| http://HOST/task_tpl/delete/:"id":int |
 
 
 #### 请求参数
@@ -2778,17 +2852,17 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null
+    "code": 0,
+    "msg": "success",
+    "data": null
 }
 ```
 异常响应结果
 ```json
 {
-    code: 404
-    msg: "data not found",
-    data: {},
+    "code": 404
+    "msg": "data not found",
+    "data": {},
 }
 ```
 
@@ -2807,7 +2881,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 #### 请求地址
 | POST方法                       |
 | ---------------------------- |
-| http://HOST/task_tpl/:id:int |
+| http://HOST/task_tpl/:"id":int |
 
 
 #### 请求参数
@@ -2829,7 +2903,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task_tpl/:id:int ' \
+curl -X POST 'http://HOST/task_tpl/:"id":int ' \
 -H "Content-type: application/json" \
 ```
 
@@ -2839,10 +2913,10 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": {
+      "id":1
      name:"task impl"
      desc:"impl"
      steps:[{
@@ -2856,9 +2930,9 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 异常响应结果
 ```json
 {
-    code: 404,
-    msg: "error...",
-    data: {},
+    "code": 404,
+    "msg": "error...",
+    "data": {},
 }
 ```
 
@@ -2878,7 +2952,7 @@ curl -X POST 'http://HOST/task_tpl/:id:int ' \
 ####  请求地址
 | POST方法                              |
 | ----------------------------------- |
-| http://HOST/task_tpl/update/:id:int |
+| http://HOST/task_tpl/update/:"id":int |
 
 
 ####  请求参数
@@ -2924,17 +2998,17 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -2992,10 +3066,10 @@ curl -X POST 'http://HOST/task_step/update/:id' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id":1
       name:"action impl"
       desc:"action descible"
       type:"manual"
@@ -3074,15 +3148,15 @@ curl -X GET "http://HOST/remote_step/list"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-            id: 2,
+    "code": 0,
+    "msg": "success",
+    "data": [{
+            "id": 2,
             name: "add-default-image",
             desc: "添加openstack缺省镜像",
             action:["add-default-image"]
         }, {
-            id: 1,
+            "id": 1,
             name: "init_compute",
             desc: "init_compute",
             action:["init_compute"]
@@ -3098,9 +3172,9 @@ curl -X GET "http://HOST/remote_step/list"  \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: [],
+    "code": 400,
+    "msg": "db server lost...",
+    "data": [],
 }
 ```
 
@@ -3162,9 +3236,9 @@ curl -X POST 'http://HOST/remote_step/create' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: 1,
+    "code": 0,
+    "msg": "success",
+    "data": 1,
 }
 ```
 
@@ -3172,9 +3246,9 @@ curl -X POST 'http://HOST/remote_step/create' \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -3239,9 +3313,9 @@ curl -X POST 'http://HOST/remote_step/update/:id' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 
@@ -3249,9 +3323,9 @@ curl -X POST 'http://HOST/remote_step/update/:id' \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -3312,9 +3386,9 @@ curl -X POST 'http://$HOST/remote_step/delete/:id' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 
@@ -3322,9 +3396,9 @@ curl -X POST 'http://$HOST/remote_step/delete/:id' \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -3398,10 +3472,10 @@ curl
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-      id: 1,
+    "code": 0,
+    "msg": "success",
+    "data": {
+      "id": 1,
       name:"add-default-image",
       desc: "添加openstack缺省镜像",
       actions:{"add-default-image"}
@@ -3413,17 +3487,17 @@ curl
 
 ```json
 {
-    code: 400,
-    msg: "id is error...",
-    data: {},
+    "code": 400,
+    "msg": "id is error...",
+    "data": {},
 }
 ```
 
 ```json
 {
-    code: 404,
-    msg: "remote_step in db not found",
-    data: {},
+    "code": 404,
+    "msg": "remote_step in db not found",
+    "data": {},
 }
 ```
 
@@ -3499,15 +3573,15 @@ curl -X GET "http://HOST/action/list"  \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-            id: 2,
+    "code": 0,
+    "msg": "success",
+    "data": [{
+            "id": 2,
             name: "start_docker",
             desc: "启动docker",
             params:{"host":"string","name":"string","tag":"string"},
         }, {
-            id: 1,
+            "id": 1,
             name: "check_port",
             desc: "检查端口",
             params:{"check_port":"integer","check_times":"integer"},
@@ -3524,9 +3598,9 @@ curl -X GET "http://HOST/action/list"  \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: [],
+    "code": 400,
+    "msg": "db server lost...",
+    "data": [],
 }
 ```
 
@@ -3584,9 +3658,9 @@ curl -X POST 'http://HOST/action/create' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: 1,
+    "code": 0,
+    "msg": "success",
+    "data": 1,
 }
 ```
 
@@ -3594,9 +3668,9 @@ curl -X POST 'http://HOST/action/create' \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -3658,9 +3732,9 @@ curl -X POST 'http://HOST/action/update/:id' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 
@@ -3668,9 +3742,9 @@ curl -X POST 'http://HOST/action/update/:id' \
 
 ```json
 {
-    code: 404,
-    msg: "db server lost...",
-    data: null,
+    "code": 404,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -3731,9 +3805,9 @@ curl -X POST 'http://$HOST/action/delete/:id' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 
@@ -3741,9 +3815,9 @@ curl -X POST 'http://$HOST/action/delete/:id' \
 
 ```json
 {
-    code: 404,
-    msg: "db server lost...",
-    data: null,
+    "code": 404,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -3811,10 +3885,10 @@ curl
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-     		id: 2,
+    "code": 0,
+    "msg": "success",
+    "data": {
+     		"id": 2,
             name: "start_docker",
             desc: "启动docker",
             params:{"host":"string","name":"string","tag":"string"},
@@ -3826,9 +3900,9 @@ curl
 
 ```json
 {
-    code: 404,
-    msg: "action in db not found",
-    data: {},
+    "code": 404,
+    "msg": "action in db not found",
+    "data": {},
 }
 ```
 
@@ -3894,17 +3968,17 @@ curl -X POST 'http://HOST/action/impl/create ' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: 2,
+    "code": 0,
+    "msg": "success",
+    "data": 2,
 }
 ```
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -3958,10 +4032,10 @@ curl -X POST 'http://HOST/action/impl/list\
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-      id:1
+    "code": 0,
+    "msg": "success",
+    "data": [{
+      "id":1
       name:"pool"
       desc:"pool name"
       steps::"{}"
@@ -3974,9 +4048,9 @@ curl -X POST 'http://HOST/action/impl/list\
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -4000,7 +4074,7 @@ curl -X POST 'http://HOST/action/impl/list\
 
 | POST方法                                 |
 | -------------------------------------- |
-| http://HOST/action/impl/delete/:id:int |
+| http://HOST/action/impl/delete/:"id":int |
 
 
 #### 请求参数
@@ -4022,24 +4096,24 @@ curl -X POST 'http://HOST/action/impl/list\
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/action/impl/delete/:id:int' \
+curl -X POST 'http://HOST/action/impl/delete/:"id":int' \
 -H "Content-type: application/json" 
 ```
 #### 响应示例
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: null
+    "code": 0,
+    "msg": "success",
+    "data": null
 }
 ```
 异常响应结果
 ```json
 {
-    code: 404
-    msg: "data not found",
-    data: {},
+    "code": 404
+    "msg": "data not found",
+    "data": {},
 }
 ```
 
@@ -4112,15 +4186,15 @@ curl -X GET "http://HOST/actimpl/list"  \
 正常返回结果：
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: [{
-            id: 2,
+    "code": 0,
+    "msg": "success",
+    "data": [{
+            "id": 2,
             template: {"action":{"content":"docker run -d --net=\"{{host}}\" --name {{name}} {{tag}} ","module":"longscript"}},
             type: "ansible",
             action_id：2
         }, {
-            id: 1,
+            "id": 1,
             template: {"action":{"args":"echo {{echo_word}} ","module":"shell"}}
             type: "ansible",
             action_id：4
@@ -4134,9 +4208,9 @@ curl -X GET "http://HOST/actimpl/list"  \
 异常返回结果：
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: [],
+    "code": 400,
+    "msg": "db server lost...",
+    "data": [],
 }
 ```
 
@@ -4192,17 +4266,17 @@ curl -X POST 'http://HOST/actimpl/create' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: 1,
+    "code": 0,
+    "msg": "success",
+    "data": 1,
 }
 ```
 异常响应结果
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: {},
+    "code": 400,
+    "msg": "db server lost...",
+    "data": {},
 }
 ```
 
@@ -4255,18 +4329,18 @@ curl -X POST 'http://HOST/actimpl/update/:id' \
 正常响应结果
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 异常响应结果
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -4323,9 +4397,9 @@ curl -X POST 'http://$HOST/actimpl/delete/:id' \
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: "",
+    "code": 0,
+    "msg": "success",
+    "data": "",
 }
 ```
 
@@ -4333,9 +4407,9 @@ curl -X POST 'http://$HOST/actimpl/delete/:id' \
 
 ```json
 {
-    code: 400,
-    msg: "db server lost...",
-    data: null,
+    "code": 400,
+    "msg": "db server lost...",
+    "data": null,
 }
 ```
 
@@ -4409,10 +4483,10 @@ curl
 
 ```json
 {
-    code: 0,
-    msg: "success",
-    data: {
-      id: 1,
+    "code": 0,
+    "msg": "success",
+    "data": {
+      "id": 1,
       action_id:2,
       type: "ansible",
       template:{"action":{"args":"echo {{echo_word}} ","module":"shell"}}
@@ -4424,20 +4498,19 @@ curl
 
 ```json
 {
-    code: 400,
-    msg: "id is error...",
-    data: {},
+    "code": 400,
+    "msg": "id is error...",
+    "data": {},
 }
 ```
 
 ```json
 {
-    code: 404,
-    msg: "actimpl in db not found",
-    data: {},
+    "code": 404,
+    "msg": "actimpl in db not found",
+    "data": {},
 }
 ```
-
 
 #### 返回码解释
 
