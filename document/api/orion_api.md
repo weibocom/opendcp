@@ -1810,10 +1810,10 @@ curl -X GET "http://HOST/cluster/list"  \
 | 0    | 执行成功 |                   |
 | 400  | 执行失败 | 详细信息请查看返回结果的msg字段 |
 
- 
+
 、、、、、、、、、、、、、、、、、、、、、、、、、、、、、
 
- 
+
 ### 开始任务
 
 开始执行任务
@@ -2017,7 +2017,10 @@ curl -X POST 'http://HOST/task/stop:id:int' \
 | code | int    | 0        | 返回码     |
 | msg  | strng  | "sucess" | 接口返回信息  |
 | data | object | Logs     | 获取的日志信息 |
+
+
 Logs参数说明
+
 | 名称             | 类型     | 示例值  | 描述     |
 | -------------- | ------ | ---- | ------ |
 | id             | int    |      | 日志id   |
@@ -2027,7 +2030,10 @@ Logs参数说明
 | message        | string | Logs | 日志信息   |
 | ctime          | int    | Logs | 时间     |
 
+
+
 ####请求示例
+
 ```php
 curl -X POST ' http://HOST/task/:id:int/log' \
 -H "Content-type: application/json" 
@@ -2057,19 +2063,32 @@ curl -X POST ' http://HOST/task/:id:int/log' \
     data: {},
 }
 ```
+
+
 ####返回码解释
+
 | 返回码  | 状态   | 描述                         |
 | ---- | ---- | -------------------------- |
 | 0    | 执行成功 |                            |
 | 400  | 执行失败 | 获取任务日志失败，详细信息请查看返回结果的msg字段 |
 
+
+
 ###获取任务列表
+
 获取所有的任务列表
+
+
+
 #### 请求地址
+
 | POST方法                |
 | --------------------- |
 | http://HOST/task/list |
+
+
 ####请求参数
+
 | 名称        | 类型   | 是否必须 | 描述    |
 | --------- | ---- | ---- | ----- |
 | page      | int  | 是    | 当前页   |
@@ -2083,13 +2102,19 @@ curl -X POST ' http://HOST/task/:id:int/log' \
 | page        | int    | 1        | 当前页    |
 | page_size   | int    | 10       | 当前页大小  |
 | query_count | int    | 2        | 返回结果数  |
+
+
 ####请求示例
+
 ```php
 curl -X POST 'http://HOST/task/list' \
 -H "Content-type: application/json" \
  -d '{"page":1, "page_size":10}' 
 ```
+
+
 ####响应示例
+
 正常响应结果
 ```json
 {
@@ -2122,14 +2147,20 @@ curl -X POST 'http://HOST/task/list' \
     data: {},
 }
 ```
+
+
 ####返回码解释
+
 | 返回码  | 状态   | 描述                     |
 | ---- | ---- | ---------------------- |
 | 0    | 执行成功 |                        |
 | 400  | 执行失败 | 获取列表，详细信息请查看返回结果的msg字段 |
 
 ###获取任务
+
+
 #### 请求地址
+
 | POST方法                   |
 | ------------------------ |
 | http://HOST/task/:id:int |
@@ -2247,7 +2278,10 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
     data: {},
 }
 ```
+
+
 ####返回码解释
+
 | 返回码  | 状态   | 描述                             |
 | ---- | ---- | ------------------------------ |
 | 0    | 执行成功 |                                |
