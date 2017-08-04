@@ -2,7 +2,7 @@
 
 ## 服务注册
 
-### 获取服务发现类型
+### 1.获取服务发现类型
 
 获取用户创建的所有服务发现类型列表
 
@@ -108,7 +108,7 @@ curl -X POST "http://HOST/api/for_hubble/balance.php"  \
 
 
 
-### 新增/修改服务发现类型
+### 2.新增/修改服务发现类型
 
 创建新的服务发现类型
 
@@ -222,7 +222,7 @@ curl -X POST "http://HOST/api/for_hubble/balance.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 删除服务发现类型
+### 3.删除服务发现类型
 
 删除用户创建的服务发现类型
 
@@ -300,7 +300,7 @@ curl -X POST "http://HOST/api/for_hubble/balance.php"  \
 
 ## 七层Nginx
 
-### 获取Nginx分组列表
+### 1.获取Nginx分组列表
 
 获取用户创建的所有Nginx分组列表
 
@@ -401,7 +401,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_group.php"  \
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
 
-### 创建Nginx分组
+### 2.创建Nginx分组
 
 创建新的Nginx分组
 
@@ -468,7 +468,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_group.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 更新/删除Nginx分组
+### 3.更新/删除Nginx分组
 
 更新/删除Nginx分组
 
@@ -536,7 +536,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_group.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 获取Nginx单元列表
+### 4.获取Nginx单元列表
 
 获取用户创建的所有Nginx单元列表
 
@@ -643,7 +643,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_unit.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 更新/删除Nginx单元列表
+### 5.更新/删除Nginx单元列表
 
 更新/删除Nginx单元列表
 
@@ -715,7 +715,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_unit.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 获取Nginx单元的下属节点列表
+### 6.获取Nginx单元的下属节点列表
 
 获取Nginx单元的下属节点列表
 
@@ -821,7 +821,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_node.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 新增Nginx单元的下属节点
+### 7.新增Nginx单元的下属节点
 
 新增Nginx单元的下属节点
 
@@ -885,7 +885,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_node.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 删除Nginx单元的下属节点
+### 8.删除Nginx单元的下属节点
 
 删除Nginx单元的下属节点
 
@@ -949,7 +949,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_node.php"  \
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
 
-### 获取Upstream列表
+### 9.获取Upstream列表
 
 获取Upstream列表
 
@@ -1064,7 +1064,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_upstream.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 新建Upstream文件
+### 10.新建Upstream文件
 
 新建Upstream文件
 
@@ -1135,7 +1135,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_upstream.php"  \
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
 
-### 修改/删除Upstream文件
+### 11.修改/删除Upstream文件
 
 修改/删除Upstream文件
 
@@ -1207,7 +1207,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_upstream.php"  \
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
 
-### 发布Upstream文件
+### 12.发布Upstream文件
 
 发布Upstream文件
 
@@ -1280,7 +1280,7 @@ curl -X POST "http://HOST/api/for_hubble/nginx_upstream.php"  \
 
 ## 阿里云SLB
 
-### 获取SLB列表
+### 1.获取SLB列表
 
 获取SLB列表
 
@@ -1403,7 +1403,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 新建SLB列表
+### 2.新建SLB列表
 
 获取SLB列表
 
@@ -1479,7 +1479,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 删除SLB
+### 3.删除SLB
 
 删除SLB
 
@@ -1546,7 +1546,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 启用关闭SLB
+### 4.启用关闭SLB
 
 启用关闭SLB
 
@@ -1616,7 +1616,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 
 ## 脚本管理
 
-### 获取脚本列表
+### 1.获取脚本列表
 
 获取脚本列表
 
@@ -1725,7 +1725,7 @@ curl -X POST "http://HOST/api/for_hubble/shell.php"  \
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
 
-### 新建脚本
+### 2.新建脚本
 
 新建脚本
 
@@ -1796,7 +1796,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 更新脚本
+### 3.更新脚本
 
 更新脚本
 
@@ -1868,7 +1868,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 删除脚本
+### 4.删除脚本
 
 删除脚本
 
@@ -1939,7 +1939,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 
 ## 授权管理
 
-### 获取AppKey列表
+### 1.获取AppKey列表
 
 获取AppKey列表
 
@@ -2040,7 +2040,7 @@ curl -X POST "http://HOST/api/for_hubble/appkey.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 新建Appkey
+### 2.新建Appkey
 
 新建Appkey
 
@@ -2110,7 +2110,7 @@ curl -X POST "http://HOST/api/for_hubble/appkey.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 删除Appkey
+### 3.删除Appkey
 
 删除Appkey
 
@@ -2178,7 +2178,7 @@ curl -X POST "http://HOST/api/for_hubble/appkey.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 获取接口列表
+### 4.获取接口列表
 
 获取接口列表
 
@@ -2279,7 +2279,7 @@ curl -X POST "http://HOST/api/for_hubble/interface.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 新建接口
+### 5.新建接口
 
 新建接口
 
@@ -2351,7 +2351,7 @@ curl -X POST "http://HOST/api/for_hubble/interface.php"  \
 | 0    | 成功 |           执行成功               |
 | 1    | 失败 |      执行失败，详细信息请查看返回错误信息       |
 
-### 删除接口
+### 6.删除接口
 
 删除接口
 
@@ -2421,7 +2421,7 @@ curl -X POST "http://HOST/api/for_hubble/interface.php"  \
 
 ## 操作日志
 
-### 获取操作日志列表
+### 1.获取操作日志列表
 
 获取操作日志列表
 
