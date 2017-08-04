@@ -51,6 +51,8 @@ type pool_struct struct {
 	Tasks     map[string]interface{} `json:"tasks"`
 	ServiceId int                    `json:"service_id"`
 	Nodecount int                    `json:"node_count"`
+	IsBeDepen int                   `json:"is_bedepen"`
+	IsHasCron int                   `json:"is_hascron"`
 }
 
 type service_struct struct {
@@ -685,7 +687,7 @@ func (c *ClusterApi) NodeDelete() {
 		err := service.Cluster.DeleteBase(&models.Node{Id: id})
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
-			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
+			c.ReturnFailed("error when delete id: " + strconv.Itoa(id) + ", err:" + err.Error(), 400)
 			return
 		}
 	}
@@ -709,33 +711,55 @@ func (c *ClusterApi) AllPoolList() {
 
 	c.CheckPage(&page, &pageSize)
 
-	list := make([]models.Pool, 0, pageSize)
+	poolList := make([]models.Pool, 0, pageSize)
 
-	count, err := service.Flow.ListByPageWithSort(page, pageSize, &models.Pool{}, &list, "-id")
+	count, err := service.Flow.ListByPageWithSort(page, pageSize, &models.Pool{}, &poolList, "-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 
-	liststruct := make([]pool_struct, len(list), pageSize)
-
-	for i, fi := range list {
-		liststruct[i].Id = fi.Id
-		liststruct[i].Name = fi.Name
-		liststruct[i].Desc = fi.Desc
-		liststruct[i].VmType = fi.VmType
-		liststruct[i].SdId = fi.SdId
-
-		json.Unmarshal([]byte(fi.Tasks), &liststruct[i].Tasks)
-		liststruct[i].ServiceId = fi.Service.Id
-
-		nodeCount, err := service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
-		if err != nil {
-			c.ReturnFailed(err.Error(), 400)
-			return
-		}
-		liststruct[i].Nodecount = nodeCount
-
+	liststruct := make([]pool_struct, 0, count)
+	taskList, err := service.Cluster.GetAllExecTask()
+	if (err != nil) {
+		c.ReturnFailed(err.Error(), 400)
+		return
 	}
-	c.ReturnPageContent(page, pageSize, count, liststruct)
+	for _, fi := range poolList {
+		temp_pool := pool_struct{
+			Id : fi.Id,
+			Name : fi.Name,
+			Desc : fi.Desc,
+			VmType : fi.VmType,
+			SdId : fi.SdId,
+			ServiceId : fi.Service.Id,
+			Nodecount : 0,
+		}
+		flag := true
+		for _, task := range taskList {
+			if task.Pool.Id == fi.Id && len(task.CronItems) > 0 {
+				flag = false
+			}
+
+		}
+		if (!flag) {
+			temp_pool.IsHasCron = 1
+		} else {
+			temp_pool.IsHasCron = 0
+		}
+		temp_pool.IsBeDepen = 0
+		for _, task := range taskList {
+			if task.Pool.Id != fi.Id {
+				for _, depen := range task.DependItems {
+					if (depen.Pool.Id == fi.Id) {
+						temp_pool.IsBeDepen = 1
+					}
+				}
+			}
+		}
+
+		json.Unmarshal([]byte(fi.Tasks), &temp_pool.Tasks)
+		liststruct = append(liststruct, temp_pool)
+	}
+	c.ReturnPageContent(page, pageSize, len(liststruct), liststruct)
 }

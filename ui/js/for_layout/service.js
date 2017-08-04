@@ -97,7 +97,7 @@ var list = function(page,tab,idx) {
         success: function (listdata) {
             if(listdata.code==0){
                 //refresh pool List to background
-                getPoolList();
+                //getPoolList();
                 var pageinfo = $("#table-pageinfo");//分页信息
                 var paginate = $("#table-paginate");//分页代码
                 var head = $("#table-head");//数据表头
@@ -245,7 +245,7 @@ var processBody = function(data,head,body){
                         td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnAdd + '</div></td>';
                         tr.append(td);
                         btnEdit = '<a class="text-success tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_'+tab+'.php?action=edit&par_id='+ $('#fService').val() +'&par_name='+ $('#fService').find("option:selected").text() +'&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
-                        btnSet = '<a class="text-success tooltips" title="任务设置" data-toggle="modal" data-target="#myModal" href="set_'+tab+'.php?action=expandList&idx=' + v.id + '" ><i class="fa fa-tasks"></i></a>';
+                        btnSet = '<a class="text-success tooltips" hidden title="任务设置" data-toggle="modal" data-target="#myModal" href="set_'+tab+'.php?action=expandList&idx=' + v.id + '" ><i class="fa fa-tasks"></i></a>';
                         btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\''+v.id+'\',\''+v.name+'\')"><i class="fa fa-trash-o"></i></a>';
                         break;
                     case 'node':
@@ -716,7 +716,7 @@ var getList=function(type,idx){
             postData.fClusterId=fClusterId;
             $('#tab').val('pool');
             actionDesc='服务';
-            getPoolList();
+            //getPoolList();
             getTaskTpl();
             getHubbleBalance();
             getCloudCluster();
@@ -1312,7 +1312,7 @@ var getQuota=function(idx){
 }
 ///////////////////////////////////////////////
 //获取服务池
-var getPoolList=function(){
+var getPoolList=function(idx){
     var actionDesc='服务池列表';
     var postData={"action":"poolList","pagesize":1000};
     $.ajax({
@@ -1324,6 +1324,93 @@ var getPoolList=function(){
             if(data.code==0){
                 if(data.content.length>0){
                     cache.poolList = data.content;
+                    for(var i=0;i<cache.poolList.length;i++){
+                        if((idx == cache.poolList[i].id && cache.poolList[i].is_bedepen ==0)){
+                            $("#addCron").attr('disabled',false);
+                        }
+                    }
+                    $("#btnSaveTask").attr('disabled',true);
+                    cache.pool_id = idx;
+                    $('.popovers').each(function(){$(this).popover('hide');});
+                    if($('#task_type').val()=="expandList"){
+                        $('#cron_head').empty();
+                        tr="<tr><th>#</th>"+
+                            "<th>执行日期</th>"+
+                            "<th>执行时间</th>"+
+                            "<th>机器数量</th>"+
+                            "<th>忽略</th>"+
+                            "<th>#</th></tr>";
+                        $('#cron_head').append(tr);
+                    }
+                    if ($('#task_type').val()=="uploadList"){
+                        $('#cron_head').empty();
+                        tr="<tr><th>#</th>"+
+                            "<th>执行日期</th>"+
+                            "<th>执行时间</th>"+
+                            "<th>最大并发数</th>"+
+                            "<th>最大并发比例数</th>"+
+                            "<th>忽略</th>"+
+                            "<th>#</th></tr>";
+                        $("#cron_head").append(tr);
+                    }
+                    NProgress.start();
+                    action="expandList";
+                    var task_type=$('#task_type').val();
+                    if(task_type){
+                        action=task_type;
+                    }
+                    var url='/api/for_layout/task.php';
+                    postData={'pool_id':idx,'action':action};
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {"action":action,"data":JSON.stringify(postData)},
+                        dataType: "json",
+                        success: function (listdata) {
+                            if(listdata.code==0){
+                                var depend_body= $("#depend_body");//依赖任务的内容
+                                depend_body.empty();
+                                var cron_body = $("#cron_body");//定时任务的内容
+                                cron_body.empty();
+                                var the_cron_itmes  = [];
+                                var the_depend_itmes = [];
+
+                                if(listdata.content == null){
+                                    cache.exec_task_id = 0;
+                                    NProgress.done();
+                                    return;
+                                }
+                                if( typeof(listdata.content)!='undefined' && typeof(listdata.content.cron_items)!='undefined'){
+                                    the_cron_itmes = listdata.content.cron_items;
+                                }
+                                if(typeof(listdata.content)!='undefined' &&typeof(listdata.content.depend_items)!='undefined'){
+                                    the_depend_itmes = listdata.content.depend_items;
+                                }
+                                if(typeof(listdata.content)!='undefined' && typeof(listdata.content.id)!='undefined'){
+                                    cache.exec_task_id = listdata.content.id;
+                                }
+                                if(the_cron_itmes.length >0){
+                                    processCronList(the_cron_itmes);
+                                }
+                                if(the_depend_itmes.length >0){
+                                    processDependList(the_depend_itmes);
+                                }
+                                //清除当前页面数据
+                                $('.popovers').each(function(){$(this).popover();});
+                                $('.tooltips').each(function(){$(this).tooltip();});
+                                NProgress.done();
+                            }else{
+                                pageNotify('error','加载失败！','错误信息：'+listdata.msg);
+                                NProgress.done();
+                            }
+                        },
+                        error: function (){
+                            pageNotify('error','加载失败！','错误信息：接口不可用');
+                            NProgress.done();
+                        }
+                    });
+
+
                 }else{
                     pageNotify('info','加载'+actionDesc+'成功！','数据为空！');
                 }
@@ -1337,9 +1424,12 @@ var getPoolList=function(){
     });
 }
 
-function addTaskCron(){
-    $("#btnSaveTask").attr('disabled',true);
+function addTaskCron(idx){
 
+    if($("#addCron").attr('disabled')){
+       return;
+    }
+    $("#btnSaveTask").attr('disabled',true);
     if($('#task_type').val()=="expandList") {
         var row = '<tr id ="cron_row_' + cronRowNum + '">';
         row += '<td style="vertical-align: middle;" name="0">' + cronRowNum + '</td>';
@@ -1640,7 +1730,7 @@ function addTaskDepen(){
 
     var firstIndexPool = -1;
     for(var i = 0; i <cache.poolList.length; i++){
-        if(cache.poolList[i].id != cache.pool_id){
+        if(cache.poolList[i].id != cache.pool_id && cache.poolList[i].is_hascron==0){
             row+= '<option value = "'+cache.poolList[i].id+'">'+cache.poolList[i].name+'</option>';
             if(firstIndexPool == -1){
                 firstIndexPool = i;
@@ -1715,88 +1805,9 @@ function addOpt(rid){
 
 //获取依赖任务和定时任务数据
 var listCronOrDepen= function(idx) {
-    $("#btnSaveTask").attr('disabled',true);
-    cache.pool_id = idx;
-    $('.popovers').each(function(){$(this).popover('hide');});
-    if($('#task_type').val()=="expandList"){
-        $('#cron_head').empty();
-        tr="<tr><th>#</th>"+
-            "<th>执行日期</th>"+
-            "<th>执行时间</th>"+
-            "<th>机器数量</th>"+
-            "<th>忽略</th>"+
-            "<th>#</th></tr>";
-        $('#cron_head').append(tr);
-    }
-    if ($('#task_type').val()=="uploadList"){
-        $('#cron_head').empty();
-        tr="<tr><th>#</th>"+
-            "<th>执行日期</th>"+
-            "<th>执行时间</th>"+
-            "<th>最大并发数</th>"+
-            "<th>最大并发比例数</th>"+
-            "<th>忽略</th>"+
-            "<th>#</th></tr>";
-        $("#cron_head").append(tr);
-    }
-    NProgress.start();
-    action="expandList";
-    var task_type=$('#task_type').val();
-    if(task_type){
-        action=task_type;
-    }
-    var url='/api/for_layout/task.php';
-    postData={'pool_id':idx,'action':action};
-    $.ajax({
-        type: "POST",
-        url: url,
-        data: {"action":action,"data":JSON.stringify(postData)},
-        dataType: "json",
-        success: function (listdata) {
-            if(listdata.code==0){
-                var depend_body= $("#depend_body");//依赖任务的内容
-                depend_body.empty();
-                var cron_body = $("#cron_body");//定时任务的内容
-                cron_body.empty();
-                var the_cron_itmes  = [];
-                var the_depend_itmes = [];
+    getPoolList(idx);
 
-                if(listdata.content == null){
-                    cache.exec_task_id = 0;
-                    NProgress.done();
-                    return;
-                }
-                if( typeof(listdata.content)!='undefined' && typeof(listdata.content.cron_items)!='undefined'){
-                    the_cron_itmes = listdata.content.cron_items;
-                }
-                if(typeof(listdata.content)!='undefined' &&typeof(listdata.content.depend_items)!='undefined'){
-                    the_depend_itmes = listdata.content.depend_items;
-                }
-                if(typeof(listdata.content)!='undefined' && typeof(listdata.content.id)!='undefined'){
-                    cache.exec_task_id = listdata.content.id;
-                }
-                if(the_cron_itmes.length >0){
-                    processCronList(the_cron_itmes);
-                }
-                if(the_depend_itmes.length >0){
-                    processDependList(the_depend_itmes);
-                }
-                //清除当前页面数据
-                $('.popovers').each(function(){$(this).popover();});
-                $('.tooltips').each(function(){$(this).tooltip();});
-                NProgress.done();
-            }else{
-                pageNotify('error','加载失败！','错误信息：'+listdata.msg);
-                NProgress.done();
-            }
-        },
-        error: function (){
-            pageNotify('error','加载失败！','错误信息：接口不可用');
-            NProgress.done();
-        }
-    });
 }
-
 var processCronList = function(data){
     var cron_body = $("#cron_body");//定时任务的内容
     cron_body.empty();
@@ -1878,7 +1889,7 @@ var processDependList  = function(data) {
                 row+='<option value = "'+cache.poolList[i].id+'" selected = "selected">'+cache.poolList[i].name+'</option>';
                 currentThePool = cache.poolList[i];
             }else{
-                if(cache.poolList[i].id != cache.pool_id){
+                if(cache.poolList[i].id != cache.pool_id && cache.poolList[i].is_hascron==0){
                     row+='<option value = "'+cache.poolList[i].id+'">'+cache.poolList[i].name+'</option>';
                 }
             }

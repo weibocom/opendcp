@@ -61,8 +61,8 @@ else
       cp ${DEPLOY_DIR}/${ALIYUN_FILE}_orig ${DEPLOY_DIR}/${ALIYUN_FILE}
 fi
 
-sed -i "s/your_key_id/$ali_key/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
-sed -i "s/your_secret/$ali_secret/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
+sed -i "s/your_aliyun_key_id/$ali_key/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
+sed -i "s/your_aliyun_secret/$ali_secret/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 
 sed -i "s/host_ip/$host_ip/g" ${DEPLOY_DIR}/${ALIYUN_FILE}
 

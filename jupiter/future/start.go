@@ -141,7 +141,7 @@ func (sf *StartFuture) Success() {
 	if sf.AutoInit {
 		//Exec.Submit(NewAnsibleTaskFuture(sf.InstanceId, sf.Ip, roles, sf.CorrelationId))
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "3. Begin to execute init operation in the instance")
-		instance.ManageDev(sf.Ip, conf.Config.Password, sf.InstanceId, sf.CorrelationId)
+		instance.ManageDev(sf.Ip, conf.Config.Password, sf.InstanceId, sf.CorrelationId, 0)
 	}
 }
 
