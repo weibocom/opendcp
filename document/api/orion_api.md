@@ -4129,7 +4129,7 @@ curl -X GET "http://HOST/actimpl/list"  \
     "data": [{
             "id": 2,
             "template": {"action":{"content":"docker run -d --net=\"{{host}}\" --name {{name}} {{tag}} ","module":"longscript"}},
-            "type: "ansible",
+            "type": "ansible",
             "action_id"：2,
         }, {
             "id": 1,
