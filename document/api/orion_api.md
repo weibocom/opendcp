@@ -2543,7 +2543,7 @@ curl -X POST 'http://HOST/task/:"id":int/detail ' \
       "steps":{},
       "pool_name":"pool",
       "vm_id":"3",
-      "created:"2017-07-27 13:39:55"
+      "created":"2017-07-27 13:39:55"
     }],
 }
 ```
