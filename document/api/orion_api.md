@@ -89,6 +89,8 @@ curl -X GET "http://HOST/cluster/list?page=1&page_size=10"  \
 | 0    | 执行成功 |                           |
 | 400  | 执行失败 | 查询数据库失败，详细信息请查看返回结果的msg字段 |
 
+----------
+
 ### 2.创建集群接口
 
 创建服务集群
@@ -151,6 +153,8 @@ curl -X POST 'http://HOST/cluster/create' \
 | 0    | 执行成功 |                        |
 | 400  | 执行失败 | 添加失败，详细信息请查看返回结果的msg字段 |
 
+----------
+
 ### 3.修改集群接口
 
 修改集群
@@ -177,7 +181,7 @@ curl -X POST 'http://HOST/cluster/create' \
 
 #### 请求示例
 ```php
-curl -X POST 'http://HOST/cluster/update/:id' \
+curl -X POST 'http://HOST/cluster/update/1' \
 -H "Content-type: application/json" \
  -d '{"name":"SamplePlatform", "desc":"Sample Platform", "biz": "平台"}' 
 ```
@@ -209,6 +213,8 @@ curl -X POST 'http://HOST/cluster/update/:id' \
 | 0    | 执行成功 |                        |
 | 400  | 执行失败 | 修改失败，详细信息请查看返回结果的msg字段 |
 
+----------
+
 ### 4.删除集群接口
 
 删除集群
@@ -236,7 +242,7 @@ curl -X POST 'http://HOST/cluster/update/:id' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://$HOST/cluster/delete/:id' \
+curl -X POST 'http://$HOST/cluster/delete/2' \
 -H "Content-type: application/json" 
 ```
 
@@ -268,6 +274,8 @@ curl -X POST 'http://$HOST/cluster/delete/:id' \
 | ---- | ---- | ---------------------- |
 | 0    | 执行成功 |                        |
 | 400  | 执行失败 | 删除失败，详细信息请查看返回结果的msg字段 |
+
+----------
 
 ### 5.获取集群详情
 
@@ -306,7 +314,7 @@ data参数
 ```php
 curl 
 -H "Content-type: application/json" \
--X POST 'http://$HOST/cluster/:id' \
+-X POST 'http://$HOST/cluster/2' \
 ```
 
 #### 响应示例
@@ -350,6 +358,8 @@ curl
 | 0    | 执行成功 |             |
 | 400  | 执行失败 | 传入的id有误     |
 | 404  | 执行失败 | 数据库中查询不到该集群 |
+
+----------
 
 ### 6.获取集群中服务列表接口
 
@@ -444,6 +454,8 @@ curl
 | 0    | 执行成功 |                |
 | 400  | 执行失败 | 集群id有误，查询数据库失败 |
 
+----------
+
 ## 服务接口
 
 ### 1.创建服务接口
@@ -520,6 +532,8 @@ curl -X GET "http://HOST/service/create"  \
 | ---- | ---- | -------- |
 | 0    | 执行成功 |          |
 | 400  | 执行失败 | 请求参数解析错误 |
+
+----------
 
 ### 2.删除服务接口
 
@@ -677,6 +691,8 @@ curl -X GET "http://HOST/service/1"  \
 | 404  | 执行失败 | 数据库记录不存在 |
 | 400  | 执行失败 | id校验错误   |
 
+----------
+
 ### 3.获取服务中服务池列表接口
 
 获取该服务中包含的所有服务池
@@ -742,10 +758,10 @@ curl
       "vm_type":1,
       "sd_id":1,
       "service_id":1,
-      "node_count":2
+      "node_count":2,
     }],
     "page":1,
-    "page_size":10
+    "page_size":10,
     "query_count":1
 }
 ```
@@ -766,6 +782,8 @@ curl
 | ---- | ---- | -------------- |
 | 0    | 执行成功 |                |
 | 400  | 执行失败 | 集群id有误，查询数据库失败 |
+
+----------
 
 ## 服务池接口
 
@@ -840,6 +858,8 @@ curl -X GET "http://HOST/service/create"  \
 | 0    | 执行成功 |          |
 | 400  | 执行失败 | 请求参数解析错误 |
 
+----------
+
 ### 2.删除服务池接口
 
 服务池删除
@@ -864,7 +884,6 @@ curl -X GET "http://HOST/service/create"  \
 | code | int    | 0        | 返回码    |
 | msg  | strng  | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
-
 
 #### 请求示例
 
@@ -916,6 +935,7 @@ curl -X DELETE "http://HOST/pool/delete/1"  \
 | 0    | 执行成功 |      |
 | 400  | 执行失败 |      |
 
+----------
 
 ### 3.修改服务池接口
 
@@ -990,6 +1010,8 @@ curl -X DELETE "http://HOST/pool/update/1"  \
 | 0    | 执行成功 |          |
 | 400  | 执行失败 | 请求参数解析错误 |
 | 404  | 执行失败 | 数据库操作失败  |
+
+----------
 
 ### 4.获取服务池信息接口 
 
@@ -1611,7 +1633,7 @@ steps array中每个元素参数
 ```php
 curl -X GET "http://HOST/task/impl/create"  \
 -H "Content-type: application/json"  \
--d "{
+-d '{
     "name":"tpl1",
     "desc":"Template 1",
     "steps":[{ "name":"sleep",
@@ -1624,7 +1646,7 @@ curl -X GET "http://HOST/task/impl/create"  \
                }
               }]
 
-   }"
+   }'
 ```
 
 #### 响应示例
@@ -1663,6 +1685,8 @@ curl -X GET "http://HOST/task/impl/create"  \
 | 0    | 执行成功 |                                |
 | 400  | 执行失败 | 传入json参数无法转化                   |
 | 404  | 执行失败 | 查询数据库失败或者改传入的step name找不到在数据库中 |
+
+----------
 
 ### 2.删除任务执行步骤
 
@@ -1785,12 +1809,12 @@ curl -X GET "http://HOST/task/impl/list"  \
             "id": 2,
             "name": "expand_nginx",
             "desc": "扩容nginx服务",
-            "steps": "[{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]"
+            "steps": [{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]
         }, {
             "id": 2,
             "name": "undeploy_nginx",
             "desc": "缩容nginx服务",
-            "steps": "[{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]"
+            "steps": [{"name":"return_vm","param_values":{"vm_type_id":1},"retry":{"retry_times":2,"ignore_error":false}}]
         },
     ],
     "page": 1,
@@ -1856,14 +1880,14 @@ curl -X GET "http://HOST/task/impl/list"  \
 curl -X GET "http://HOST/cluster/list"  \
 -H "Content-type: application/json"  \
 -d ' {
-		"template_id":1
-		"task_name":expand_nignix
-		"timeout":10
-		"auto":1
-		"max_ratio":20
-		"max_num":10
-		"opr_user":"root"
-		"nodes":[{"":object}]
+		"template_id":1,
+		"task_name":"expand_nignix",
+		"timeout":10,
+		"auto":1,
+		"max_ratio":20,
+		"max_num":10,
+		"opr_user":"root",
+		"nodes":[{"":object}],
 		"params":[{"":""}]
 	}' 
 ```
@@ -2127,9 +2151,10 @@ Logs参数说明
 ####  请求示例
 
 ```php
-curl -X POST ' http://HOST/task/:"id":int/log' \
+curl -X POST 'http://HOST/task/2/log' \
 -H "Content-type: application/json" 
 ```
+
 ####  响应示例
 
 正常响应结果
@@ -2145,8 +2170,7 @@ curl -X POST ' http://HOST/task/:"id":int/log' \
       "correlation_id":2-2,
       "message":"run flow...",
       "ctime":1501162794
-    }
-    ],
+    }],
 }
 ```
 
@@ -2320,7 +2344,9 @@ curl -X POST ' http://HOST/task/2' \
     "query_count":1
 }
 ```
+
 异常响应结果
+
 ```json
 {
     "code": 400,
@@ -2365,7 +2391,7 @@ curl -X POST ' http://HOST/task/2' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
+curl -X POST 'http://HOST/task/expandList/2' \
 -H "Content-type: application/json" \
 ```
 
@@ -2378,11 +2404,11 @@ curl -X POST 'http://HOST/task/expandList/:poolId:int ' \
     "code": 0,
     "msg": "success",
     "data": [{
-      "id":1
-      "pool":{}
-      "cron_items":[]
-      "depend_items":[]
-      "type":"expand"
+      "id":1,
+      "pool":{},
+      "cron_items":[],
+      "depend_items":[],
+      "type":"expand",
       "exec_type:""crontab"
     }],
 }
@@ -2455,6 +2481,7 @@ curl -X POST 'http://HOST/task/uploadList/1' \
 ```
 
 异常响应结果
+
 ```json
 {
     "code": 400,
@@ -2522,6 +2549,7 @@ curl -X POST 'http://HOST/task/:"id":int/detail ' \
 ```
 
 异常响应结果
+
 ```json
 {
     "code": 400,
@@ -2595,7 +2623,7 @@ curl -X POST 'http://HOST/task/saveTask ' \
 {
     "code": 400,
     "msg": "db server lost...",
-    "data": {null},
+    "data": {},
 }
 ```
 
@@ -2632,7 +2660,7 @@ curl -X POST 'http://HOST/task/saveTask ' \
 
 #### 请求示例
 ```php
-curl -X POST 'http://HOST/task/;nsid"int/log' \
+curl -X POST 'http://HOST/task/2/log' \
 -H "Content-type: application/json" 
 ```
 
@@ -2720,7 +2748,7 @@ curl -X POST 'http://HOST/task_tpl/create' \
  "id":1, 
  "name":"Sample Platform",
  "desc": "平台",
- "steps":[].
+ "steps":[],
  }' 
 ```
 
@@ -2797,13 +2825,13 @@ curl -X POST 'http://HOST/task_tpl/list \
     "code": 0,
     "msg": "success",
     "data": [{
-      "id":1
-      "name":"pool"
-      "desc":"pool name"
-      "steps"::"{}"
+      "id":1,
+      "name":"pool",
+      "desc":"pool name",
+      "steps":{}
     }],
     "page":1,
-    "page_size":10
+    "page_size":10,
     "query_count":2
 }
 ```
@@ -2855,7 +2883,7 @@ curl -X POST 'http://HOST/task_tpl/list \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task_tpl/update/:id' \
+curl -X POST 'http://HOST/task_tpl/update/2' \
 -H "Content-type: application/json" 
 ```
 
@@ -2916,7 +2944,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task_tpl/:"id":int ' \
+curl -X POST 'http://HOST/task_tpl/2' \
 -H "Content-type: application/json" \
 ```
 
@@ -2990,14 +3018,14 @@ curl -X POST 'http://HOST/task_tpl/:"id":int ' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task_tpl/update/:id' \
+curl -X POST 'http://HOST/task_tpl/update/2' \
 -H "Content-type: application/json" \
  -d '{"id":1, 
  "name":"SamplePlatform",
  "desc":"Sample Platform", 
  "steps": [
    {
-       "name":"create_vm"
+       "name":"create_vm",
        "param_values":{},
        "retry":{}
    }
@@ -3066,7 +3094,7 @@ curl -X POST 'http://HOST/task_tpl/update/:id' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/task_step/update/:id' \
+curl -X POST 'http://HOST/task_step/update/2' \
 -H "Content-type: application/json" \
  -d '{"page":1, "page_size":10}' 
 ```
@@ -3080,14 +3108,14 @@ curl -X POST 'http://HOST/task_step/update/:id' \
     "code": 0,
     "msg": "success",
     "data": [{
-      "id":1
-      "name":"action impl"
-      "desc":"action descible"
-      "type":"manual"
+      "id":1,
+      "name":"action impl",
+      "desc":"action descible",
+      "type":"manual",
       "params":{}
     }],
     "page":1,
-    "page_size":10
+    "page_size":10,
     "query_count":1
 }
 ```
@@ -3291,7 +3319,7 @@ curl -X POST 'http://HOST/remote_step/create' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/remote_step/update/:id' \
+curl -X POST 'http://HOST/remote_step/update/2' \
 -H "Content-type: application/json" \
  -d '{"name":"step","desc":"Step", "actions":["action1", "action2", "action3"]}' 
 ```
@@ -3355,7 +3383,7 @@ curl -X POST 'http://HOST/remote_step/update/:id' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://$HOST/remote_step/delete/:id' \
+curl -X POST 'http://$HOST/remote_step/delete/2' \
 -H "Content-type: application/json" 
 ```
 
@@ -3428,7 +3456,7 @@ data参数
 ```php
 curl 
 -H "Content-type: application/json" \
--X POST 'http://$HOST/remote_step/:id' \
+-X POST 'http://$HOST/remote_step/3' \
 ```
 
 #### 响应示例
@@ -3441,9 +3469,9 @@ curl
     "msg": "success",
     "data": {
       "id": 1,
-      name:"add-default-image",
-      desc: "添加openstack缺省镜像",
-      actions:{"add-default-image"}
+      "name":"add-default-image",
+      "desc": "添加openstack缺省镜像",
+      "actions":{"add-default-image"}
     },
 }
 ```
@@ -3539,7 +3567,7 @@ curl -X GET "http://HOST/action/list"  \
             "id": 1,
             "name": "check_port",
             "desc": "检查端口",
-            "params:"{"check_port":"integer","check_times":"integer"},
+            "params:{"check_port":"integer","check_times":"integer"},
      
         },
     ],
@@ -3664,7 +3692,7 @@ curl -X POST 'http://HOST/action/create' \
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/action/update/:id' \
+curl -X POST 'http://HOST/action/update/2' \
 -H "Content-type: application/json" \
  -d '{"desc":"Command xx", "params":{"time": "integer"}}", "action3"]}' 
 ```
@@ -3813,7 +3841,7 @@ curl
     "code": 0,
     "msg": "success",
     "data": {
-     		"id": 2,
+     	     "id": 2,
             "name": "start_docker",
             desc: "启动docker",
             params:{"host":"string","name":"string","tag":"string"},
@@ -3952,10 +3980,10 @@ curl -X POST 'http://HOST/action/impl/list\
     "code": 0,
     "msg": "success",
     "data": [{
-      "id":1
+      "id":1,
       "name":"pool",
       "desc":"pool name",
-      "steps"::"{}"
+      "steps":{}
     }],
     "page":1,
     "page_size":10,
@@ -4009,7 +4037,7 @@ curl -X POST 'http://HOST/action/impl/list\
 #### 请求示例
 
 ```php
-curl -X POST 'http://HOST/action/impl/delete/:"id":int' \
+curl -X POST 'http://HOST/action/impl/delete/2' \
 -H "Content-type: application/json" 
 ```
 
