@@ -413,7 +413,7 @@ curl
       "cluster_id":1
     },{
       "id": 1,
-      "name:"sevice 2",
+      "name":"sevice 2",
       "desc": "服务2",
       "docker_image": "-",
       "cluster_id":1
