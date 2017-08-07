@@ -17,9 +17,10 @@ checkImage(){
     echo "image $1:$2 does not exists"
     exit 1
 }
-echo "###################begin:"`date +%Y%m%d" "%H":"%M":"%S`
+echo "---Begin to execute the init operation in this instance---"
+echo "###################begin:"`date +%Y-%m-%d" "%H":"%M":"%S`
 #打印参数
-echo "param:"$*
+#echo "param:"$*
 if [ -z "$1" ]; then
     echo "mysql address is  empty! you should be set like this:"
     echo "sh get.sh mysql://DBUSER:@DBADDRESS/DBNAME?charset=utf8"
@@ -55,7 +56,7 @@ fi
 
 #1、安装docker
 echo "1、安装docker"
-yum install -y docker
+yum install -y docker >/dev/null 2>&1
 
 #2、修改docker配置
 echo "2、修改docker配置"
@@ -65,12 +66,12 @@ echo 'INSECURE_REGISTRY="--insecure-registry docker.io --insecure-registry '$6'"
 
 #3、重新启动docker
 echo "3、重新启动docker"
-service docker restart
+service docker restart >/dev/null 2>&1
 
 echo "4、下载octans-agent镜像"
 #4、下载octans-agent镜像
 
-docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:2.0
+docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:2.0 >/dev/null 2>&1
 
 echo "5、检查镜像是否下载成功"
 #5、检查镜像是否下载成功
@@ -112,4 +113,4 @@ done
 docker exec octans-agent python /data/octans/octans/tool/auto_report.py $4
 
 echo "[DONE] --------------"
-echo "###################end:"`date +%Y%m%d" "%H":"%M":"%S`
+echo "###################end:"`date +%Y-%m-%d" "%H":"%M":"%S`
