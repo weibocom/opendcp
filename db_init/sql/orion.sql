@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `steps` longtext NOT NULL,
     `step_num` integer NOT NULL DEFAULT 0 ,
     `log` longtext NOT NULL,
+    `last_op` varchar(255),
     `step_run_time`  longtext NOT NULL,
     `run_time` DOUBLE  NOT NULL DEFAULT 0.0 ,
     `created_time` datetime NOT NULL,
