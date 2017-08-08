@@ -18,10 +18,13 @@ cache = {
     running: [],
     success: [],
     failed: [],
+    stoped:[]
   },
   arg_name: [],
   tasklist: [],
   result: {},
+  refreshInterval:null,
+
 }
 
 var getDate = function(t,type){
@@ -106,6 +109,7 @@ var getTask=function(action){
               cache.ip.running=[];
               cache.ip.success=[];
               cache.ip.failed=[];
+              cache.ip.stoped=[];
               $.each(data.content,function(k,v){
                 switch (k){
                   case 0:
@@ -120,12 +124,15 @@ var getTask=function(action){
                   case 3:
                   case '3':
                     cache.ip.failed=v; break;
+                  case '4':
+                    cache.ip.stoped=v; break;
                 }
               });
               updateEle('ip','ready');
               updateEle('ip','running');
               updateEle('ip','success');
               updateEle('ip','failed');
+              updateEle('ip','stoped');
               if(cache.ip.ready.length>0){
                 $('#tab_1').attr('class','tab-pane fade active in');
                 $('#tab_2').attr('class','tab-pane fade');
@@ -135,35 +142,56 @@ var getTask=function(action){
                 $('#tab_home_2').attr('class','');
                 $('#tab_home_3').attr('class','');
                 $('#tab_home_4').attr('class','');
+                $('#tab_home_5').attr('class','');
               }else{
                 if(cache.ip.running.length>0){
                   $('#tab_1').attr('class','tab-pane fade');
                   $('#tab_2').attr('class','tab-pane fade active in');
                   $('#tab_3').attr('class','tab-pane fade');
                   $('#tab_4').attr('class','tab-pane fade');
+                  $('#tab_5').attr('class','tab-pane fade');
                   $('#tab_home_1').attr('class','');
                   $('#tab_home_2').attr('class','active');
                   $('#tab_home_3').attr('class','');
                   $('#tab_home_4').attr('class','');
+                  $('#tab_home_5').attr('class','');
                 }else{
-                  if(cache.ip.success.length>0){
-                    $('#tab_1').attr('class','tab-pane fade');
-                    $('#tab_2').attr('class','tab-pane fade');
-                    $('#tab_3').attr('class','tab-pane fade active in');
-                    $('#tab_4').attr('class','tab-pane fade');
-                    $('#tab_home_1').attr('class','');
-                    $('#tab_home_2').attr('class','');
-                    $('#tab_home_3').attr('class','active');
-                    $('#tab_home_4').attr('class','');
+                  if(cache.ip.stoped.length>0){
+                      $('#tab_1').attr('class','tab-pane fade');
+                      $('#tab_2').attr('class','tab-pane fade');
+                      $('#tab_5').attr('class','tab-pane fade active in');
+                      $('#tab_3').attr('class','tab-pane fade');
+                      $('#tab_4').attr('class','tab-pane fade');
+                      $('#tab_home_1').attr('class','');
+                      $('#tab_home_2').attr('class','');
+                      $('#tab_home_5').attr('class','active');
+                      $('#tab_home_3').attr('class','');
+                      $('#tab_home_4').attr('class','');
+
                   }else{
-                    $('#tab_1').attr('class','tab-pane fade');
-                    $('#tab_2').attr('class','tab-pane fade');
-                    $('#tab_3').attr('class','tab-pane fade');
-                    $('#tab_4').attr('class','tab-pane fade active in');
-                    $('#tab_home_1').attr('class','');
-                    $('#tab_home_2').attr('class','');
-                    $('#tab_home_3').attr('class','');
-                    $('#tab_home_4').attr('class','active');
+                      if(cache.ip.success.length>0){
+                          $('#tab_1').attr('class','tab-pane fade');
+                          $('#tab_2').attr('class','tab-pane fade');
+                          $('#tab_3').attr('class','tab-pane fade active in');
+                          $('#tab_4').attr('class','tab-pane fade');
+                          $('#tab_5').attr('class','tab-pane fade');
+                          $('#tab_home_1').attr('class','');
+                          $('#tab_home_2').attr('class','');
+                          $('#tab_home_3').attr('class','active');
+                          $('#tab_home_4').attr('class','');
+                          $('#tab_home_5').attr('class','');
+                      }else{
+                          $('#tab_1').attr('class','tab-pane fade');
+                          $('#tab_2').attr('class','tab-pane fade');
+                          $('#tab_3').attr('class','tab-pane fade');
+                          $('#tab_4').attr('class','tab-pane fade active in');
+                          $('#tab_5').attr('class','tab-pane fade');
+                          $('#tab_home_1').attr('class','');
+                          $('#tab_home_2').attr('class','');
+                          $('#tab_home_3').attr('class','');
+                          $('#tab_home_4').attr('class','active');
+                          $('#tab_home_5').attr('class','');
+                      }
                   }
                 }
               }
@@ -208,28 +236,43 @@ var updateEle=function(o,idx){
       break;
     case 'state':
       switch(idx){
-        case 0: $('#state').html('<span class="badge bg-default">未开始</span>'); cache.flag=false; break;
+        case 0: $('#state').html('<span class="badge bg-default">未开始</span>'); break;
         case 1: $('#state').html('<span class="badge bg-blue">执行中</span>'); break;
-        case 2: $('#state').html('<span class="badge bg-green">已完成</span>'); cache.flag=false; break;
-        case 3: $('#state').html('<span class="badge bg-red">失败</span>'); cache.flag=false; break;
-        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>'); cache.flag=false; break;
+        case 2: $('#state').html('<span class="badge bg-green">已完成</span>');
+                if(cache.refreshInterval != null) {
+                    clearInterval(cache.refreshInterval);
+                    cache.refreshInterval = null;
+                }
+                break;
+        case 3: $('#state').html('<span class="badge bg-red">失败</span>');
+                if(cache.refreshInterval != null) {
+                    clearInterval(cache.refreshInterval);
+                    cache.refreshInterval = null;
+                }
+                break;
+        case 4: $('#state').html('<span class="badge bg-orange">已暂停</span>');
+            if(cache.refreshInterval != null) {
+                clearInterval(cache.refreshInterval);
+                cache.refreshInterval = null;
+            }
+            break;
         default: $('#state').html('<span class="badge bg-red" title="'+ idx +'">未知</span>'); break;
       }
       break;
     case 'num':
       var data=cache.task.Stat;
-      var ready=0,success= 0,running= 0,failed=0;
+      var ready=0,success= 0,running= 0,failed=0, stoped=0;
       if(!$.isEmptyObject(data)) {
         $('#num_ready').html('');
         $('#num_success').html('');
         $('#num_running').html('');
         $('#num_failed').html('');
-
+        $('#num_stoped').html('');
         ready=data[0];
         running=data[1];
         success=data[2];
         failed=data[3];
-
+        stoped=data[4];
         if(ready>0){
           $('#num_ready').html(ready);
         }else{
@@ -250,6 +293,11 @@ var updateEle=function(o,idx){
         }else{
           $('#task_failed').html('');
         }
+        if(stoped>0){
+            $('#num_stoped').html(stoped);
+        }else{
+            $('#num_stoped').html('');
+        }
       }
       break;
     case 'overview':
@@ -264,12 +312,15 @@ var updateEle=function(o,idx){
         var running=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[1] : 0;
         var success=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[2] : 0;
         var failed=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[3] : 0;
-        var count=ready+running+success+failed;
+        var stoped=(typeof cache.task.Stat != 'undefined') ? cache.task.Stat[4] : 0;
+        var count=ready+running+success+failed+stoped;
         td = '<td>' + count + '</td>';
         tr.append(td);
         td = '<td><span class="label label-default">' + ready + '</span></td>';
         tr.append(td);
         td = '<td><span class="label label-info">' + running + '</span></td>';
+        tr.append(td);
+        td = '<td><span class="label label-warning">' + stoped + '</span></td>';
         tr.append(td);
         td = '<td><span class="label label-success">' + success + '</span></td>';
         tr.append(td);
@@ -297,6 +348,7 @@ var updateEle=function(o,idx){
         case 'running':  data=cache.ip.running;  break;
         case 'success':  data=cache.ip.success;  break;
         case 'failed':  data=cache.ip.failed;  break;
+        case 'stoped': data=cache.ip.stoped;  break;
       }
       var n=1;
       body.html('');
@@ -324,6 +376,7 @@ var updateEle=function(o,idx){
                   case 'running': style='badge bg-blue'; break;
                   case 'success': style='badge bg-green'; break;
                   case 'failed': style='badge bg-red'; break;
+                  case 'stoped': style='badge bg-orange'; break;
                 }
               }else{
                 if(idx!='ready') if(key<curr||curr==-1) style='label label-success';
@@ -368,9 +421,13 @@ var twiceCheck=function(action,idx,ip){
     switch(action){
       case 'start':
         modalTitle='启动任务';
-        if(cache.task.state=='1'||cache.task.state=='2'||cache.task.state=='3'){
-          notice='<div class="alert alert-danger">错误信息：任务执行中或已完成</div>';
+        //除任务处在执行中不能重新启动任务外，其他状况均可重新启动任务
+        if(cache.task.state=='1'){
+            notice='<div class="alert alert-danger">错误信息：任务执行中</div>';
         }
+        // if(cache.task.state=='1'||cache.task.state=='2'||cache.task.state=='3'){
+        //   notice='<div class="alert alert-danger">错误信息：任务执行中或已完成</div>';
+        // }
         break;
       case 'pause':
         modalTitle='暂停任务';
@@ -380,9 +437,13 @@ var twiceCheck=function(action,idx,ip){
         break;
       case 'finish':
         modalTitle='完成任务';
-        if(cache.task.state=='0'||cache.task.state=='2'||cache.task.state=='3'){
-          notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+        //当状态是未启动或者是已经完成或时，完成任务不可操作，其他状态均可完成
+        if(cache.task.state=='0'||cache.task.state=='2'){
+            notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
         }
+        // if(cache.task.state=='0'||cache.task.state=='2'||cache.task.state=='3'){
+        //   notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+        // }
         break;
       default:
         modalTitle='';
@@ -460,6 +521,9 @@ var change=function(){
       actionDesc='删除';
       break;
     case 'start':
+      if(cache.refreshInterval == null){
+          cache.refreshInterval = setInterval('getTask(\'info\');',10000);
+      }
       actionDesc+='启动任务';
       break;
     case 'pause':
@@ -482,7 +546,11 @@ var change=function(){
       if(data.code==0){
         pageNotify('success','【'+actionDesc+'】操作成功！');
       }else{
-        pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+          if(cache.refreshInterval != null){
+              clearInterval(cache.refreshInterval);
+              cache.refreshInterval = null;
+          }
+          pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
       }
       //重载列表
       getTask('info');
@@ -495,6 +563,10 @@ var change=function(){
       });
     },
     error: function (){
+      if(cache.refreshInterval != null){
+          clearInterval(cache.refreshInterval);
+          cache.refreshInterval = null;
+      }
       pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
     }
   });
@@ -606,7 +678,7 @@ var view=function(type,idx,ip,offset){
                   text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ log +'</span>';
                 });
                 text+='</div>';
-                if(cache.task.state==0||cache.task.state==1) window.setInterval('getResult("'+idx+'","'+ip+'")',5000);
+                if(cache.task.state!=4) window.setInterval('getResult("'+idx+'","'+ip+'")',5000);
                 break;
               case 'tasklog':
                 cache.result={};
@@ -619,7 +691,7 @@ var view=function(type,idx,ip,offset){
                 text+='<span class="col-sm-12" style="background-color:#000;color:#ccc;line-height: 150%">'+ log +'</span>';
                 text+='</div>';
                 console.log(cache.task);
-                if(cache.task.state==0||cache.task.state==1) window.setInterval('getTaskLog("'+idx+'")',5000);
+                if(cache.task.state!=4) window.setInterval('getTaskLog("'+idx+'")',5000);
                 break;
               default:
                 var locale={};

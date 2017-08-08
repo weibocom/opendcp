@@ -17,14 +17,12 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
 	"github.com/astaxie/beego/orm"
 
 	"weibo.com/opendcp/orion/models"
-	//"weibo.com/opendcp/orion/handler"
 )
 
 type FlowService struct {
@@ -41,6 +39,18 @@ func (f *FlowService) GetFlowWithRel(id int) (*models.Flow, error) {
 	}
 
 	return flow, nil
+}
+
+func (f *FlowService) GetFlowImplWithRel(id int) (*models.FlowImpl, error) {
+	o := orm.NewOrm()
+
+	flowImpl := &models.FlowImpl{}
+	err := o.QueryTable(flowImpl).Filter("Id", id).RelatedSel().One(flowImpl)
+	if err != nil {
+		return nil, err
+	}
+
+	return flowImpl, nil
 }
 
 func (f *FlowService) GetActionImplByName(name string) (*models.ActionImpl, error) {
