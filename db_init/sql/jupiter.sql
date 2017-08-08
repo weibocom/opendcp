@@ -180,7 +180,7 @@ UNLOCK TABLES;
 
 CREATE TABLE IF NOT EXISTS `detail` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `instance_number` longtext NOT NULL DEFAULT '',
+  `instance_number` longtext NOT NULL,
   `running_time` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
