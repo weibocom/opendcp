@@ -28,6 +28,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	. "weibo.com/opendcp/orion/models"
 	_ "weibo.com/opendcp/orion/routers"
+	"weibo.com/opendcp/orion/executor"
 )
 
 func main() {
@@ -39,6 +40,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	executor.Initial()
 
 	initOrm()
 
@@ -61,7 +64,7 @@ func initOrm() {
 
 	//register model
 	orm.RegisterModel(&(Cluster{}), &(Service{}), &(Pool{}), &(Node{}), &(Logs{}))
-	orm.RegisterModel(&(FlowImpl{}), &(Flow{}), &(FlowBatch{}), &(NodeState{}))
+	orm.RegisterModel(&(FlowImpl{}), &(Flow{}), &(NodeState{}))
 	orm.RegisterModel(&(RemoteStep{}), &(RemoteAction{}), &(RemoteActionImpl{}))
 	orm.RegisterModel(&(CronItem{}), &(DependItem{}), &(ExecTask{}))
 }

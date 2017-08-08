@@ -26,16 +26,14 @@ import (
 type Logs struct {
 	Id            int    `json:"id" orm:"pk;auto"`
 	Fid           int    `json:"fid"`
-	BatchId       int    `json:"batch_id"`
 	CorrelationId string `json:"correlation_id"`
 	Message       string `json:"message"` //日志信息
 	Ctime         int    `json:"ctime"`
 }
 
-func NewLogsInit(Fid int, BatchId int, correlationId string, Message string) (result *Logs) {
+func NewLogsInit(Fid int, correlationId string, Message string) (result *Logs) {
 	result = &Logs{}
 	result.Fid = Fid
-	result.BatchId = BatchId
 	result.CorrelationId = correlationId
 	result.Message = Message
 	result.Ctime = int(time.Now().Unix())
