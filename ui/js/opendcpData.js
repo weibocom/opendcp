@@ -1026,10 +1026,8 @@ var processBody = function(data,head,body){
                 var tmp=rate.toString().substr(0,5);
                 td = '<td><span class="label label-success">' + tmp + '%</span></td>';
                 tr.append(td);
-
-                var beginSec = (typeof(v.created)!='undefined') ? Date.parse(v.created) : 0;
-                var endSec = (typeof(v.updated)!='undefined') ? ((v.updated!='0000-00-00 00:00:00') ? Date.parse(v.updated) : new Date().getTime()) : new Date().getTime();
-                var timeLen=(beginSec>0)?Math.ceil((endSec-beginSec)/1000)+'秒':'-';
+                var runTime = (typeof(v.runTime)!='undefined') ? v.runTime : 0;
+                var timeLen=(runTime>0)?Math.ceil(runTime)+'秒':'-';
                 td = '<td>' + timeLen + '</td>';
                 tr.append(td);
                 body.append(tr);

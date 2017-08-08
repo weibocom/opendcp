@@ -418,11 +418,7 @@ require_once('include/navbar.php');
 <!-- ECharts -->
 <script src="gentelella/vendors/echarts/dist/echarts.min.js"></script>
 <script src="gentelella/vendors/echarts/map/js/world.js"></script>
-<!-- highCharts -->
-<!--<script src="highcharts/highcharts.js"></script>-->
-<!--<script src="highcharts/exporting.js"></script>-->
-<!--<script src="highcharts/data.js"></script>-->
-<!--<script src="js/vintage.js"></script>-->
+
 <!-- cookie -->
 <script type="text/javascript" src="gentelella/vendors/jquery.cookie/jquery.cookie.js"></script>
 <!-- Page walkthrough -->
