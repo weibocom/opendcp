@@ -70,7 +70,7 @@ type sdChkResp struct {
 	Code    int
 	Message string `json:"msg"`
 	Content struct {
-		State  int
+		State int
 		Detail []struct {
 			Ip    string
 			State int
@@ -96,6 +96,8 @@ func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
 				SV_ID: "Integer",
 			},
 		},
+
+
 	}
 }
 
@@ -107,9 +109,8 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	actionParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
 
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
+	logService.Debug(fid, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case REG:
@@ -117,7 +118,7 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	case UNREG:
 		return h.unregister(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
+		logService.Error(fid, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
 
 		return Err("Unknown action: " + action.Name)
 	}
@@ -139,21 +140,20 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
 
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
+	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	svVal := params[SV_ID]
 	sv, err := utils.ToInt(svVal)
 
 	if err != nil {
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
+		logService.Error(fid, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
 
 		return Err("Bad servicd_id")
 	}
 
 	// call api
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
+	logService.Debug(fid, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
@@ -189,12 +189,12 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	// check result if async
 	taskId := resp.Content.TaskId
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("task id = %s", taskId))
+	logService.Debug(fid, corrId, fmt.Sprintf("task id = %s", taskId))
 
 	// start checking result
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, batchId, corrId, fmt.Sprintf("check result for times %d", i+1))
+		logService.Info(fid, corrId, fmt.Sprintf("check result for times %d", i+1))
 
 		//data := make(map[string]interface{})
 		//data["task_id"] = taskId
@@ -207,7 +207,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //, "task_id", taskId, "appkey", SD_APPKEY)
 		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
-			logService.Warn(fid, batchId, corrId, fmt.Sprintf("check result err: \n%v", err))
+			logService.Warn(fid, corrId, fmt.Sprintf("check result err: \n%v", err))
 
 			continue
 		}
@@ -215,13 +215,13 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		resp := &sdChkResp{}
 		err = json.Unmarshal([]byte(msg), resp)
 		if err != nil {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("bad response: %s", msg))
+			logService.Error(fid, corrId, fmt.Sprintf("bad response: %s", msg))
 
 			continue
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("check result return fail"))
+			logService.Error(fid, corrId, fmt.Sprintf("check result return fail"))
 
 			continue
 		}

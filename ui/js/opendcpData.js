@@ -432,42 +432,42 @@ var theme2 = {
     }
 };
 var cache = {
-    index:[],
+    index: [],
     page: 1,
-    tasklist:[],
-    taskCount:0,
-    machineCount:0,
-    clusterCount:0,
-    poolCount:0,
-    expandTime:0,
-    stackTime:0,
+    tasklist: [],
+    taskCount: 0,
+    machineCount: 0,
+    clusterCount: 0,
+    poolCount: 0,
+    expandTime: 0,
+    stackTime: 0,
 
 }
 
 var intervalminute = 1;//表示1分钟刷新一次整体数据
 
-$(document).ready(function() {
+$(document).ready(function () {
     getTask(1);
     changeTime(0);
     changeOpenTime(0);
-    window.setTimeout('getInstanceCount()',200);
-    window.setTimeout('getClusterCount()',300);
-    window.setTimeout('getPoolCount()',400);
-    setInterval('getTask(1)',intervalminute*60*1000);
-    setInterval('loadAllData()',intervalminute*60*1000);
-    setInterval('loadOpenStackData()',intervalminute*60*1000);
-    setInterval('getInstanceCount()',intervalminute*60*1000 + 200);
-    setInterval('getClusterCount()',intervalminute*60*1000 + 400);
-    setInterval('getPoolCount()',intervalminute*60*1000 + 600);
+    window.setTimeout('getInstanceCount()', 200);
+    window.setTimeout('getClusterCount()', 300);
+    window.setTimeout('getPoolCount()', 400);
+    setInterval('getTask(1)', intervalminute * 60 * 1000);
+    setInterval('loadAllData()', intervalminute * 60 * 1000);
+    setInterval('loadOpenStackData()', intervalminute * 60 * 1000);
+    setInterval('getInstanceCount()', intervalminute * 60 * 1000 + 200);
+    setInterval('getClusterCount()', intervalminute * 60 * 1000 + 400);
+    setInterval('getPoolCount()', intervalminute * 60 * 1000 + 600);
 });
 
-var refreshTaskCountView = function(){
+var refreshTaskCountView = function () {
     $("#taskCount").html(cache.taskCount);
 }
-var refreshMachineCountView = function(){
+var refreshMachineCountView = function () {
     $("#machineCount").html(cache.machineCount);
 }
-var refreshClusterCountView = function(){
+var refreshClusterCountView = function () {
     $("#clusterCount").html(cache.clusterCount);
 }
 var refreshPoolCountView = function () {
@@ -475,8 +475,8 @@ var refreshPoolCountView = function () {
 }
 
 var getInstanceCount = function () {
-    var url='/api/for_cloud/ecs.php?action=list';
-    var postData={'pagesize':1000};
+    var url = '/api/for_cloud/ecs.php?action=list';
+    var postData = {'pagesize': 1000};
     $.ajax({
         type: "POST",
         url: url,
@@ -484,114 +484,114 @@ var getInstanceCount = function () {
         dataType: "json",
         success: function (data) {
             NProgress.done();
-            if(data.code==0){
-                if(typeof data.content != 'undefined') {
+            if (data.code == 0) {
+                if (typeof data.content != 'undefined') {
                     cache.machineCount = data.content.length;
                     refreshMachineCountView();
                 }
             }
         },
-        error: function (){
+        error: function () {
         }
     });
 }
 
 var getClusterCount = function () {
-    var url='/api/for_layout/cluster.php?page=1';
-    var postData={"action":"list","fIdx":""};
+    var url = '/api/for_layout/cluster.php?page=1';
+    var postData = {"action": "list", "fIdx": ""};
     $.ajax({
         type: "POST",
         url: url,
         data: postData,
         dataType: "json",
         success: function (listdata) {
-            if(listdata.code==0){
+            if (listdata.code == 0) {
                 cache.clusterCount = listdata.count;
                 refreshClusterCountView();
             }
         },
-        error: function (){
+        error: function () {
         }
     });
 }
 
 var getPoolCount = function () {
-    var postData={"action":"poolList","pagesize":1000};
+    var postData = {"action": "poolList", "pagesize": 1000};
     $.ajax({
         type: "POST",
         url: '/api/for_layout/pool.php',
         data: postData,
         dataType: "json",
         success: function (data) {
-            if(data.code==0){
-                if(data.content.length>0){
+            if (data.code == 0) {
+                if (data.content.length > 0) {
                     cache.poolCount = data.count;
                     refreshPoolCountView();
                 }
             }
         },
-        error: function (){
+        error: function () {
         }
     });
 }
 
-var changeTime = function(timeUnit){
+var changeTime = function (timeUnit) {
     var timeHour = 0;
-    if(timeUnit == 0){
+    if (timeUnit == 0) {
         $("#time_unit").html('<a onclick="changeTime(0)">小时 </a><span class="caret"></span>');
         timeHour = 1;
     }
-    if(timeUnit == 1){
+    if (timeUnit == 1) {
         $("#time_unit").html('<a onclick="changeTime(1)">天 </a><span class="caret"></span>');
-        timeHour = 1*24;
+        timeHour = 1 * 24;
     }
-    if(timeUnit == 2){
+    if (timeUnit == 2) {
         $("#time_unit").html('<a onclick="changeTime(2)">周 </a><span class="caret"></span>');
-        timeHour = 1*24*7;
+        timeHour = 1 * 24 * 7;
     }
-    if(timeUnit == 3){
+    if (timeUnit == 3) {
         $("#time_unit").html('<a onclick="changeTime(3)">月 </a><span class="caret"></span>');
-        timeHour = 1*24*31;
+        timeHour = 1 * 24 * 31;
     }
-    if(timeUnit == 4){
+    if (timeUnit == 4) {
         $("#time_unit").html('<a onclick="changeTime(4)">年 </a><span class="caret"></span>');
-        timeHour = 1*24*31*365;
+        timeHour = 1 * 24 * 31 * 365;
 
     }
     var time_data = $("#time_nume").val();
-    if($.isNumeric(time_data)){
-        var time = parseInt(time_data)*timeHour;
+    if ($.isNumeric(time_data)) {
+        var time = parseInt(time_data) * timeHour;
         cache.expandTime = time;
         loadAllData();
     }
 }
 
-var changeOpenTime = function(timeUnit){
+var changeOpenTime = function (timeUnit) {
     var timeHour = 0;
-    if(timeUnit == 0){
+    if (timeUnit == 0) {
         $("#time_open_unit").html('<a onclick="changeTime(0)">小时 </a><span class="caret"></span>');
         timeHour = 1;
     }
-    if(timeUnit == 1){
+    if (timeUnit == 1) {
         $("#time_open_unit").html('<a onclick="changeTime(1)">天 </a><span class="caret"></span>');
-        timeHour = 1*24;
+        timeHour = 1 * 24;
     }
-    if(timeUnit == 2){
+    if (timeUnit == 2) {
         $("#time_open_unit").html('<a onclick="changeTime(2)">周 </a><span class="caret"></span>');
-        timeHour = 1*24*7;
+        timeHour = 1 * 24 * 7;
     }
-    if(timeUnit == 3){
+    if (timeUnit == 3) {
         $("#time_open_unit").html('<a onclick="changeTime(3)">月 </a><span class="caret"></span>');
-        timeHour = 1*24*31;
+        timeHour = 1 * 24 * 31;
     }
-    if(timeUnit == 4){
+    if (timeUnit == 4) {
         $("#time_open_unit").html('<a onclick="changeTime(4)">年 </a><span class="caret"></span>');
-        timeHour = 1*24*31*365;
+        timeHour = 1 * 24 * 31 * 365;
 
     }
     var time_data = $("#time_open_nume").val();
-    if($.isNumeric(time_data)){
-        var time = parseInt(time_data)*timeHour;
+    if ($.isNumeric(time_data)) {
+        var time = parseInt(time_data) * timeHour;
         cache.stackTime = time;
         loadOpenStackData();
     }
@@ -599,127 +599,127 @@ var changeOpenTime = function(timeUnit){
 
 var loadOpenStackData = function () {
     var time = cache.stackTime;
-    var url = '/api/for_openstack/machine.php?action=getcomputepowerbytime&time='+ time;
+    var url = '/api/for_openstack/machine.php?action=getcomputepowerbytime&time=' + time;
     $.ajax({
-        type : "post",
-        async : true,
-        url : url,
-        data : {},
-        dataType : "json",
-        success : function(result) {
+        type: "post",
+        async: true,
+        url: url,
+        data: {},
+        dataType: "json",
+        success: function (result) {
             //请求成功时执行该函数内容，result即为服务器返回的json对象
             if (result.code == 0) {
                 var line_open_data = [];
                 var line_open_time = [];
-                for(var i = 0; i < result.data.length; i++){
+                for (var i = 0; i < result.data.length; i++) {
                     var cpusCout = result.data[i].data.vcpus;
                     var memory = result.data[i].data.memory_gb;
                     var machine_count = result.data[i].data.machine_count;
                     line_open_time.push(result.data[i].create_time);
-                    if(i == 0){
+                    if (i == 0) {
                         var element = {
-                            "name":"CPU(个)",
-                            "data":[parseInt(cpusCout)]
+                            "name": "CPU(个)",
+                            "data": [parseInt(cpusCout)]
                         }
                         var element2 = {
-                            "name":"Memory(G)",
-                            "data":[parseFloat(memory)]
+                            "name": "Memory(G)",
+                            "data": [parseFloat(memory)]
                         }
                         line_open_data.push(element);
                         line_open_data.push(element2);
-                    }else{
+                    } else {
                         line_open_data[0].data.push(parseInt(cpusCout));
                         line_open_data[1].data.push(parseFloat(memory));
                     }
                 }
-                testMachineStackChart(line_open_data,line_open_time);
+                testMachineStackChart(line_open_data, line_open_time);
             }
         },
-        error : function() {
-            pageNotify('error','加载失败！','错误信息：接口不可用');
+        error: function () {
+            pageNotify('error', '加载失败！', '错误信息：接口不可用');
         }
     });
 }
 
-var loadAllData = function (){
+var loadAllData = function () {
     var time = cache.expandTime;
-    var postData = {'action':'number','hour':time};
+    var postData = {'action': 'number', 'hour': time};
     $.ajax({
-        type : "post",
-        async : true,
-        url : '/api/for_cloud/cluster.php?action=machine',
-        data : {"data":JSON.stringify(postData)},
-        dataType : "json",
-        success : function(result) {
+        type: "post",
+        async: true,
+        url: '/api/for_cloud/cluster.php?action=machine',
+        data: {"data": JSON.stringify(postData)},
+        dataType: "json",
+        success: function (result) {
             if (result.code == 0) {
                 var line_data = [];
                 var line_time = [];
                 var phydevCount = 0;
                 var lineName = [];
 
-                for(var i = 0; i < result.content.length; i++){
+                for (var i = 0; i < result.content.length; i++) {
                     var map = eval(result.content[i]);
                     $.each(map, function (k, v) {
                         var name = k + "";
                         var flag = false;
-                        for(var k = 0; k < lineName.length; k++){
-                            if(name == lineName[k]){
+                        for (var k = 0; k < lineName.length; k++) {
+                            if (name == lineName[k]) {
                                 flag = true;
                                 break;
                             }
                         }
-                        if(!flag){
+                        if (!flag) {
                             lineName.push(name);
                         }
                     });
                 }
-                for(var i = 0; i < lineName.length; i++){
-                    if(lineName[i] == "time" || lineName[i] == "phydev"){
+                for (var i = 0; i < lineName.length; i++) {
+                    if (lineName[i] == "time" || lineName[i] == "phydev") {
                         continue;
                     }
                     var theLine = {
-                        'name':lineName[i] ,
-                        'data':[]
+                        'name': lineName[i],
+                        'data': []
                     }
                     line_data.push(theLine);
                 }
 
-                for(var i = 0; i < result.content.length; i++){
+                for (var i = 0; i < result.content.length; i++) {
                     var map = eval(result.content[i]);
                     $.each(map, function (k, v) {
                         var name = k + "";
-                        if(name=="time") {
+                        if (name == "time") {
                             line_time.push(v);
                         }
-                        if(name=="phydev") {
+                        if (name == "phydev") {
                             phydevCount = parseInt(v);
                         }
                     });
                     var current_data_length = 0;
                     $.each(map, function (k, v) {
                         var name = k + "";
-                        for(var p = 0; p < line_data.length; p++){
-                            if(line_data[p].name == name){
-                                if(name == "total"){
-                                    line_data[p].data.push(parseInt(v)-phydevCount);
+                        for (var p = 0; p < line_data.length; p++) {
+                            if (line_data[p].name == name) {
+                                if (name == "total") {
+                                    line_data[p].data.push(parseInt(v) - phydevCount);
                                     current_data_length = line_data[p].data.length;
-                                }else{
+                                } else {
                                     line_data[p].data.push(parseInt(v));
                                 }
                             }
                         }
                     });
-                    for(var p = 0; p < line_data.length; p++){
-                        if(line_data[p].data.length < current_data_length){
+                    for (var p = 0; p < line_data.length; p++) {
+                        if (line_data[p].data.length < current_data_length) {
                             line_data[p].data.push(0);
                         }
                     }
                 }
-                testMachineChart(line_data,line_time);
+                testMachineChart(line_data, line_time);
             }
         },
-        error : function() {
-            pageNotify('error','加载失败！','错误信息：接口不可用');
+        error: function () {
+            pageNotify('error', '加载失败！', '错误信息：接口不可用');
         }
     });
 }
@@ -753,26 +753,26 @@ var loadAllData = function (){
 //     });
 // }
 
-var testMachineChart = function(macheineData, xaixs_time){
+var testMachineChart = function (macheineData, xaixs_time) {
     // alert(JSON.stringify(macheineData));
     var echartPie = echarts.init(document.getElementById('container'), theme2);
     echartPie.setOption({
         title: {
             text: null
         },
-        tooltip : {
+        tooltip: {
             trigger: 'axis',
         },
         legend: {
             x: 'center',
             y: 20,
-            data:(function () {
+            data: (function () {
                 // generate an array of random data
                 var data = [];
-                for(var i = 0; i < macheineData.length; i++){
-                    if(macheineData[i].name == "phydev" || macheineData[i].name == "total"){
+                for (var i = 0; i < macheineData.length; i++) {
+                    if (macheineData[i].name == "phydev" || macheineData[i].name == "total") {
                         continue;
-                    }else{
+                    } else {
                         data.push(macheineData[i].name);
                     }
                 }
@@ -782,32 +782,32 @@ var testMachineChart = function(macheineData, xaixs_time){
         toolbox: {
             show: false,
         },
-        xAxis : [
+        xAxis: [
             {
-                type : 'category',
-                boundaryGap : false,
-                data : xaixs_time
+                type: 'category',
+                boundaryGap: false,
+                data: xaixs_time
             }
         ],
-        yAxis : [
+        yAxis: [
             {
-                type : 'value'
+                type: 'value'
             }
         ],
-        series :  (function () {
+        series: (function () {
             // generate an array of random data
             var data = [];
-            for(var i = 0; i < macheineData.length; i++){
-                if(macheineData[i].name == "phydev" || macheineData[i].name == "total"){
+            for (var i = 0; i < macheineData.length; i++) {
+                if (macheineData[i].name == "phydev" || macheineData[i].name == "total") {
                     continue;
                 }
                 var line = {
-                    name:macheineData[i].name,
-                    type:'line',
+                    name: macheineData[i].name,
+                    type: 'line',
                     smooth: true,
                     stack: '总量',
                     areaStyle: {normal: {}},
-                    data:macheineData[i].data
+                    data: macheineData[i].data
                 }
                 data.push(line);
             }
@@ -816,22 +816,22 @@ var testMachineChart = function(macheineData, xaixs_time){
     });
 }
 
-var testMachineStackChart = function(macheineData, xaixs_time){
+var testMachineStackChart = function (macheineData, xaixs_time) {
     var echartPie = echarts.init(document.getElementById('container_stack'), theme2);
     echartPie.setOption({
         title: {
             text: null
         },
-        tooltip : {
+        tooltip: {
             trigger: 'axis',
         },
         legend: {
             x: 'center',
             y: 20,
-            data:(function () {
+            data: (function () {
                 // generate an array of random data
                 var data = [];
-                for(var i = 0; i < macheineData.length; i++){
+                for (var i = 0; i < macheineData.length; i++) {
                     data.push(macheineData[i].name);
                 }
                 return data;
@@ -840,29 +840,29 @@ var testMachineStackChart = function(macheineData, xaixs_time){
         toolbox: {
             show: false,
         },
-        xAxis : [
+        xAxis: [
             {
-                type : 'category',
-                boundaryGap : false,
-                data : xaixs_time
+                type: 'category',
+                boundaryGap: false,
+                data: xaixs_time
             }
         ],
-        yAxis : [
+        yAxis: [
             {
-                type : 'value'
+                type: 'value'
             }
         ],
-        series :  (function () {
+        series: (function () {
             // generate an array of random data
             var data = [];
-            for(var i = 0; i < macheineData.length; i++){
+            for (var i = 0; i < macheineData.length; i++) {
                 var line = {
-                    name:macheineData[i].name,
-                    type:'line',
+                    name: macheineData[i].name,
+                    type: 'line',
                     smooth: true,
                     stack: '总量',
                     areaStyle: {normal: {}},
-                    data:macheineData[i].data
+                    data: macheineData[i].data
                 }
                 data.push(line);
             }
@@ -894,21 +894,21 @@ var testMachineStackChart = function(macheineData, xaixs_time){
 //     });
 // }
 //获取任务列表
-var getTask=function(page){
-    var url='/api/for_layout/task.php?action=list';
+var getTask = function (page) {
+    var url = '/api/for_layout/task.php?action=list';
     if (!page) {
         page = cache.page;
-    }else{
+    } else {
         cache.page = page;
     }
-    var postData={"action":"list","page":page,"pagesize":8};
+    var postData = {"action": "list", "page": page, "pagesize": 8};
     $.ajax({
         type: "POST",
         url: url,
         data: postData,
         dataType: "json",
         success: function (listdata) {
-            if(listdata.code==0) {
+            if (listdata.code == 0) {
                 //更新最新状态
                 cache.taskCount = listdata.count;
                 refreshTaskCountView();
@@ -921,51 +921,51 @@ var getTask=function(page){
                 paginate.html("");
                 head.html("");
                 body.html("");
-                listdata.title = ["#","服务池名称","任务名称","执行中","暂停","成功","失败","总计","成功率","执行时间"];
+                listdata.title = ["#", "服务池名称", "任务名称", "执行中", "暂停", "成功", "失败", "总计", "成功率", "执行时间"];
                 processPage(listdata, pageinfo, paginate);
                 //生成列表
                 processBody(listdata, head, body);
                 NProgress.done();
-            }else{
-                pageNotify('error','加载失败！','错误信息：'+listdata.msg);
+            } else {
+                pageNotify('error', '加载失败！', '错误信息：' + listdata.msg);
                 NProgress.done();
             }
         },
-        error: function (){
-            pageNotify('error','加载失败！','错误信息：接口不可用');
+        error: function () {
+            pageNotify('error', '加载失败！', '错误信息：接口不可用');
             NProgress.done();
         }
     });
 }
 //生成分页
-var processPage = function(data,pageinfo,paginate){
+var processPage = function (data, pageinfo, paginate) {
     var begin = data.pageSize * ( data.page - 1 ) + 1;
     var end = ( data.count > begin + data.pageSize - 1 ) ? begin + data.pageSize - 1 : data.count;
-    pageinfo.html('Showing '+begin+' to '+end+' of '+data.count+' records');
-    var p1=(data.page-1>0)?data.page-1:1;
-    var p2=data.page+1;
-    prev='<li><a onclick="getTask('+p1+')"><i class="fa fa-angle-left"></i></a></li>';
+    pageinfo.html('Showing ' + begin + ' to ' + end + ' of ' + data.count + ' records');
+    var p1 = (data.page - 1 > 0) ? data.page - 1 : 1;
+    var p2 = data.page + 1;
+    prev = '<li><a onclick="getTask(' + p1 + ')"><i class="fa fa-angle-left"></i></a></li>';
     paginate.append(prev);
     for (var i = 1; i <= data.pageCount; i++) {
-        var li='';
-        if(i==data.page){
-            li='<li class="active"><a onclick="getTask('+i+')">'+i+'</a></li>';
-        }else{
-            if(i==1||i==data.pageCount){
-                li='<li><a onclick="getTask('+i+')">'+i+'</a></li>';
-            }else{
-                if(i==p1){
-                    if(p1>2){
-                        li='<li class="disabled"><a href="#">...</a></li>'+"\n"+'<li><a onclick="getTask('+i+')">'+i+'</a></li>';
-                    }else{
-                        li='<li><a onclick="getTask('+i+')">'+i+'</a></li>';
+        var li = '';
+        if (i == data.page) {
+            li = '<li class="active"><a onclick="getTask(' + i + ')">' + i + '</a></li>';
+        } else {
+            if (i == 1 || i == data.pageCount) {
+                li = '<li><a onclick="getTask(' + i + ')">' + i + '</a></li>';
+            } else {
+                if (i == p1) {
+                    if (p1 > 2) {
+                        li = '<li class="disabled"><a href="#">...</a></li>' + "\n" + '<li><a onclick="getTask(' + i + ')">' + i + '</a></li>';
+                    } else {
+                        li = '<li><a onclick="getTask(' + i + ')">' + i + '</a></li>';
                     }
-                }else{
-                    if(i==p2){
-                        if(p2<data.pageCount-1){
-                            li='<li><a onclick="getTask('+i+')">'+i+'</a></li>'+"\n"+'<li class="disabled"><a href="#">...</a></li>';
-                        }else{
-                            li='<li><a onclick="getTask('+i+')">'+i+'</a></li>';
+                } else {
+                    if (i == p2) {
+                        if (p2 < data.pageCount - 1) {
+                            li = '<li><a onclick="getTask(' + i + ')">' + i + '</a></li>' + "\n" + '<li class="disabled"><a href="#">...</a></li>';
+                        } else {
+                            li = '<li><a onclick="getTask(' + i + ')">' + i + '</a></li>';
                         }
                     }
                 }
@@ -973,14 +973,14 @@ var processPage = function(data,pageinfo,paginate){
         }
         paginate.append(li);
     }
-    if(p2>data.pageCount) p2=data.pageCount;
-    next='<li class="next"><a title="Next" onclick="getTask('+p2+')"><i class="fa fa-angle-right"></i></a></li>';
+    if (p2 > data.pageCount) p2 = data.pageCount;
+    next = '<li class="next"><a title="Next" onclick="getTask(' + p2 + ')"><i class="fa fa-angle-right"></i></a></li>';
     paginate.append(next);
 }
 //生成列表
-var processBody = function(data,head,body){
-    var td="";
-    if(data.title){
+var processBody = function (data, head, body) {
+    var td = "";
+    if (data.title) {
         var tr = $('<tr></tr>');
         for (var i = 0; i < data.title.length; i++) {
             var v = data.title[i];
@@ -989,8 +989,8 @@ var processBody = function(data,head,body){
         }
         head.html(tr);
     }
-    if(data.content){
-        if(data.content.length>0){
+    if (data.content) {
+        if (data.content.length > 0) {
             for (var i = 0; i < data.content.length; i++) {
                 var v = data.content[i];
                 var tr = $('<tr></tr>');
@@ -1008,7 +1008,7 @@ var processBody = function(data,head,body){
                 var success = v.Stat[2];
                 var failed = v.Stat[3];
                 var stoped = v.Stat[4];
-                var count = v.Stat[0]+v.Stat[1]+v.Stat[2]+v.Stat[3]+v.Stat[4];
+                var count = v.Stat[0] + v.Stat[1] + v.Stat[2] + v.Stat[3] + v.Stat[4];
                 td = '<td><span class="label label-info">' + running + '</span></td>';
                 tr.append(td);
                 td = '<td><span class="label label-warning">' + stoped + '</span></td>';
@@ -1020,24 +1020,22 @@ var processBody = function(data,head,body){
                 td = '<td><span class="label label-default">' + count + '</span></td>';
                 tr.append(td);
                 var rate = 0.0;
-                if(success + failed != 0){
-                    rate = success * 100.0 / (success + failed)*1.0;
+                if (success + failed != 0) {
+                    rate = success * 100.0 / (success + failed) * 1.0;
                 }
-                var tmp=rate.toString().substr(0,5);
+                var tmp = rate.toString().substr(0, 5);
                 td = '<td><span class="label label-success">' + tmp + '%</span></td>';
                 tr.append(td);
-
-                var beginSec = (typeof(v.created)!='undefined') ? Date.parse(v.created) : 0;
-                var endSec = (typeof(v.updated)!='undefined') ? ((v.updated!='0000-00-00 00:00:00') ? Date.parse(v.updated) : new Date().getTime()) : new Date().getTime();
-                var timeLen=(beginSec>0)?Math.ceil((endSec-beginSec)/1000)+'秒':'-';
+                var runTime = (typeof(v.runTime) != 'undefined') ? v.runTime : 0;
+                var timeLen = (runTime > 0) ? Math.ceil(runTime) + '秒' : '-';
                 td = '<td>' + timeLen + '</td>';
                 tr.append(td);
                 body.append(tr);
             }
-        }else{
-            pageNotify('info','Warning','数据为空！');
+        } else {
+            pageNotify('info', 'Warning', '数据为空！');
         }
-    }else{
-        pageNotify('warning','error','接口异常！');
+    } else {
+        pageNotify('warning', 'error', '接口异常！');
     }
 }

@@ -34,7 +34,7 @@ require_once('include/navbar.php');
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title><?php echo $mySiteTitle;?></title>
+    <title><?php echo $mySiteTitle; ?></title>
 
     <!-- Bootstrap -->
     <link href="gentelella/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -49,7 +49,7 @@ require_once('include/navbar.php');
     <link href="gentelella/vendors/pnotify/dist/pnotify.buttons.css" rel="stylesheet">
     <link href="gentelella/vendors/pnotify/dist/pnotify.nonblock.css" rel="stylesheet">
     <!-- pagewalkthrough -->
-    <link href="gentelella/vendors/pagewalkthrough/dist/css/jquery.pagewalkthrough.css" rel="stylesheet" />
+    <link href="gentelella/vendors/pagewalkthrough/dist/css/jquery.pagewalkthrough.css" rel="stylesheet"/>
 
     <!-- Custom Theme Style -->
     <link href="gentelella/build/css/custom.min.css" rel="stylesheet">
@@ -62,7 +62,7 @@ require_once('include/navbar.php');
         <div class="col-md-3 left_col">
             <div class="left_col scroll-view">
                 <div class="navbar nav_title" style="border: 0;background-color: #FB5557;">
-                    <a href="./" class="site_title"><i class="fa fa-cloud"></i> <span><?php echo $mySiteAlias;?></span></a>
+                    <a href="./" class="site_title"><i class="fa fa-cloud"></i> <span><?php echo $mySiteAlias; ?></span></a>
                 </div>
 
                 <div class="clearfix"></div>
@@ -79,7 +79,7 @@ require_once('include/navbar.php');
                                 </ul>
 
                             </li>
-                            <?php echo $navLeft;?>
+                            <?php echo $navLeft; ?>
                         </ul>
                     </div>
 
@@ -103,8 +103,9 @@ require_once('include/navbar.php');
 
                     <ul class="nav navbar-nav navbar-right">
                         <li class="">
-                            <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <?php echo $myCn;?>
+                            <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown"
+                               aria-expanded="false">
+                                <?php echo $myCn; ?>
                                 <span class=" fa fa-angle-down"></span>
                             </a>
                             <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -126,28 +127,28 @@ require_once('include/navbar.php');
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-database"></i></div>
-                            <div id = "clusterCount" class="count">0</div>
+                            <div id="clusterCount" class="count">0</div>
                             <h3>Cluster Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-laptop"></i></div>
-                            <div id = "machineCount" class="count">0</div>
+                            <div id="machineCount" class="count">0</div>
                             <h3>Machine Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-cubes"></i></div>
-                            <div id = "poolCount" class="count">0</div>
+                            <div id="poolCount" class="count">0</div>
                             <h3>Pool Count</h3>
                         </div>
                     </div>
                     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
                         <div class="tile-stats">
                             <div class="icon"><i class="fa fa-tasks"></i></div>
-                            <div id = "taskCount" class="count">0</div>
+                            <div id="taskCount" class="count">0</div>
                             <h3>Schedual Task</h3>
                         </div>
                     </div>
@@ -158,12 +159,15 @@ require_once('include/navbar.php');
                     <div class="col-md-6 col-sm-6 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>弹性扩容<small>机器数量</small></h2>
+                                <h2>弹性扩容
+                                    <small>机器数量</small>
+                                </h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
                                     <li class="dropdown">
-                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                           aria-expanded="false"><i class="fa fa-wrench"></i></a>
                                         <ul class="dropdown-menu" role="menu">
                                             <li><a href="#">Settings</a></li>
                                         </ul>
@@ -176,9 +180,12 @@ require_once('include/navbar.php');
                             <div class="x_content">
                                 <div class="col-sm-4 navbar-right" style="padding-right:0px;">
                                     <div class="input-group">
-                                        <input type="name" id="time_nume" class="form-control" placeholder="输入时间" value = "1">
+                                        <input type="name" id="time_nume" class="form-control" placeholder="输入时间"
+                                               value="1">
                                         <span class="input-group-btn dropdown">
-                                            <button id="time_unit" data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button" aria-expanded="false">
+                                            <button id="time_unit" data-toggle="dropdown"
+                                                    class="btn btn-default dropdown-toggle" type="button"
+                                                    aria-expanded="false">
                                                 <a onclick="changeTime(0)">小时 </a><span class="caret"></span>
                                             </button>
                                             <ul role="menu" class="dropdown-menu col-sm-3 navbar-right">
@@ -193,7 +200,8 @@ require_once('include/navbar.php');
                                 </div>
                             </div>
                             <div class="x_content" style="margin-top: -30px;">
-                                <div id="container" style="height:310px; margin-right: -50px; margin-bottom: -35px;"></div>
+                                <div id="container"
+                                     style="height:310px; margin-right: -50px; margin-bottom: -35px;"></div>
                             </div>
                         </div>
                     </div>
@@ -201,12 +209,15 @@ require_once('include/navbar.php');
                     <div class="col-md-6 col-sm-6 col-xs-12">
                         <div class="x_panel">
                             <div class="x_title">
-                                <h2>虚拟化<small>机器详情</small></h2>
+                                <h2>虚拟化
+                                    <small>机器详情</small>
+                                </h2>
                                 <ul class="nav navbar-right panel_toolbox">
                                     <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                     </li>
                                     <li class="dropdown">
-                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                           aria-expanded="false"><i class="fa fa-wrench"></i></a>
                                         <ul class="dropdown-menu" role="menu">
                                             <li><a href="#">Settings 1</a>
                                             </li>
@@ -222,9 +233,12 @@ require_once('include/navbar.php');
                             <div class="x_content">
                                 <div class="col-sm-4 navbar-right" style="padding-right:0px;">
                                     <div class="input-group">
-                                        <input type="name" id="time_open_nume" class="form-control" placeholder="输入时间" value = "1">
+                                        <input type="name" id="time_open_nume" class="form-control" placeholder="输入时间"
+                                               value="1">
                                         <span class="input-group-btn dropdown">
-                                            <button id="time_open_unit" data-toggle="dropdown" class="btn btn-default dropdown-toggle" type="button" aria-expanded="false">
+                                            <button id="time_open_unit" data-toggle="dropdown"
+                                                    class="btn btn-default dropdown-toggle" type="button"
+                                                    aria-expanded="false">
                                                 <a onclick="changeOpenTime(0)">小时 </a><span class="caret"></span>
                                             </button>
                                             <ul role="menu" class="dropdown-menu col-sm-3 navbar-right">
@@ -239,59 +253,69 @@ require_once('include/navbar.php');
                                 </div>
                             </div>
                             <div class="x_content" style="margin-top: -30px">
-                                <div id="container_stack" style="height:310px; margin-right: -50px;margin-bottom: -35px;""></div>
+                                <div id="container_stack"
+                                     style="height:310px; margin-right: -50px;margin-bottom: -35px;"
+                                ">
                             </div>
                         </div>
                     </div>
-
                 </div>
-                <div class="clearfix"></div>
-                <div class="row">
-                    <div class="col-md-12 col-sm-12 col-xs-12">
-                        <div class="x_panel">
-                            <div class="x_title">
-                                <h2>任务信息</h2>
-                                <ul class="nav navbar-right panel_toolbox">
-                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                                    </li>
-                                    <li class="dropdown">
-                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li><a href="#">Settings 1</a>
+
+            </div>
+            <div class="clearfix"></div>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>任务信息</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                       aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="#">Settings 1</a>
+                                        </li>
+                                        <li><a href="#">Settings 2</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead id="table-head">
+                                <tr></tr>
+                                </thead>
+                                <tbody id="table-body">
+                                </tbody>
+                            </table>
+                            <div class="row">
+                                <div class="col-md-5 col-sm-5">
+                                    <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">
+                                        Showing 1 to 0 of 0 entries
+                                    </div>
+                                </div>
+                                <div class="col-md-7 col-sm-7">
+                                    <div class="dataTables_paginate paging_bootstrap_full_number"
+                                         id="sample_1_paginate">
+                                        <ul class="pagination"
+                                            style="visibility: visible;margin-top: 0px;margin-bottom: 0px;"
+                                            id="table-paginate">
+                                            <li><a href="javascript:;" onclick="getTask(1)"><i
+                                                            class="fa fa-angle-left"></i></a></li>
+                                            <li class="active">
+                                                <a href="javascript:;" onclick="getTask(1)">1</a>
                                             </li>
-                                            <li><a href="#">Settings 2</a>
+                                            <li class="next">
+                                                <a href="javascript:;" title="Next" onclick="getTask(1)"><i
+                                                            class="fa fa-angle-right"></i></a>
                                             </li>
                                         </ul>
-                                    </li>
-                                    <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                    </li>
-                                </ul>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content">
-                                <table id="datatable" class="table table-striped table-bordered">
-                                    <thead id = "table-head">
-                                    <tr></tr>
-                                    </thead>
-                                    <tbody id = "table-body">
-                                    </tbody>
-                                </table>
-                                <div class="row">
-                                    <div class="col-md-5 col-sm-5">
-                                        <div class="dataTables_info" id="table-pageinfo" role="status" aria-live="polite">Showing 1 to 0 of 0 entries</div>
-                                    </div>
-                                    <div class="col-md-7 col-sm-7">
-                                        <div class="dataTables_paginate paging_bootstrap_full_number" id="sample_1_paginate">
-                                            <ul class="pagination" style="visibility: visible;margin-top: 0px;margin-bottom: 0px;" id="table-paginate">
-                                                <li><a href="javascript:;" onclick="getTask(1)"><i class="fa fa-angle-left"></i></a></li>
-                                                <li class="active">
-                                                    <a href="javascript:;" onclick="getTask(1)">1</a>
-                                                </li>
-                                                <li class="next">
-                                                    <a href="javascript:;" title="Next" onclick="getTask(1)"><i class="fa fa-angle-right"></i></a>
-                                                </li>
-                                            </ul>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -299,14 +323,15 @@ require_once('include/navbar.php');
                     </div>
                 </div>
             </div>
-            <div class="clearfix"></div>
         </div>
-        <!-- /page content -->
-
-        <!-- footer content -->
-        <?php echo $myFooter;?>
-        <!-- /footer content -->
+        <div class="clearfix"></div>
     </div>
+    <!-- /page content -->
+
+    <!-- footer content -->
+    <?php echo $myFooter; ?>
+    <!-- /footer content -->
+</div>
 </div>
 
 <div id="custom_notifications" class="custom-notifications dsp_none">
@@ -325,7 +350,8 @@ require_once('include/navbar.php');
         <p style="text-align: left;"><span style="color: orange;">第三步:</span> 服务发现 &gt;&gt; 配置服务注册类型</p>
         <p style="text-align: left;"><span style="color: orange;">第四步:</span> 服务编排 &gt;&gt; 创建集群、服务、服务池</p>
 
-        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;" onclick="closePagewalkthrough()">点击不再显示</a></p>
+        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;"
+                                                      onclick="closePagewalkthrough()">点击不再显示</a></p>
     </div>
 
     <div id="walkthrough-2">
@@ -333,7 +359,8 @@ require_once('include/navbar.php');
         <p style="text-align: left;"><span style="color: orange;">第一步:</span> 机型模板 &gt;&gt; 创建新模板, 并设置配额</p>
         <p style="text-align: left;"><span style="color: orange;">第二步:</span> 机器管理 &gt;&gt; 创建一台机器</p>
 
-        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;" onclick="closePagewalkthrough()">点击不再显示</a></p>
+        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;"
+                                                      onclick="closePagewalkthrough()">点击不再显示</a></p>
     </div>
 
     <div id="walkthrough-3">
@@ -341,7 +368,8 @@ require_once('include/navbar.php');
         <p style="text-align: left;"><span style="color: orange;">第一步:</span> 打包系统 &gt;&gt; 创建打包配置, 并构建镜像</p>
         <p style="text-align: left;"><span style="color: orange;">第二步:</span> 镜像仓库 &gt;&gt; 查看新构建的镜像</p>
 
-        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;" onclick="closePagewalkthrough()">点击不再显示</a></p>
+        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;"
+                                                      onclick="closePagewalkthrough()">点击不再显示</a></p>
     </div>
 
     <div id="walkthrough-4">
@@ -351,7 +379,8 @@ require_once('include/navbar.php');
         <p style="text-align: left;"><span style="color: orange;">第三步:</span> 任务管理 &gt;&gt; 创建任务模板(步骤=命令组)</p>
         <p style="text-align: left;"><span style="color: orange;">第四步:</span> 服务管理 &gt;&gt; 依次创建服务、服务池</p>
 
-        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;" onclick="closePagewalkthrough()">点击不再显示</a></p>
+        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;"
+                                                      onclick="closePagewalkthrough()">点击不再显示</a></p>
     </div>
 
     <div id="walkthrough-5">
@@ -364,7 +393,8 @@ require_once('include/navbar.php');
         <p style="text-align: left;"><span style="color: orange;">第六步:</span> 若使用Nginx &gt;&gt; 创建或导入Nginx主配置</p>
         <p style="text-align: left;"><span style="color: orange;">第七步:</span> 服务注册 &gt;&gt; 创建服务注册</p>
 
-        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;" onclick="closePagewalkthrough()">点击不再显示</a></p>
+        <p style="font-size: 16px;">首次使用建议完整观看此引导, <a style="color: yellow;font-size: 16px;" href="javascript:;"
+                                                      onclick="closePagewalkthrough()">点击不再显示</a></p>
     </div>
 
     <div id="walkthrough-6">
@@ -418,11 +448,7 @@ require_once('include/navbar.php');
 <!-- ECharts -->
 <script src="gentelella/vendors/echarts/dist/echarts.min.js"></script>
 <script src="gentelella/vendors/echarts/map/js/world.js"></script>
-<!-- highCharts -->
-<!--<script src="highcharts/highcharts.js"></script>-->
-<!--<script src="highcharts/exporting.js"></script>-->
-<!--<script src="highcharts/data.js"></script>-->
-<!--<script src="js/vintage.js"></script>-->
+
 <!-- cookie -->
 <script type="text/javascript" src="gentelella/vendors/jquery.cookie/jquery.cookie.js"></script>
 <!-- Page walkthrough -->
@@ -433,8 +459,8 @@ require_once('include/navbar.php');
 <!-- page level -->
 <script src="js/pnotify.js"></script>
 <script src="js/login.js"></script>
-<script src="js/pagewalkthrough.js?_t=<?php echo date('U');?>"></script>
-<script src="js/opendcpData.js?_t=<?php echo date('U');?>"></script>
+<script src="js/pagewalkthrough.js?_t=<?php echo date('U'); ?>"></script>
+<script src="js/opendcpData.js?_t=<?php echo date('U'); ?>"></script>
 <!-- Custom Notification -->
 
 <!-- /Custom Notification -->

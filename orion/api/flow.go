@@ -48,6 +48,7 @@ type flow_struct struct {
 	Options     []*StepOption `json:"options"`
 	StepLen     int           `json:"step_len"`
 	OpUser      string        `json:"opr_user"`
+	RunTime     float64       `json:"runTime"`
 	CreatedTime time.Time     `json:"created"`
 	UpdatedTime time.Time     `json:"updated"`
 	Stat        []int         `json:"stat`
@@ -60,6 +61,7 @@ type node_state struct {
 	Steps    string    `json:"steps"`
 	PoolName string    `json:"pool_name"`
 	VmId     string    `json:"vm_id"`
+	RunTime  float64   `json:"runTime"`
 	Created  time.Time `josn:"created"`
 	Updated  time.Time `josn:""`
 }
@@ -661,6 +663,7 @@ func (f *FlowApi) popFlowStruct(obj *Flow, flowstru *flow_struct) {
 	json.Unmarshal([]byte(obj.Options), &flowstru.Options)
 	flowstru.StepLen = obj.StepLen
 	flowstru.OpUser = obj.OpUser
+	flowstru.RunTime = obj.RunTime
 	flowstru.CreatedTime = obj.CreatedTime
 	flowstru.UpdatedTime = obj.UpdatedTime
 	flowstru.TplId = obj.Impl.Id
@@ -694,6 +697,7 @@ func (f *FlowApi) popNodeStruct(obj *NodeState, state *node_state) {
 	state.VmId = obj.VmId
 	state.Status = obj.Status
 	state.Steps = obj.Steps
+	state.RunTime = obj.RunTime
 	state.Created = obj.CreatedTime
 	state.Updated = obj.UpdatedTime
 	if obj.Pool != nil {

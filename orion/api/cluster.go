@@ -687,7 +687,7 @@ func (c *ClusterApi) NodeDelete() {
 		err := service.Cluster.DeleteBase(&models.Node{Id: id})
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
-			c.ReturnFailed("error when delete id: " + strconv.Itoa(id) + ", err:" + err.Error(), 400)
+			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
 			return
 		}
 	}
@@ -727,13 +727,13 @@ func (c *ClusterApi) AllPoolList() {
 	}
 	for _, fi := range poolList {
 		temp_pool := pool_struct{
-			Id : fi.Id,
-			Name : fi.Name,
-			Desc : fi.Desc,
-			VmType : fi.VmType,
-			SdId : fi.SdId,
-			ServiceId : fi.Service.Id,
-			Nodecount : 0,
+			Id:        fi.Id,
+			Name:      fi.Name,
+			Desc:      fi.Desc,
+			VmType:    fi.VmType,
+			SdId:      fi.SdId,
+			ServiceId: fi.Service.Id,
+			Nodecount: 0,
 		}
 		flag := true
 		for _, task := range taskList {
