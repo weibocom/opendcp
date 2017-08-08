@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	CODE_INIT = iota
+	CODE_INIT    = iota
 	CODE_RUNNING
 	CODE_SUCCESS
 	CODE_ERROR

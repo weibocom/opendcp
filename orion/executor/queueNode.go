@@ -77,7 +77,7 @@ func (q *QueueNode) safeRun(runNode ToRunNodeState) {
 
 // Submit submits new job into queue of this worker, and return error
 // if the queue if full.
-func (q *QueueNode) Submit(runNode ToRunNodeState)  {
+func (q *QueueNode) Submit(runNode ToRunNodeState) {
 	select {
 	case q.workNodeQueue <- runNode:
 		beego.Info("WorkerNodeState[", runNode.nodeState.Id, "] got new job")

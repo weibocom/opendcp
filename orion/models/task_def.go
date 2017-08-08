@@ -33,7 +33,7 @@ type StepOption struct {
 }
 
 type StepRunTime struct {
-	Name   string       `json:"name"`
+	Name    string       `json:"name"`
 	RunTime float64      `json:"runTime:"`
 }
 

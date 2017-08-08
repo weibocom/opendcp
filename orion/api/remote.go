@@ -389,7 +389,7 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 	err = service.Remote.GetBase(act)
 	if err != nil {
 		c.ReturnFailed("action "+
-			strconv.Itoa(req.ActionId)+" not found", 400)
+			strconv.Itoa(req.ActionId)+ " not found", 400)
 	}
 
 	// check if an action impl already exists
@@ -401,7 +401,7 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 	err = service.Remote.GetByMultiFieldValue(old, conditions)
 	if err == nil {
 		c.ReturnFailed("action impl already exists for action "+
-			strconv.Itoa(req.ActionId)+"["+req.Type+"]", 400)
+			strconv.Itoa(req.ActionId)+ "["+ req.Type+ "]", 400)
 	}
 
 	//if !utils.GetValidateUtil().ValidateString(string(templatestr)) {

@@ -70,7 +70,7 @@ type sdChkResp struct {
 	Code    int
 	Message string `json:"msg"`
 	Content struct {
-		State  int
+		State int
 		Detail []struct {
 			Ip    string
 			State int
@@ -96,8 +96,6 @@ func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
 				SV_ID: "Integer",
 			},
 		},
-
-
 
 
 	}
@@ -149,7 +147,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 	sv, err := utils.ToInt(svVal)
 
 	if err != nil {
-		logService.Error(fid,corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
+		logService.Error(fid, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
 
 		return Err("Bad servicd_id")
 	}
