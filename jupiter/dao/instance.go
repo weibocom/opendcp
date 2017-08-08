@@ -209,3 +209,36 @@ func UpdateSshKey(instanceId string, publicKey string, privateKey string) error 
 	_, err = o.Update(ins)
 	return err
 }
+
+func GetAllRunningInstance () (instances []models.Instance,err error) {
+	o := GetOrmer()
+	_,err = o.QueryTable(INSTANCE_TABLE).Exclude("status", models.Deleted).All(&instances)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
+
+func GetAllInstanceByClusterId(clusterId int64) (instances []models.Instance, err error) {
+	o := GetOrmer()
+	_, err = o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("cluster", clusterId).Exclude("status", models.Deleted).
+		All(&instances)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
+
+func GetInstancesByProvider(provider string) ([]models.Instance, error) {
+	o := GetOrmer()
+	var instances []models.Instance
+	_, err := o.QueryTable(INSTANCE_TABLE).Filter("provider", provider).Exclude("status", models.Deleted).All(&instances)
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}

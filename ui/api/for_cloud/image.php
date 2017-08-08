@@ -30,7 +30,7 @@ class myself{
   private $module = 'instance';
   private $sub_module = 'image';
 
-  function getList($myUser = '', $type='aliyun', $param = array(), $id=''){
+  function getList($myUser = '', $type='', $param = array(), $id=''){
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
     if($strList = $thisClass->get($myUser, $this->module.'/'.$this->sub_module.'/'.$type, 'GET', $param ,$id)){
