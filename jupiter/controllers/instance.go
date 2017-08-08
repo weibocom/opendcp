@@ -10,10 +10,13 @@ import (
 	"weibo.com/opendcp/jupiter/ssh"
 
 	"github.com/astaxie/beego"
+	"time"
 	"weibo.com/opendcp/jupiter/conf"
+	"weibo.com/opendcp/jupiter/logstore"
 	_ "weibo.com/opendcp/jupiter/provider/aliyun"
 	_ "weibo.com/opendcp/jupiter/provider/aws"
 	_ "weibo.com/opendcp/jupiter/provider/openstack"
+	"weibo.com/opendcp/jupiter/service/cluster"
 )
 
 const DEFAULT_CPU = 1
@@ -29,9 +32,9 @@ type AppendPhyDevRequest struct {
 }
 
 type AppendPhyDevResponse struct {
-	Success int                `json:"success"`
-	Failed  int                `json:"failed"`
-	Errors  []string        `json:"errors"`
+	Success int      `json:"success"`
+	Failed  int      `json:"failed"`
+	Errors  []string `json:"errors"`
 }
 
 // @Title create instance
@@ -159,6 +162,14 @@ func (ic *InstanceController) DeleteMulti() {
 	for i := 0; i < len(instanceIdsArray); i++ {
 		go instance.DeleteOne(instanceIdsArray[i], correlationId)
 	}
+	go func() {
+		time.Sleep(time.Second * 10)
+		cluster.UpdateInstanceDetail()
+		time.Sleep(time.Minute)
+		cluster.UpdateInstanceDetail()
+		time.Sleep(time.Minute * 2)
+		cluster.UpdateInstanceDetail()
+	}()
 	resp := ApiResponse{}
 	ic.ApiResponse = resp
 	ic.Status = SERVICE_SUCCESS
@@ -576,6 +587,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		ins.PublicIpAddress = info.PublicIp
 		ins.PrivateIpAddress = info.PrivateIp
 
+		logstore.Info(correlationId, ins.InstanceId, "1. Insert the instance into db")
 		ins, err = instance.InputPhyDev(ins)
 
 		if err != nil {
@@ -584,16 +596,19 @@ func (ic *InstanceController) ManagePhyDev() {
 		} else {
 			successCount++
 			// asynchronous manage
-			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId)
+			logstore.Info(correlationId, ins.InstanceId, "Insert the instance into db successfully")
+			logstore.Info(correlationId, ins.InstanceId, "2. Begin to execute init operation in the instance")
+			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId, info.Port)
 		}
 	}
+	go cluster.UpdateInstanceDetail()
 
 	// 3. response
 	resp := ApiResponse{}
 	resp.Content = AppendPhyDevResponse{
-		Success:successCount,
-		Failed: failedCount,
-		Errors: errList,
+		Success: successCount,
+		Failed:  failedCount,
+		Errors:  errList,
 	}
 	ic.ApiResponse = resp
 	if failedCount == 0 {
@@ -617,7 +632,7 @@ func (ic *InstanceController) ChangeOpenStackConf() {
 		return
 	}
 	err = instance.ChangeOpenStackConf(&OpConf)
-	if err != nil{
+	if err != nil {
 		beego.Error("Could not change hosts: ", err)
 		ic.RespInputError()
 		return

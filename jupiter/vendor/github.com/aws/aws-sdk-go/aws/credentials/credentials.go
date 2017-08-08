@@ -153,7 +153,7 @@ func (e *Expiry) IsExpired() bool {
 // first instance of the credentials Value. All calls to Get() after that
 // will return the cached credentials Value until IsExpired() returns true.
 type Credentials struct {
-	creds        Value
+	Creds        Value
 	forceRefresh bool
 	m            sync.Mutex
 
@@ -186,11 +186,11 @@ func (c *Credentials) Get() (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
-		c.creds = creds
+		c.Creds = creds
 		c.forceRefresh = false
 	}
 
-	return c.creds, nil
+	return c.Creds, nil
 }
 
 // Expire expires the credentials and forces them to be retrieved on the
