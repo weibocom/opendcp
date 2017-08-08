@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	STATUS_INIT = iota
+	STATUS_INIT    = iota
 	STATUS_RUNNING
 	STATUS_SUCCESS
 	STATUS_FAILED
@@ -113,7 +113,6 @@ type Flow struct {
 	RunTime     float64   `json:"run_time" orm:"default(0.0)"`
 	CreatedTime time.Time `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time `json:"updated" orm:"auto_now_add;type(datetime)"`
-
 }
 
 //type FlowBatch struct {
@@ -128,20 +127,20 @@ type Flow struct {
 
 // Hold the status of one vm node
 type NodeState struct {
-	Id          int        `json:"id" orm:"pk;auto"`
-	Ip          string     `json:"ip"`
-	VmId        string     `json:"vm_id"`
-	CorrId      string     `json:"corr_id" orm:"null"` // Correlation ID
-	Node        *Node      `json:"-" orm:"rel(fk);null;on_delete(set_null)"`
-	Pool        *Pool      `json:"-" orm:"rel(fk)"`
-	Flow        *Flow      `json:"-" orm:"rel(fk);on_delete(cascade)"`
+	Id     int        `json:"id" orm:"pk;auto"`
+	Ip     string     `json:"ip"`
+	VmId   string     `json:"vm_id"`
+	CorrId string     `json:"corr_id" orm:"null"` // Correlation ID
+	Node   *Node      `json:"-" orm:"rel(fk);null;on_delete(set_null)"`
+	Pool   *Pool      `json:"-" orm:"rel(fk)"`
+	Flow   *Flow      `json:"-" orm:"rel(fk);on_delete(cascade)"`
 	//Batch       *FlowBatch `json:"-" orm:"rel(fk);null;"`
 	Status      int        `json:"state"`
 	Steps       string     `json:"steps" orm:"type(text)"`
 	StepNum     int        `json:"step_num"`
 	Log         string     `json:"log" orm:"type(text)"`
 	LastOp      string     `json:"last_op"`
-	StepRunTime  string    `json:"step_run_time" orm:"type(text)"`
+	StepRunTime string    `json:"step_run_time" orm:"type(text)"`
 	RunTime     float64   `json:"run_time" orm:"default(0.0)"`
 	CreatedTime time.Time  `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time  `json:"updated" orm:"auto_now_add;type(datetime)"`

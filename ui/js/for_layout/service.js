@@ -552,262 +552,151 @@ var twiceCheck = function (action, idx, desc, ipidx) {
         pageNotify('error', '非法请求！', '错误信息：参数错误');
 
     } else {
-
-    }
-
-$('#myModalLabel').html(modalTitle);
-$('#myModalBody').html(modalBody);
-if (notice != '') {
-    $('#modalNotice').html(notice);
-    $('#btnCommit').attr('disabled', true);
-} else {
-    $('#btnCommit').attr('disabled', btnDisable);
-}
-NProgress.done();
-}
-
-var getList = function (type, idx) {
-    if (!type) type = 'cluster';
-    var url = '/api/for_layout/' + type + '.php?action=list';
-    var postData = {'pagesize': 1000};
-    $('#tab').val('service');
-    var actionDesc = '';
-    switch (type) {
-        case 'cluster':
-            actionDesc = '集群';
-            //分别将任务模板列表、服务发现列表、机型模板列表放入缓存
-            getTaskTpl();
-            getHubbleBalance();
-            getCloudCluster();
-            break;
-        case 'service':
-            var fClusterId = $('#fClusterId').val();
-            if (!fClusterId) {
-                pageNotify('warning', '集群数据为空！', '请先[<a class="tooltips text-danger" title="点击跳转" href="../../for_layout/cluster.php">创建集群</a>]！');
-                $('#table-head').html('<tr><td>集群数据为空！请先[<a class="tooltips text-danger" title="点击跳转" href="../../for_layout/cluster.php">创建集群</a>]！</td></tr>');
-                $('#table-body').html('');
-                $('#fClusterId').parent().parent().attr('hidden', true);
-                $('#fService').parent().parent().attr('hidden', false);
-                $('#fService').empty().append('<option value="">全部服务</option>').select2({width: '100%'});
-                cache.service_id = '';
-                cache.pool_id = '';
-                $('#fPool').parent().parent().attr('hidden', true);
-                return;
-            }
-            postData.fClusterId = fClusterId;
-            $('#tab').val('pool');
-            actionDesc = '服务';
-            getTaskTpl();
-            getHubbleBalance();
-            getCloudCluster();
-            break;
-        case 'pool':
-            var fService = $('#fService').val();
-            if (!fService) {
-                if (cache.service.length > 0) {
-                    if (cache.cluster_id == cache.service[0].cluster_id) fService = cache.service[0].id;
+        switch (tab) {
+            case 'service':
+                switch (action) {
+                    case 'del':
+                        modalTitle = '删除服务';
+                        modalBody = modalBody + '<div class="form-group col-sm-12">';
+                        modalBody = modalBody + '<div class="note note-danger">';
+                        modalBody = modalBody + '<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> 服务 : ' + idx + '<br>服务名称 : ' + desc;
+                        modalBody = modalBody + '</div>';
+                        modalBody = modalBody + '</div>';
+                        modalBody = modalBody + '<input type="hidden" id="id" name="id" value="' + idx + '">';
+                        modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="delete">';
+                        break;
+                    default:
+                        modalTitle = '非法请求';
+                        notice = '<div class="note note-danger">错误信息：参数错误</div>';
+                        pageNotify('error', '非法请求！', '错误信息：参数错误');
+                        break;
                 }
-            }
-            if (!fService) {
-                pageNotify('warning', '服务数据为空！', '请先[<a class="tooltips text-danger" title="点击跳转" href="../../for_layout/service.php">创建服务</a>]！');
-                $('#table-head').html('<tr><td>服务数据为空！请先[<a class="tooltips text-danger" title="点击跳转" href="../../for_layout/service.php">创建服务</a>]！</td></tr>');
-                $('#table-body').html('');
-                $('#fClusterId').parent().parent().attr('hidden', true);
-                $('#fService').parent().parent().attr('hidden', true);
-                $('#fPool').parent().parent().attr('hidden', false);
-                $('#fPool').empty().append('<option value="">全部服务池</option>').select2({width: '100%'});
-                cache.pool_id = '';
-                return;
-            }
-            postData.fService = fService;
-            $('#tab').val('node');
-            actionDesc = '服务池';
-            break;
-    }
-    NProgress.start();
-    $.ajax({
-        type: "POST",
-        url: url,
-        data: postData,
-        dataType: "json",
-        success: function (data) {
-            NProgress.done();
-            if (data.code == 0) {
-                if (data.content.length > 0) {
-                    switch (type) {
-                        case 'cluster':
-                            cache.cluster = data.content;
-                            if (!idx) idx = cache.cluster_id;
-                            updateSelect('fClusterId', idx);
-                            break;
-                        case 'service':
-                            cache.service = data.content;
-                            if (!idx) idx = cache.service_id;
-                            updateSelect('fService', idx);
-                            break;
-                        case 'pool':
-                            cache.pool = data.content;
-                            if (!idx) idx = cache.pool_id;
-                            updateSelect('fPool', idx);
-                            break;
-                    }
-                } else {
-                    switch (type) {
-                        case 'cluster':
-                            pageNotify('warning', '获取' + actionDesc + '成功！', '数据为空！请先[<a class="tooltips text-danger" title="点击跳转" href="../../for_layout/cluster.php">创建' + actionDesc + '</a>]！', false);
-                            $('#table-head').html('<tr><td>' + actionDesc + '数据为空！请先[<a class="tooltips text-danger" title="点击跳转" href="../../for_layout/cluster.php">创建' + actionDesc + '</a>]！</td></tr>');
-                            $('#table-body').html('');
-                            $('#fClusterId').parent().parent().attr('hidden', false);
-                            $('#fService').parent().parent().attr('hidden', true);
-                            $('#fPool').parent().parent().attr('hidden', true);
-                            break;
-
-                        case 'service':
-                            switch (action) {
-                                case 'del':
-                                    modalTitle = '删除服务';
-                                    modalBody = modalBody + '<div class="form-group col-sm-12">';
-                                    modalBody = modalBody + '<div class="note note-danger">';
-                                    modalBody = modalBody + '<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> 服务 : ' + idx + '<br>服务名称 : ' + desc;
-                                    modalBody = modalBody + '</div>';
-                                    modalBody = modalBody + '</div>';
-                                    modalBody = modalBody + '<input type="hidden" id="id" name="id" value="' + idx + '">';
-                                    modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="delete">';
-                                    break;
-                                default:
-                                    modalTitle = '非法请求';
-                                    notice = '<div class="note note-danger">错误信息：参数错误</div>';
-                                    pageNotify('error', '非法请求！', '错误信息：参数错误');
-                                    break;
-                            }
-                            break;
-                        case 'pool':
-                            switch (action) {
-                                case 'del':
-                                    modalTitle = '删除服务池';
-                                    modalBody = modalBody + '<div class="form-group col-sm-12">';
-                                    modalBody = modalBody + '<div class="note note-danger">';
-                                    modalBody = modalBody + '<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> 服务池 : ' + idx + ' (隶属服务: ' + desc + ')';
-                                    modalBody = modalBody + '</div>';
-                                    modalBody = modalBody + '</div>';
-                                    modalBody = modalBody + '<input type="hidden" id="id" name="id" value="' + idx + '">';
-                                    modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="delete">';
-                                    break;
-                                case 'addnode':
-                                    modalTitle = '添加节点';
-                                    modalBody = modalBody + '<div class="form-group">' +
-                                        '<label for="service" class="col-sm-2 control-label">服务池</label>' +
-                                        '<div class="col-sm-10">' +
-                                        '<select class="form-control" id="id" name="id" disabled><option value="' + idx + '">' + desc + '</option></select>' +
-                                        '</div>' +
-                                        '</div>';
-                                    modalBody = modalBody + '<div class="form-group">' +
-                                        '<label for="service" class="col-sm-2 control-label">IP</label>' +
-                                        '<div class="col-sm-10">' +
-                                        '<textarea rows="6" class="form-control" id="nodes" name="nodes" style="font-family: \'Lucida Console\';" placeholder="支持换行,逗号,分号,空格分割" onkeyup="check(\'addnode\')"></textarea>' +
-                                        '</div>' +
-                                        '</div>';
-                                    modalBody = modalBody + '<input type="hidden" id="page_other" name="page_other" value="addnode">';
-                                    modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="insert">';
-                                    btnDisable = true;
-                                    break;
-                                default:
-                                    modalTitle = '非法请求';
-                                    notice = '<div class="note note-danger">错误信息：参数错误</div>';
-                                    pageNotify('error', '非法请求！', '错误信息：参数错误');
-                                    break;
-                            }
-                            break;
-                        case 'node':
-                            switch (action) {
-                                case 'add':
-                                    modalTitle = '添加节点';
-                                    modalBody = modalBody + '<div class="form-group">' +
-                                        '<label for="service_pool" class="col-sm-2 control-label">服务池</label>' +
-                                        '<div class="col-sm-10">' +
-                                        '<input type="text" class="form-control" id="service_pool" name="service_pool" onkeyup="check(\'addnode\')" value="' + desc + '" readonly>' +
-                                        '</div>' +
-                                        '</div>';
-                                    modalBody = modalBody + '<div class="form-group">' +
-                                        '<label for="nodes" class="col-sm-2 control-label">IP</label>' +
-                                        '<div class="col-sm-10">' +
-                                        '<textarea rows="6" class="form-control" id="nodes" name="nodes" style="font-family: \'Lucida Console\';" placeholder="IP,eg:支持 换行,逗号,分号,空格 分割" onkeyup="check(\'addnode\')"></textarea>' +
-                                        '</div>' +
-                                        '</div>';
-                                    modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="insert">';
-                                    btnDisable = true;
-                                    break;
-                                case 'del':
-                                    modalTitle = '删除节点';
-                                    var pool = [], ips = [], ipid = [], info = [], poolName = [];
-                                    if (idx && desc) {
-                                        var aIdx = idx.split(',');
-                                        pool.push({"id": aIdx[0], "name": aIdx[1]});
-                                        ips.push(desc);
-                                        ipid.push(ipidx);
-                                    } else {
-                                        $('input:checkbox[id=list]:checked').each(function () {
-                                            info = $(this).val().split(',');
-                                            if ($.inArray(info[1], poolName) == -1) {
-                                                poolName.push(info[1]);
-                                                pool.push({"id": info[0], "name": info[1]});
-                                            }
-                                            if ($.inArray(info[2], ips) == -1) ips.push(info[2]);
-                                            if ($.inArray(info[3], ipid) == -1) ipid.push(info[3]);
-                                        });
-                                    }
-                                    if (pool.length > 1 || ipid.length == 0) btnDisable = true;
-                                    modalBody += '<div class="form-group col-sm-12">';
-                                    modalBody += '<h4 class="text-danger"><strong>【警告】</strong>此处删除节点不会同步删除ECS, 如需同步删除ECS, 请使用缩容!</h4>';
-                                    modalBody += '<h5><strong>当前操作, 将影响如下操作:</strong></h5>';
-                                    modalBody += '<p><strong class="text-primary">涉及服务池</strong>: 共 <span class="badge badge-danger">' + pool.length + '</span> 个 <strong class="text-danger">(每次只支持操作一个服务池)</strong></p>';
-                                    modalBody += '<div class="col-sm-12" style="margin-bottom: 5px;">';
-                                    $.each(pool, function (k, v) {
-                                        modalBody += '<span class="col-sm-3">' + v.name + '</span>';
-                                    });
-                                    modalBody += '</div>';
-                                    modalBody += '<p><strong class="text-primary">涉及节点</strong>: 共 <span class="badge badge-danger">' + ipid.length + '</span> 个</p>';
-                                    modalBody += '<div class="col-sm-12">';
-                                    $.each(ips, function (k, v) {
-                                        modalBody += '<span class="col-sm-2">' + v + '</span>';
-                                    });
-                                    modalBody += '</div>';
-                                    modalBody += '</div>';
-                                    modalBody += '<input type="hidden" id="nodes" name="nodes" value="' + ipid.toString() + '">';
-                                    if (pool.length > 0) {
-                                        modalBody += '<input type="hidden" id="id" name="id" value="' + pool[0]['id'] + '">';
-                                    } else {
-                                        modalBody += '<input type="hidden" id="id" name="id" value="0">';
-                                    }
-                                    modalBody += '<input type="hidden" id="page_action" name="page_action" value="delete">';
-                                    break;
-                                default:
-                                    modalTitle = '非法请求';
-                                    notice = '<div class="note note-danger">错误信息：参数错误</div>';
-                                    pageNotify('error', '非法请求！', '错误信息：参数错误');
-                                    break;
-                            }
-                            break;
-                        default:
-                            modalTitle = '非法请求';
-                            notice = '<div class="note note-danger">错误信息：参数错误</div>';
-                            pageNotify('error', '非法请求！', '错误信息：参数错误');
-                            break;
-                    }
+                break;
+            case 'pool':
+                switch (action) {
+                    case 'del':
+                        modalTitle = '删除服务池';
+                        modalBody = modalBody + '<div class="form-group col-sm-12">';
+                        modalBody = modalBody + '<div class="note note-danger">';
+                        modalBody = modalBody + '<h4>确认删除? <span class="text text-primary">警告! 操作不可回退!</span></h4> 服务池 : ' + idx + ' (隶属服务: ' + desc + ')';
+                        modalBody = modalBody + '</div>';
+                        modalBody = modalBody + '</div>';
+                        modalBody = modalBody + '<input type="hidden" id="id" name="id" value="' + idx + '">';
+                        modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="delete">';
+                        break;
+                    case 'addnode':
+                        modalTitle = '添加节点';
+                        modalBody = modalBody + '<div class="form-group">' +
+                            '<label for="service" class="col-sm-2 control-label">服务池</label>' +
+                            '<div class="col-sm-10">' +
+                            '<select class="form-control" id="id" name="id" disabled><option value="' + idx + '">' + desc + '</option></select>' +
+                            '</div>' +
+                            '</div>';
+                        modalBody = modalBody + '<div class="form-group">' +
+                            '<label for="service" class="col-sm-2 control-label">IP</label>' +
+                            '<div class="col-sm-10">' +
+                            '<textarea rows="6" class="form-control" id="nodes" name="nodes" style="font-family: \'Lucida Console\';" placeholder="支持换行,逗号,分号,空格分割" onkeyup="check(\'addnode\')"></textarea>' +
+                            '</div>' +
+                            '</div>';
+                        modalBody = modalBody + '<input type="hidden" id="page_other" name="page_other" value="addnode">';
+                        modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="insert">';
+                        btnDisable = true;
+                        break;
+                    default:
+                        modalTitle = '非法请求';
+                        notice = '<div class="note note-danger">错误信息：参数错误</div>';
+                        pageNotify('error', '非法请求！', '错误信息：参数错误');
+                        break;
                 }
-                $('#myModalLabel').html(modalTitle);
-                $('#myModalBody').html(modalBody);
-                if (notice != '') {
-                    $('#modalNotice').html(notice);
-                    $('#btnCommit').attr('disabled', true);
-                } else {
-                    $('#btnCommit').attr('disabled', btnDisable);
+                break;
+            case 'node':
+                switch (action) {
+                    case 'add':
+                        modalTitle = '添加节点';
+                        modalBody = modalBody + '<div class="form-group">' +
+                            '<label for="service_pool" class="col-sm-2 control-label">服务池</label>' +
+                            '<div class="col-sm-10">' +
+                            '<input type="text" class="form-control" id="service_pool" name="service_pool" onkeyup="check(\'addnode\')" value="' + desc + '" readonly>' +
+                            '</div>' +
+                            '</div>';
+                        modalBody = modalBody + '<div class="form-group">' +
+                            '<label for="nodes" class="col-sm-2 control-label">IP</label>' +
+                            '<div class="col-sm-10">' +
+                            '<textarea rows="6" class="form-control" id="nodes" name="nodes" style="font-family: \'Lucida Console\';" placeholder="IP,eg:支持 换行,逗号,分号,空格 分割" onkeyup="check(\'addnode\')"></textarea>' +
+                            '</div>' +
+                            '</div>';
+                        modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="insert">';
+                        btnDisable = true;
+                        break;
+                    case 'del':
+                        modalTitle = '删除节点';
+                        var pool = [], ips = [], ipid = [], info = [], poolName = [];
+                        if (idx && desc) {
+                            var aIdx = idx.split(',');
+                            pool.push({"id": aIdx[0], "name": aIdx[1]});
+                            ips.push(desc);
+                            ipid.push(ipidx);
+                        } else {
+                            $('input:checkbox[id=list]:checked').each(function () {
+                                info = $(this).val().split(',');
+                                if ($.inArray(info[1], poolName) == -1) {
+                                    poolName.push(info[1]);
+                                    pool.push({"id": info[0], "name": info[1]});
+                                }
+                                if ($.inArray(info[2], ips) == -1) ips.push(info[2]);
+                                if ($.inArray(info[3], ipid) == -1) ipid.push(info[3]);
+                            });
+                        }
+                        if (pool.length > 1 || ipid.length == 0) btnDisable = true;
+                        modalBody += '<div class="form-group col-sm-12">';
+                        modalBody += '<h4 class="text-danger"><strong>【警告】</strong>此处删除节点不会同步删除ECS, 如需同步删除ECS, 请使用缩容!</h4>';
+                        modalBody += '<h5><strong>当前操作, 将影响如下操作:</strong></h5>';
+                        modalBody += '<p><strong class="text-primary">涉及服务池</strong>: 共 <span class="badge badge-danger">' + pool.length + '</span> 个 <strong class="text-danger">(每次只支持操作一个服务池)</strong></p>';
+                        modalBody += '<div class="col-sm-12" style="margin-bottom: 5px;">';
+                        $.each(pool, function (k, v) {
+                            modalBody += '<span class="col-sm-3">' + v.name + '</span>';
+                        });
+                        modalBody += '</div>';
+                        modalBody += '<p><strong class="text-primary">涉及节点</strong>: 共 <span class="badge badge-danger">' + ipid.length + '</span> 个</p>';
+                        modalBody += '<div class="col-sm-12">';
+                        $.each(ips, function (k, v) {
+                            modalBody += '<span class="col-sm-2">' + v + '</span>';
+                        });
+                        modalBody += '</div>';
+                        modalBody += '</div>';
+                        modalBody += '<input type="hidden" id="nodes" name="nodes" value="' + ipid.toString() + '">';
+                        if (pool.length > 0) {
+                            modalBody += '<input type="hidden" id="id" name="id" value="' + pool[0]['id'] + '">';
+                        } else {
+                            modalBody += '<input type="hidden" id="id" name="id" value="0">';
+                        }
+                        modalBody += '<input type="hidden" id="page_action" name="page_action" value="delete">';
+                        break;
+                    default:
+                        modalTitle = '非法请求';
+                        notice = '<div class="note note-danger">错误信息：参数错误</div>';
+                        pageNotify('error', '非法请求！', '错误信息：参数错误');
+                        break;
                 }
-                NProgress.done();
-            }
+                break;
+            default:
+                modalTitle = '非法请求';
+                notice = '<div class="note note-danger">错误信息：参数错误</div>';
+                pageNotify('error', '非法请求！', '错误信息：参数错误');
+                break;
         }
-    })
+    }
+    $('#myModalLabel').html(modalTitle);
+    $('#myModalBody').html(modalBody);
+    if (notice != '') {
+        $('#modalNotice').html(notice);
+        $('#btnCommit').attr('disabled', true);
+    } else {
+        $('#btnCommit').attr('disabled', btnDisable);
+    }
+    NProgress.done();
 }
+
 var getList = function (type, idx) {
     if (!type) type = 'cluster';
     var url = '/api/for_layout/' + type + '.php?action=list';

@@ -94,7 +94,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 
 	// get actions
 	actions := rstep.Actions
-	logService.Debug(fid,corrId, fmt.Sprintf("remote step has actions", actions))
+	logService.Debug(fid, corrId, fmt.Sprintf("remote step has actions", actions))
 
 	var actNames []string
 	json.Unmarshal([]byte(actions), &actNames)
@@ -134,7 +134,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		}
 
 		tpls[idx] = tpl
-		logService.Debug(fid,  corrId, fmt.Sprintf("template of %d is %s", actID, act.Template))
+		logService.Debug(fid, corrId, fmt.Sprintf("template of %d is %s", actID, act.Template))
 	}
 
 	logService.Debug(fid, corrId, fmt.Sprintf("remote step template:%v", tpls))
