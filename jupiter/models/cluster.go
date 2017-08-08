@@ -27,6 +27,8 @@ type Cluster struct {
 	DataDiskSize       int
 	DataDiskNum        int
 	DataDiskCategory   string
+	//OpenStack参数
+	FlavorId	   string
 }
 
 type Replication struct {
@@ -67,4 +69,16 @@ func (u *Zone) TableUnique() [][]string {
 	return [][]string{
 		[]string{"region_name", "zone_name"},
 	}
+}
+
+
+type Detail struct {
+	Id             int64      	`orm:"pk;auto"`
+	InstanceNumber string 		`orm:"type(text);null"`
+	RunningTime    time.Time 	`orm:"auto_now_add;type(datetime)"`
+}
+
+type InstanceDetail struct {
+	InstanceNumber   map[string]int	`json:"number"`
+	RunningTime		 string			`json:"time"`
 }

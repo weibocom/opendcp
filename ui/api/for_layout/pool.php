@@ -75,6 +75,41 @@ class myself{
     return $ret;
   }
 
+    function getAllList($myUser = '', $param = array()){
+        global $thisClass;
+        $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if($strList = $thisClass->get($myUser, $this->module, 'list', $param)){
+            $arrList = json_decode($strList,true);
+            if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['data'])){
+                $ret = array(
+                    'code' => 0,
+                    'msg' => 'success',
+                    'content' => array(),
+                );
+                $ret['count'] = (isset($arrList['query_count'])) ? $arrList['query_count'] : count($arrList['data']);
+                $ret['pageCount'] = (isset($arrList['page_size'])) ? ceil($ret['count'] / $arrList['page_size']) : 1;
+                $ret['page'] = (isset($arrList['page'])) ? $arrList['page'] : 1;
+                $i=0;
+                foreach($arrList['data'] as $k => $v){
+                    $i++;
+                    $tArr = array();
+                    $tArr['i'] = $i;
+                    foreach($v as $key => $value){
+                        $tArr[$key] = $value;
+                    }
+                    $ret['content'][] = $tArr;
+                }
+            }else{
+                $ret['code'] = 1;
+                $arrList = json_decode($strList,true);
+                $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+                $ret['remote'] = $strList;
+            }
+        }
+        $ret['ret'] = $strList;
+        return $ret;
+    }
+
   function getInfo($myUser = '', $idx = ''){
     global $thisClass;
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
@@ -296,6 +331,18 @@ if($hasLimit){
         $retArr = $mySelf->update($myUser,'deploy', $arrJson, $fIdx);
         $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
       }
+      break;
+    case 'poolList':
+        $logFlag = false;//本操作不记录日志
+        $arrJson = array(
+            'page' => $myPage,
+            'page_size' => $myPageSize,
+        );
+        $retArr = $mySelf->getAllList($myUser, $arrJson);
+        $retArr['page'] = $myPage;
+        $retArr['pageSize'] = $myPageSize;
+        $retArr['pageCount'] = ceil($retArr['count']/$retArr['pageSize']);
+        if($retArr['page'] > $retArr['pageCount']) $retArr['page'] = 1;
       break;
   }
 }else{

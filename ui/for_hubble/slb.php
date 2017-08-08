@@ -85,7 +85,8 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
               <li>
                 <a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
-                  <li><a href="/">Dashboard</a></li>
+                    <!--<li class="current-page"><a href="/">Dashboard</a></li>-->
+                    <li class="current-page"><a href="/">Dashboard</a></li>
                 </ul>
               </li>
               <?php echo $navLeft;?>

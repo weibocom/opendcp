@@ -211,6 +211,7 @@ class myself{
                 "publicip" => $lineSplit[0],
                 "privateip" => $lineSplit[1],
                 "password" => $lineSplit[2],
+                "port" => intval($lineSplit[3]),
             ]);
         }
 

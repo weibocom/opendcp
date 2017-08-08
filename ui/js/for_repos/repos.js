@@ -747,8 +747,8 @@ var getConfigDep=function(idx){
 var showDetailImage = function(address, idx,desc){
     var myaddresslist = address.split("/");
     var myaddress =  address.split("/")[myaddresslist.length - 1];
-    var myidx = idx.split("/")[1];
-    text = "<div class='note note-danger'>" + myaddress + "/"+myidx +":"+desc+"</div>";
+    var myidx = idx;
+    text = "<div class='note note-danger'>" + myaddress + "/"+ myidx +":"+desc+"</div>";
     $('#myViewModalLabel').html("镜像全称");
     $('#myViewModalBody').html(text);
 

@@ -18,6 +18,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	gossh "golang.org/x/crypto/ssh"
 	"weibo.com/opendcp/jupiter/models"
+	"weibo.com/opendcp/jupiter/dao"
+	"strings"
 )
 
 var (
@@ -27,10 +29,13 @@ var (
 	ErrUnableToWriteFile = errors.New("Unable to write file")
 )
 
+const SSH_AWS = "/go/src/weibo.com/opendcp/jupiter/conf/zhaowei9.pem"
+
 type KeyPair struct {
 	PrivateKey []byte
 	PublicKey  []byte
 }
+
 
 // Generate a new SSH keypair
 // This will return a private & public key encoded as DER.
@@ -172,6 +177,18 @@ func (sshCli *Client) GenerateSSHKey(instanceId string, path string) error {
 
 func (sshCli *Client) StoreSSHKey(instanceId string) error {
 	kp, err := NewKeyPair()
+
+	ins ,err := dao.GetInstance(instanceId)
+	if err != nil {
+		return err
+	}
+
+	if strings.EqualFold(ins.Provider, "aws") {
+		outputBytes, _ := ioutil.ReadFile(SSH_AWS)
+		privateBlock, _ := pem.Decode(outputBytes)
+		kp.PrivateKey = privateBlock.Bytes
+	}
+
 	if err != nil {
 		return err
 	}
