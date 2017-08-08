@@ -111,19 +111,7 @@ CREATE TABLE IF NOT EXISTS `flow` (
     `step_len` integer NOT NULL DEFAULT 0 ,
     `op_user` varchar(255) NOT NULL DEFAULT '' ,
     `flow_type` varchar(50) NOT NULL DEFAULT 'manual',
-    `created_time` datetime NOT NULL,
-    `updated_time` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------
---  Table Structure for `weibo.com/opendcp/orion/models.FlowBatch`
--- --------------------------------------------------
-CREATE TABLE IF NOT EXISTS `flow_batch` (
-    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `flow_id` integer NOT NULL,
-    `status` integer NOT NULL DEFAULT 0 ,
-    `step` integer NOT NULL DEFAULT 0 ,
-    `nodes` longtext NOT NULL,
+    `run_time` DOUBLE  NOT NULL DEFAULT 0.0 ,
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -139,12 +127,13 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `node_id` integer NOT NULL DEFAULT 0,
     `pool_id` integer NOT NULL,
     `flow_id` integer NOT NULL,
-    `batch_id` integer,
     `status` integer NOT NULL DEFAULT 0 ,
     `steps` longtext NOT NULL,
     `step_num` integer NOT NULL DEFAULT 0 ,
     `log` longtext NOT NULL,
     `last_op` varchar(255),
+    `step_run_time`  longtext NOT NULL,
+    `run_time` DOUBLE  NOT NULL DEFAULT 0.0 ,
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -185,7 +174,6 @@ CREATE TABLE IF NOT EXISTS `remote_action_impl` (
 CREATE TABLE IF NOT EXISTS `logs` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `fid` int(10) NOT NULL,
-  `batch_id` int(10) NOT NULL DEFAULT '0',
   `correlation_id` varchar(20) NOT NULL DEFAULT '0' COMMENT '全局id',
   `message` text NOT NULL,
   `ctime` int(10) NOT NULL DEFAULT '0',

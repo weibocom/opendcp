@@ -389,9 +389,10 @@ var updateEle=function(o,idx){
           }
           tr.append(td);
           if(idx!='ready'){
-            var beginSec = (typeof(v.Created)!='undefined') ? Date.parse(v.Created) : 0;
-            var endSec = (typeof(v.Updated)!='undefined') ? ((v.Updated!='0000-00-00 00:00:00') ? Date.parse(v.Updated) : new Date().getTime()) : new Date().getTime();
-            var timeLen=(beginSec>0)?Math.ceil((endSec-beginSec)/1000)+'秒':'-';
+              var runTime = (typeof(v.runTime)!='undefined') ? v.runTime : 0;
+            // var beginSec = (typeof(v.Created)!='undefined') ? Date.parse(v.Created) : 0;
+            // var endSec = (typeof(v.Updated)!='undefined') ? ((v.Updated!='0000-00-00 00:00:00') ? Date.parse(v.Updated) : new Date().getTime()) : new Date().getTime();
+            var timeLen=(runTime>0)?Math.ceil(runTime)+'秒':'-';
             td = '<td>' + timeLen + '</td>';
             tr.append(td);
           }

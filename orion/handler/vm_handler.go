@@ -107,10 +107,9 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
-	correlationId := utils.GetCorrelationId(fid, batchId)
+	correlationId := utils.GetCorrelationId(fid, 0)
 
-	logService.Debug(fid, batchId, correlationId, fmt.Sprintf("vm handler recieve new action: [%s]", action.Name))
+	logService.Debug(fid, correlationId, fmt.Sprintf("vm handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case createVM:
@@ -118,7 +117,7 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 	case returnVM:
 		return v.returnVMs(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid, batchId, correlationId, fmt.Sprintf("Unknown VM action: %s", action.Name))
+		logService.Error(fid, correlationId, fmt.Sprintf("Unknown VM action: %s", action.Name))
 
 		return Err("Unknown VM action: " + action.Name)
 	}
@@ -131,22 +130,22 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	num := len(nodes)
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
-	correlationId := utils.GetCorrelationId(fid, batchId)
+
+	correlationId := utils.GetCorrelationId(fid, 0)
 
 	msg := fmt.Sprintf("creating vm, vm_type_id =%v vmTypeIdtype:%v", params[vmTypeId], reflect.TypeOf(params[vmTypeId]))
-	logService.Debug(fid, batchId, correlationId, msg)
+	logService.Debug(fid, correlationId, msg)
 
 	cluStr := params[vmTypeId]
 	cluster, err := utils.ToInt(cluStr)
 	if err != nil {
-		logService.Error(fid, batchId, correlationId, fmt.Sprintf("Bad cluster:[%d]", cluStr))
+		logService.Error(fid, correlationId, fmt.Sprintf("Bad cluster:[%d]", cluStr))
 
 		return Err("Bad cluster")
 	}
 
 	// call create vm api
-	logService.Info(fid, batchId, correlationId, fmt.Sprintf("Creating VM in cluster %d, num=%d", cluster, num))
+	logService.Info(fid, correlationId, fmt.Sprintf("Creating VM in cluster %d, num=%d", cluster, num))
 
 	url := fmt.Sprintf(apiCreate, jupiterAddr, cluster, num)
 	header := map[string]interface{}{
@@ -176,7 +175,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 	tmpList, ok := content.([]interface{})
 	if !ok {
-		logService.Error(fid, batchId, correlationId, fmt.Sprintf("Bad id list content:%s", content))
+		logService.Error(fid, correlationId, fmt.Sprintf("Bad id list content:%s", content))
 
 		return Err("Bad id list: " + fmt.Sprint(content))
 	}
@@ -188,7 +187,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	vmIds := list
 
 	if len(vmIds) != len(nodes) {
-		logService.Warn(fid, batchId, correlationId, fmt.Sprintf("Number of vm ids (%d) doesn't equal that of nodes (%d)", len(vmIds), len(nodes)))
+		logService.Warn(fid, correlationId, fmt.Sprintf("Number of vm ids (%d) doesn't equal that of nodes (%d)", len(vmIds), len(nodes)))
 	}
 
 	// update nodes
@@ -216,29 +215,29 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	}
 
 	// start checking result
-	logService.Info(fid, batchId, correlationId, fmt.Sprintf("VM creating command sent for cluster:%d, vm ids = %v", cluster, vmIds))
+	logService.Info(fid, correlationId, fmt.Sprintf("VM creating command sent for cluster:%d, vm ids = %v", cluster, vmIds))
 
 	var failed, done []string
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, batchId, correlationId, fmt.Sprintf("check result for times %d", i+1))
+		logService.Info(fid, correlationId, fmt.Sprintf("check result for times %d", i+1))
 
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
 		msg, err := utils.Http.Get(url, nil)
 		if err != nil {
-			logService.Warn(fid, batchId, correlationId, "check result err: \n")
+			logService.Warn(fid, correlationId, "check result err: \n")
 			continue
 		}
 
 		resp, err := utils.Json.ToMap(msg)
 		if err != nil {
-			logService.Error(fid, batchId, correlationId, fmt.Sprintf("bad response: %s, err:%v", msg, err))
+			logService.Error(fid, correlationId, fmt.Sprintf("bad response: %s, err:%v", msg, err))
 			continue
 		}
 
 		statuses, ok := resp["content"].([]interface{})
 		if !ok {
-			logService.Error(fid, batchId, correlationId, fmt.Sprintf("bad response content: ", msg))
+			logService.Error(fid, correlationId, fmt.Sprintf("bad response content: ", msg))
 			continue
 		}
 
@@ -250,18 +249,18 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			toDel := false
 			switch state {
 			case vmSuccess:
-				logService.Debug(fid, batchId, correlationId, fmt.Sprintf("Node[%s] OK", id))
+				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] OK", id))
 				done = append(done, id)
 			case vmInitTimeout:
-				logService.Debug(fid, batchId, correlationId, fmt.Sprintf("Node[%s] init timeout", id))
+				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] init timeout", id))
 				failed = append(failed, id)
 				toDel = true
 			case vmError, vmUninit:
-				logService.Debug(fid, batchId, correlationId, fmt.Sprintf("Node[%s] init error", id))
+				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] init error", id))
 				failed = append(failed, id)
 				toDel = true
 			default:
-				logService.Debug(fid, batchId, correlationId, fmt.Sprintf("Node[%s] in progress, status=%d", id, state))
+				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] in progress, status=%d", id, state))
 				running = append(running, id)
 			}
 
@@ -280,7 +279,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 			// if failed, remove the node from pool
 			if toDel {
-				logService.Info(fid, batchId, correlationId, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
+				logService.Info(fid, correlationId, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
 				nodeMap[id].Node.Status = models.STATUS_FAILED
 				if nodeMap[id].Node.Ip == "-" {
 					ip := fmt.Sprintf("%d", nodeMap[id].Node.Id)
@@ -302,14 +301,14 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	// this nodes are timeout, mark them as failed
 	if len(list) != 0 {
 		for _, id := range list {
-			logService.Debug(fid, batchId, correlationId, fmt.Sprintf("Node[%s] timeout", id))
+			logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] timeout", id))
 
 			failed = append(failed, id)
 			n := nodeMap[id]
 			n.Status = models.STATUS_FAILED
 			service.Cluster.UpdateBase(n)
 
-			logService.Info(fid, batchId, correlationId, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
+			logService.Info(fid, correlationId, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
 
 			n.Node.Status = models.STATUS_FAILED
 			if nodeMap[id].Node.Ip == "-" {
@@ -320,7 +319,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 		}
 	}
 
-	logService.Info(fid, batchId, correlationId, "All finished")
+	logService.Info(fid, correlationId, "All finished")
 
 	ret := make([]*NodeResult, len(nodes))
 	for _, vid := range done {
