@@ -1423,7 +1423,7 @@ curl -X POST "http://HOST/pool/search_by_ip/10.85.41.160,10.85.41.161"  \
 curl -X POST "http://HOST/pool/expand/1  \
 -H "Content-type: application/json" \
 -H "Authorization: root" \
--d '{"num":2}  
+-d '{"num":2}'  
 ```
 #### 响应示例
 
