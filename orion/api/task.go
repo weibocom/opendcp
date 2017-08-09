@@ -20,12 +20,12 @@
 package api
 
 import (
+	"fmt"
 	"github.com/astaxie/beego"
 	"strconv"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/sched"
 	"weibo.com/opendcp/orion/service"
-	"fmt"
 )
 
 /**
@@ -136,7 +136,7 @@ func (c *TaskApi) SaveTask() {
 			c.ReturnFailed(err.Error(), 500)
 			return
 		}
-		if dbExec_task.Pool.Id != exec_task.Pool.Id{
+		if dbExec_task.Pool.Id != exec_task.Pool.Id {
 			c.ReturnFailed(fmt.Sprintf("the current exec_task: %d, pool id: %d is wrong", dbExec_task.Id, dbExec_task.Pool.Id), 500)
 			return
 		}
@@ -212,14 +212,14 @@ func (c *TaskApi) SaveTask() {
 	if exec_task.Id != 0 {
 		err := sched.Scheduler.Update(exec_task)
 		if err != nil {
-			beego.Error("update exec_task error:",err)
+			beego.Error("update exec_task error:", err)
 			c.ReturnFailed(err.Error(), 500)
 			return
 		}
 	} else {
 		err := sched.Scheduler.Create(exec_task)
 		if err != nil {
-			beego.Error("create exec_task error:",err)
+			beego.Error("create exec_task error:", err)
 			c.ReturnFailed(err.Error(), 500)
 			return
 		}
