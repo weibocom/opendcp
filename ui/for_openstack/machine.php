@@ -291,7 +291,7 @@ $arr_hyper = openstack::getHypervisorList();
       </div>
       <div class="clearfix"></div>
     </div>
-    <!-- /page content -->
+      <!-- /page content -->
 
     <!-- footer content -->
     <?php echo $myFooter;?>

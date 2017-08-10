@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS `remote_action` (
     `params` longtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
 -- --------------------------------------------------
 --  Table Structure for `weibo.com/opendcp/orion/models.RemoteActionImpl`
 -- --------------------------------------------------
@@ -163,6 +164,7 @@ INSERT INTO `service` VALUES
     (2,'my_server','my_server','Java','registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest',1),
     (3,'controller_service','虚拟化控制节点服务','openstack','-',2),
     (4,'compute_service','虚拟化计算节点服务','openstack','-',2);
+    (4,'storage_service','虚拟化存储节点服务','openstack','-',2);
 UNLOCK TABLES;
 
 LOCK TABLES `pool` WRITE;
@@ -171,6 +173,7 @@ INSERT INTO `pool` VALUES
     (2,'my_server_nginx','使用nginx服务发现',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',2),
     (3,'controller_pool','控制节点服务池',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',3),
     (4,'compute_pool','计算节点服务池',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',4);
+    (5,'storage_pool','存储节点服务池',3,1,'{\"deploy\":6,\"expand\":4,\"shrink\":5}',5);
 UNLOCK TABLES;
 
 LOCK TABLES `flow_impl` WRITE;
@@ -197,6 +200,7 @@ INSERT INTO `remote_action` VALUES
     (7,'init_controller','初始化openstack控制节点','{\"opendcp_host\":\"string\"}'),
     (8,'init_compute','init_compute','{\"opendcp_host\":\"string\"}'),
     (9,'add-default-image','添加openstack Centos7缺省镜像','{}');
+    (10,'init_storage','init_storage','{\"opendcp_host\":\"string\"}'),
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action_impl` WRITE;
@@ -210,6 +214,7 @@ INSERT INTO `remote_action_impl` VALUES
     (7,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init.sh\\nsh init.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',7),
     (8,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',8),
     (9,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x add-default-image.sh\\nsh add-default-image.sh \\u003e /tmp/addimage.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',9);
+    (10,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_storage.sh\\nsh init_storage.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',10),
 UNLOCK TABLES;
 
 LOCK TABLES `remote_step` WRITE;
@@ -221,6 +226,7 @@ INSERT INTO `remote_step` VALUES
     (10,'init_controller','controller初始化','[\"init_controller\"]'),
     (11,'init_compute','init_compute','[\"init_compute\"]'),
     (12,'add-default-image','添加openstack缺省镜像','[\"add-default-image\"]');
+    (12,'init_storage','init_storage','[\"init_storage\"]');
 UNLOCK TABLES;
 
 

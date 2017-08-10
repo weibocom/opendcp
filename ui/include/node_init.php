@@ -39,7 +39,6 @@ class node_init {
 			$arrRet[]=$row;
 		}
 
-
 		$sql = 'select count(*) as num from '.self::$table;
 		$query = $db->query($sql);
 		$rowc=$query->fetch_array(MYSQL_ASSOC);
@@ -59,8 +58,6 @@ class node_init {
 		if(!empty($id) && $type==2){
 			require_once('keydata.php');
 			keydata::update('controller_ip', $data['ip']);
-
-
 			require_once('cloud.php');
 			$mycloud = new cloud();
 			$ret = $mycloud->get('root', 'instance/openstack', 'POST', array(
@@ -73,6 +70,7 @@ class node_init {
 		}
 		return $id;
 	}
+	//在数据库中更新节点状态
 	static function modifyOneNodeInit($id, $data){
 		global $db;
 		$now = time();
