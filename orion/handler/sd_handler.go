@@ -293,8 +293,7 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 	err = json.Unmarshal([]byte(msg), obj)
 	if err != nil {
 		beego.Error("Fail to unmarshal", msg, "err:", err)
-		beego.Error("1111Bad resp:", msg)
-		beego.Error("1111Bad resp:", msg)
+		beego.Error("Bad resp:", msg)
 		return Err("Bad resp: " + msg)
 	}
 
