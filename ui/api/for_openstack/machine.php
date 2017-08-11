@@ -281,6 +281,7 @@ if($hasLimit){
 		'ip'=>$_POST['ip'],
 		'password'=>$_POST['password'],
 		'type'=>$_POST['type'],
+        'disk_name'=>$_POST['disk_name']
       );
       $ret = node_init::insertNodeInit($arr);
       $retArr['code'] = 0;

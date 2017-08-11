@@ -51,7 +51,7 @@ class node_init {
 
 		$now = time();
 		$type = empty($data['type']) ? 1 : $data['type'];
-		$sql = 'insert into '.self::$table.' (ip, password, type, create_time) values (\''.@mysql_escape_string($data['ip']).'\',\''.@mysql_escape_string($data['password']).'\',\''.$type.'\', '.$now.')';
+		$sql = 'insert into '.self::$table.' (ip, password, type, create_time, disk_name) values (\''.@mysql_escape_string($data['ip']).'\',\''.@mysql_escape_string($data['password']).'\',\''.$type.'\', '.$now.'\',\''.@mysql_escape_string($data['disk_name']).'\')';
 		global $db;
 		$ret = $db->query($sql);
 		$id = $db->insert_id;

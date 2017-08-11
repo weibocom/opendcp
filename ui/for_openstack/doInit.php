@@ -19,6 +19,10 @@ $arr_type = array(
 		'pool_id'=>3,
 		'template_id'=>7,
 	),
+    3=>array(
+        'pool_id'=>5,
+        'template_id'=>10,
+    ),
 );
 
 
