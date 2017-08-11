@@ -45,8 +45,7 @@ class TimingController extends RestController
         $data['user'] = $user;
         $data['group_id'] = intval($gid);
         $data['correlation_id'] = $correlation;
-        if (!empty($data['sdid']) && !empty($data['script_id']) && !empty($data['name']) &&
-            !empty($data['user']) && !empty($data['group_id']) && !empty($data['correlation_id'])){
+        if (!empty($data['script_id']) && !empty($data['name']) && !empty($data['user']) && !empty($data['group_id']) && !empty($data['correlation_id'])){
 
             $this->timinginfo->add($data);
             $entry_dir = C('HUBBLE_ROOT_DIR');
