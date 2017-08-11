@@ -415,7 +415,7 @@ Class openstack
         return $detail_list;
     }
 
-    static function getStorageHostDetail($host_name)
+    static function getStorageHostDetail($host_name = '')
     {
         $curRegion = self::$cur_region;
         self::$needadmin = true;

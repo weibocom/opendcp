@@ -256,6 +256,19 @@ if($hasLimit){
 	echo 0;exit;
       }
       break;
+    case 'getdiskname':
+        $arrRecodeLog['t_action'] = '获取diskname';
+        $ip = $_REQUEST['ip'];
+        include_once('../../include/node_init.php');
+        $ret = node_init::getOneTaskByIp($ip);
+        if (!empty($ret['disk_name'])) {
+            echo $ret['disk_name'];
+            exit;
+        } else {
+            echo 0;
+            exit;
+        }
+        break;
     case 'addlog':
       $arrRecodeLog['t_action'] = '日志';
       include_once('../../include/node_init_log.php');

@@ -113,7 +113,7 @@ CREATE TABLE `node_init` (
   `ip` varchar(64) NOT NULL,
   `password` varchar(64) NOT NULL DEFAULT '',
   `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `disk_name` varchar(64) NOT NULL DEFAULT '';
+  `disk_name` varchar(64) NOT NULL DEFAULT '',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `create_time` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)

@@ -23,9 +23,10 @@ $myAction = (isset($_GET['action']) && !empty($_GET['action'])) ? trim($_GET['ac
 $myIdx = (isset($_GET['idx']) && !empty($_GET['idx'])) ? trim($_GET['idx']) : '';
 $pageAction = 'addcompute';
 $ip = empty($_REQUEST['ip']) ? '' : $_REQUEST['ip'];
+$disk_name = empty($_REQUEST['disk_name']) ? '' : $_REQUEST['disk_name'];
 $type = empty($_REQUEST['type']) ? 1 : $_REQUEST['type'];
 //type为1是计算节点，2是控制节点，3是存储节点
-$myTitle = $type = 1 ? '初始化计算节点' : ($type = 3 ? '初始化存储节点' : '初始化控制节点');
+$myTitle = ($type == 1 ? '初始化计算节点' : ($type == 3 ? '初始化存储节点' : '初始化控制节点'));
 ?>
 <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
@@ -53,7 +54,7 @@ $myTitle = $type = 1 ? '初始化计算节点' : ($type = 3 ? '初始化存储�
         <div class="form-group">
             <label for="name" class="col-sm-2 control-label">输入挂载磁盘</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="disk_name" name="compute_password"
+                <input type="text" class="form-control" id="disk_name" name="disk_name"
                        placeholder="请输入挂载磁盘，例如：sdb">
             </div>
         </div>
@@ -74,9 +75,9 @@ $myTitle = $type = 1 ? '初始化计算节点' : ($type = 3 ? '初始化存储�
         url = '/api/for_openstack/machine.php';
         ip = $('#compute_ip').val();
         type = $('#type').val();
-        disk_name = $('#disk_name').val();
+        disk_name = ($('#disk_name').val() == null) ? '' : $('$disk_name').val();
         password = $('#compute_password').val();
-        postData = {"action": "addip", "ip": ip, "password": password, "type": type, "disk_name" : disk_name};
+        postData = {"action": "addip", "ip": ip, "password": password, "type": type, "disk_name" : disk_name,};
         $.ajax({
             type: "POST",
             url: url,

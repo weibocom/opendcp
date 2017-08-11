@@ -149,16 +149,16 @@ require_once('../include/navbar.php');
                 <div class="" style="background-color:#fff;">
                     <div class="" role="tabpanel" data-example-id="togglable-tabs">
                         <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist" style="margin-bottom: 10px;">
-                            <li id="tab_1" role="presentation" class="active">
-                                <a data-toggle="tab" role="tab" aria-expanded="true"
-                                   onclick="location.href='/for_openstack/machine.php">物理节点管理</a>
+                            <li id="tab_1" role="presentation" >
+                                <a data-toggle="tab" role="tab" aria-expanded="false"
+                                   onclick="location.href='/for_openstack/machine.php';">物理节点管理</a>
                             </li>
                             <li id="tab_2" role="presentation">
                                 <a data-toggle="tab" role="tab" aria-expanded="false"
                                    onclick="location.href='/for_openstack/initlist.php';">初始化任务列表</a>
                             </li>
-                            <li id="tab_3" role="presentation">
-                                <a data-toggle="tab" role="tab" aria-expanded="false"
+                            <li id="tab_3" role="presentation" class="active">
+                                <a data-toggle="tab" role="tab" aria-expanded="true"
                                    onclick="getList('service');">存储节点管理</a>
                             </li>
                         </ul>
@@ -176,7 +176,7 @@ require_once('../include/navbar.php');
                                             <div class="dataTables_info" id="table-pageinfo" role="status"
                                                  aria-live="polite">
                                                 <a class="btn btn-primary btn-xs" data-toggle="modal"
-                                                   data-target="#myAddComputeModal" href="add_compute.php?type=3">添加</a>
+                                                   data-target="#myAddStorageModal" href="add_compute.php?type=3">添加</a>
                                             </div>
                                         </div>
                                     </div>
@@ -185,7 +185,7 @@ require_once('../include/navbar.php');
 
                                     require_once('../include/openstack.php');
                                     openstack::needOpenstackLogin();
-                                    $arr_host = openstack::getStorageHostDetail();
+                                    $arr_host = openstack::getStorageHostList();
                                     ?>
                                     <table class="table table-bordered table-hover">
                                         <thead class="flip-content">
@@ -215,7 +215,7 @@ require_once('../include/navbar.php');
 
 
                                     <form method="post" class="form-horizontal">
-                                        <div class="modal fade bs-modal-lg" id="myAddComputeModal" role="dialog"
+                                        <div class="modal fade bs-modal-lg" id="myAddStorageModal" role="dialog"
                                              aria-hidden="true">
                                             <div class="modal-dialog modal-lg">
                                                 <div class="modal-content">
@@ -223,11 +223,11 @@ require_once('../include/navbar.php');
                                                         <button type="button" class="close" data-dismiss="modal"
                                                                 aria-label="Close"><span
                                                                     aria-hidden="true">&times;</span></button>
-                                                        <h4 class="modal-title" id="myAddComputeModalLabel">Loading
+                                                        <h4 class="modal-title" id="myAddStorageModalLabel">Loading
                                                             ...</h4>
                                                     </div>
                                                     <div class="modal-body" style="overflow:auto;"
-                                                         id="myAddComputeModalBody">
+                                                         id="myAddStorageModalBody">
                                                         <p>
 
                                                         </p>
@@ -246,37 +246,7 @@ require_once('../include/navbar.php');
                                         </div>
                                     </form>
 
-                                    <form method="post" class="form-horizontal">
-                                        <div class="modal fade bs-modal-lg" id="myAddControllerModal" role="dialog"
-                                             aria-hidden="true">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                                aria-label="Close"><span
-                                                                    aria-hidden="true">&times;</span></button>
-                                                        <h4 class="modal-title" id="myAddControllerModalLabel">Loading
-                                                            ...</h4>
-                                                    </div>
-                                                    <div class="modal-body" style="overflow:auto;"
-                                                         id="myAddControllerModalBody">
-                                                        <p>
 
-                                                        </p>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-default"
-                                                                data-dismiss="modal">取消
-                                                        </button>
-                                                        <button type="button" class="btn btn-success" id="btnCommit"
-                                                                data-dismiss="modal" onclick="change()"
-                                                                style="margin-bottom: 5px;" disabled>提交
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
 
                                 </div>
                             </div>
