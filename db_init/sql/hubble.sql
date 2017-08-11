@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS `tbl_hubble_secure_privileges` (
 
 CREATE TABLE IF NOT EXISTS `tbl_hubble_timing_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sdid` int(11) NOT NULL,
+  `sdid` int(11) DEFAULT NULL,
   `script_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `user` varchar(255) NOT NULL,
