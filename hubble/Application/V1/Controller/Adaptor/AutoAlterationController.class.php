@@ -168,6 +168,11 @@ class AutoAlterationController extends RestController {
             $uid = M('NginxNode')
                 ->where($ip)
                 ->getField('unit_id');
+            if($nodes==Null || $uid==Null){
+                $ret=array('code'=>0,'msg'=>"success");
+                hubble_oprlog('Nginx', 'del node', I('server.HTTP_APPKEY'), $user, "id:unit_id  nodes:".json_encode($nodes));
+                $this->ajaxReturn(std_return($ret['msg']));
+            }
         }
 
 
