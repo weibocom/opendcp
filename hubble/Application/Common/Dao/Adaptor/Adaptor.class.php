@@ -102,6 +102,41 @@ class Adaptor {
                     ];
                     return $return;
                 }
+                
+                
+                //数据转存;进入定时任务
+                $sid=$content['script_id'];
+                $name=$content['name'];
+                $gid=$content['group_id'];
+                $correlation=I('server.HTTP_X_CORRELATION_ID');
+                //$url='http://101.201.76.175:5555/v1/nginx/timing/beginTimingReload?id='.$id.'&sid='.$sid.'&name='.$name.'&user='.$user.'&gid='.$gid.'&correlation='.$correlation;
+                $url  = 'http://'.C('HUBBLE_HOST').':'.C('HUBBLE_PORT').'/v1/nginx/timing/beginTimingReload?id='.$id.'&sid='.$sid.'&name='.$name.'&user='.$user.'&gid='.$gid.'&correlation='.$correlation;
+                $host = parse_url($url,PHP_URL_HOST);
+                $port = parse_url($url,PHP_URL_PORT);
+                $port = $port ? $port : 80;
+                $scheme = parse_url($url,PHP_URL_SCHEME);
+                $path = parse_url($url,PHP_URL_PATH);
+                $query = parse_url($url,PHP_URL_QUERY);
+                if($query) $path .= '?'.$query;
+                if($scheme == 'https') {
+                    $host = 'ssl://'.$host;
+                }
+                $fp = fsockopen($host,$port,$error_code,$error_msg,1);
+                stream_set_blocking($fp,true);//开启了手册上说的非阻塞模式
+                stream_set_timeout($fp,1);//设置超时
+                $header = "GET $path HTTP/1.1\r\n";
+                $header.="Host: $host\r\n";
+                $header.="Connection: close\r\n\r\n";//长连接关闭
+                fwrite($fp, $header);
+                usleep(1000); // 如果没有这延时，可能在nginx服务器上就无法执行成功
+                fclose($fp);
+                //返回下发任务完成，后续操作交给定时任务
+                $return['content'] = [
+                    'type' => 'async',
+                    'task_id' => '0'
+                ];
+                return $return;
+                
 
                 $task = $upstream->callTunnel(
                     $content['script_id'], $content['name'], $user, true, $content['group_id']);
@@ -190,6 +225,39 @@ class Adaptor {
                     ];
                     return $return;
                 }
+                
+                //数据转存;进入定时任务
+                $sid=$content['script_id'];
+                $name=$content['name'];
+                $gid=$content['group_id'];
+                $correlation=I('server.HTTP_X_CORRELATION_ID');
+                //$url='http://101.201.76.175:5555/v1/nginx/timing/beginTimingReload?id='.$id.'&sid='.$sid.'&name='.$name.'&user='.$user.'&gid='.$gid.'&correlation='.$correlation;
+                $url  = 'http://'.C('HUBBLE_HOST').':'.C('HUBBLE_PORT').'/v1/nginx/timing/beginTimingReload?id='.$id.'&sid='.$sid.'&name='.$name.'&user='.$user.'&gid='.$gid.'&correlation='.$correlation;
+                $host = parse_url($url,PHP_URL_HOST);
+                $port = parse_url($url,PHP_URL_PORT);
+                $port = $port ? $port : 80;
+                $scheme = parse_url($url,PHP_URL_SCHEME);
+                $path = parse_url($url,PHP_URL_PATH);
+                $query = parse_url($url,PHP_URL_QUERY);
+                if($query) $path .= '?'.$query;
+                if($scheme == 'https') {
+                    $host = 'ssl://'.$host;
+                }
+                $fp = fsockopen($host,$port,$error_code,$error_msg,1);
+                stream_set_blocking($fp,true);//开启了手册上说的非阻塞模式
+                stream_set_timeout($fp,1);//设置超时
+                $header = "GET $path HTTP/1.1\r\n";
+                $header.="Host: $host\r\n";
+                $header.="Connection: close\r\n\r\n";//长连接关闭
+                fwrite($fp, $header);
+                usleep(1000); // 如果没有这延时，可能在nginx服务器上就无法执行成功
+                fclose($fp);
+                //返回下发任务完成，后续操作交给定时任务
+                $return['content'] = [
+                    'type' => 'async',
+                    'task_id' => '0'
+                ];
+                return $return;
                 
                 $task = $upstream->callTunnel(
                     $content['script_id'], $content['name'], $user, true, $content['group_id']);

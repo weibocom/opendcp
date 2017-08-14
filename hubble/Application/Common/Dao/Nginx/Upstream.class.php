@@ -570,7 +570,7 @@ class Upstream {
     /*
      *
      */
-    public function callTunnel($script_id, $filename, $user, $is_group, $group_id, $ids = ''){
+    public function callTunnel($script_id, $filename, $user, $is_group, $group_id, $ids = '',$cor_id=''){
         // 准备脚本内容
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -606,7 +606,7 @@ class Upstream {
 
         // 启动一个任务
         $channel = new Channel();
-        $task = $channel->ansible($nginxIps, 'root', $script,$scriptArg,1);
+        $task = $channel->ansible($nginxIps, 'root', $script,$scriptArg,1,$cor_id);
         if($task['code'] != 0) return $task;
         $return['content'] = $task['content'];
 

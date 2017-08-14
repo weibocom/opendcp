@@ -236,6 +236,22 @@ CREATE TABLE IF NOT EXISTS `tbl_hubble_secure_privileges` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+
+# Dump of table tbl_hubble_timing_info
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `tbl_hubble_timing_info` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sdid` int(11) DEFAULT NULL,
+  `script_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `user` varchar(255) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `correlation_id` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 /* INSERT DEFAULT DATA */
 INSERT INTO `tbl_hubble_alteration_type` VALUES (1,'default_service_name','NGINX','{\"group_id\":\"1\",\"name\":\"default.upstream\",\"port\":\"8080\",\"weight\":\"20\",\"script_id\":\"2\"}','2016-11-15 22:16:50','2016-11-15 22:16:50','system');
 INSERT INTO `tbl_hubble_nginx_conf_main` VALUES (1,'nginx.conf',1,'#DEFAULT MAIN CONFIG FILE: nginx.conf\nerror_log /usr/local/nginx/logs/error.log notice;\npid /usr/local/nginx/logs/nginx.pid;\nevents {\n    worker_connections 1024;\n    use   epoll;\n}\nhttp {\n    default_type  application/octet-stream;\n    log_format  main  \'$remote_addr - $remote_user [$time_local] \"$request\" \'\n                      \'$status $body_bytes_sent \"$http_referer\" \'\n					  \'\"$http_user_agent\" \"$http_x_forwarded_for\" $request_time\';\n    include upstream/*.upstream;\n    #DEFAULT VHOST\n    server {\n        listen       80;\n        server_name  0.0.0.0:80;\n        location / {\n            proxy_pass http://default_upstream;\n        }\n        location /status {\n            check_status;\n            access_log on;\n        }\n        access_log  logs/default_vhost.log main;\n    }\n    access_log logs/access.log  main;\n}\n',1,0,'2016-11-15 22:10:25','system');
