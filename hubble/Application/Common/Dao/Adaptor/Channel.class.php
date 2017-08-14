@@ -45,7 +45,7 @@ class Channel {
      * @param $ips Array
      * @param $name 变更的名称
      */
-    public function ansible($ips, $user, $tasks, $params, $fork_num){
+    public function ansible($ips, $user, $tasks, $params, $fork_num,$cor_id=''){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
@@ -76,7 +76,7 @@ class Channel {
         hubble_log(HUBBLE_INFO, "call ansible http: [$url]");
 
         $ret = http($url, $data, 'POST', 3,
-            ['X-CORRELATION-ID:'.I('server.HTTP_X_CORRELATION_ID'), 'X-SOURCE: hubble']);
+            ['X-CORRELATION-ID:'.(I('server.HTTP_X_CORRELATION_ID')?I('server.HTTP_X_CORRELATION_ID'):$cor_id), 'X-SOURCE: hubble']);
         if($ret['code'] != 0){
             $return['code'] = $ret['errno'];
             $return['msg']  = 'ansible:'.$ret['error'];
