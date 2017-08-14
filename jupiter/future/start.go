@@ -97,7 +97,7 @@ func (sf *StartFuture) Run() error {
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "Is the machine start?", isStart)
 		for i := 0; i < 60; i++ {
 			time.Sleep(10 * time.Second)
-			logstore.Info(sf.CorrelationId, sf.InstanceId, "Wati for instance", sf.InstanceId, "to start", i)
+			logstore.Info(sf.CorrelationId, sf.InstanceId, "Wait for instance", sf.InstanceId, "to start", i)
 			if providerDriver.WaitToStartInstance(sf.InstanceId) {
 				break
 			}

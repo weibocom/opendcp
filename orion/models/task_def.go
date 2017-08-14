@@ -32,6 +32,11 @@ type StepOption struct {
 	Retry  *RetryOption `json:"retry"`
 }
 
+type StepRunTime struct {
+	Name    string       `json:"name"`
+	RunTime float64      `json:"runTime:"`
+}
+
 //任务流定义
 type FlowImpl struct {
 	Id    int    `json:"id" orm:"pk;auto"`

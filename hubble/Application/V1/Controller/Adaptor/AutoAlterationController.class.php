@@ -32,7 +32,10 @@ use Common\Dao\Adaptor\Adaptor;
 use Common\Dao\Adaptor\AlterationHistory;
 use Common\Dao\Adaptor\AlterationType;
 use Common\Dao\Adaptor\Channel;
+use Common\Dao\Nginx\NodeModel;
+use Common\Dao\Nginx\UnitModel;
 use Think\Controller\RestController;
+
 
 class AutoAlterationController extends RestController {
 
@@ -54,6 +57,142 @@ class AutoAlterationController extends RestController {
 
     public function _empty(){ $this->response('404','', 404); }
 
+    public function addNode_post(){
+
+        $params = ['sid', 'ips', 'user', ];
+        foreach ($params as $p){
+            if(!isset($this->input[$p]) || empty($this->input[$p]))
+                $this->ajaxReturn(std_error("parameter [$p] is absent or empty, please check and try again."));
+        }
+        $ips = $this->input['ips'];
+        $user = $this->input['user'];
+        $sid['id'] = $this->input['sid'];
+
+        if(isset($sid['id']) && !empty($sid['id'])){
+            $content=M('AlterationType')
+                ->where($sid)
+                ->getField('content');
+            $data=json_decode($content, true);
+            $condition['group_id'] = $data["group_id"];
+            $uid=M('NginxUnit')
+                ->where($condition)
+                ->getField('id');
+            $unit_id=$uid;
+        }
+
+
+        if($unit_id <= 0 ){
+            $this->ajaxReturn(std_error('unit_id error'));
+        }
+
+
+        //检查是否存在单元
+
+
+        $unit = new UnitModel() ;
+
+        $filter = [];
+        $filter['id'] = $unit_id;
+        $ret = $unit->existsUnit($filter);
+
+        if($ret['code'] != 0){
+            $this->ajaxReturn(std_error($ret['msg']));
+        }
+        //添加
+        $ip = array_unique(explode(",",$ips));
+        $data = array();
+
+        foreach($ip as $v ){
+            $data[] = $v;
+        }
+        $filer = [];
+        $arr = [];
+
+        $filer['ip'] = ['in' , $data];
+
+        $node = new NodeModel() ;
+        //检查
+        $check = $node->existsNode($filer);
+        //错误
+        if($check['code'] == 2){
+            $this->ajaxReturn(std_error($ret['msg']));
+        }
+        //存在
+        if($check['code'] == 0){
+            foreach($check['content'] as $v ){
+                $arr[] = $v['ip'];
+            }
+        }
+
+        //判断diff
+        $diff = array_diff($data,$arr) ;
+        $intersect = array_intersect($data,$arr);
+
+        if(empty($diff)){
+            $msg = "exits:".implode(",",$intersect);
+            $this->ajaxReturn(std_error($msg));
+        }
+        $ret = $node->addNode($unit_id,$user,array_diff($data,$arr));
+
+        if($ret['code'] == 1){
+            $this->ajaxReturn(std_error($ret['msg']));
+        }
+
+        hubble_oprlog('Nginx', 'Add node', I('server.HTTP_APPKEY'), $user, "ips:".json_encode($data).'exits:'.json_encode($arr));
+        if(empty($intersect)){
+            $this->ajaxReturn(std_return($ret['msg']));
+        }else{
+            $msg = $ret['msg']." exits:".implode(",",$intersect);
+            $this->ajaxReturn(std_return(array(),$msg));
+        }
+
+
+
+    }
+
+
+    public function deleteNode_post(){
+
+        $params = ['ips', 'user', ];
+        foreach ($params as $p){
+            if(!isset($this->input[$p]) || empty($this->input[$p]))
+                $this->ajaxReturn(std_error("parameter [$p] is absent or empty, please check and try again."));
+        }
+        $ip['ip'] = $this->input['ips'];
+        $user = $this->input['user'];
+
+        if(isset($ip['ip']) && !empty($ip['ip'])) {
+            $nodes = M('NginxNode')
+                ->where($ip)
+                ->getField('id');
+            $uid = M('NginxNode')
+                ->where($ip)
+                ->getField('unit_id');
+            if($nodes==Null || $uid==Null){
+                $ret=array('code'=>0,'msg'=>"success");
+                hubble_oprlog('Nginx', 'del node', I('server.HTTP_APPKEY'), $user, "id:unit_id  nodes:".json_encode($nodes));
+                $this->ajaxReturn(std_return($ret['msg']));
+            }
+        }
+
+
+        $filter = [];
+        $where = [];
+        $where['id'] = ['in',$nodes];
+
+        $filter['unit_id'] = $uid;
+        $node = new NodeModel() ;
+
+        $ret = $node->deleteNode($filter,$where);
+
+        if($ret['code'] == 1){
+            $this->ajaxReturn(std_error($ret['msg']));
+        }
+        hubble_oprlog('Nginx', 'del node', I('server.HTTP_APPKEY'), $user, "id:unit_id  nodes:".json_encode($nodes));
+        $this->ajaxReturn(std_return($ret['msg']));
+
+
+    }
 
     public function add_post(){
 

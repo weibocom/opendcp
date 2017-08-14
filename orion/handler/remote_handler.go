@@ -78,28 +78,27 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	stepParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
 
 	step := action.Name
 
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("Handle remote step:", step))
+	logService.Debug(fid, corrId, fmt.Sprintf("Handle remote step:", step))
 
 	rstep := models.RemoteStep{Name: step}
 	err := service.Remote.GetBy(&rstep, "Name")
 
 	if err != nil {
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("remote step not found step:", step))
+		logService.Error(fid, corrId, fmt.Sprintf("remote step not found step:", step))
 
 		return Err("remote step not found: " + step)
 	}
 
 	// get actions
 	actions := rstep.Actions
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("remote step has actions", actions))
+	logService.Debug(fid, corrId, fmt.Sprintf("remote step has actions", actions))
 
 	var actNames []string
 	json.Unmarshal([]byte(actions), &actNames)
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("remote step has actions name:%s len:%d", actNames, len(actNames)))
+	logService.Debug(fid, corrId, fmt.Sprintf("remote step has actions name:%s len:%d", actNames, len(actNames)))
 
 	var actionList []models.RemoteAction
 	service.Remote.GetByStringValues(&models.RemoteAction{}, &actionList,
@@ -109,12 +108,12 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	tpls := make([]interface{}, len(actionList))
 	for _, action := range actionList {
 		actID := action.Id
-		logService.Debug(fid, batchId, corrId, fmt.Sprintf("getting act impl for %d", actID))
+		logService.Debug(fid, corrId, fmt.Sprintf("getting act impl for %d", actID))
 
 		act := models.RemoteActionImpl{ActionId: actID}
 		err = service.Remote.GetBy(&act, "ActionId")
 		if err != nil {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("Cannot find act impl %d", actID))
+			logService.Error(fid, corrId, fmt.Sprintf("Cannot find act impl %d", actID))
 
 			return Err("act impl not found: " + strconv.Itoa(actID))
 		}
@@ -122,23 +121,23 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		tpl := make(map[string]interface{})
 		err = json.Unmarshal([]byte(act.Template), &tpl)
 		if err != nil {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("Bad act impl template, actid:%d Template:%s", actID, act.Template), err)
+			logService.Error(fid, corrId, fmt.Sprintf("Bad act impl template, actid:%d Template:%s", actID, act.Template), err)
 
 			return Err("bad impl template: " + strconv.Itoa(actID))
 		}
 
 		idx := h.indexOf(actNames, action.Name)
 		if idx == -1 {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("Action [%s] not in action list:%v", action.Name, actNames))
+			logService.Error(fid, corrId, fmt.Sprintf("Action [%s] not in action list:%v", action.Name, actNames))
 
 			return Err("Action: " + action.Name)
 		}
 
 		tpls[idx] = tpl
-		logService.Debug(fid, batchId, corrId, fmt.Sprintf("template of %d is %s", actID, act.Template))
+		logService.Debug(fid, corrId, fmt.Sprintf("template of %d is %s", actID, act.Template))
 	}
 
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("remote step template:%v", tpls))
+	logService.Debug(fid, corrId, fmt.Sprintf("remote step template:%v", tpls))
 
 	// call ansible executor
 
@@ -147,19 +146,19 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	ipRet := make(map[string]*NodeResult, len(nodes))
 
 	for _, node := range nodes {
-		go h.callAndCheck(fid, batchId, corrId, node.Ip, rstep.Name, &tpls, &stepParams, ipsChan)
+		go h.callAndCheck(fid, corrId, node.Ip, rstep.Name, &tpls, &stepParams, ipsChan)
 	}
 
 	for i := 0; i < len(nodes); i++ {
 		select {
 		case nodeRespMapList := <-ipsChan:
 			for ipString, nodeResp := range nodeRespMapList {
-				logService.Debug(fid, batchId, corrId, fmt.Sprintf("%s runAndCheck is end !", ipString))
+				logService.Debug(fid, corrId, fmt.Sprintf("%s runAndCheck is end !", ipString))
 				ipRet[ipString] = nodeResp
 			}
 
 		case <-time.After(time.Second*checkTimeout*5 + 1):
-			logService.Debug(fid, batchId, corrId, fmt.Sprintf("runAndCheck timeout !"))
+			logService.Debug(fid, corrId, fmt.Sprintf("runAndCheck timeout !"))
 		}
 	}
 
@@ -205,12 +204,12 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	}
 }
 
-func (h *RemoteHandler) callAndCheck(fid int, batchId int, corrId string, ip string, setupName string, tpls *[]interface{}, stepParams *map[string]interface{}, ipsChan chan map[string]*NodeResult) {
+func (h *RemoteHandler) callAndCheck(fid int, corrId string, ip string, setupName string, tpls *[]interface{}, stepParams *map[string]interface{}, ipsChan chan map[string]*NodeResult) {
 	execID, user := ip+"_"+setupName+"_"+fmt.Sprint(time.Now().UnixNano()), "root"
 
 	_, err := h.callExecutor(&[]string{ip}, user, execID, tpls, stepParams, corrId)
 	if err != nil {
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("%s fail to execute command %v", ip, err.Error()))
+		logService.Error(fid, corrId, fmt.Sprintf("%s fail to execute command %v", ip, err.Error()))
 
 		rs := make(map[string]*NodeResult)
 		rs[ip] = &NodeResult{
@@ -225,15 +224,15 @@ func (h *RemoteHandler) callAndCheck(fid int, batchId int, corrId string, ip str
 	// check until got result
 	for i := 0; i < checkTimeout; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Debug(fid, batchId, corrId, fmt.Sprintf("Checking result for task %s for times %d", execID, i+1))
+		logService.Debug(fid, corrId, fmt.Sprintf("Checking result for task %s for times %d", execID, i+1))
 
 		resp, err := h.checkResult(execID, corrId)
 		if err != nil {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("Checking result for task %s for times %d FAIL:\n %s", execID, i+1, err.Error()))
+			logService.Error(fid, corrId, fmt.Sprintf("Checking result for task %s for times %d FAIL:\n %s", execID, i+1, err.Error()))
 			continue
 		}
 
-		logService.Debug(fid, batchId, corrId, fmt.Sprintf("Checking result for task %s for times %d status:%d", execID, i+1, resp.Task.Status))
+		logService.Debug(fid, corrId, fmt.Sprintf("Checking result for task %s for times %d status:%d", execID, i+1, resp.Task.Status))
 		switch resp.Task.Status {
 		case CODE_INIT, CODE_RUNNING:
 			continue

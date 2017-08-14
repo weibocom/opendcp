@@ -57,8 +57,26 @@ class NodeController extends RestController
     public function add_post(){
 
         $ips = I('ips','');
+
         $unit_id = I('unit_id',0);
         $user = I('user','');
+
+        $sid['id'] = I('sid');
+        if(isset($sid['id']) && !empty($sid['id'])){
+            $content=M('AlterationType')
+                ->where($sid)
+                ->getField('content');
+            $data=json_decode($content, true);
+            $condition['group_id'] = $data["group_id"];
+            $uid=M('NginxUnit')
+                ->where($condition)
+                ->getField('id');
+            $unit_id=$uid;
+        }
+
+        if(empty($user) || !is_string($user)){
+            $this->ajaxReturn(std_error('user is empty'));
+        }
 
         if(empty($ips) || !is_string($ips)){
             $this->ajaxReturn(std_error('ips is empty'));
