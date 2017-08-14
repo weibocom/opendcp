@@ -52,7 +52,7 @@ func (c *ExecApi) ExpandPool() {
 	}
 
 	num := req.Num
-	if num < 1 || num > 200 {
+	if num < 1 || num > 500 {
 		c.ReturnFailed("Bad num: "+strconv.Itoa(num), 400)
 		return
 	}
