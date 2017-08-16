@@ -135,7 +135,9 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `step_run_time`  longtext NOT NULL,
     `run_time` DOUBLE  NOT NULL DEFAULT 0.0 ,
     `created_time` datetime NOT NULL,
-    `updated_time` datetime NOT NULL
+    `updated_time` datetime NOT NULL,
+    `node_type` varchar(255) NOT NULL DEFAULT 'manual',
+    `deleted`   int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------

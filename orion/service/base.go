@@ -228,6 +228,24 @@ func (b *BaseService) ListByPageWithFilter(page int, pageSize int, obj interface
 	return int(count), nil
 }
 
+func (b *BaseService) ListWithFilter(obj interface{}, list interface{}, filterkey string, filtervalue interface{}) (int, error) {
+
+	o := orm.NewOrm()
+
+	qr := o.QueryTable(obj).Filter(filterkey, filtervalue)
+
+	count, err := qr.Count()
+	if err != nil {
+		return 0, err
+	}
+	_, err = qr.All(list)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
 func (b *BaseService) GetCount(obj interface{}, filterkey string, filtervalue interface{}) (int, error) {
 
 	o := orm.NewOrm()
