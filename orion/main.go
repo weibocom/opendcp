@@ -26,9 +26,9 @@ import (
 	"github.com/astaxie/beego/orm"
 
 	_ "github.com/go-sql-driver/mysql"
+	"weibo.com/opendcp/orion/executor"
 	. "weibo.com/opendcp/orion/models"
 	_ "weibo.com/opendcp/orion/routers"
-	"weibo.com/opendcp/orion/executor"
 )
 
 func main() {

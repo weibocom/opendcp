@@ -33,8 +33,8 @@ type StepOption struct {
 }
 
 type StepRunTime struct {
-	Name    string       `json:"name"`
-	RunTime float64      `json:"runTime:"`
+	Name    string  `json:"name"`
+	RunTime float64 `json:"runTime:"`
 }
 
 //任务流定义
