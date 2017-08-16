@@ -51,6 +51,6 @@ type Node struct {
 	VmId     string `json:"vm_id" orm:"null"`
 	Status   int    `json:"status"`
 	Pool     *Pool  `json:"-" orm:"rel(fk);on_delete(cascade)"`
-	NodeType string `json:"node_type" orm:"default(manual)"`
+	NodeType string `json:"node_type" orm:"default("manual")"`
 	//Cluster*Cluster`json:"-" orm:"rel(fk);on_delete(cascade)"`
 }

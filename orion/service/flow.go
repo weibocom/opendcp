@@ -22,6 +22,7 @@ package service
 import (
 	"github.com/astaxie/beego/orm"
 
+	"github.com/astaxie/beego"
 	"weibo.com/opendcp/orion/models"
 )
 
@@ -97,6 +98,31 @@ func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, er
 	_, err := o.QueryTable(&models.NodeState{}).Filter("Flow", flowId).All(&nodeList)
 
 	return nodeList, err
+}
+
+func (f *FlowService) DeleteNode(ips []string) error {
+	o := orm.NewOrm()
+	_, err := o.QueryTable(&models.NodeState{}).Filter("ip__in", ips).Update(orm.Params{
+		"deleted": models.DELETED,
+	})
+
+	if err != nil {
+		beego.Error("Error when update nodestate %v with err:", ips, err)
+	}
+
+	return nil
+}
+
+func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids []int) (int, error) {
+	o := orm.NewOrm()
+
+	num, err := o.QueryTable(obj).Exclude("deleted", models.DELETED).Filter("steps", "register").Filter("pool_id__in", pids).All(list)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int(num), nil
 }
 
 /*

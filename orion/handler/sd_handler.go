@@ -28,13 +28,14 @@ import (
 	"github.com/astaxie/beego"
 
 	"weibo.com/opendcp/orion/models"
+	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
 )
 
 const (
-	REG   = "register"
-	UNREG = "unregister"
-	ADD   = "addNginxNode"
+	REG    = "register"
+	UNREG  = "unregister"
+	ADD    = "addNginxNode"
 	DELETE = "deleteNginxNode"
 
 	SV_ID = "service_discovery_id"
@@ -79,7 +80,7 @@ type sdChkResp struct {
 	Code    int
 	Message string `json:"msg"`
 	Content struct {
-		State int
+		State  int
 		Detail []struct {
 			Ip    string
 			State int
@@ -121,8 +122,6 @@ func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
 				SV_ID: "Integer",
 			},
 		},
-
-
 	}
 }
 
@@ -165,15 +164,14 @@ func (h *ServiceDiscoveryHandler) unregister(params map[string]interface{},
 	return h.do(UNREG_URL, params, nodes, corrId)
 }
 
-
 func (h *ServiceDiscoveryHandler) addNginxNode(params map[string]interface{},
-        nodes []*models.NodeState, corrId string) *HandleResult {
+	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	return h.AddOrDelete(ADD_URL, params, nodes, corrId)
 }
 
 func (h *ServiceDiscoveryHandler) deleteNginxNode(params map[string]interface{},
-nodes []*models.NodeState, corrId string) *HandleResult {
+	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	return h.AddOrDelete(DELETE_URL, params, nodes, corrId)
 }
@@ -183,8 +181,6 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	fid := nodes[0].Flow.Id
 
-	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
-
 	svVal := params[SV_ID]
 	sv, err := utils.ToInt(svVal)
 
@@ -193,6 +189,11 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 		return Err("Bad servicd_id")
 	}
+	if len(nodes) == 1 {
+		corrId = fmt.Sprintf("%d-%d-%s", fid, sv, nodes[0].Ip)
+	}
+
+	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	// call api
 	logService.Debug(fid, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
@@ -208,7 +209,6 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 	data["type_id"] = sv
 	data["ips"] = strings.Join(ips, ",")
 	data["user"] = "root"
-
 
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
@@ -303,14 +303,23 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 	corrId, instanceId := nodeState.CorrId, nodeState.VmId
 
+	pool := &models.Pool{Id: nodeState.Pool.Id}
+	err := service.Cluster.GetBase(pool)
+	if err != nil {
+		beego.Error("Get pool for", instanceId, "fails:", err)
+		return "<NO LOG>"
+	}
+
+	corrId = fmt.Sprintf("%d-%d-%s", nodeState.Flow.Id, pool.SdId, nodeState.Ip)
+
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
-	err := h.callAPI("GET", url, nil, &header, resp)
-	if err != nil {
+	error := h.callAPI("GET", url, nil, &header, resp)
+	if error != nil {
 		beego.Error("Get log for", instanceId, "fails:", err)
 		return "<NO LOG>"
 	}
@@ -319,7 +328,7 @@ func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 }
 
 func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]interface{},
-nodes []*models.NodeState, corrId string) *HandleResult {
+	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
 
@@ -349,7 +358,6 @@ nodes []*models.NodeState, corrId string) *HandleResult {
 	data["ips"] = strings.Join(ips, ",")
 	data["user"] = "root"
 
-
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
@@ -361,13 +369,11 @@ nodes []*models.NodeState, corrId string) *HandleResult {
 		return hr
 	}
 
-
-	if(resp.Code != 0){
+	if resp.Code != 0 {
 		return Err(resp.Message)
-	}else{
+	} else {
 		return h.success(nodes)
 	}
-
 
 }
 

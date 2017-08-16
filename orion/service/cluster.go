@@ -23,8 +23,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"weibo.com/opendcp/orion/models"
 	"fmt"
+	"weibo.com/opendcp/orion/models"
 )
 
 type ClusterService struct {

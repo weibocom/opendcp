@@ -395,6 +395,8 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 			//service.Cluster.DeleteBase(node)
 			service.Cluster.DeleteBase(&models.Node{Id: node.Node.Id})
 		}
+		node.Deleted = models.DELETED
+		service.Cluster.UpdateBase(node)
 	}
 
 	success := false
