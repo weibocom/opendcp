@@ -256,7 +256,7 @@ def check_task():
         Logger.error("try check_task exception --------------@")
         return return_failed(-1, "json encode error"), 400
     except Exception as e:
-        Logger.error("try check_task exception --------------> %s" %(str(e)))
+        Logger.error("try check_task exception -------------->$ %s" %(str(e)))
         return return_failed(-1, e.message), 500
 '''
 Check status for specified request by id and name
@@ -294,19 +294,34 @@ def getlog():
             logs = Service.get_log_by_globalid_source_host(global_id, source, host)
             if logs is None:
                 return return_failed(-1, "no task found for specified global_id source host:"+str(global_id)), 404
-        #return status data
-        ret_log = []
 
-            # ret_log.append(dict(
-            #     global_id=log.global_id,
-            #     source=log.source,
-            #     log=json.loads(log.log),
-            # ))
+        ret_log = []
+        ok_dict = {
+            AnsibleTask.STEP_SUBMIT: '1.Submmit ansible task and be ready to start OK', AnsibleTask.STEP_SSH: '2.Download ssh_keys OK',
+            AnsibleTask.STEP_INIT: '3.Init ansible config OK', AnsibleTask.STEP_LOAD: '4.Load play for task OK',
+            AnsibleTask.STEP_RUN: '5.Begin execute play for task'
+        }
         for log in logs:
+            task = Service.get_task_by_id(log.task_id)
+            # failed_dict = {
+            #     AnsibleTask.STEP_SUBMIT: '1.Submmit ansible task and be ready to start ...',AnsibleTask.STEP_SSH:'2.Download ssh_keys ...',
+            #     AnsibleTask.STEP_INIT: '3.Init ansible config ...', AnsibleTask.STEP_LOAD: '4.Load play for task ...',
+            #     AnsibleTask.STEP_RUN: '5.Execute play for task ...'
+            # }
+            step_ret = []
+
+            i = AnsibleTask.STEP_SUBMIT
+            while i<=task.step:
+                step_ret.append(ok_dict[i])
+                i += 1
+            # if task.step < AnsibleTask.STEP_RUN:
+            #     step_ret.append(failed_dict[task.step+1])
+            ret_log.extend(step_ret)
+            ret_log.append("global_id = %s, source = %s, create_time = %s, end_time = %s, host = %s, result = %s " %(log.global_id, log.source, log.create_time, log.end_time, log.host, log.task_status))
+
             if log.task_status == "failed":
-                tmps = "global_id = %s, source = %s, create_time = %s, end_time = %s, host = %s, reuslt = %s " %(log.global_id, log.source, log.create_time, log.end_time, log.host,
- log.task_status)+"\n\t"
                 redict = json.loads(log.log)
+                tmps = "--->Run task failed!!!<--- \n\t"
                 if "results" not in redict.keys():
                     tmps += "message: "
                     if "msg" in redict.keys():
@@ -314,33 +329,36 @@ def getlog():
                     elif "stderr" in redict.keys():
                         tmps += redict["stderr"]
                     else:
-                        tmps += "no error msg out"
+                        tmps += "no error msg out,maybe db op error"
                     tmps += "\n\t"
                     ret_log.append(tmps)
                     continue
                 for i in redict["results"]:
                     if "msg" in redict.keys():
-                    #if i["msg"] != "":
+                        #if i["msg"] != "":
                         tmps += "message: "
                         tmps += i["msg"]
                         tmps += "\n\t"
                 ret_log.append(tmps)
                 continue
             if log.task_status == "unreacheable":
-                tmps = "global_id = %s, source = %s, create_time = %s, end_time = %s, host = %s, reuslt = %s " %(log.global_id, log.source, log.create_time, log.end_time, log.host,
- log.task_status)+"\n\t"
-                if "results" not in redict.keys():
-                    tmps += "message: "
-                    if "msg" in redict.keys():
-                        tmps += redict["msg"]
-                    elif "stderr" in redict.keys():
-                        tmps += redict["stderr"]
-                    else:
-                        tmps += "no error msg out"
-                    tmps += "\n\t"
+                tmps = "--->Run task unreacheable!!!<--- \n\t"
+                tmps += log.log
+                tmps += "\n\t"
                 ret_log.append(tmps)
                 continue
-            ret_log.append("global_id = %s, source = %s, create_time = %s, end_time = %s, host = %s, reuslt = %s " %(log.global_id, log.source, log.create_time, log.end_time, log.host, log.task_status))
+
+            if log.task_status == "ok":
+                tmps = "--->Run task ok!!!<--- \n\t"
+                tmps += log.log
+                tmps += "\n\t"
+                ret_log.append(tmps)
+                continue
+            if log.task_status == "start":
+                tmps = log.log
+                tmps += "\n\t"
+                ret_log.append(tmps)
+                continue
         return return_success(content={
             "log": ret_log
         }), 200
@@ -348,7 +366,7 @@ def getlog():
         Logger.error("try getlog exception --------------@")
         return return_failed(-1, "json encode error"), 400
     except Exception as e:
-        Logger.error("try getlog exception --------------> %s" %(str(e)))
+        Logger.error("try getlog exception --------------$> %s" %(str(e)))
         return return_failed(-1, e.message), 500
 
 @App.route('/api/parallel_run', methods=['POST'])
