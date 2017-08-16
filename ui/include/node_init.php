@@ -11,6 +11,7 @@ class node_init {
 	static $arr_type = array(
 		1 => '计算节点初始化',
 		2 => '控制节点初始化',
+		3 => '存储节点初始化',
 	);
 
 	static function getOneNodeInit($id){

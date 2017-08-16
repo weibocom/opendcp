@@ -75,7 +75,7 @@ $myTitle = ($type == 1 ? '初始化计算节点' : ($type == 3 ? '初始化存�
         url = '/api/for_openstack/machine.php';
         ip = $('#compute_ip').val();
         type = $('#type').val();
-        disk_name = ($('#disk_name').val() == null) ? '' : $('$disk_name').val();
+        disk_name = ($('#disk_name').val() == null) ? '' : $('#disk_name').val();
         password = $('#compute_password').val();
         postData = {"action": "addip", "ip": ip, "password": password, "type": type, "disk_name" : disk_name,};
         $.ajax({
