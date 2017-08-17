@@ -60,7 +60,8 @@ class Channel {
             $return['msg'] = 'ansible: parameter tasks is empty';
             return $return;
         }
-        $tasks_name = 'auto_reload_nginx'.date("Y-m-d-H:i:s").'_'.rand(10000,99999);
+        $tasks_name = 'reload_nginx'.date("Y-m-d-H:i:s").'_'.rand(10000,99999).'_'.strval($cor_id);
+        $cor_id=$tasks_name;
         $data = [
             'nodes'    => $ips,
             'user'     => $user,
