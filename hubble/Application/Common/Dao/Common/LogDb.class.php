@@ -55,7 +55,8 @@ class LogDb {
     public function getOctanLog($gid, $ip = ''){
 
         $url = C('HUBBLE_ANSIBLE_HTTP') .'/api/getlog';
-
+        $data=M('AlterationHistory')->where(['global_id' => $gid])->find();
+        $gid=$data['task_name'];
         $header = [
             "X-CORRELATION-ID: $gid",
             "X-SOURCE: hubble",
