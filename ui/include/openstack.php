@@ -398,8 +398,7 @@ Class openstack
 
         self::$needadmin = true;
         $arr_server = self::send_http(
-            self::$arr_region_config[$currRegion]['storage_domain'] . '/v3/' . $_SESSION['openstack_cur_project_id'] .'/os-hosts',
-            $arr
+            self::$arr_region_config[$currRegion]['storage_domain'] . '/v3/' . $_SESSION['openstack_cur_project_id'] .'/os-hosts'
         );
 
         $detail_list = array();

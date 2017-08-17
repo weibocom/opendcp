@@ -42,11 +42,12 @@ CREATE TABLE IF NOT EXISTS `tbl_hubble_log` (
 CREATE TABLE IF NOT EXISTS `tbl_hubble_alteration_history` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `global_id` varchar(60) NOT NULL,
-  `type` varchar(11) NOT NULL DEFAULT 'sync',
-  `task_id` int(11) NOT NULL,
-  `task_name` varchar(60) NOT NULL DEFAULT '',
-  `channel` varchar(255) NOT NULL DEFAULT '',
-  `create_time` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+  `sid` int(11) unsigned ,
+  `type` varchar(11) DEFAULT 'sync',
+  `task_id` int(11),
+  `task_name` varchar(60) DEFAULT '',
+  `channel` varchar(255) DEFAULT '',
+  `create_time` datetime DEFAULT '1970-01-01 00:00:00',
   `opr_user` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -203,11 +203,11 @@ require_once('../include/navbar.php');
                                                 foreach ($onehost['host'] as $host_detail){?>
 
                                             <tr>
-                                                <td><?= $host_detail['host'] ?></td>
-                                                <td><?= $host_detail['volume_count'] ?></td>
-                                                <td><?= $host_detail['total_volume_gb'] ?></td>
-                                                <td><?= $host_detail['snapshot_count'] ?></td>
-                                                <td><?= $host_detail['total_snapshot_gb'] ?></td>
+                                                <td><?= $host_detail['resource']['host'] ?></td>
+                                                <td><?= $host_detail['resource']['volume_count'] ?></td>
+                                                <td><?= $host_detail['resource']['total_volume_gb'] ?></td>
+                                                <td><?= $host_detail['resource']['snapshot_count'] ?></td>
+                                                <td><?= $host_detail['resource']['total_snapshot_gb'] ?></td>
                                             </tr>
                                         <?php } }?>
                                         </tbody>
