@@ -13,65 +13,93 @@ use Think\Controller\RestController;
 
 class TimingController extends RestController
 {
-    private $timinginfo,$upstream;
+    private $timinginfo,$alterationHistory,$altreationType,$upstream;
     public function __construct()
     {
         ignore_user_abort(true);//忽略用户的断开
         set_time_limit(0);//设置脚本最大执行时间
         parent::__construct();
         $this->timinginfo = M("TimingInfo");
+        $this->alterationHistory = M("AlterationHistory");
+        $this->altreationType = M("AlterationType");
         $this->upstream = new Upstream();
-    }
-    //测试函数
-    public function test(){
-        echo "cli - php test";
-        echo I('aa');
     }
     //定时任务
     public function beginTimingReload()
     {
         ignore_user_abort(true);//忽略用户的断开
         set_time_limit(0);//设置脚本最大执行时间
-        //接受值，并且写入数据库
-        $id = I('id');
-        $sid = I('sid');
-        $name = I('name');
-        $gid = I('gid');
-        $user = I('user');
-        $correlation = I('correlation');
-        $data['sdid'] = intval($id);
-        $data['script_id'] = intval($sid);
-        $data['name'] = $name;
-        $data['user'] = $user;
-        $data['group_id'] = intval($gid);
-        $data['correlation_id'] = $correlation;
-        if (!empty($data['script_id']) && !empty($data['name']) && !empty($data['user']) && !empty($data['group_id']) && !empty($data['correlation_id'])){
+        $correlation = I('correlation');//每个ip对应的correlion_id,数据表中为global_id
+        $sid = I('id');//服务发现类型id
+        $user = I('user');//操作用户
+        $data['global_id']=$correlation;
+        $data['sid']=$sid;
+        $data['opr_user'] = $user;
+        $this->alterationHistory->add($data);
+        //创建标志文件
+        $entry_dir = C('HUBBLE_ROOT_DIR');
+        $entry_file = C('HUBBLE_ROOT_DIR') . "timing";
+        mkdir($entry_dir, 0755, true);
+        //标志文件存在，说明循环计时任务已经开始
+        if (!file_exists($entry_file)) {
+            fclose(fopen($entry_file, "a"));
+            //找出task_name为空的不重复的sid
+            $map['task_name']  = array('eq','');
+            $judge=1;
+            while($judge>0){
+                $res = $this->alterationHistory->distinct(true)->where($map)->field('sid')->select();
+                //循环下发；根据服务发现类型
+                for ($i=0;$i<count($res);$i++){
+                    //依据服务发现类型找出服务发现类型的一些信息，包括upstream名称，分组id，ip列表，端口号，权重
+                    $cont = $this->altreationType->field('content')
+                        ->where(['id' => $res[$i]['sid']])
+                        ->find();
+                    $content = json_decode($cont['content'], true);
 
-            $this->timinginfo->add($data);
-            $entry_dir = C('HUBBLE_ROOT_DIR');
-            $entry_file = C('HUBBLE_ROOT_DIR') . "test";
-            mkdir($entry_dir, 0755, true);
-            //标志文件存在，说明循环计时任务已经开始
-            if (!file_exists($entry_file)) {
-                fclose(fopen($entry_file, "a"));
-                $res = $this->timinginfo->find();
-                //数据库数据不为空
-                while (is_array($res) && count($res) > 0) {
-                    $result = $this->timinginfo->find();
-                    $dele['correlation_id']=$result['correlation_id'];
-                    //删除correlation_id相同数据
-                    $this->timinginfo->where($dele)->delete();
-                    //下发.
-                    $task = $this->upstream->callTunnel($result['script_id'], $result['name'], $result['user'], true, $result['group_id'], '', $result['correlation_id']);
-                    //记录变更表
+                    //通过api获取当前服务发现类型的ip列表
+                    $url = "http://orion:8080/pool/".$res[$i]['sid']."/list_register";
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_HEADER,0);
+                    $json = curl_exec($ch);
+                    curl_close($ch);
+                    $ips=json_decode($json, true);
+                    $content['ips']=$ips['data'];
+                    //print_r($content);
+
+                    //变更数据库中的upstream文件
+                    $upstream = new Upstream();
+                    //数据写入数据库
+                    $ret = $upstream->addNode(
+                        $content['name'], $content['group_id'], $content['ips'],
+                        $content['port'], $content['weight']);
+                    //print_r($ret);
+
+                    if($ret['code'] != 0) return $ret;
+
+                    // -------- 对 consul 的处理
+                    if($ret['content']['is_consul']){
+                        $return['content'] = [
+                            'type' => 'sync',
+                            'task_id' => 0,
+                        ];
+                        return $return;
+                    }
+
+                    //下发时，标志是服务发现类型的id
+                    $task = $this->upstream->callTunnel($content['script_id'], $content['name'], $res[$i]['opr_user'], true, $content['group_id'], '', $res[$i]['sid']);
+                    //记录变更表；根据服务发现类型的id变更所有与之相关的ip的task_id和task_name
                     $task = $task['content'];
                     $history = new AlterationHistory();
-                    $history->addRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $result['user'], $result['correlation_id']);
-                    sleep(3);//倒计时
-                    $res = $this->timinginfo->find();
+                    //将返回的task_id 和task_name保存至对应的sid列中的对应字段
+                    $history->addTaskRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $res[$i]['sid']);
                 }
-                unlink($entry_file);
+
+                sleep(50);//暂停50秒
+                $judge=1;
             }
+            unlink($entry_file);
         }
     }
 }
