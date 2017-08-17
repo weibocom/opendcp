@@ -61,7 +61,31 @@ class AlterationHistory {
         $return['content'] = $ret;
         return $return;
     }
+    
+    //修改后的addTaskRecord方法，更新alteration_history的部分数据
+    public function addTaskRecord($type, $task_id, $task_name, $channel,$cor_id=''){
+        //根据sid填入task_id和task_name以及type，channel
+        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
+        $data =[
+            'type'        => $type,
+            'task_id'     => $task_id,
+            'task_name'   => $task_name,
+            'channel'     => $channel,
+            'create_time' => date("Y-m-d H:i:s"),
+        ];
+        $map['task_name']  = array('eq','');
+        $map['sid'] = $cor_id;
+        $ret = $this->historyTbl->where($map)->save($data);
+        if($ret === false){
+            $return['code'] = 1;
+            $return['msg'] = "add alteration record failed, ERROR: " .$this->historyTbl->getDbError();
+            return $return;
+        }
+        $return['content'] = $ret;
+        return $return;
+    }
+    
     public function exist($id){
         $ret = $this->historyTbl->where(['id'=>$id])->find();
 
