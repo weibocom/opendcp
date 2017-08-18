@@ -52,6 +52,7 @@ func init() {
 		beego.NSRouter("/delete/:id:int", &api.ClusterApi{}, "*:PoolDelete"),
 
 		beego.NSRouter("/:id:int/list_nodes", &api.ClusterApi{}, "*:NodeList"),
+		beego.NSRouter("/:sid:int/list_register", &api.ClusterApi{}, "*:NodeRegister"),
 		beego.NSRouter("/:id:int/add_nodes", &api.ClusterApi{}, "*:NodeAppend"),
 		beego.NSRouter("/:id:int/remove_nodes", &api.ClusterApi{}, "*:NodeDelete"),
 		beego.NSRouter("/list", &api.ClusterApi{}, "*:AllPoolList"),

@@ -45,7 +45,7 @@ class Channel {
      * @param $ips Array
      * @param $name 变更的名称
      */
-    public function ansible($ips, $user, $tasks, $params, $fork_num){
+    public function ansible($ips, $user, $tasks, $params, $fork_num,$cor_id=''){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
@@ -60,7 +60,8 @@ class Channel {
             $return['msg'] = 'ansible: parameter tasks is empty';
             return $return;
         }
-        $tasks_name = 'auto_reload_nginx'.date("Y-m-d-H:i:s").'_'.rand(10000,99999);
+        $tasks_name = 'reload_nginx'.date("Y-m-d-H:i:s").'_'.rand(10000,99999).'_'.strval($cor_id);
+        $cor_id=$tasks_name;
         $data = [
             'nodes'    => $ips,
             'user'     => $user,
@@ -76,7 +77,7 @@ class Channel {
         hubble_log(HUBBLE_INFO, "call ansible http: [$url]");
 
         $ret = http($url, $data, 'POST', 3,
-            ['X-CORRELATION-ID:'.I('server.HTTP_X_CORRELATION_ID'), 'X-SOURCE: hubble']);
+            ['X-CORRELATION-ID:'.(I('server.HTTP_X_CORRELATION_ID')?I('server.HTTP_X_CORRELATION_ID'):$cor_id), 'X-SOURCE: hubble']);
         if($ret['code'] != 0){
             $return['code'] = $ret['errno'];
             $return['msg']  = 'ansible:'.$ret['error'];

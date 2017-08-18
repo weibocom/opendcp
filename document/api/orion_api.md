@@ -24,7 +24,7 @@
 | 名称          | 类型    | 示例值      | 描述     |
 | ----------- | ----- | -------- | ------ |
 | code        | int   | 0        | 返回码    |
-| msg         | strng | "sucess" | 接口返回信息 |
+| msg         | string | "sucess" | 接口返回信息 |
 | data        | array | [{},{}]  | 数据结果   |
 | page        | int   | 1        | 当前页    |
 | page_size   | int   | 10       | 当前页大小  |
@@ -114,7 +114,7 @@ curl -X GET "http://HOST/cluster/list?page=1&page_size=10"  \
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
 | code | int   | 0        | 返回码     |
-| msg  | strng | "sucess" | 接口返回信息  |
+| msg  | string| "sucess" | 接口返回信息  |
 | data | int   |          | 添加的集群id |
 
 #### 请求示例
@@ -176,7 +176,7 @@ curl -X POST 'http://HOST/cluster/create' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | string | ""       |        |
 
 #### 请求示例
@@ -236,7 +236,7 @@ curl -X POST 'http://HOST/cluster/update/1' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | null     |        |
 
 #### 请求示例
@@ -297,7 +297,7 @@ curl -X POST 'http://$HOST/cluster/delete/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data参数
@@ -305,7 +305,7 @@ data参数
 | 名称   | 类型     | 示例值  | 描述   |
 | ---- | ------ | ---- | ---- |
 | id   | int    | 0    | 服务Id |
-| name | strng  |      | 服务名称 |
+| name | string |      | 服务名称 |
 | desc | string |      | 服务描述 |
 | biz  | string |      | 产品线  |
 
@@ -384,7 +384,7 @@ curl
 | 名称          | 类型     | 示例值      | 描述     |
 | ----------- | ------ | -------- | ------ |
 | code        | int    | 0        | 返回码    |
-| msg         | strng  | "sucess" | 接口返回信息 |
+| msg         | string | "sucess" | 接口返回信息 |
 | data        | object | {}       | 返回结果   |
 | page        | int    |          | 当前页    |
 | page_size   | int    |          | 当前页大小  |
@@ -395,7 +395,7 @@ data参数
 | 名称           | 类型     | 示例值  | 描述   |
 | ------------ | ------ | ---- | ---- |
 | id           | int    | 0    | 服务Id |
-| name         | strng  |      | 服务名称 |
+| name         | string |      | 服务名称 |
 | desc         | string |      | 集群描述 |
 | docker_image | string |      | 镜像地址 |
 | cluster_id   | int    |      | 集群id |
@@ -484,7 +484,7 @@ curl
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data 参数中object对象说明
@@ -557,7 +557,7 @@ curl -X GET "http://HOST/service/create"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 
@@ -627,7 +627,7 @@ curl -X DELETE "http://HOST/service/delete/1"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data 参数中object对象说明
@@ -716,7 +716,7 @@ curl -X GET "http://HOST/service/1"  \
 | 名称          | 类型     | 示例值      | 描述     |
 | ----------- | ------ | -------- | ------ |
 | code        | int    | 0        | 返回码    |
-| msg         | strng  | "sucess" | 接口返回信息 |
+| msg         | string | "sucess" | 接口返回信息 |
 | data        | object | {}       | 返回结果   |
 | page        | int    |          | 当前页    |
 | page_size   | int    |          | 当前页大小  |
@@ -727,7 +727,7 @@ data参数
 | 名称         | 类型     | 示例值  | 描述       |
 | ---------- | ------ | ---- | -------- |
 | id         | int    | 0    | 服务池Id    |
-| name       | strng  |      | 服务池名称    |
+| name       | string |      | 服务池名称    |
 | desc       | string |      | 服务池描述    |
 | vm_type    | string |      | 虚拟机模板id  |
 | sd_id      | int    |      | 服务发现id   |
@@ -812,7 +812,7 @@ curl
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data 参数中object对象说明
@@ -882,7 +882,7 @@ curl -X GET "http://HOST/service/create"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 #### 请求示例
@@ -961,7 +961,7 @@ curl -X DELETE "http://HOST/pool/delete/1"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 
@@ -1034,7 +1034,7 @@ curl -X DELETE "http://HOST/pool/update/1"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data 参数中object对象说明
@@ -1115,7 +1115,7 @@ curl -X GET "http://HOST/pool/1"  \
 | 名称          | 类型     | 示例值      | 描述     |
 | ----------- | ------ | -------- | ------ |
 | code        | int    | 0        | 返回码    |
-| msg         | strng  | "sucess" | 接口返回信息 |
+| msg         | string | "sucess" | 接口返回信息 |
 | data        | object | {}       | 返回结果   |
 | page        | int    |          | 当前页    |
 | page_size   | int    |          | 当前页大小  |
@@ -1126,7 +1126,7 @@ data参数
 | 名称        | 类型     | 示例值  | 描述                         |
 | --------- | ------ | ---- | -------------------------- |
 | id        | int    | 0    | 节点Id                       |
-| ip        | strng  |      | 节点ip地址                     |
+| ip        | string |      | 节点ip地址                     |
 | vm_id     | string |      | 节点实例编号                     |
 | status    | int    |      | 节点状态（1 成功/3 失败）            |
 | node_type | int    |      | 节点类型（手动 manual/定时 crontab） |
@@ -1202,7 +1202,7 @@ curl
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data 参数中object对象说明
@@ -1283,7 +1283,7 @@ curl -X GET "http://HOST/pool/1/add_nodes"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 #### 请求示例
@@ -1354,7 +1354,7 @@ curl -X GET "http://HOST/pool/1/add_nodes"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data 参数中object对象说明
@@ -1414,7 +1414,7 @@ curl -X POST "http://HOST/pool/search_by_ip/10.85.41.160,10.85.41.161"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 #### 请求示例
@@ -1423,7 +1423,7 @@ curl -X POST "http://HOST/pool/search_by_ip/10.85.41.160,10.85.41.161"  \
 curl -X POST "http://HOST/pool/expand/1  \
 -H "Content-type: application/json" \
 -H "Authorization: root" \
--d '{"num":2}  
+-d '{"num":2}'  
 ```
 #### 响应示例
 
@@ -1479,7 +1479,7 @@ curl -X POST "http://HOST/pool/expand/1  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 
@@ -1547,7 +1547,7 @@ curl -X POST "http://HOST/pool/shrink/1  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 
@@ -1625,7 +1625,7 @@ steps array中每个元素参数
 | 名称   | 类型    | 示例值      | 描述       |
 | ---- | ----- | -------- | -------- |
 | code | int   | 0        | 返回码      |
-| msg  | strng | "sucess" | 接口返回信息   |
+| msg  | string| "sucess" | 接口返回信息   |
 | data | int   |          | 创建的任务流id |
 
 #### 请求示例
@@ -1709,7 +1709,7 @@ curl -X GET "http://HOST/task/impl/create"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -1773,7 +1773,7 @@ curl -X POST 'http://HOST/task/impl/delete' \
 | 名称          | 类型    | 示例值      | 描述     |
 | ----------- | ----- | -------- | ------ |
 | code        | int   | 0        | 返回码    |
-| msg         | strng | "sucess" | 接口返回信息 |
+| msg         | string| "sucess" | 接口返回信息 |
 | data        | array | [{},{}]  | 数据结果   |
 | page        | int   | 1        | 当前页    |
 | page_size   | int   | 10       | 当前页大小  |
@@ -1871,7 +1871,7 @@ curl -X GET "http://HOST/task/impl/list"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          | 数据结果   |
 
 #### 请求示例
@@ -1944,7 +1944,7 @@ curl -X GET "http://HOST/cluster/list"  \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | ""       |        |
 
 #### 请求示例
@@ -2007,7 +2007,7 @@ curl -X POST ' http://HOST/task/start :"id":int' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | ""       |        |
 
 #### 请求示例
@@ -2070,7 +2070,7 @@ curl -X POST 'http://HOST/task/pause:"id":int ' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | ""       |        |
 
 #### 请求示例
@@ -2133,7 +2133,7 @@ curl -X POST 'http://HOST/task/stop:"id":int' \
 | 名称   | 类型     | 示例值      | 描述      |
 | ---- | ------ | -------- | ------- |
 | code | int    | 0        | 返回码     |
-| msg  | strng  | "sucess" | 接口返回信息  |
+| msg  | string | "sucess" | 接口返回信息  |
 | data | object | Logs     | 获取的日志信息 |
 
 
@@ -2216,7 +2216,7 @@ curl -X POST 'http://HOST/task/2/log' \
 | 名称          | 类型     | 示例值      | 描述     |
 | ----------- | ------ | -------- | ------ |
 | code        | int    | 0        | 返回码    |
-| msg         | strng  | "sucess" | 接口返回信息 |
+| msg         | string | "sucess" | 接口返回信息 |
 | data        | object |          | 数据结果   |
 | page        | int    | 1        | 当前页    |
 | page_size   | int    | 10       | 当前页大小  |
@@ -2294,7 +2294,7 @@ curl -X POST 'http://HOST/task/list' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          | 数据结果   |
 
 data 中对象参数说明
@@ -2453,7 +2453,7 @@ curl -X POST 'http://HOST/task/expandList/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 
@@ -2519,7 +2519,7 @@ curl -X POST 'http://HOST/task/uploadList/1' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -2591,7 +2591,7 @@ curl -X POST 'http://HOST/task/:"id":int/detail ' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -2655,7 +2655,7 @@ curl -X POST 'http://HOST/task/saveTask ' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -2736,7 +2736,7 @@ curl -X POST 'http://HOST/task/2/log' \
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
 | code | int   | 0        | 返回码     |
-| msg  | strng | "sucess" | 接口返回信息  |
+| msg  | string| "sucess" | 接口返回信息  |
 | data | int   |          | 创建的模板id |
 
 #### 请求示例
@@ -2805,7 +2805,7 @@ curl -X POST 'http://HOST/task_tpl/create' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | ""       |        |
 
 #### 请求示例
@@ -2877,7 +2877,7 @@ curl -X POST 'http://HOST/task_tpl/list \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -2938,7 +2938,7 @@ curl -X POST 'http://HOST/task_tpl/update/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -3012,7 +3012,7 @@ curl -X POST 'http://HOST/task_tpl/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | id   | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -3088,7 +3088,7 @@ curl -X POST 'http://HOST/task_tpl/update/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -3248,7 +3248,7 @@ curl -X GET "http://HOST/remote_step/list"  \
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
 | code | int   | 0        | 返回码     |
-| msg  | strng | "sucess" | 接口返回信息  |
+| msg  | string| "sucess" | 接口返回信息  |
 | data | int   |          | 添加的步骤id |
 
 #### 请求示例
@@ -3313,7 +3313,7 @@ curl -X POST 'http://HOST/remote_step/create' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | string | ""       |        |
 
 #### 请求示例
@@ -3377,7 +3377,7 @@ curl -X POST 'http://HOST/remote_step/update/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | null     |        |
 
 #### 请求示例
@@ -3439,7 +3439,7 @@ curl -X POST 'http://$HOST/remote_step/delete/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data参数
@@ -3447,7 +3447,7 @@ data参数
 | 名称      | 类型       | 示例值  | 描述   |
 | ------- | -------- | ---- | ---- |
 | id      | int      | 0    | 步骤Id |
-| name    | strng    |      | 步骤名称 |
+| name    | string   |      | 步骤名称 |
 | desc    | string   |      | 步骤描述 |
 | actions | []string |      | 命令顺序 |
 
@@ -3621,7 +3621,7 @@ curl -X GET "http://HOST/action/list"  \
 | 名称   | 类型    | 示例值     | 描述     |
 | ---- | ----- | ------- | ------ |
 | code | int   | 0       | 返回码    |
-| err  | strng | "error" | 接口返回信息 |
+| err  | string| "error" | 接口返回信息 |
 | data | int   |         | 命令id   |
 
 #### 请求示例
@@ -3686,7 +3686,7 @@ curl -X POST 'http://HOST/action/create' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | string | ""       |        |
 
 #### 请求示例
@@ -3750,7 +3750,7 @@ curl -X POST 'http://HOST/action/update/2' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | null     |        |
 
 #### 请求示例
@@ -3812,7 +3812,7 @@ curl -X POST 'http://$HOST/action/delete/:id' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data参数
@@ -3820,7 +3820,7 @@ data参数
 | 名称     | 类型                     | 示例值  | 描述     |
 | ------ | ---------------------- | ---- | ------ |
 | id     | int                    | 0    | 远程命令Id |
-| name   | strng                  |      | 远程命令名称 |
+| name   | string                 |      | 远程命令名称 |
 | desc   | string                 |      | 远程命令描述 |
 | params | map[string]interface{} |      | 参数列表   |
 
@@ -3894,7 +3894,7 @@ curl
 | 名称   | 类型    | 示例值      | 描述      |
 | ---- | ----- | -------- | ------- |
 | code | int   | 0        | 返回码     |
-| msg  | strng | "sucess" | 接口返回信息  |
+| msg  | string| "sucess" | 接口返回信息  |
 | data | int   |          | 创建的模板id |
 
 #### 请求示例
@@ -3960,7 +3960,7 @@ curl -X POST 'http://HOST/action/impl/create ' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | ""       |        |
 
 #### 请求示例
@@ -4031,7 +4031,7 @@ curl -X POST 'http://HOST/action/impl/list\
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object |          |        |
 
 #### 请求示例
@@ -4187,7 +4187,7 @@ curl -X GET "http://HOST/actimpl/list"  \
 | 名称   | 类型    | 示例值      | 描述        |
 | ---- | ----- | -------- | --------- |
 | code | int   | 0        | 返回码       |
-| msg  | strng | "sucess" | 接口返回信息    |
+| msg  | string| "sucess" | 接口返回信息    |
 | data | int   |          | 添加的命令实现id |
 
 #### 请求示例
@@ -4250,7 +4250,7 @@ curl -X POST 'http://HOST/actimpl/create' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | string | ""       |        |
 
 #### 请求示例
@@ -4313,7 +4313,7 @@ curl -X POST 'http://HOST/actimpl/update/:id' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | null     |        |
 
 #### 请求示例
@@ -4375,7 +4375,7 @@ curl -X POST 'http://$HOST/actimpl/delete/:id' \
 | 名称   | 类型     | 示例值      | 描述     |
 | ---- | ------ | -------- | ------ |
 | code | int    | 0        | 返回码    |
-| msg  | strng  | "sucess" | 接口返回信息 |
+| msg  | string | "sucess" | 接口返回信息 |
 | data | object | {}       | 返回结果   |
 
 data参数
@@ -4383,7 +4383,7 @@ data参数
 | 名称        | 类型                     | 示例值  | 描述   |
 | --------- | ---------------------- | ---- | ---- |
 | id        | int                    | 0    | 步骤Id |
-| type      | strng                  |      | 步骤名称 |
+| type      | string                 |      | 步骤名称 |
 | action_id | int                    |      | 命令id |
 | template  | map[string]interface{} | 模板   |      |
 
