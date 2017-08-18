@@ -1,0 +1,12 @@
+---
+- name: start to pull
+  shell: echo 'start to pull the roles' > ~/base
+
+- name: pulling
+  shell: 'wget -P /root/zhaowei9/ http://{{ roles_url }}/remote_step/download/{{ roles_file }}'
+
+- name: unarchive
+  shell: 'tar -zxf /root/zhaowei9/{{ roles_file }} -C /root/zhaowei9'
+
+- name: end base role
+  shell: echo 'the base role has been exced.' >> ~/base

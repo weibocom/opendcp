@@ -26,6 +26,7 @@ import (
 
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
+	"os"
 )
 
 /**
@@ -43,6 +44,7 @@ type action_struct struct {
 	Id     int                    `json:"id"`
 	Name   string                 `json:"name"`
 	Desc   string                 `json:"desc"`
+	TaskType string      		  `json:"task_type"`
 	Params map[string]interface{} `json:"params"`
 }
 
@@ -56,6 +58,7 @@ type remotestep_struct struct {
 type remoteactionimpl_struct struct {
 	Id       int                    `json:"id"`
 	Type     string                 `json:"type"`
+	TaskType string        			`json:"task_type"`
 	ActionId int                    `json:"action_id"`
 	Template map[string]interface{} `json:"template"`
 }
@@ -80,6 +83,7 @@ func (f *RemoteApi) URLMapping() {
 	f.Mapping("RemoteActionImplList", f.RemoteActionImplList)
 	f.Mapping("RemoteActionImplUpdate", f.RemoteActionImplUpdate)
 
+	f.Mapping("RemoteDownload", f.RemoteDownload)
 }
 
 /**
@@ -110,9 +114,10 @@ func (c *RemoteApi) ActionAppend() {
 	data := models.RemoteAction{
 		Name:   req.Name,
 		Desc:   req.Desc,
+		TaskType: req.TaskType,
 		Params: string(paramsStr),
 	}
-	err = service.Cluster.InsertBase(&data)
+	err = service.Remote.InsertBase(&data)
 
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
@@ -145,6 +150,7 @@ func (c *RemoteApi) ActionList() {
 		liststruct[i].Id = fi.Id
 		liststruct[i].Name = fi.Name
 		liststruct[i].Desc = fi.Desc
+		liststruct[i].TaskType = fi.TaskType
 		json.Unmarshal([]byte(fi.Params), &liststruct[i].Params)
 
 	}
@@ -172,6 +178,7 @@ func (c *RemoteApi) GetAction() {
 	actionstr.Id = action.Id
 	actionstr.Name = action.Name
 	actionstr.Desc = action.Desc
+	actionstr.TaskType = action.TaskType
 	json.Unmarshal([]byte(action.Params), &actionstr.Params)
 
 	c.ReturnSuccess(actionstr)
@@ -188,6 +195,7 @@ func (c *RemoteApi) ActionUpdate() {
 	req := struct {
 		Name   string                 `json:"name"`
 		Desc   string                 `json:"desc"`
+		TaskType string               `json:"task_type"`
 		Params map[string]interface{} `json:"params"`
 	}{}
 
@@ -200,6 +208,7 @@ func (c *RemoteApi) ActionUpdate() {
 	action := &models.RemoteAction{Id: idInt}
 	err = service.Remote.GetBase(action)
 	action.Desc = req.Desc
+	action.TaskType = req.TaskType
 
 	paramsStr, _ := json.Marshal(req.Params)
 
@@ -249,7 +258,7 @@ func (c *RemoteApi) RemoteStepAppend() {
 		Desc:    req.Desc,
 		Actions: string(actionsStr),
 	}
-	err = service.Cluster.InsertBase(&data)
+	err = service.Remote.InsertBase(&data)
 
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
@@ -396,6 +405,7 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 	old := &models.RemoteActionImpl{}
 	conditions := make(map[string]interface{})
 	conditions["Type"] = req.Type
+	conditions["TaskType"] = req.TaskType
 	conditions["ActionId"] = req.ActionId
 
 	err = service.Remote.GetByMultiFieldValue(old, conditions)
@@ -412,10 +422,11 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 	data := models.RemoteActionImpl{
 		//Id:       req.Id,
 		Type:     req.Type,
+		TaskType: req.TaskType,
 		Template: string(templatestr),
 		ActionId: req.ActionId,
 	}
-	err = service.Cluster.InsertBase(&data)
+	err = service.Remote.InsertBase(&data)
 
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
@@ -447,12 +458,13 @@ func (c *RemoteApi) GetRemoteActionImpl() {
 		return
 	}
 
-	remoteactionimpltruct := remoteactionimpl_struct{}
-	remoteactionimpltruct.Id = remoteactionimpl.Id
-	remoteactionimpltruct.Type = remoteactionimpl.Type
-	json.Unmarshal([]byte(remoteactionimpl.Template), &remoteactionimpltruct.Template)
-	remoteactionimpltruct.ActionId = remoteactionimpl.ActionId
-	c.ReturnSuccess(remoteactionimpltruct)
+	remoteactionimpl_struct := remoteactionimpl_struct{}
+	remoteactionimpl_struct.Id = remoteactionimpl.Id
+	remoteactionimpl_struct.Type = remoteactionimpl.Type
+	remoteactionimpl_struct.TaskType = remoteactionimpl.TaskType
+	json.Unmarshal([]byte(remoteactionimpl.Template), &remoteactionimpl_struct.Template)
+	remoteactionimpl_struct.ActionId = remoteactionimpl.ActionId
+	c.ReturnSuccess(remoteactionimpl_struct)
 }
 
 /**
@@ -511,7 +523,7 @@ func (c *RemoteApi) RemoteActionImplUpdate() {
 	}
 
 	remoteactionimpl.Type = req.Type
-
+	remoteactionimpl.TaskType = req.TaskType
 	templateStr, _ := json.Marshal(req.Template)
 	remoteactionimpl.Template = string(templateStr)
 	//remoteactionimpl.ActionId = req.ActionId
@@ -548,10 +560,24 @@ func (c *RemoteApi) RemoteActionImplList() {
 	for i, fi := range list {
 		liststruct[i].Id = fi.Id
 		liststruct[i].Type = fi.Type
+		liststruct[i].TaskType = fi.TaskType
 		json.Unmarshal([]byte(fi.Template), &liststruct[i].Template)
 		liststruct[i].ActionId = fi.ActionId
 
 	}
 
 	c.ReturnPageContent(page, pageSize, count, liststruct)
+}
+
+// a interface for downloading roles
+func (c *RemoteApi) RemoteDownload() {
+		file_url := "./tmp/" + c.Ctx.Input.Param(":file")
+
+		if _, err := os.Stat(file_url); err != nil {
+			c.ReturnFailed(err.Error(), 400)
+			return
+		}
+
+		c.Ctx.Output.Download(file_url)
+		c.ReturnSuccess("")
 }

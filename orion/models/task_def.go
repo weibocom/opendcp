@@ -42,9 +42,9 @@ type FlowImpl struct {
 
 //任务流对应单步定义
 type ActionImpl struct {
-	Id     int                    `json:"id" orm:"pk;auto"`
-	Name   string                 `json:"name"`
-	Desc   string                 `json:"desc"`
-	Type   string                 `json:"type"`
-	Params map[string]interface{} `json:"params"`
+	Id       int                    `json:"id" orm:"pk;auto"`
+	Name     string                 `json:"name"`
+	Desc     string                 `json:"desc"`
+	Type     string                 `json:"type"`
+	Params   map[string]interface{} `json:"params"`
 }

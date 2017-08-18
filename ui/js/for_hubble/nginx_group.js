@@ -322,68 +322,68 @@ var check=function(tab){
 
 //获取详情
 var get = function (idx) {
-  var tab=$('#tab').val();
-  var url='/api/for_hubble/nginx_'+tab+'.php',postData={};
-  switch (tab){
-    case 'group':
-      postData={"action":"info","fIdx":idx};
-      break;
-  }
-  if(idx!=''){
-    $.ajax({
-      type: "POST",
-      url: url,
-      data: postData,
-      dataType: "json",
-      success: function (data) {
-        //执行结果提示
-        if(data.code==0){
-          if(typeof(data.content)!='undefined'){
-            //pageNotify('success','加载成功！');
-            $.each(data.content,function(k,v){
-              if($('#'+k).length>0){
-                switch ($('#'+k).get(0).tagName){
-                  case 'INPUT':
-                    switch ($('#'+k).attr('type')){
-                      case 'radio':
-                        $("input[name='"+k+"'][value='"+v+"']").attr("checked",true);
-                        break;
-                      case 'checkbox':
-                        $.each(v,function(k1,v1){
-                          $("input[id='"+k+"']:checkbox[value='"+v1+"']").attr('checked','true');
+    var tab=$('#tab').val();
+    var url='/api/for_hubble/nginx_'+tab+'.php',postData={};
+    switch (tab){
+        case 'group':
+            postData={"action":"info","fIdx":idx};
+            break;
+    }
+    if(idx!=''){
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: postData,
+            dataType: "json",
+            success: function (data) {
+                //执行结果提示
+                if(data.code==0){
+                    if(typeof(data.content)!='undefined'){
+                        //pageNotify('success','加载成功！');
+                        $.each(data.content,function(k,v){
+                            if($('#'+k).length>0){
+                                switch ($('#'+k).get(0).tagName){
+                                    case 'INPUT':
+                                        switch ($('#'+k).attr('type')){
+                                            case 'radio':
+                                                $("input[name='"+k+"'][value='"+v+"']").attr("checked",true);
+                                                break;
+                                            case 'checkbox':
+                                                $.each(v,function(k1,v1){
+                                                    $("input[id='"+k+"']:checkbox[value='"+v1+"']").attr('checked','true');
+                                                });
+                                                break;
+                                            default:
+                                                $('#'+k).val(v);
+                                                break;
+                                        }
+                                        break;
+                                    case 'SELECT':
+                                        if($('#'+k).find("option[value='"+v+"']").length==0){
+                                            $('#'+k).append('<option value="' + v + '">' + v + '</option>');
+                                        }
+                                        $('#'+k).find("option[value='"+v+"']").attr("selected",true);
+                                        break;
+                                    default:
+                                        $('#'+k).val(v);
+                                        break;
+                                }
+                            }
                         });
-                        break;
-                      default:
-                        $('#'+k).val(v);
-                        break;
+                    }else{
+                        pageNotify('warning','数据为空！');
                     }
-                    break;
-                  case 'SELECT':
-                    if($('#'+k).find("option[value='"+v+"']").length==0){
-                      $('#'+k).append('<option value="' + v + '">' + v + '</option>');
-                    }
-                    $('#'+k).find("option[value='"+v+"']").attr("selected",true);
-                    break;
-                  default:
-                    $('#'+k).val(v);
-                    break;
+                }else{
+                    pageNotify('error','加载失败！','错误信息：'+data.msg);
                 }
-              }
-            });
-          }else{
-            pageNotify('warning','数据为空！');
-          }
-        }else{
-          pageNotify('error','加载失败！','错误信息：'+data.msg);
-        }
-      },
-      error: function (){
-        pageNotify('error','加载详情失败！','错误信息：接口不可用');
-      }
-    });
-  }else{
-    pageNotify('warning','加载详情失败！','错误信息：参数错误');
-  }
+            },
+            error: function (){
+                pageNotify('error','加载详情失败！','错误信息：接口不可用');
+            }
+        });
+    }else{
+        pageNotify('warning','加载详情失败！','错误信息：参数错误');
+    }
 }
 
 //二次确认

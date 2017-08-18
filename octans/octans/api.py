@@ -113,15 +113,18 @@ def run_task():
         global_id = request.headers.get("X-CORRELATION-ID")
         if global_id is None:
             Logger.error("Missing X-CORRELATION-ID")
-            return return_failed(-1, "X-CORRELATION-ID is empyt"), 400
+            return return_failed(-1, "X-CORRELATION-ID is empty"), 400
         source = request.headers.get("X-SOURCE")
         if source is None:
-            return return_failed(-1, "X-SOURCE is empyt"), 400
+            return return_failed(-1, "X-SOURCE is empty"), 400
         Logger.debug("Run request json:"+json.dumps(req_json)+str(global_id))
         task_name = conform_param(req_json, "name", basestring)
+        task_name = task_name
         nodes = conform_param(req_json, "nodes", list)
         tasks = conform_param(req_json, "tasks", list)
-        tasktype= conform_param(req_json, "tasktype", basestring,default_value="ansible_task")
+        tasktype= conform_param(req_json, "task_type", basestring, default_value="ansible_task")
+        roles_url = conform_param(req_json, "roles_url", basestring, allowNone=True)
+        roles_file = conform_param(req_json, "roles_file", basestring, allowNone=True)
         params = conform_param(req_json, "params", dict,{},True)
         user_name = conform_param(req_json, "user", basestring, allowNone=True)
         fork_num = conform_param(req_json, "fork_num", int, allowNone=True)
@@ -134,8 +137,8 @@ def run_task():
 
         #submit task
         Worker.submit(
-            AnsibleTask(task_id=str(task_id), name=task_name, hosts=nodes, tasks=tasks,tasktype=tasktype, params=params, user=user_name,
-                        forks=fork_num, global_id=global_id, source=source, result=""))
+            AnsibleTask(task_id=str(task_id), name=task_name, hosts=nodes, tasks=tasks, tasktype=tasktype, roles_url=roles_url,
+                        roles_file=roles_file, params=params, user=user_name, forks=fork_num, global_id=global_id, source=source, result=""))
 
         return return_success(content={"id": task_id}), 200
     except JsonEncodeException as e:
@@ -361,15 +364,17 @@ def parallel_run_task():
         global_id = request.headers.get("X-CORRELATION-ID")
         if global_id is None:
             Logger.error("Missing X-CORRELATION-ID")
-            return return_failed(-1, "X-CORRELATION-ID is empyt"), 400
+            return return_failed(-1, "X-CORRELATION-ID is empty"), 400
         source = request.headers.get("X-SOURCE")
         if source is None:
-            return return_failed(-1, "X-SOURCE is empyt"), 400
+            return return_failed(-1, "X-SOURCE is empty"), 400
         Logger.debug("Run request json:"+json.dumps(req_json)+str(global_id))
         parallel_nodes = conform_param(req_json, "nodes", list)
         task_name = conform_param(req_json, "name", basestring)
         tasks = conform_param(req_json, "tasks", list)
-        tasktype= conform_param(req_json, "tasktype", basestring,default_value="ansible_task")
+        tasktype = conform_param(req_json, "task_type", basestring, default_value="ansible_task")
+        roles_url = conform_param(req_json, "roles_url", basestring, allowNone=True)
+        roles_file = conform_param(req_json, "roles_file", basestring, allowNone=True)
         params = conform_param(req_json, "params", dict,{},True)
         user_name = conform_param(req_json, "user", basestring, allowNone=True)
         fork_num = conform_param(req_json, "fork_num", int, allowNone=True)

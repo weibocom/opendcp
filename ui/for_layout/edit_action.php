@@ -106,9 +106,10 @@
                   <div class="form-group">
                     <label for="cmd_child" class="col-sm-2 control-label">命令实现模板</label>
                     <div class="col-sm-10">
-                      <select class="form-control" id="cmd_child" name="cmd_child" onchange="checkCmd()">
-                        <option value="shell">shell - 命令</option>
-                        <option value="longscript">longscript - 脚本</option>
+                      <select class="form-control" id="cmd_child" name="cmd_child"  onchange="showRole()">
+                          <option value="shell">shell - 命令</option>
+                          <option value="longscript">longscript - 脚本</option>
+                          <option value="role">Ansible Role</option>
                       </select>
                     </div>
                   </div>
@@ -118,7 +119,27 @@
                       <textarea rows="12" class="form-control" id="cmd_content" name="cmd_content" onkeyup="checkCmd()"></textarea>
                     </div>
                   </div>
+                    <div class="form-group" hidden>
+                        <label for="desc" class="col-sm-2 control-label">var文件</label>
+                        <div id="vars_file" >
+
+                        </div>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label for="desc" class="col-sm-2 control-label">task文件</label>
+                        <div id="tasks_file" >
+
+                        </div>
+                    </div>
+                    <div class="form-group" hidden>
+                        <label for="desc" class="col-sm-2 control-label">template文件</label>
+                        <div id="tems_file">
+
+                        </div>
+                    </div>
+
                 </div>
+
               </div>
             </div>
           </div>
@@ -129,6 +150,63 @@
             <button class="btn btn-default" data-dismiss="modal">取消</button>
             <button class="btn btn-success" data-dismiss="modal" id="btnCommit" onclick="change()" style="margin-bottom: 5px;" disabled>确认</button>
         </div>
+
+
         <script>
           <?php if($myAction=='edit'){echo 'get(\''.$myIdx.'\');'."\n";}else{echo 'cache.params={};'."\n".'showArg();'."\n";} ?>
+//              $("#role").click(function(){
+//                 alert("click role");
+//                 var postData = {"action": "list", "pagesize": 1000};
+//                 var url = '/api/for_layout/roleresource.php?action=list&pagesize=1000';
+//                 var actionDesc="添加Role";
+//                 $.ajax({
+//                       type: "POST",
+//                       url: url,
+//                       data: {"action":'list',"data":JSON.stringify(postData)},
+//                       dataType: "json",
+//                       success: function (data) {
+//                           //执行结果提示
+//                           if(data.code==0){
+//                               $('#var_file').html('');
+//                               $('#template_file').html('');
+//                               $('#task_file').html('');
+//                               for(var i=0;i<data.content.length;i++){
+//                                 var v = data.content[i];
+//                                 switch (v.resource_type){
+//                                     case 'var':
+//                                       var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="var">'+v.name+'</span>';
+//                                       $('#var_file').append(var_checkboxes);
+//                                       break;
+//                                     case "template":
+//                                         var tem_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="template">'+v.name+'</span>';
+//                                         $('#template_file').append(tem_checkboxes);
+//                                       break;
+//                                     case 'task':v
+//                                         var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="task">'+v.name+'</span>';
+//                                         $('#task_file').append(task_checkboxes);
+//                                       break;
+//                                 }
+//                                 $('#myRoleModal').modal('show');
+//                               }
+//                           }else{
+//                               pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+//                           }
+//                           //处理模态框和表单
+//                           $("#myRoleModal :input").each(function () {
+//                               $(this).val("");
+//                           });
+//                           $("#myRoleModal").on("hidden.bs.modal", function() {
+//                               $(this).removeData("bs.modal");
+//                           });
+//                       },
+//                       error: function (){
+//                           pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
+//                       }
+//                   });
+//
+//
+//
+//
+//              });
+
         </script>

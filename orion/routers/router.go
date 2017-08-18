@@ -125,6 +125,7 @@ func init() {
 		beego.NSRouter("/delete/:id:int", &api.RemoteApi{}, "*:RemoteStepDelete"),
 		beego.NSRouter("/:id:int", &api.RemoteApi{}, "*:GetRemoteStep"),
 		beego.NSRouter("/update/:id:int", &api.RemoteApi{}, "*:RemoteStepUpdate"),
+		beego.NSRouter("/download/:file:string", &api.RemoteApi{}, "*:RemoteDownload"),
 	)
 
 	remoteactionimpl := beego.NewNamespace("/actimpl",
@@ -134,6 +135,23 @@ func init() {
 		beego.NSRouter("/delete/:id:int", &api.RemoteApi{}, "*:RemoteActionImplDelete"),
 		beego.NSRouter("/update/:id:int", &api.RemoteApi{}, "*:RemoteActionImplUpdate"),
 		beego.NSRouter("/list", &api.RemoteApi{}, "*:RemoteActionImplList"),
+	)
+
+	role := beego.NewNamespace("/role",
+
+		beego.NSRouter("/create", &api.RoleApi{}, "*:RoleAppend"),
+		beego.NSRouter("/:id:int", &api.RoleApi{}, "*:GetRole"),
+		beego.NSRouter("/delete/:id:int", &api.RoleApi{}, "*:RoleDelete"),
+		beego.NSRouter("/update/:id:int", &api.RoleApi{}, "*:RoleUpdate"),
+		beego.NSRouter("/list", &api.RoleApi{}, "*:RoleList"),
+	)
+
+	roleresource := beego.NewNamespace("/roleresource",
+		beego.NSRouter("/:id:int", &api.RoleApi{}, "*:RoleResourceInfo"),
+		beego.NSRouter("/list/?:type:string", &api.RoleApi{}, "*:RoleResourceList"),
+		beego.NSRouter("/create", &api.RoleApi{}, "*:RoleResourceAppend"),
+		beego.NSRouter("/delete/:id:int", &api.RoleApi{}, "*:RoleResourceDelete"),
+		beego.NSRouter("/update/:id:int", &api.RoleApi{}, "*:RoleResourceUpdate"),
 	)
 
 	beego.Router("/", &controllers.MainController{}, "*:Index")
@@ -147,5 +165,6 @@ func init() {
 	beego.AddNamespace(tasktpl)
 	beego.AddNamespace(taskstep)
 	beego.AddNamespace(remoteactionimpl)
-
+	beego.AddNamespace(role)
+	beego.AddNamespace(roleresource)
 }

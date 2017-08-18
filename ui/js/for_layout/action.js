@@ -206,6 +206,7 @@ var change=function(){
   var url='/api/for_layout/'+tab+'.php';
   var postData={};
   var form=$('#myModalBody').find("input,select,textarea");
+  var vars='',templates='',tasks='';
   //处理表单内容--不需要修改
   $.each(form,function(i){
     switch(this.type){
@@ -215,20 +216,31 @@ var change=function(){
         }
         break;
       case 'checkbox':
-        if(this.id){
-          if(typeof(postData[this.id])=='undefined'){
-            postData[this.id]={};
+          if(this.id){
+              if(this.checked){
+                  switch (this.name){
+                      case 'var':
+                          vars+=this.id+',';
+                          break;
+                      case "template":
+                          templates+=this.id+',';
+                          break;
+                      case 'task':
+                          tasks+=this.id+',';
+                          break;
+                  }
+              }
           }
-          if(this.checked){
-            postData[this.id][i]=this.value;
-          }
-        }
         break;
       default:
         if(this.name) postData[this.name]=this.value;
         break;
     }
   });
+
+    if($("#cmd_child").val()=="role"){
+        creatRole(vars,templates,tasks,postData['name'],postData['desc']);
+    }
   var action=$("#page_action").val();
   delete postData['page_action'];
   //console.log("action="+action);
@@ -239,6 +251,11 @@ var change=function(){
       actionDesc='添加';
       switch(tab){
         case 'action':
+          if($('#cmd_child').val()=='role'){
+            postData['task_type']="ansible_role";
+          }else{
+            postData['task_type']="ansible_task";
+          }
           postData['params']=cache.params;
           if(postData['config_senior']=='true'){
             postData['template']=JSON.parse(postData['cmd_content']);
@@ -406,6 +423,13 @@ var get = function (idx) {
                 if(tab=='action') getActimpl(v);
               }
             });
+              setTimeout(function(){
+                  if($("#cmd_child").val()=='role'){
+                      $("#vars_file").parent().attr("hidden",true);
+                      $("#tems_file").parent().attr("hidden",true);
+                      $("#tasks_file").parent().attr("hidden",true);
+                  }
+              },100);
           }else{
             pageNotify('warning','数据为空！');
           }
@@ -420,6 +444,8 @@ var get = function (idx) {
   }else{
     pageNotify('warning','加载详情失败！','错误信息：参数错误');
   }
+
+
 }
 
 var twiceCheck=function(action,idx,desc){
@@ -863,7 +889,9 @@ var updateSenior= function () {
 var updateCmd=function(){
   checkCmd();
 }
-
+getModal= function(){
+    alert("getmodal");
+}
 var checkCmd=function(fromCheck){
   var disabled=false;
   if($('#config_senior').val()=='false'){
@@ -873,11 +901,71 @@ var checkCmd=function(fromCheck){
   }else{
     if($('#cmd_content').val()=='') disabled=true;
   }
+
   if(fromCheck) return disabled;
   $("#btnCommit").attr('disabled',disabled);
   if(!disabled) check();
 }
 
+
+var showRole=function(){
+    if($('#cmd_child').val()=='role'){
+        $("#cmd_content").parent().parent().addClass('hidden');
+        $("#cmd_content").val("{}");
+        $("#vars_file").parent().attr("hidden",false);
+        $("#tems_file").parent().attr("hidden",false);
+        $("#tasks_file").parent().attr("hidden",false);
+        var postData = {" action": "list", "pagesize": 1000};
+        var url = '/api/for_layout/roleresource.php?action=list&pagesize=1000';
+        var actionDesc="添加Role";
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {"action":'list',"data":JSON.stringify(postData)},
+            dataType: "json",
+            success: function (data) {
+                //执行结果提示
+                if(data.code==0){
+                    $('#vars_file').html('');
+                    $('#tems_file').html('');
+                    $('#tasks_file').html('');
+                    for(var i=0;i<data.content.length;i++){
+                        var v = data.content[i];
+                        switch (v.resource_type){
+                            case 'var':
+                                var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="var">'+v.name+'</span>';
+                                $('#vars_file').append(var_checkboxes);
+                                break;
+                            case "template":
+                                var tem_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="template">'+v.name+'</span>';
+                                $('#tems_file').append(tem_checkboxes);
+                                break;
+                            case 'task':
+                                var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="task">'+v.name+'</span>';
+                                $('#tasks_file').append(task_checkboxes);
+                                break;
+                        }
+
+                    }
+                }else{
+                    pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+                }
+
+            },
+            error: function (){
+                pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
+            }
+        });
+    }else{
+        $("#cmd_content").val('');
+        $("#cmd_content").parent().parent().removeClass('hidden');
+        $("#vars_file").parent().attr("hidden",true);
+        $("#tems_file").parent().attr("hidden",true);
+        $("#tasks_file").parent().attr("hidden",true);
+
+    }
+    checkCmd();
+}
 var showCmd= function () {
   var o = cache.actimpl;
   if(o){
@@ -926,3 +1014,120 @@ var checkParam = function(o){
     $(o).val(hasChinese(name));
   }
 }
+
+var creatRole=function(vars,templates,tasks,name,desc){
+    NProgress.start();
+    var tab='role'
+    var url='/api/for_layout/role.php';
+    var postData={};
+    var actionDesc="添加"
+
+    vars=vars.substring(0,vars.length-1);
+    tasks=tasks.substring(0,tasks.length-1);
+    templates=templates.substring(0,templates.length-1);
+    postData['vars']=vars;
+    postData['templates']=templates;
+    postData['tasks']=tasks;
+    postData['name']=name;
+    postData['desc']=desc;
+    var action='insert';
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: {"action":action,"data":JSON.stringify(postData)},
+        dataType: "json",
+        success: function (data) {
+            //执行结果提示
+            if(data.code==0){
+                pageNotify('success','【'+actionDesc+'】操作成功！');
+            }else{
+                pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+            }
+
+        },
+        error: function (){
+            pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
+        }
+    });
+}
+
+// var creatRole=function(){
+//     NProgress.start();
+//     var tab='role'
+//     var url='/api/for_layout/role.php';
+//     var postData={};
+//     var form=$('#myRoleModal').find("input,select,textarea");
+//     //处理表单内容--不需要修改
+//     var vars='',templates='',tasks='';
+//     var actionDesc="添加"
+//     $.each(form,function(i){
+//         switch(this.type){
+//             case 'radio':
+//                 if(typeof(postData[this.name])=='undefined'){
+//                     if(this.name) postData[this.name]=$('input[name="'+this.name+'"]:checked').val();
+//                 }
+//                 break;
+//             case 'checkbox':
+//                 if(this.id){
+//                   if(this.checked){
+//                       switch (this.name){
+//                           case 'var':
+//                              vars+=this.id+',';
+//                              break;
+//                           case "template":
+//                               templates+=this.id+',';
+//                               break;
+//                           case 'task':
+//                               tasks+=this.id+',';
+//                               break;
+//                       }
+//                   }
+//                 }
+//                 break;
+//             default:
+//                 if(this.name) postData[this.name]=this.value;
+//                 break;
+//         }
+//     });
+//     vars=vars.substring(0,vars.length-1);
+//     tasks=tasks.substring(0,tasks.length-1);
+//     templates=templates.substring(0,templates.length-1);
+//     postData['vars']=vars;
+//     postData['templates']=templates;
+//     postData['tasks']=tasks;
+//     var action='insert';
+//     $.ajax({
+//         type: "POST",
+//         url: url,
+//         data: {"action":action,"data":JSON.stringify(postData)},
+//         dataType: "json",
+//         success: function (data) {
+//             //执行结果提示
+//             if(data.code==0){
+//                 pageNotify('success','【'+actionDesc+'】操作成功！');
+//             }else{
+//                 pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：'+data.msg);
+//             }
+//             //处理模态框和表单
+//             $("#myRoleModal :input").each(function () {
+//                 $(this).val("");
+//             });
+//             $("#myRoleModal").on("hidden.bs.modal", function() {
+//                 $(this).removeData("bs.modal");
+//             });
+//
+//
+//             $("#myRoleModal").on("hidden.bs.modal", function() {
+//                 setTimeout(function(){
+//                     $('body').addClass('modal-open')
+//                 },800)
+//
+//             });
+//
+//
+//         },
+//         error: function (){
+//             pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
+//         }
+//     });
+// }

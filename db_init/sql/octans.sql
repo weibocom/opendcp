@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `chan_node` (
   `status` int(11) DEFAULT NULL,
   `task_id` int(11) DEFAULT NULL,
   `log` text,
+  `step` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `task_id` (`task_id`),
   KEY `ix_chan_node_ip` (`ip`),

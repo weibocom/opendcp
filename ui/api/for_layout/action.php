@@ -269,6 +269,7 @@ if($hasLimit){
         /* 命令发现Begin */
         $tType=$arrJson['type'];
         $tTemplate=$arrJson['template'];
+        $taskType = $arrJson['task_type'];
         /* 命令发现End */
         if(isset($arrJson['type'])) unset($arrJson['type']);
         if(isset($arrJson['template'])) unset($arrJson['template']);
@@ -280,6 +281,7 @@ if($hasLimit){
             'action_id' => $retArr['retId'],
             'type' => $tType,
             'template' => $tTemplate,
+            'task_type' => $taskType,
           );
           $retArr1 = $myDepend->update($myUser,'create', $arrJson1);;
         }

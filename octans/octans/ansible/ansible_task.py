@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 #
 #    Copyright (C) 2016 Weibo Inc.
 #
@@ -107,7 +108,7 @@ class AnsibleTask(Task):
     """
 
 
-    def __init__(self, task_id, name, hosts, tasks,tasktype, user, global_id, source, result=None, forks=5,params=None):
+    def __init__(self, task_id, name, hosts, tasks, tasktype, roles_url, roles_file, user, global_id, source, result=None, forks=5, params=None):
 
         """
         init task and make playbook instance
@@ -127,6 +128,8 @@ class AnsibleTask(Task):
         self.task_id = task_id
         self.tasks = tasks
         self.tasktype = tasktype
+        self.roles_url = roles_url
+        self.roles_file = roles_file
         self.log = []
         self.log_iter = 0
         self.result = result
@@ -136,6 +139,7 @@ class AnsibleTask(Task):
         self._node_map = dict()
         self.global_id = global_id
         self.source = source
+        self.roles = ["base"]
 
     def _step_callback(self, ip, code, data=None):
         try:
@@ -183,14 +187,14 @@ class AnsibleTask(Task):
         for h in self.hosts:
             
             # get ssh_key content
-            key_content = _get_ssh_key(h)
+            # key_content = _get_ssh_key(h)
 
             Logger.debug("read ssh_key for host: {} global_id: {}".format(h, self.global_id))
 
             # write ssh private key
-            key_path = _write_ssh_key(h, key_content)
+            # key_path = _write_ssh_key(h, key_content)
 
-            #key_path="./tmp/97"
+            key_path = "tmp/167"
             Logger.debug("write ssh_key for host: {} global_id: {}".format(h, self.global_id))
 
             host_vars = dict(ansible_port=22,
@@ -237,13 +241,22 @@ class AnsibleTask(Task):
                 tasks=self.tasks
             )
         else:
-            
             Logger.debug("ansible role set******************* global_id: {}".format(self.global_id))
+
+            if self.roles_url is not None and self.roles_file is not None:
+                for h in group.hosts:
+                    variable_manager.set_host_variable(h, "roles_url", self.roles_url)
+                    variable_manager.set_host_variable(h, "roles_file", self.roles_file)
+            else:
+                Logger.error("ansible role lack of roles_url or roles_file. global_id: {}".format(self.global_id))
+
+            # 在执行roles前先执行_base_role
+            self.roles.extend(self.tasks)
             play_source = dict(
                 name=self.task_id,
                 hosts=self.task_id,
                 gather_facts='yes',
-                roles=self.tasks
+                roles=self.roles
             )
                 
 
@@ -282,7 +295,7 @@ class AnsibleTask(Task):
         finally:
             if tqm is not None:
                 tqm.cleanup()
-                _rm_tmp_key(key_files)
+                #_rm_tmp_key(key_files)
 
     def failed(self, error):
         err_json = dict(msg=str(error))

@@ -8,7 +8,12 @@ orion/orion
 jupiter/conf/jupiter.json
 jupiter/conf/zhaowei9.pem
 orion/conf/app.conf
+orion/tmp/
+orion/roles/
+octans/tmp/
 *_orig
+*.pyc
+*.tar.gz
 
 
 # eclipse ignore

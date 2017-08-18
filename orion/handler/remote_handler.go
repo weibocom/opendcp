@@ -36,6 +36,7 @@ import (
 
 // RemoteHandler handle all remote steps. It will create playbook from remote
 // steps and send the command to Ansible or other channels.
+
 type RemoteHandler struct {
 }
 
@@ -59,13 +60,16 @@ var (
 	checkURL   = "http://%s" + beego.AppConfig.String("remote_check_url")
 	logURL     = "http://%s" + beego.AppConfig.String("remote_log_url")
 	forkNum    = 5
-
+	task_type  = ""
+	roles_file = ""
+	roles_url  = beego.AppConfig.String("octans_host_addr")
 	logService = service.Logs
 )
 
 const (
 	checkTimeout = 120
 	maxCount     = 1000
+	ANSIBLE_ROLE = "ansible_task"
 )
 
 // GetType implements method of interface Handler, returns "remote".
@@ -104,6 +108,35 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	var actionList []models.RemoteAction
 	service.Remote.GetByStringValues(&models.RemoteAction{}, &actionList,
 		"name", actNames)
+
+	logService.Debug(fid, batchId, corrId, fmt.Sprintf("jurdge step type"))
+	remoteActionNames := []string{}
+	isRole := 0
+	for _, action := range actionList {
+		remoteActionNames = append(remoteActionNames, action.Name)
+		if action.TaskType == ANSIBLE_ROLE {
+			isRole++
+		}
+	}
+
+	if isRole == 0 {
+		logService.Debug(fid, batchId, corrId, fmt.Sprintf("the step taskstep is not a ansible_role task"))
+	} else if isRole < len(actionList) {
+		logService.Error(fid, batchId, corrId, fmt.Sprintf("the step cannot be mixed type"))
+
+		return Err("the step cannot be mixed type: " + step)
+	} else if isRole == len(actionList) {
+		logService.Debug(fid, batchId, corrId, fmt.Sprintf("the step is ansible role step, start to pack the associated files"))
+		err := service.Role.PackRoles(step, remoteActionNames)
+
+		if err != nil {
+			logService.Error(fid, batchId, corrId, fmt.Sprintf("fail to pack err:%s", err))
+			return Err("fail to pack: " + step)
+		}
+
+		roles_file = step
+		task_type = ANSIBLE_ROLE
+	}
 
 	// generate playbook
 	tpls := make([]interface{}, len(actionList))
@@ -314,6 +347,9 @@ func (h *RemoteHandler) callExecutor(ips *[]string, user string, execID string,
 	data["tasks"] = content
 	data["params"] = params
 	data["fork_num"] = forkNum
+	data["task_type"] = task_type
+	data["roles_url"] = roles_url
+	data["roles_file"] = roles_file
 
 	url := fmt.Sprintf(runURL, remoteAddr)
 	msg, err := utils.Http.Post(url, &data, &header)

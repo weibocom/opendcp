@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS orion CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE orion;
 
@@ -9,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `cluster` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `name` varchar(50) NOT NULL DEFAULT '' UNIQUE ,
     `desc` varchar(255),
-    `biz` varchar(255) NOT NULL DEFAULT '' 
+    `biz` varchar(255) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
@@ -52,14 +51,14 @@ CREATE TABLE IF NOT EXISTS `exec_task` (
 --  Table Structure for `weibo.com/opendcp/orion/models.CronItem`
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cron_item` (
-  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  `exec_task_id` integer NOT NULL,
-  `instance_num` integer ,
-  `concurr_ratio` integer ,
-  `concurr_num` integer ,
-  `week_day` integer NOT NULL DEFAULT 0,
-  `time` VARCHAR(255) NOT NULL,
-  `ignore` tinyint(1) DEFAULT 0
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `exec_task_id` integer NOT NULL,
+    `instance_num` integer ,
+    `concurr_ratio` integer ,
+    `concurr_num` integer ,
+    `week_day` integer NOT NULL DEFAULT 0,
+    `time` VARCHAR(255) NOT NULL,
+    `ignore` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -67,13 +66,13 @@ CREATE TABLE IF NOT EXISTS `cron_item` (
 --  Table Structure for `weibo.com/opendcp/orion/models.DependItem`
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `depend_item` (
-  `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  `exec_task_id` integer NOT NULL,
-  `pool_id` integer NOT NULL,
-  `ratio` DOUBLE NOT NULL,
-  `elastic_count` integer NOT NULL,
-  `step_name` VARCHAR(255) NOT NULL,
-  `ignore` tinyint(1) DEFAULT 0
+    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `exec_task_id` integer NOT NULL,
+    `pool_id` integer NOT NULL,
+    `ratio` DOUBLE NOT NULL,
+    `elastic_count` integer NOT NULL,
+    `step_name` VARCHAR(255) NOT NULL,
+    `ignore` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
@@ -166,6 +165,7 @@ CREATE TABLE IF NOT EXISTS `remote_action` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `name` varchar(50) NOT NULL DEFAULT ''  UNIQUE,
     `desc` varchar(255),
+    `task_type` varchar(50) NOT NULL DEFAULT '',
     `params` longtext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS `remote_action` (
 CREATE TABLE IF NOT EXISTS `remote_action_impl` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `type` varchar(50) NOT NULL DEFAULT '' ,
+    `task_type` varchar(50) NOT NULL DEFAULT '',
     `template` longtext NOT NULL,
     `action_id` integer NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -183,14 +184,57 @@ CREATE TABLE IF NOT EXISTS `remote_action_impl` (
 --  Table Structure for `weibo.com/opendcp/orion/models.Logs`
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `logs` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `fid` int(10) NOT NULL,
-  `batch_id` int(10) NOT NULL DEFAULT '0',
-  `correlation_id` varchar(20) NOT NULL DEFAULT '0' COMMENT '全局id',
-  `message` text NOT NULL,
-  `ctime` int(10) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
+    `id` int(10) NOT NULL AUTO_INCREMENT,
+    `fid` int(10) NOT NULL,
+    `batch_id` int(10) NOT NULL DEFAULT '0',
+    `correlation_id` varchar(20) NOT NULL DEFAULT '0' COMMENT '全局id',
+    `message` text NOT NULL,
+    `ctime` int(10) NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='日志信息表' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.RoleResource`
+-- --------------------------------------------------
+CREATE TABLE `role_resource` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) NOT NULL UNIQUE,
+    `desc` varchar(200) NOT NULL DEFAULT '',
+    `resource_type` varchar(200) NOT NULL COMMENT 'file var template meta task handle',
+    `resource_content` longtext NOT NULL,
+    `user` varchar(200) NOT NULL,
+    `state` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0 初始状态 1 变更中 2 变更完成',
+    `type` tinyint(3) unsigned NOT NULL DEFAULT '1',
+    `hidden` tinyint(3) unsigned NOT NULL DEFAULT '0',
+    `create_time` datetime,
+    `update_time` datetime,
+    `template_file_path` varchar(512) NOT NULL DEFAULT '' COMMENT 'only tpl need',
+    `template_file_perm` varchar(32) NOT NULL DEFAULT '',
+    `template_file_owner` varchar(32) NOT NULL DEFAULT '',
+    `associate_role` varchar(512) NOT NULL DEFAULT '',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------
+--  Table Structure for `weibo.com/opendcp/orion/models.Role`
+-- --------------------------------------------------
+CREATE TABLE `role` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(50) NOT NULL UNIQUE,
+    `desc` varchar(200) NOT NULL DEFAULT '',
+    `role_file_path` varchar(512) NOT NULL DEFAULT '',
+    `files` varchar(512) NOT NULL DEFAULT '',
+    `handles` varchar(512) NOT NULL DEFAULT '',
+    `meta` varchar(512) NOT NULL DEFAULT '',
+    `tasks` varchar(512) NOT NULL DEFAULT '',
+    `templates` varchar(512) NOT NULL DEFAULT '',
+    `vars` varchar(512) NOT NULL DEFAULT '',
+    `user` varchar(200) NOT NULL DEFAULT 'root',
+    `state` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 0 初始状态 1 变更中 2 变更完成',
+    `create_time` DATETIME,
+    `update_time` DATETIME COMMENT '变更时间',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
 -- DATA
@@ -206,10 +250,9 @@ INSERT INTO `service` VALUES
     (2,'my_server','my_server','Java','registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest',1),
     (3,'controller_service','虚拟化控制节点服务','openstack','-',2),
     (4,'compute_service','虚拟化计算节点服务','openstack','-',2);
-
-
-
 UNLOCK TABLES;
+
+
 
 LOCK TABLES `pool` WRITE;
 INSERT INTO `pool` VALUES
@@ -231,34 +274,34 @@ INSERT INTO `flow_impl` VALUES
     (8,'init_compute','compute初始化','[{\"name\":\"init_compute\",\"param_values\":{\"opendcp_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
     (9,'add-openstack-default-image','添加openstack缺省镜像','[{\"name\":\"add-default-image\",\"param_values\":{},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]');
 
-    
+
 
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action` WRITE;
 INSERT INTO `remote_action` VALUES
-    (1,'start_docker','启动docker','{\"host\":\"string\",\"name\":\"string\",\"tag\":\"string\"}'),
-    (2,'check_port','检查端口','{\"check_port\":\"integer\",\"check_times\":\"integer\"}'),
-    (3,'check_url','检测URL','{\"check_keyword\":\"string\",\"check_url\":\"string\"}'),
-    (4,'stop_docker','停止Docker容器','{\"name\":\"string\"}'),
-    (5,'echo','echo','{\"echo_word\":\"string\"}'),
-    (6,'install_nginx','安装nginx','{\"eth\":\"string\",\"octans_host\":\"string\"}'),
-    (7,'init_controller','初始化openstack控制节点','{\"opendcp_host\":\"string\"}'),
-    (8,'init_compute','init_compute','{\"opendcp_host\":\"string\"}'),
-    (9,'add-default-image','添加openstack Centos7缺省镜像','{}');
+    (1,'start_docker','启动docker','ansible_task','{\"host\":\"string\",\"name\":\"string\",\"tag\":\"string\"}'),
+    (2,'check_port','检查端口','ansible_task','{\"check_port\":\"integer\",\"check_times\":\"integer\"}'),
+    (3,'check_url','检测URL','ansible_task','{\"check_keyword\":\"string\",\"check_url\":\"string\"}'),
+    (4,'stop_docker','停止Docker容器','ansible_task','{\"name\":\"string\"}'),
+    (5,'echo','echo','ansible_task','{\"echo_word\":\"string\"}'),
+    (6,'install_nginx','安装nginx','ansible_task','{\"eth\":\"string\",\"octans_host\":\"string\"}'),
+    (7,'init_controller','初始化openstack控制节点','ansible_task','{\"opendcp_host\":\"string\"}'),
+    (8,'init_compute','init_compute','ansible_task','{\"opendcp_host\":\"string\"}'),
+    (9,'add-default-image','添加openstack Centos7缺省镜像','ansible_task','{}');
 UNLOCK TABLES;
 
 LOCK TABLES `remote_action_impl` WRITE;
 INSERT INTO `remote_action_impl` VALUES
-    (1,'ansible','{\"action\":{\"content\":\"docker run -d --net=\\\"{{host}}\\\" --name {{name}} {{tag}} \",\"module\":\"longscript\"}}',1),
-    (2,'ansible','{\"action\":{\"content\":\"# check port\\nTIMES={{check_times}}\\nPORT={{check_port}}\\nfor ((i=0;i\\u003c$TIMES;i++));\\ndo\\n\\techo \\\"check $PORT time $i ...\\\"\\n\\tres=`netstat -an | grep LISTEN | grep -e \\\"\\\\b$PORT\\\\b\\\"`\\n\\tif [ \\\"\\\" != \\\"$res\\\" ]; then\\n\\t\\techo \\\"OK\\\"\\n\\t\\texit 0\\n\\tfi\\n\\tsleep 5\\ndone\\necho \\\"error\\\" \\nexit 1\",\"module\":\"longscript\"}}',2),
-    (3,'ansible','{\"action\":{\"content\":\"sleep 20\\nres=`curl -m 400 {{check_url}} | grep {{check_keyword}}`\\nif [ \\\"\\\" != \\\"$res\\\" ]; then\\n    echo \\\"OK\\\"\\n    exit 0\\nfi\\n\\necho \\\"check fails\\\"\\nexit 1\\n\",\"module\":\"longscript\"}}',3),
-    (4,'ansible','{\"action\":{\"content\":\"cname={{name}}\\ncontainer=`docker ps|grep -w $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n    docker stop $cname\\nfi\\nsleep 5\\ncontainer=`docker ps -af status=exited|grep -w  $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n        docker rm $cname\\nfi\\nexit 0\",\"module\":\"longscript\"}}',4),
-    (5,'ansible','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',5),
-    (6,'ansible','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep -w inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $IP-$NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP-$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://$IP:8000/api/parallel_run\\n \",\"module\":\"longscript\"}}',6),
-    (7,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init.sh\\nsh init.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',7),
-    (8,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',8),
-    (9,'ansible','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x add-default-image.sh\\nsh add-default-image.sh \\u003e /tmp/addimage.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',9);
+    (1,'ansible','ansible_task','{\"action\":{\"content\":\"docker run -d --net=\\\"{{host}}\\\" --name {{name}} {{tag}} \",\"module\":\"longscript\"}}',1),
+    (2,'ansible','ansible_task','{\"action\":{\"content\":\"# check port\\nTIMES={{check_times}}\\nPORT={{check_port}}\\nfor ((i=0;i\\u003c$TIMES;i++));\\ndo\\n\\techo \\\"check $PORT time $i ...\\\"\\n\\tres=`netstat -an | grep LISTEN | grep -e \\\"\\\\b$PORT\\\\b\\\"`\\n\\tif [ \\\"\\\" != \\\"$res\\\" ]; then\\n\\t\\techo \\\"OK\\\"\\n\\t\\texit 0\\n\\tfi\\n\\tsleep 5\\ndone\\necho \\\"error\\\" \\nexit 1\",\"module\":\"longscript\"}}',2),
+    (3,'ansible','ansible_task','{\"action\":{\"content\":\"sleep 20\\nres=`curl -m 400 {{check_url}} | grep {{check_keyword}}`\\nif [ \\\"\\\" != \\\"$res\\\" ]; then\\n    echo \\\"OK\\\"\\n    exit 0\\nfi\\n\\necho \\\"check fails\\\"\\nexit 1\\n\",\"module\":\"longscript\"}}',3),
+    (4,'ansible','ansible_task','{\"action\":{\"content\":\"cname={{name}}\\ncontainer=`docker ps|grep -w $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n    docker stop $cname\\nfi\\nsleep 5\\ncontainer=`docker ps -af status=exited|grep -w  $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n        docker rm $cname\\nfi\\nexit 0\",\"module\":\"longscript\"}}',4),
+    (5,'ansible','ansible_task','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',5),
+    (6,'ansible','ansible_task','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep -w inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $IP-$NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP-$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://$IP:8000/api/parallel_run\\n \",\"module\":\"longscript\"}}',6),
+    (7,'ansible','ansible_task','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init.sh\\nsh init.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',7),
+    (8,'ansible','ansible_task','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',8),
+    (9,'ansible','ansible_task','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x add-default-image.sh\\nsh add-default-image.sh \\u003e /tmp/addimage.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',9);
 UNLOCK TABLES;
 
 LOCK TABLES `remote_step` WRITE;
