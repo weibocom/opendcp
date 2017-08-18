@@ -80,10 +80,22 @@ func (f *RoleService) PackRoles(stepName string, rolesName []string) error {
 func (f *RoleService) BuildRoleFile(role *models.Role) error {
 	resoures := []models.RoleResource{}
 
-	ids := strings.Split(strings.Join([]string{role.Templates, role.Tasks, role.Vars}, ","), ",")
+	idsString := []string{}
+	if len(role.Templates) > 0 {
+		idsString = append(idsString, role.Templates)
+	}
+	if len(role.Tasks) > 0 {
+		idsString = append(idsString, role.Tasks)
+	}
+	if len(role.Vars) > 0 {
+		idsString = append(idsString, role.Vars)
+	}
+
+	ids := strings.Split(strings.Join(idsString, ","), ",")
 	if len(ids) < 1 {
 		return fmt.Errorf("The role must contain some resource.")
 	}
+
 
 	for _, id := range ids {
 		idInt, _ := strconv.Atoi(id)
