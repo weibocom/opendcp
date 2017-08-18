@@ -356,7 +356,6 @@ var view=function(type,idx){
                     if(typeof(data.content)!='undefined'){
                         var locale={};
                         if(typeof(locale_messages.cloud)) locale = locale_messages.cloud;
-                        alert(locale['id']);
                         var str='';
                         $.each(data.content,function(k,v){
                             switch (k){
