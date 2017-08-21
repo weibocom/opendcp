@@ -311,28 +311,26 @@ class Upstream {
      * @param $weight 流量权重
      *
      * @return String 新的upstream内容
+     * @增加节点前先删除已有节点
      */
     private function _fileAddNode($upstream, $ips, $port, $weight = 20){
-
         $new = $this->_splitUpstream($upstream);
         if(!$new['valid']) return null;
-
+        //删除之前的节点
         $oldIps = array_keys($new['server']);
-        $allIps = array_unique(array_merge($oldIps, $ips));
-
+        foreach($oldIps as $item){
+            unset($new['server'][$item]);
+        }
+        //添加节点
+        $allIps=$ips;
         hubble_log(HUBBLE_INFO, "all ips is ". implode(',', $allIps));
-
         $newUpstream = $new['head'];
-        $newUpstream[] = "\tkeepalive ".count($allIps).";";
+        $newUpstream[] = "\tkeepalive ".(count($allIps)+1).";";
+        $newUpstream[] = "\tserver 127.0.0.1:$port" .$this->upstreamArg. $weight.";";
         foreach($allIps as $ip){
             if(empty($ip)) continue; // 防止有空ip
-
-            if(in_array($ip,$oldIps))
-                $newUpstream[] = $new['server'][$ip];
-            else{
-                $newUpstream[] = "\tserver $ip:$port" .$this->upstreamArg. $weight.";";
-                hubble_log(HUBBLE_INFO, "add new node $ip:$port");
-            }
+            $newUpstream[] = "\tserver $ip:$port" .$this->upstreamArg. $weight.";";
+            hubble_log(HUBBLE_INFO, "add new node $ip:$port");
         }
         return array_merge($newUpstream, $new['tail']);
     }
