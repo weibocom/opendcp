@@ -47,17 +47,29 @@ class TimingController extends RestController
             $map['task_name']  = array('eq','');
             $judge=1;
             while($judge>0){
-                $res = $this->alterationHistory->distinct(true)->where($map)->field('sid')->select();
-                //循环下发；根据服务发现类型
+                //1.查询history数据表是否存在未发布数据
+                $resone = $this->alterationHistory->distinct(true)->where($map)->field('sid,opr_user')->select();
+                $res=$resone;
+                if($res==NULL){
+                    //2.查询全部服务发现类型
+                    $restwo = $this->altreationType->distinct(true)->field('id,content,opr_user')->select();
+                    $res=$restwo;
+                }
                 for ($i=0;$i<count($res);$i++){
-                    //依据服务发现类型找出服务发现类型的一些信息，包括upstream名称，分组id，ip列表，端口号，权重
-                    $cont = $this->altreationType->field('content')
-                        ->where(['id' => $res[$i]['sid']])
-                        ->find();
-                    $content = json_decode($cont['content'], true);
+                    //统一化;避免二次查询
+                    if(isset($res[$i]['sid'])){
+                        $res[$i]['id']=$res[$i]['sid'];
+                        //查询找出服务发现类型的content信息
+                        $cont = $this->altreationType->field('content')
+                            ->where(['id' => $res[$i]['id']])
+                            ->find();
+                        $content = json_decode($cont['content'], true);
+                    }else{
+                        $content = json_decode($res[$i]['content'], true);
+                    }
 
                     //通过api获取当前服务发现类型的ip列表
-                    $url = "http://orion:8080/pool/".$res[$i]['sid']."/list_register";
+                    $url = "http://orion:8080/pool/".$res[$i]['id']."/list_register";
                     $ch = curl_init();
                     curl_setopt($ch, CURLOPT_URL, $url);
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -66,7 +78,6 @@ class TimingController extends RestController
                     curl_close($ch);
                     $ips=json_decode($json, true);
                     $content['ips']=$ips['data'];
-                    //print_r($content);
 
                     //变更数据库中的upstream文件
                     $upstream = new Upstream();
@@ -86,16 +97,18 @@ class TimingController extends RestController
                         ];
                         return $return;
                     }
-
                     //下发时，标志是服务发现类型的id
-                    $task = $this->upstream->callTunnel($content['script_id'], $content['name'], $res[$i]['opr_user'], true, $content['group_id'], '', $res[$i]['sid']);
-                    //记录变更表；根据服务发现类型的id变更所有与之相关的ip的task_id和task_name
-                    $task = $task['content'];
-                    $history = new AlterationHistory();
-                    //将返回的task_id 和task_name保存至对应的sid列中的对应字段
-                    $history->addTaskRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $res[$i]['sid']);
-                }
+                    $task = $this->upstream->callTunnel($content['script_id'], $content['name'], $res[$i]['opr_user'], true, $content['group_id'], '', $res[$i]['id']);
 
+                    //依据history表则记录变更表
+                    if(isset($res[$i]['sid'])){
+                        //记录变更表；根据服务发现类型的id变更所有与之相关的ip的task_id和task_name
+                        $task = $task['content'];
+                        $history = new AlterationHistory();
+                        //将返回的task_id 和task_name保存至对应的sid列中的对应字段
+                        $history->addTaskRecord('async', $task['ansible_id'], $task['ansible_name'], 'ansible', $res[$i]['id']);
+                    }
+                }
                 sleep(50);//暂停50秒
                 $judge=1;
             }
