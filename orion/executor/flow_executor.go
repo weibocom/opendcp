@@ -325,13 +325,13 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 	// load node states
 	nodeStateList, oknodesNum, err := exec.loadNodeStates(flow)
 	// the flow already successed
-	if (nodeStateList == nil) {
+	if nodeStateList == nil {
 		exec.SetFlowStatus(flow, orign_flow_status)
-		return err;
+		return err
 	}
 	if err != nil {
 		logService.Error(flow.Id, correlationId, "load node states happen error: "+err.Error())
-		if (oknodesNum == 0) {
+		if oknodesNum == 0 {
 			exec.SetFlowStatus(flow, models.STATUS_FAILED)
 		} else {
 			exec.SetFlowStatus(flow, orign_flow_status)
@@ -349,7 +349,7 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 	steps, stepOps, err := exec.getSteps(flow)
 	if err != nil {
 		logService.Error(flow.Id, correlationId, "Get steps fails: "+err.Error())
-		if (oknodesNum == 0) {
+		if oknodesNum == 0 {
 			exec.SetFlowStatus(flow, models.STATUS_FAILED)
 		} else {
 			exec.SetFlowStatus(flow, orign_flow_status)
@@ -359,7 +359,7 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 
 	if len(steps) < 1 {
 		logService.Error(flow.Id, correlationId, "step length bellow 1 is: "+flow.Options)
-		if (oknodesNum == 0) {
+		if oknodesNum == 0 {
 			exec.SetFlowStatus(flow, models.STATUS_FAILED)
 		} else {
 			exec.SetFlowStatus(flow, orign_flow_status)
@@ -384,7 +384,7 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 	}
 
 	resultFlowStatus := orign_flow_status
-	if (oknodesNum != 0) {
+	if oknodesNum != 0 {
 		resultFlowStatus = models.STATUS_SUCCESS
 	}
 	maxNodeStatesCostTime := 0.0
@@ -393,27 +393,24 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 		select {
 		case nodeStatesResult := <-resultChannel:
 			//if have one nodeState is success then flow is success
-			if (nodeStatesResult.Status == models.STATUS_SUCCESS) {
+			if nodeStatesResult.Status == models.STATUS_SUCCESS {
 				resultFlowStatus = models.STATUS_SUCCESS
-			}
-			if (nodeStatesResult.Status == models.STATUS_FAILED) {
+			} else if nodeStatesResult.Status == models.STATUS_FAILED {
 				faileNodeCount++
-			}
-			//if have one nodeState is stopped then flow is stopped
-			if (nodeStatesResult.Status == models.STATUS_STOPPED) {
+			} else if nodeStatesResult.Status == models.STATUS_STOPPED {
 				resultFlowStatus = models.STATUS_STOPPED
 			}
-			if (nodeStatesResult.RunTime > maxNodeStatesCostTime) {
+			if nodeStatesResult.RunTime > maxNodeStatesCostTime {
 				maxNodeStatesCostTime = nodeStatesResult.RunTime
 			}
-		case <-time.After(time.Second*60*8 + 1):
+		case <-time.After(time.Second*60*15 + 1):
 			faileNodeCount++
-			logService.Debug(flow.Id, fmt.Sprintf("runAndCheck resultChannel timeout !"))
+			logService.Debug(flow.Id, fmt.Sprintf("RunAndCheck node timeout!"))
 		}
 	}
 	close(resultChannel)
 	//if all nodeNodestate failed then the flow is failed
-	if faileNodeCount == len(nodeStateList) {
+	if faileNodeCount == len(nodeStateList) && oknodesNum == 0 {
 		resultFlowStatus = models.STATUS_FAILED
 	}
 	exec.SetFlowStatusWithSpenTime(flow, maxNodeStatesCostTime, resultFlowStatus)
@@ -428,10 +425,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 	fid := flow.Id
 	correlationId := exec.getCorrelationId(fid)
 
-	logService.Info(fid, correlationId, fmt.Sprintf("Run Flow, flow:%s flowId:%d", flow.Name, flow.Id))
+	logService.Info(fid, correlationId, fmt.Sprintf("Run Node, flow:%s flowId:%d nodeId:%d", flow.Name, flow.Id, nodeState.Id))
 
 	defer func() {
-		logService.Info(fid, correlationId, fmt.Sprintf("Finish run nodeState, flow:%s flowId:%d", flow.Name, flow.Id))
+		logService.Info(fid, correlationId, fmt.Sprintf("Finish run node, flow:%s flowId:%d", flow.Name, flow.Id))
 	}()
 
 	startRunTime := nodeState.RunTime
@@ -449,13 +446,16 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 	currentTime := time.Now()
 	exec.updateNodeStatus(steps[startNum], startNum, 0.0, stepRunTimeList, nodeState, models.STATUS_RUNNING)
 	for i := startNum; i < len(steps); i++ {
-		step := steps[i];
+		step := steps[i]
 		//read db to judge flow is stopped
 		flow, _ := flowService.GetFlowWithRel(fid)
 		if flow.Status == models.STATUS_STOPPED || flow.Status == models.STATUS_SUCCESS {
 			logService.Warn(fid, correlationId, "the step: "+step.Name+"begin stop!")
 			spendTime := time.Since(currentTime).Seconds() + startRunTime
-			exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, flow.Status)
+			err := exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, flow.Status)
+			if err != nil {
+				logService.Error(fid, correlationId, fmt.Sprintf("update node state db error: %s", err.Error()))
+			}
 			//put nodeState to chan
 			resultChannel <- nodeState // Send nodeState to channel
 			return nil
@@ -464,7 +464,11 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		if handler == nil {
 			logService.Error(fid, correlationId, fmt.Sprintf("Handler not found for type %s", step.Type))
 			spendTime := time.Since(currentTime).Seconds() + startRunTime
-			exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, models.STATUS_FAILED)
+			nodeState.Status = models.STATUS_FAILED
+			err := exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, models.STATUS_FAILED)
+			if err != nil {
+				logService.Error(fid, correlationId, fmt.Sprintf("update node state db error: %s", err.Error()))
+			}
 			//put nodeState to chan
 			resultChannel <- nodeState // Send nodeState to channel
 			return errors.New("handler not found for type[" + step.Type + "]")
@@ -492,19 +496,30 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 
 		if len(okNodes) == 0 {
 			spendTime := time.Since(currentTime).Seconds() + startRunTime
-			exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, models.STATUS_FAILED)
+			nodeState.Status = models.STATUS_FAILED
+			err := exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, models.STATUS_FAILED)
+			if err != nil {
+				logService.Error(fid, correlationId, fmt.Sprintf("update node state db error: %s", err.Error()))
+			}
 			logService.Warn(fid, correlationId, fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
 			//put nodeState to chan
 			resultChannel <- nodeState // Send nodeState to channel
 			return nil
 		} else {
 			spendTime := time.Since(currentTime).Seconds() + startRunTime
-			exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, models.STATUS_RUNNING)
+			err := exec.updateNodeStatus(step, i, spendTime, stepRunTimeList, nodeState, models.STATUS_RUNNING)
+			if err != nil {
+				logService.Error(fid, correlationId, fmt.Sprintf("update node state db error: %s", err.Error()))
+			}
 			logService.Warn(fid, correlationId, fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 		}
 	}
 	spendTIme := time.Since(currentTime).Seconds() + startRunTime
-	exec.updateNodeStatus(steps[len(steps)-1], len(steps)-1, spendTIme, stepRunTimeList, nodeState, models.STATUS_SUCCESS)
+	nodeState.Status = models.STATUS_SUCCESS
+	err := exec.updateNodeStatus(steps[len(steps)-1], len(steps)-1, spendTIme, stepRunTimeList, nodeState, models.STATUS_SUCCESS)
+	if err != nil {
+		logService.Error(fid, correlationId, fmt.Sprintf("update node state db error: %s", err.Error()))
+	}
 	//put nodeState to chan
 	resultChannel <- nodeState // Send nodeState to channel
 	logService.Info(fid, correlationId, fmt.Sprintf("node %d run success all steps", nodeState.Id))

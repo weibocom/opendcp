@@ -105,7 +105,12 @@ class AnsibleTask(Task):
     """
     run 'ansible' playbook as a Task
     """
-
+    STEP_DEFAULT = 0
+    STEP_SUBMIT = 1
+    STEP_SSH = 2
+    STEP_INIT = 3
+    STEP_LOAD = 4
+    STEP_RUN = 5
 
     def __init__(self, task_id, name, hosts, tasks,tasktype, user, global_id, source, result=None, forks=5,params=None):
 
@@ -291,14 +296,13 @@ class AnsibleTask(Task):
         node_list = Service.check_task(task_id=str(self.task_id))
         successflag =False
         for node in node_list:
-                if node.status==2:
+                if node.status==Service.STATUS_SUCCESS:
                     successflag=True
                     break
         # update task
         if successflag:
             Service.update_task(task_id=self.task_id, status=Service.STATUS_PartlySuccess, err=json.dumps(err_json))
         else:
-           
             Service.update_task(task_id=self.task_id, status=Service.STATUS_FAILED, err=json.dumps(err_json))
 
         # update nodes in task
@@ -307,6 +311,5 @@ class AnsibleTask(Task):
 
     def success(self, result):
         Service.update_task(task_id=self.task_id, status=Service.STATUS_SUCCESS)
-
         for ip in self.hosts:
             Service.update_node(node_id=self._node_map[ip], status=Service.STATUS_SUCCESS)

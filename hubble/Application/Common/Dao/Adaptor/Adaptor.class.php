@@ -75,42 +75,12 @@ class Adaptor {
         switch($type){
 
             case 'NGINX':
-                // 0... 准备变更文件
-                // 1... 获取脚本的内容
-                // 2... 合成ansible json
-                // 3... 启动一个任务
-                // 4... 记录ID进入变更表
-                // 5... 返回记录ID,变更类型
-
-                // 准备变更文件
-                $upstream = new Upstream();
-
-                $ret = $upstream->checkArgs($content);
-                if($ret['code'] != 0) return $ret;
-
-                $ret = $upstream->addNode(
-                    $content['name'], $content['group_id'], $content['ips'],
-                    $content['port'], $content['weight']);
-
-                if($ret['code'] != 0) return $ret;
-
-                // -------- 对 consul 的处理
-                if($ret['content']['is_consul']){
-                    $return['content'] = [
-                        'type' => 'sync',
-                        'task_id' => 0,
-                    ];
-                    return $return;
-                }
-                
-                
                 //数据转存;进入定时任务
                 $sid=$content['script_id'];
                 $name=$content['name'];
                 $gid=$content['group_id'];
                 $correlation=I('server.HTTP_X_CORRELATION_ID');
-                //$url='http://101.201.76.175:5555/v1/nginx/timing/beginTimingReload?id='.$id.'&sid='.$sid.'&name='.$name.'&user='.$user.'&gid='.$gid.'&correlation='.$correlation;
-                $url  = 'http://'.C('HUBBLE_HOST').':'.C('HUBBLE_PORT').'/v1/nginx/timing/beginTimingReload?id='.$id.'&sid='.$sid.'&name='.$name.'&user='.$user.'&gid='.$gid.'&correlation='.$correlation;
+                $url  = 'http://'.C('HUBBLE_HOST').':'.C('HUBBLE_PORT').'/v1/nginx/timing/beginTimingReload?id='.$id.'&user='.$user.'&correlation='.$correlation;
                 $host = parse_url($url,PHP_URL_HOST);
                 $port = parse_url($url,PHP_URL_PORT);
                 $port = $port ? $port : 80;
