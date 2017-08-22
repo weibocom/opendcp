@@ -405,7 +405,7 @@ Class openstack
         foreach ($arr_server['hosts'] as $one_host){
             $host_name = $one_host['host_name'];
             $detail = self::getStorageHostDetail($host_name);
-            if($detail['service-status'] == 'unavailable'){
+            if($one_host['service-status'] != 'available'){
                 continue;
             }
             $detail_list[] = $detail;
