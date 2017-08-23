@@ -211,22 +211,32 @@ var change=function(){
   $.each(form,function(i){
     switch(this.type){
       case 'radio':
-        if(typeof(postData[this.name])=='undefined'){
-          if(this.name) postData[this.name]=$('input[name="'+this.name+'"]:checked').val();
-        }
+            if(this.id){
+                if(this.checked){
+                    switch (this.name){
+                        case 'var':
+                            vars = this.id;
+                            break;
+                        case 'task':
+                            tasks = this.id;
+                            break;
+
+                   }
+              }
+            }
         break;
       case 'checkbox':
           if(this.id){
               if(this.checked){
                   switch (this.name){
-                      case 'var':
-                          vars+=this.id+',';
-                          break;
+                      // case 'var':
+                      //     vars+=this.id+',';
+                      //     break;
+                      // case 'task':
+                      //     tasks+=this.id+',';
+                      //     break;
                       case "template":
                           templates+=this.id+',';
-                          break;
-                      case 'task':
-                          tasks+=this.id+',';
                           break;
                   }
               }
@@ -933,7 +943,7 @@ var showRole=function(){
                         var v = data.content[i];
                         switch (v.resource_type){
                             case 'var':
-                                var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="var">'+v.name+'</span>';
+                                var var_checkboxes = '<span class="col-sm-2"><input type="radio" id="'+v.id+'" name="var">'+v.name+'</span>';
                                 $('#vars_file').append(var_checkboxes);
                                 break;
                             case "template":
@@ -941,7 +951,7 @@ var showRole=function(){
                                 $('#tems_file').append(tem_checkboxes);
                                 break;
                             case 'task':
-                                var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="'+v.id+'" name="task">'+v.name+'</span>';
+                                var task_checkboxes = '<span class="col-sm-2"><input type="radio" id="'+v.id+'" name="task">'+v.name+'</span>';
                                 $('#tasks_file').append(task_checkboxes);
                                 break;
                         }
@@ -1020,10 +1030,10 @@ var creatRole=function(vars,templates,tasks,name,desc){
     var tab='role'
     var url='/api/for_layout/role.php';
     var postData={};
-    var actionDesc="添加"
+    var actionDesc="添加";
 
-    vars=vars.substring(0,vars.length-1);
-    tasks=tasks.substring(0,tasks.length-1);
+    // vars=vars.substring(0,vars.length-1);
+    // tasks=tasks.substring(0,tasks.length-1);
     templates=templates.substring(0,templates.length-1);
     postData['vars']=vars;
     postData['templates']=templates;

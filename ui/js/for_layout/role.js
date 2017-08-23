@@ -246,8 +246,9 @@ var get = function (idx,resourceData) {
                         $('#task_file').html('');
                         if(tab=='role'){
                             if (data.content.vars != 'undefined'){
-                                var str = data.content.vars;
-                                var var_array = str.split(",");
+                                // var str = data.content.vars;
+                                // var var_array = str.split(",");
+                                var var_array = data.content.vars;
                             }
 
                             if (data.content.tasks != 'undefined') {
@@ -260,25 +261,45 @@ var get = function (idx,resourceData) {
                                 for(var i=0;i<resourceData.length;i++){
                                     resource_id = resourceData[i].id.toString();
                                     if(resourceData[i].resource_type=='var'){
-                                        if(var_array.indexOf(resource_id)!=-1){
-                                            var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
+                                        // if(var_array.indexOf(resource_id)!=-1){
+                                        //     var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
+                                        //     $('#var_file').append(var_checkboxes);
+                                        // }else{
+                                        //     var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
+                                        //     $('#var_file').append(var_checkboxes);
+                                        //
+                                        // }
+
+                                        if(var_array == resource_id){
+                                            var var_checkboxes = '<span class="col-sm-2"><input type="radio" checked id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
                                             $('#var_file').append(var_checkboxes);
                                         }else{
-                                            var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
+                                            var var_checkboxes = '<span class="col-sm-2"><input type="radio" id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
                                             $('#var_file').append(var_checkboxes);
 
                                         }
                                     }
 
                                     if(resourceData[i].resource_type=='task'){
-                                        if(task_array.indexOf(resource_id)!=-1){
-                                            var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
+                                        // if(task_array.indexOf(resource_id)!=-1){
+                                        //     var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
+                                        //     $('#task_file').append(task_checkboxes);
+                                        // }else{
+                                        //     var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
+                                        //     $('#task_file').append(task_checkboxes);
+                                        //
+                                        // }
+
+                                        if(task_array == resource_id){
+                                            var task_checkboxes = '<span class="col-sm-2"><input type="radio" checked id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
                                             $('#task_file').append(task_checkboxes);
                                         }else{
-                                            var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
+                                            var task_checkboxes = '<span class="col-sm-2"><input type="radio" id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
                                             $('#task_file').append(task_checkboxes);
 
                                         }
+
+
                                     }
 
                                     if(resourceData[i].resource_type=='template'){
@@ -428,10 +449,10 @@ var view=function(type,idx){
     postData={"action":"info","fIdx":idx};
     switch(type){
         case 'roleresource':
-            title='查看Role详情 - '+idx;
+            title='查看资源详情 - '+idx;
             break;
         case 'role':
-            title='查看资源详情 - '+idx;
+            title='查看Role详情 - '+idx;
             break;
         default:
             illegal=true;
@@ -453,10 +474,11 @@ var view=function(type,idx){
                             case 'roleresource':
                                 if(typeof(locale_messages.layout.resource)) locale = locale_messages.layout.resource;
                                 $.each(data.content,function(k,v){
-                                    var t = (k=='params') ? JSON.stringify(v) : v;
-                                    if(t==''||t=='[]') t='空';
-                                    if(typeof(locale[k])!='undefined') k=locale[k];
-                                    text+='<span class="title col-sm-2" style="font-weight: bold;">'+k+'</span> <span class="col-sm-4" style="'+tStyle+'">'+t+'</span>'+"\n";
+                                    if(v=='') v='空';
+                                    if(typeof(locale[k])!='undefined'){
+                                        k=locale[k];
+                                    }
+                                    text+='<span class="title col-sm-2" style="font-weight: bold;">'+k+'</span> <span class="col-sm-4" style="'+tStyle+'">'+v+'</span>'+"\n";
                                 });
                                 break;
                             case 'role':
@@ -518,39 +540,48 @@ var change=function(){
     $.each(form,function(i){
         switch(this.type){
             case 'radio':
-                if(typeof(postData[this.name])=='undefined'){
-                    if(this.name) postData[this.name]=$('input[name="'+this.name+'"]:checked').val();
+                if(this.id){
+                    // if(this.name) postData[this.name]=$('input[name="'+this.name+'"]:checked').val();
+                    if(this.checked){
+                        switch (this.name){
+                            case 'var':
+                                vars = this.id;
+                                break;
+                            case 'task':
+                                tasks = this.id;
+                                break;
+
+                        }
+                    }
                 }
                 break;
             case 'checkbox':
                 if(this.id) {
                     if (this.checked) {
                         switch (this.name){
-                            case 'var':
-                                vars+=this.id+',';
-                                break;
+                            // case 'var':
+                            //     vars+=this.id+',';
+                            //     break;
                             case "template":
                                 templates+=this.id+',';
-                                break;
-                            case 'task':
-                                tasks+=this.id+',';
                                 break;
                         }
                     }
                 }
                     break;
-                default:
-                    if(this.name) postData[this.name]=this.value;
-                    break;
-                }
+            default:
+                if(this.name) postData[this.name]=this.value;
+                break;
+            }
         });
     var action=$("#page_action").val();
-    vars=vars.substring(0,vars.length-1);
-    tasks=tasks.substring(0,tasks.length-1);
+    // vars=vars.substring(0,vars.length-1);
+    // tasks=tasks.substring(0,tasks.length-1);
     templates=templates.substring(0,templates.length-1);
-    postData['vars']=vars;
+    // postData['vars']=vars;
     postData['tasks']=tasks;
     postData['templates']=templates;
+    postData['vars']=vars;
     if(postData['resource_type']!='template'){
         postData['template_file_owner']='';
         postData['template_file_path']='';
@@ -604,7 +635,6 @@ var change=function(){
 var hiddenFile=  function(){
 
     if($("#resource_type").val()=='template'){
-        alert("hhhhhhhhhhhh");
         $("#template_show").attr("hidden",false);
     }else{
         $("#template_show").attr("hidden",true);
