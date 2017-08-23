@@ -200,7 +200,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+		if node.Ip != "-" && node.Deleted == false {
 			ips[i] = node.Ip
 		}
 	}
@@ -264,7 +264,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid, corrId, fmt.Sprintf("check result return fail"))
+			logService.Error(fid, corrId, "check result return fail")
 
 			continue
 		}
@@ -318,8 +318,8 @@ func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
-	error := h.callAPI("GET", url, nil, &header, resp)
-	if error != nil {
+	err = h.callAPI("GET", url, nil, &header, resp)
+	if err != nil {
 		beego.Error("Get log for", instanceId, "fails:", err)
 		return "<NO LOG>"
 	}
@@ -348,7 +348,7 @@ func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]i
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+		if node.Ip != "-" && node.Deleted == false {
 			ips[i] = node.Ip
 		}
 	}
