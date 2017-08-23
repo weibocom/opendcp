@@ -224,7 +224,7 @@ func (c *FlowApi) FlowImplUpdate() {
 	c.ReturnSuccess("")
 }
 
-//删除FlowImpl
+//delete FlowImpl
 func (f *FlowApi) DeleteFlowImpl() {
 	id := f.Ctx.Input.Param(":id")
 	idInt, _ := strconv.Atoi(id)
@@ -238,7 +238,7 @@ func (f *FlowApi) DeleteFlowImpl() {
 	f.ReturnSuccess(nil)
 }
 
-//列出可用ActionImpl
+//ActionImpl list
 func (f *FlowApi) ListTaskStep() {
 	page := f.Query2Int("page", 1)
 	pageSize := f.Query2Int("page_size", 10)
@@ -280,8 +280,15 @@ func (f *FlowApi) RunFlow() {
 
 	opUser := f.Ctx.Input.Header("Authorization")
 
+	flowImpl := &FlowImpl{Id: req.TaskImplId}
+	err = service.Flow.GetBase(flowImpl)
+	if err != nil {
+		f.ReturnFailed("template not found: "+strconv.Itoa(req.TaskImplId), 400)
+		return
+	}
+
 	nodes := make([]string, 0)
-	nodeList := make([]*Node, 0, len(nodes))
+	nodeList := make([]*NodeState, 0, len(nodes))
 	errorNodesIp := ""
 
 	for _, n := range req.Nodes {
@@ -296,6 +303,13 @@ func (f *FlowApi) RunFlow() {
 			errorNodesIp += nodeIp + ","
 			continue
 		}
+		node.Deleted = true
+		node.UpdatedTime = time.Now()
+		err = service.Flow.UpdateBase(node)
+		if err != nil {
+			beego.Error("node :[", node.Ip, "] update db err:", err)
+			continue
+		}
 		nodeList = append(nodeList, node)
 	}
 
@@ -307,7 +321,7 @@ func (f *FlowApi) RunFlow() {
 	context["overrideParams"] = map[string]interface{}{}
 	context["opUser"] = opUser
 
-	err = executor.Executor.Run(req.TaskImplId, req.TaskName,
+	err = executor.Executor.Run(flowImpl, req.TaskName,
 		&executor.ExecOption{MaxNum: stepLen}, nodeList, context)
 
 	if err != nil {
@@ -409,8 +423,7 @@ func (f *FlowApi) StartFlow() {
 		f.ReturnFailed("flow not found id: "+_id, 400)
 		return
 	}
-
-	//重新读取配置文件
+	//reload flow options
 	if obj.Impl != nil {
 		obj.Options = obj.Impl.Steps
 	} else {
@@ -491,7 +504,6 @@ func (f *FlowApi) GetFlow() {
 	flowstru := flow_struct{}
 	f.popFlowStruct(obj, &flowstru)
 
-	//def := flow.Impl
 	f.ReturnSuccess(flowstru)
 }
 

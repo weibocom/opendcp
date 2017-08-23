@@ -73,8 +73,12 @@ type CronItem struct {
 
 type CronItemSlice []*CronItem
 
-func (s CronItemSlice) Len() int      { return len(s) }
-func (s CronItemSlice) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s CronItemSlice) Len() int {
+	return len(s)
+}
+func (s CronItemSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
 func (s CronItemSlice) Less(i, j int) bool {
 	if s[i].WeekDay != s[j].WeekDay {
 		return s[i].WeekDay < s[j].WeekDay
@@ -136,9 +140,9 @@ type NodeState struct {
 	Ip     string `json:"ip"`
 	VmId   string `json:"vm_id"`
 	CorrId string `json:"corr_id" orm:"null"` // Correlation ID
-	Node   *Node  `json:"-" orm:"rel(fk);null;on_delete(set_null)"`
-	Pool   *Pool  `json:"-" orm:"rel(fk)"`
-	Flow   *Flow  `json:"-" orm:"rel(fk);on_delete(cascade)"`
+	//Node   *Node  `json:"-" orm:"rel(fk);null;on_delete(set_null)"`
+	Pool *Pool `json:"-" orm:"rel(fk)"`
+	Flow *Flow `json:"-" orm:"rel(fk);on_delete(cascade)"`
 	//Batch       *FlowBatch `json:"-" orm:"rel(fk);null;"`
 	Status      int       `json:"state"`
 	Steps       string    `json:"steps" orm:"type(text)"`
@@ -149,6 +153,6 @@ type NodeState struct {
 	RunTime     float64   `json:"run_time" orm:"default(0.0)"`
 	CreatedTime time.Time `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time `json:"updated" orm:"auto_now_add;type(datetime)"`
-	Deleted     int       `json:"deleted" orm:"default(0)"` //是否删除 0 未删除，1 删除
+	Deleted     bool      `json:"deleted" orm:"default(0)"` //是否删除 0 未删除，1 删除
 	NodeType    string    `json:"node_type" orm:"default("manual")"`
 }
