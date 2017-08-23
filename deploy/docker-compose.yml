@@ -5,6 +5,7 @@
      depends_on:
         - hubble
         - web
+        - orion
      volumes:
         - ./conf/proxy_www.conf:/etc/php5/fpm/pool.d/www.conf:rw
         - ./conf/rsyncd.conf:/etc/rsyncd.conf

@@ -23,18 +23,18 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
-	"weibo.com/opendcp/orion/models"
 	"fmt"
+	"weibo.com/opendcp/orion/models"
 )
 
 type ClusterService struct {
 	BaseService
 }
 
-func (c *ClusterService) GetAllExecTask() ([]*models.ExecTask, error){
+func (c *ClusterService) GetAllExecTask() ([]*models.ExecTask, error) {
 	var (
 		taskList []*models.ExecTask
-		o = orm.NewOrm()
+		o        = orm.NewOrm()
 	)
 	if _, err := o.QueryTable(&models.ExecTask{}).
 		RelatedSel().All(&taskList); err != nil {

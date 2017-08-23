@@ -17,9 +17,10 @@ checkImage(){
     echo "image $1:$2 does not exists"
     exit 1
 }
-echo "###################begin:"`date +%Y%m%d" "%H":"%M":"%S`
+echo "---Begin to execute the init operation in this instance---"
+echo "###################begin:"`date +%Y-%m-%d" "%H":"%M":"%S`
 #打印参数
-echo "param:"$*
+echo "param:"$* >>result.out
 if [ -z "$1" ]; then
     echo "mysql address is  empty! you should be set like this:"
     echo "sh get.sh mysql://DBUSER:@DBADDRESS/DBNAME?charset=utf8"
@@ -55,38 +56,57 @@ fi
 
 #1、安装docker
 echo "1、安装docker"
-yum install -y docker
+echo "1、安装docker" >>result.out
+yum install -y docker >>result.out
+if [ $? -ne 0 ]; then
+   echo "install docker failed"
+   exit 1
+fi
 
 #2、修改docker配置
 echo "2、修改docker配置"
+echo "2、修改docker配置" >>result.out
 #文件 /etc/sysconfig/docker 追加如下两行
 echo 'OPTIONS="-g=/data0/docker -s=devicemapper --label idc=aliyun"' >> /etc/sysconfig/docker
 echo 'INSECURE_REGISTRY="--insecure-registry docker.io --insecure-registry '$6'"' >> /etc/sysconfig/docker
 
 #3、重新启动docker
 echo "3、重新启动docker"
-service docker restart
+echo "3、重新启动docker" >>result.out
+service docker restart >>result.out
+if [ $? -ne 0 ]; then
+    echo "restart docker service failed"
+    exit 1
+fi
 
-echo "4、下载octans-agent镜像"
 #4、下载octans-agent镜像
+echo "4、下载octans-agent镜像"
+echo "4、下载octans-agent镜像" >> result.out
+docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:latest >>result.out
+if [ $? -ne 0 ]; then
+    echo "pull docker image failed"
+    exit 1
+fi
 
 docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest
 
-echo "5、检查镜像是否下载成功"
 #5、检查镜像是否下载成功
+echo "5、检查镜像是否下载成功"
+echo "5、检查镜像是否下载成功" >> result.out
 checkImage registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role  latest
 
 echo "6、下载基础roles"
+echo "6、下载基础roles" >> result.out
 mkdir /root/ansible
 mkdir /root/ansible/roles
 wget -P /root/tmp/ http://$8:8081/remote_step/download/base
 tar -zxf /root/tmp/base -C /root/ansible/roles/
-
 wget -P /root/tmp/ http://$8:8081/remote_step/download/hubble_nginx
 tar -zxf /root/tmp/hubble_nginx -C /root/ansible/roles/
 
 #7、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)
 echo "7、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)"
+echo "7、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)" >>result.out
 
 #hn=`hostname`
 #echo "hostname=" $hn
@@ -101,7 +121,7 @@ echo "7、启动octans-agent容器，并且修改配置(通过环境变量设置
 #10.85.41.168:8083
 #i-2zeen6mal4s9qvpqb4iq
 #47.93.162.228
-docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4" -e "ssh_port=$7" -v /root/ansible/roles/:/data/octans/ansible/roles/ --net=host --name octans-agent-role registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest
+docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4" -e "ssh_port=$7" -v /root/ansible/roles/:/data/octans/ansible/roles/ --net=host --name octans-agent-role registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest >> result.out
 
 #检查octans是否启动
 TIMES=5
@@ -117,7 +137,11 @@ do
         sleep 2
 done
 
-docker exec octans-agent-role python /data/octans/octans/tool/auto_report.py $4
+docker exec octans-agent-role python /data/octans/octans/tool/auto_report.py $4 >>result.out
+if [ $? -ne 0 ]; then
+    echo "report instance status failed"
+    exit 1
+fi
 
 echo "[DONE] --------------"
-echo "###################end:"`date +%Y%m%d" "%H":"%M":"%S`
+echo "###################end:"`date +%Y-%m-%d" "%H":"%M":"%S`

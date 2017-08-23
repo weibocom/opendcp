@@ -527,9 +527,18 @@ func (driver aliyunProvider) ListImages(regionId string, snapshotId string, page
 }
 
 func (driver aliyunProvider) AllocatePublicIpAddress(instanceId string) (string, error) {
-	publicIpAddress, err := driver.client.Network.AllocatePublicIpAddress(map[string]interface{}{
-		"InstanceId": instanceId,
-	})
+	var publicIpAddress ecs.AllocatePublicIpAddressResponse
+	var err error
+	waitForSpecific(func() bool {
+		publicIpAddress, err = driver.client.Network.AllocatePublicIpAddress(map[string]interface{}{
+			"InstanceId": instanceId,
+		})
+		if err != nil {
+			return false
+		}
+		return true
+	}, 3, 5*time.Second)
+
 	if err != nil {
 		return "", err
 	}

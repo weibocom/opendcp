@@ -28,12 +28,15 @@ import (
 	"github.com/astaxie/beego"
 
 	"weibo.com/opendcp/orion/models"
+	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
 )
 
 const (
-	REG   = "register"
-	UNREG = "unregister"
+	REG    = "register"
+	UNREG  = "unregister"
+	ADD    = "addNginxNode"
+	DELETE = "deleteNginxNode"
 
 	SV_ID = "service_discovery_id"
 )
@@ -46,6 +49,8 @@ var (
 	UNREG_URL    = "http://%s" + beego.AppConfig.String("sd_unregister_url")
 	SD_CHECK_URL = "http://%s" + beego.AppConfig.String("sd_check_url") // + "?%s=%d&%s=%s"
 	SD_LOG_URL   = "http://%s" + beego.AppConfig.String("sd_log_url")
+	ADD_URL      = "http://%s" + beego.AppConfig.String("sd_add_nginx_node_url")
+	DELETE_URL   = "http://%s" + beego.AppConfig.String("sd_delete_nginx_node_url")
 )
 
 type ServiceDiscoveryHandler struct {
@@ -64,6 +69,11 @@ type sdLogResp struct {
 	Code    int
 	Message string `json:"msg"`
 	Content string `json:"data"`
+}
+
+type sdAddOrDeleteResp struct {
+	Code    int
+	Message string `json:"msg"`
 }
 
 type sdChkResp struct {
@@ -96,6 +106,22 @@ func (v *ServiceDiscoveryHandler) ListAction() []models.ActionImpl {
 				SV_ID: "Integer",
 			},
 		},
+		{
+			Name: ADD,
+			Desc: "addNginxNode from service",
+			Type: "sd",
+			Params: map[string]interface{}{
+				SV_ID: "Integer",
+			},
+		},
+		{
+			Name: DELETE,
+			Desc: "deleteNginxNode from service",
+			Type: "sd",
+			Params: map[string]interface{}{
+				SV_ID: "Integer",
+			},
+		},
 	}
 }
 
@@ -107,17 +133,20 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	actionParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
 
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
+	logService.Debug(fid, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case REG:
 		return h.register(actionParams, nodes, corrId)
 	case UNREG:
 		return h.unregister(actionParams, nodes, corrId)
+	case ADD:
+		return h.addNginxNode(actionParams, nodes, corrId)
+	case DELETE:
+		return h.deleteNginxNode(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
+		logService.Error(fid, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
 
 		return Err("Unknown action: " + action.Name)
 	}
@@ -135,25 +164,39 @@ func (h *ServiceDiscoveryHandler) unregister(params map[string]interface{},
 	return h.do(UNREG_URL, params, nodes, corrId)
 }
 
+func (h *ServiceDiscoveryHandler) addNginxNode(params map[string]interface{},
+	nodes []*models.NodeState, corrId string) *HandleResult {
+
+	return h.AddOrDelete(ADD_URL, params, nodes, corrId)
+}
+
+func (h *ServiceDiscoveryHandler) deleteNginxNode(params map[string]interface{},
+	nodes []*models.NodeState, corrId string) *HandleResult {
+
+	return h.AddOrDelete(DELETE_URL, params, nodes, corrId)
+}
+
 func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{},
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	batchId := nodes[0].Batch.Id
-
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	svVal := params[SV_ID]
 	sv, err := utils.ToInt(svVal)
 
 	if err != nil {
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
+		logService.Error(fid, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
 
 		return Err("Bad servicd_id")
 	}
+	if len(nodes) == 1 {
+		corrId = fmt.Sprintf("%d-%d-%s", fid, sv, nodes[0].Ip)
+	}
+
+	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	// call api
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
+	logService.Debug(fid, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
@@ -189,12 +232,12 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	// check result if async
 	taskId := resp.Content.TaskId
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("task id = %s", taskId))
+	logService.Debug(fid, corrId, fmt.Sprintf("task id = %s", taskId))
 
 	// start checking result
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, batchId, corrId, fmt.Sprintf("check result for times %d", i+1))
+		logService.Info(fid, corrId, fmt.Sprintf("check result for times %d", i+1))
 
 		//data := make(map[string]interface{})
 		//data["task_id"] = taskId
@@ -207,7 +250,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //, "task_id", taskId, "appkey", SD_APPKEY)
 		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
-			logService.Warn(fid, batchId, corrId, fmt.Sprintf("check result err: \n%v", err))
+			logService.Warn(fid, corrId, fmt.Sprintf("check result err: \n%v", err))
 
 			continue
 		}
@@ -215,13 +258,13 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		resp := &sdChkResp{}
 		err = json.Unmarshal([]byte(msg), resp)
 		if err != nil {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("bad response: %s", msg))
+			logService.Error(fid, corrId, fmt.Sprintf("bad response: %s", msg))
 
 			continue
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("check result return fail"))
+			logService.Error(fid, corrId, fmt.Sprintf("check result return fail"))
 
 			continue
 		}
@@ -260,19 +303,78 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 	corrId, instanceId := nodeState.CorrId, nodeState.VmId
 
+	pool := &models.Pool{Id: nodeState.Pool.Id}
+	err := service.Cluster.GetBase(pool)
+	if err != nil {
+		beego.Error("Get pool for", instanceId, "fails:", err)
+		return "<NO LOG>"
+	}
+
+	corrId = fmt.Sprintf("%d-%d-%s", nodeState.Flow.Id, pool.SdId, nodeState.Ip)
+
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
-	err := h.callAPI("GET", url, nil, &header, resp)
-	if err != nil {
+	error := h.callAPI("GET", url, nil, &header, resp)
+	if error != nil {
 		beego.Error("Get log for", instanceId, "fails:", err)
 		return "<NO LOG>"
 	}
 
 	return resp.Content
+}
+
+func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]interface{},
+	nodes []*models.NodeState, corrId string) *HandleResult {
+
+	fid := nodes[0].Flow.Id
+
+	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
+
+	svVal := params[SV_ID]
+	sv, err := utils.ToInt(svVal)
+
+	if err != nil {
+		logService.Error(fid, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
+
+		return Err("Bad servicd_id")
+	}
+
+	// call api
+	logService.Debug(fid, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
+
+	ips := make([]string, len(nodes))
+	for i, node := range nodes {
+		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+			ips[i] = node.Ip
+		}
+	}
+
+	data := make(map[string]interface{})
+	data["sid"] = sv
+	data["ips"] = strings.Join(ips, ",")
+	data["user"] = "root"
+
+	header := make(map[string]interface{})
+	header["X-CORRELATION-ID"] = corrId
+	header["APPKEY"] = SD_APPKEY
+
+	resp := &sdAddOrDeleteResp{}
+	url := fmt.Sprintf(action, SD_ADDR)
+	hr := h.callAPI("POST", url, &data, &header, resp)
+	if hr != nil {
+		return hr
+	}
+
+	if resp.Code != 0 {
+		return Err(resp.Message)
+	} else {
+		return h.success(nodes)
+	}
+
 }
 
 func (h *ServiceDiscoveryHandler) success(nodes []*models.NodeState) *HandleResult {

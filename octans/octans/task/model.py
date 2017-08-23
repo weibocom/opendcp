@@ -39,7 +39,7 @@ class Task(Base):
     name = Column(String(255), unique=True)
 
     status = Column(Integer)
-
+    step = Column(Integer)
     err = Column(TEXT)
 
     create_time = Column(DateTime)
@@ -78,6 +78,7 @@ class Log(Base):
     end_time = Column(String(255))
     task_uuid = Column(String(255))
     task_status = Column(String(255))
+    task_id = Column(Integer, ForeignKey(Task.__tablename__ + ".id", onupdate="CASCADE", ondelete="CASCADE"))
 
     def __repr__(self):
         return "<Log(id='{}', host='{}', global_id='{}', source='{}',log='{}'>".format(

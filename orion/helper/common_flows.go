@@ -44,8 +44,9 @@ const (
 	CREATE_VM = "create_vm"
 	RETURN_VM = "return_vm"
 
-	REGISTER   = "register"
-	UNREGISTER = "unregister"
+	REGISTER       = "register"
+	UNREGISTER     = "unregister"
+	ADD_NGINX_NODE = "addNginxNode"
 
 	KEY_SD_ID   = "service_discovery_id"
 	KEY_VM_TYPE = "vm_type_id"
@@ -63,7 +64,7 @@ func Expand(poolId int, num int, opUser string) error {
 		return errors.New("first step of expand template is not create_vm: " + flow.Steps)
 	}
 
-	if num < 0 || num > 200 {
+	if num < 0 || num > 500 {
 		return errors.New("Bad num: " + strconv.Itoa(num))
 	}
 
@@ -85,8 +86,9 @@ func Expand(poolId int, num int, opUser string) error {
 
 	// Use vm_type & service discovery info from Pool
 	override := map[string]interface{}{
-		CREATE_VM: map[string]interface{}{KEY_VM_TYPE: pool.VmType},
-		REGISTER:  map[string]interface{}{KEY_SD_ID: pool.SdId},
+		CREATE_VM:      map[string]interface{}{KEY_VM_TYPE: pool.VmType},
+		REGISTER:       map[string]interface{}{KEY_SD_ID: pool.SdId},
+		ADD_NGINX_NODE: map[string]interface{}{KEY_SD_ID: pool.SdId},
 		//name:      map[string]interface{}{KEY_TAG: pool.Service.DockerImage},
 	}
 
@@ -135,6 +137,7 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 		}
 		nodes = append(nodes, n)
 	}
+	service.Flow.DeleteNode(nodeIps)
 
 	// Use vm_type & service discovery info from Pool
 	override := map[string]interface{}{

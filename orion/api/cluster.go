@@ -51,8 +51,8 @@ type pool_struct struct {
 	Tasks     map[string]interface{} `json:"tasks"`
 	ServiceId int                    `json:"service_id"`
 	Nodecount int                    `json:"node_count"`
-	IsBeDepen int                   `json:"is_bedepen"`
-	IsHasCron int                   `json:"is_hascron"`
+	IsBeDepen int                    `json:"is_bedepen"`
+	IsHasCron int                    `json:"is_hascron"`
 }
 
 type service_struct struct {
@@ -98,6 +98,7 @@ func (c *ClusterApi) URLMapping() {
 	c.Mapping("AllPoolList", c.AllPoolList)
 
 	c.Mapping("NodeList", c.NodeList)
+	c.Mapping("NodeRegister", c.NodeRegister)
 	c.Mapping("NodeAppend", c.NodeAppend)
 	c.Mapping("NodeDelete", c.NodeDelete)
 
@@ -621,6 +622,37 @@ func (c *ClusterApi) NodeList() {
 	c.ReturnPageContent(page, pageSize, count, list)
 }
 
+func (c *ClusterApi) NodeRegister() {
+	idStr := c.Ctx.Input.Param(":sid")
+	sid, _ := strconv.Atoi(idStr)
+
+	pools := make([]models.Pool, 0)
+	_, err := service.Cluster.ListWithFilter(&models.Pool{}, &pools, "sd_id", sid)
+	if err != nil {
+		c.ReturnFailed(err.Error(), 500)
+		return
+	}
+	pids := make([]int, 0)
+
+	for _, pool := range pools {
+		pids = append(pids, pool.Id)
+	}
+
+	list := make([]models.NodeState, 0)
+	_, err = service.Flow.ListNodeRegister(&models.NodeState{}, &list, pids)
+	if err != nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	ips := make([]string, 0)
+	for _, nodestate := range list {
+		ips = append(ips, nodestate.Ip)
+	}
+
+	c.ReturnSuccess(ips)
+}
+
 func (c *ClusterApi) NodeAppend() {
 	_id := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(_id)
@@ -687,7 +719,7 @@ func (c *ClusterApi) NodeDelete() {
 		err := service.Cluster.DeleteBase(&models.Node{Id: id})
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
-			c.ReturnFailed("error when delete id: " + strconv.Itoa(id) + ", err:" + err.Error(), 400)
+			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
 			return
 		}
 	}
@@ -721,19 +753,19 @@ func (c *ClusterApi) AllPoolList() {
 
 	liststruct := make([]pool_struct, 0, count)
 	taskList, err := service.Cluster.GetAllExecTask()
-	if (err != nil) {
+	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 	for _, fi := range poolList {
 		temp_pool := pool_struct{
-			Id : fi.Id,
-			Name : fi.Name,
-			Desc : fi.Desc,
-			VmType : fi.VmType,
-			SdId : fi.SdId,
-			ServiceId : fi.Service.Id,
-			Nodecount : 0,
+			Id:        fi.Id,
+			Name:      fi.Name,
+			Desc:      fi.Desc,
+			VmType:    fi.VmType,
+			SdId:      fi.SdId,
+			ServiceId: fi.Service.Id,
+			Nodecount: 0,
 		}
 		flag := true
 		for _, task := range taskList {
@@ -742,7 +774,7 @@ func (c *ClusterApi) AllPoolList() {
 			}
 
 		}
-		if (!flag) {
+		if !flag {
 			temp_pool.IsHasCron = 1
 		} else {
 			temp_pool.IsHasCron = 0
@@ -751,7 +783,7 @@ func (c *ClusterApi) AllPoolList() {
 		for _, task := range taskList {
 			if task.Pool.Id != fi.Id {
 				for _, depen := range task.DependItems {
-					if (depen.Pool.Id == fi.Id) {
+					if depen.Pool.Id == fi.Id {
 						temp_pool.IsBeDepen = 1
 					}
 				}

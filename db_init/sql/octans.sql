@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS `chan_task` (
   `err` text,
   `create_time` datetime DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
+  `step`        int(11)  DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -68,6 +69,7 @@ CREATE TABLE `chan_log` (
   `end_time` varchar(255) DEFAULT NULL,
   `task_uuid` varchar(255) DEFAULT NULL,
   `task_status` varchar(255) DEFAULT NULL,
+  `task_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -313,26 +313,23 @@ class Upstream {
      * @return String 新的upstream内容
      */
     private function _fileAddNode($upstream, $ips, $port, $weight = 20){
-
         $new = $this->_splitUpstream($upstream);
         if(!$new['valid']) return null;
-
+        //删除之前的数据
         $oldIps = array_keys($new['server']);
-        $allIps = array_unique(array_merge($oldIps, $ips));
-
+        foreach($oldIps as $item){
+            unset($new['server'][$item]);
+        }
+        //添加节点
+        $allIps=$ips;
         hubble_log(HUBBLE_INFO, "all ips is ". implode(',', $allIps));
-
         $newUpstream = $new['head'];
-        $newUpstream[] = "\tkeepalive ".count($allIps).";";
+        $newUpstream[] = "\tkeepalive ".(count($allIps)+1).";";
+        $newUpstream[] = "\tserver 127.0.0.1:$port" .$this->upstreamArg. $weight.";";
         foreach($allIps as $ip){
             if(empty($ip)) continue; // 防止有空ip
-
-            if(in_array($ip,$oldIps))
-                $newUpstream[] = $new['server'][$ip];
-            else{
-                $newUpstream[] = "\tserver $ip:$port" .$this->upstreamArg. $weight.";";
-                hubble_log(HUBBLE_INFO, "add new node $ip:$port");
-            }
+            $newUpstream[] = "\tserver $ip:$port" .$this->upstreamArg. $weight.";";
+            hubble_log(HUBBLE_INFO, "add new node $ip:$port");
         }
         return array_merge($newUpstream, $new['tail']);
     }
@@ -570,7 +567,7 @@ class Upstream {
     /*
      *
      */
-    public function callTunnel($script_id, $filename, $user, $is_group, $group_id, $ids = ''){
+    public function callTunnel($script_id, $filename, $user, $is_group, $group_id, $ids = '',$cor_id=''){
         // 准备脚本内容
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
@@ -606,7 +603,7 @@ class Upstream {
 
         // 启动一个任务
         $channel = new Channel();
-        $task = $channel->ansible($nginxIps, 'root', $script,$scriptArg,1);
+        $task = $channel->ansible($nginxIps, 'root', $script,$scriptArg,1,$cor_id);
         if($task['code'] != 0) return $task;
         $return['content'] = $task['content'];
 
