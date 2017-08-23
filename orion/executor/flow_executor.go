@@ -527,115 +527,115 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 }
 
 // runStep runs one step of a batch
-//func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, stepNum int,
-//	nstates []*models.NodeState, stepParams map[string]interface{},
-//	retryOption *models.RetryOption, correlationId string) ([]*models.NodeState, []*models.NodeState) {
-//
-//	paramsBytes, _ := json.Marshal(stepParams)
-//	paramsJson := string(paramsBytes)
-//
-//	fid := nstates[0].Flow.Id
-//
-//	logService.Debug(fid, correlationId, fmt.Sprintf("Start running step %s params: %s", step.Name, paramsJson))
-//	defer func() {
-//		logService.Debug(fid, correlationId, fmt.Sprintf("Finish running step %s", step.Name))
-//	}()
-//
-//	exec.updateStepStatus(nstates, step.Name, stepNum, models.STATUS_RUNNING)
-//
-//	toRun := nstates
-//	var okNodes, errNodes []*models.NodeState
-//	for i := 0; i < retryOption.RetryTimes+1; i++ {
-//		// add interval for retry
-//		if i > 0 {
-//			time.Sleep(retryInterval * time.Second)
-//		}
-//
-//		logService.Debug(fid, correlationId, fmt.Sprintf("Run step %s for %d times", step.Name, i+1))
-//
-//		result := h.Handle(step, stepParams, toRun, correlationId)
-//
-//		// retry if failed
-//		if result.Code == handler.CODE_ERROR {
-//			errNodes = toRun
-//			msg := fmt.Sprintf("Fail to run step [%s]: %s", step.Name, result.Msg)
-//			logService.Error(fid, correlationId, msg)
-//
-//			continue
-//		}
-//
-//		// handle result, retry if failed
-//		results := result.Result
-//		if results == nil {
-//			errNodes = toRun
-//			msg := fmt.Sprintf("Node results is empty for [%s]", step.Name)
-//			logService.Error(fid, correlationId, msg)
-//
-//			continue
-//		}
-//
-//		// update result by every node
-//		errNodes = make([]*models.NodeState, 0)
-//		for i, state := range toRun {
-//			//node := state.Node
-//			nr := results[i]
-//			if nr == nil {
-//				logService.Warn(fid, correlationId, fmt.Sprintf("Result for node %d %s missing, set it as failed", state.Id, state.Ip))
-//
-//				state.Status = models.STATUS_FAILED
-//				state.Log += step.Name + ":" + "<Missing result>\n"
-//				// update progress
-//				state.Steps = step.Name
-//				state.StepNum = stepNum
-//				errNodes = append(errNodes, state)
-//			} else {
-//				logService.Debug(fid, correlationId, fmt.Sprintf("Result for node [%d %s] is %d %s", state.Id, state.Ip, nr.Code, nr.Data))
-//
-//				if nr.Code == models.STATUS_SUCCESS {
-//					okNodes = append(okNodes, state)
-//					state.Status = models.STATUS_RUNNING
-//				} else {
-//					state.Status = models.STATUS_FAILED
-//					errNodes = append(errNodes, state)
-//				}
-//				state.Log += step.Name + ":" + nr.Data + "\n"
-//
-//				// update progress
-//				state.Steps = step.Name
-//				state.StepNum = stepNum
-//			}
-//			state.UpdatedTime = time.Now()
-//
-//			err := flowService.UpdateBase(state)
-//			if err != nil {
-//				logService.Error(fid, correlationId, fmt.Sprintf("Fail to update state for node[%d %s]", state.Id, state.Ip))
-//			}
-//		}
-//
-//		// retry if all nodes fails
-//		if len(errNodes) == len(toRun) {
-//			continue
-//		}
-//
-//		// all successful
-//		if len(errNodes) == 0 {
-//			return okNodes, errNodes
-//		}
-//
-//		toRun = errNodes
-//	}
-//
-//	if retryOption.IgnoreError {
-//		// if ignore error is true, set all failed nodes to success
-//		exec.updateStepStatus(errNodes, "", stepNum, models.STATUS_SUCCESS)
-//		okNodes = nstates
-//		errNodes = []*models.NodeState{}
-//	} else {
-//		exec.updateStepStatus(errNodes, step.Name, stepNum, models.STATUS_FAILED)
-//	}
-//
-//	return okNodes, errNodes
-//}
+func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, stepNum int,
+	nstates []*models.NodeState, stepParams map[string]interface{},
+	retryOption *models.RetryOption, correlationId string) ([]*models.NodeState, []*models.NodeState) {
+
+	paramsBytes, _ := json.Marshal(stepParams)
+	paramsJson := string(paramsBytes)
+
+	fid := nstates[0].Flow.Id
+
+	logService.Debug(fid, correlationId, fmt.Sprintf("Start running step %s params: %s", step.Name, paramsJson))
+	defer func() {
+		logService.Debug(fid, correlationId, fmt.Sprintf("Finish running step %s", step.Name))
+	}()
+
+	exec.updateStepStatus(nstates, step.Name, stepNum, models.STATUS_RUNNING)
+
+	toRun := nstates
+	var okNodes, errNodes []*models.NodeState
+	for i := 0; i < retryOption.RetryTimes+1; i++ {
+		// add interval for retry
+		if i > 0 {
+			time.Sleep(retryInterval * time.Second)
+		}
+
+		logService.Debug(fid, correlationId, fmt.Sprintf("Run step %s for %d times", step.Name, i+1))
+
+		result := h.Handle(step, stepParams, toRun, correlationId)
+
+		// retry if failed
+		if result.Code == handler.CODE_ERROR {
+			errNodes = toRun
+			msg := fmt.Sprintf("Fail to run step [%s]: %s", step.Name, result.Msg)
+			logService.Error(fid, correlationId, msg)
+
+			continue
+		}
+
+		// handle result, retry if failed
+		results := result.Result
+		if results == nil {
+			errNodes = toRun
+			msg := fmt.Sprintf("Node results is empty for [%s]", step.Name)
+			logService.Error(fid, correlationId, msg)
+
+			continue
+		}
+
+		// update result by every node
+		errNodes = make([]*models.NodeState, 0)
+		for i, state := range toRun {
+			//node := state.Node
+			nr := results[i]
+			if nr == nil {
+				logService.Warn(fid, correlationId, fmt.Sprintf("Result for node %d %s missing, set it as failed", state.Id, state.Ip))
+
+				state.Status = models.STATUS_FAILED
+				state.Log += step.Name + ":" + "<Missing result>\n"
+				// update progress
+				state.Steps = step.Name
+				state.StepNum = stepNum
+				errNodes = append(errNodes, state)
+			} else {
+				logService.Debug(fid, correlationId, fmt.Sprintf("Result for node [%d %s] is %d %s", state.Id, state.Ip, nr.Code, nr.Data))
+
+				if nr.Code == models.STATUS_SUCCESS {
+					okNodes = append(okNodes, state)
+					state.Status = models.STATUS_RUNNING
+				} else {
+					state.Status = models.STATUS_FAILED
+					errNodes = append(errNodes, state)
+				}
+				state.Log += step.Name + ":" + nr.Data + "\n"
+
+				// update progress
+				state.Steps = step.Name
+				state.StepNum = stepNum
+			}
+			state.UpdatedTime = time.Now()
+
+			err := flowService.UpdateBase(state)
+			if err != nil {
+				logService.Error(fid, correlationId, fmt.Sprintf("Fail to update state for node[%d %s]", state.Id, state.Ip))
+			}
+		}
+
+		// retry if all nodes fails
+		if len(errNodes) == len(toRun) {
+			continue
+		}
+
+		// all successful
+		if len(errNodes) == 0 {
+			return okNodes, errNodes
+		}
+
+		toRun = errNodes
+	}
+
+	if retryOption.IgnoreError {
+		// if ignore error is true, set all failed nodes to success
+		exec.updateStepStatus(errNodes, "", stepNum, models.STATUS_SUCCESS)
+		okNodes = nstates
+		errNodes = []*models.NodeState{}
+	} else {
+		exec.updateStepStatus(errNodes, step.Name, stepNum, models.STATUS_FAILED)
+	}
+
+	return okNodes, errNodes
+}
 
 /**
 * xxxxxxx
