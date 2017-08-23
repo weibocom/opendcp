@@ -318,9 +318,9 @@ func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
-	err = h.callAPI("GET", url, nil, &header, resp)
-	if err != nil {
-		beego.Error("Get log for", instanceId, "fails:", err)
+	handleResult := h.callAPI("GET", url, nil, &header, resp)
+	if handleResult != nil {
+		beego.Error("Get log for", instanceId, "fails:", handleResult.Msg)
 		return "<NO LOG>"
 	}
 
