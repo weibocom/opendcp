@@ -2,6 +2,8 @@ FROM registry.cn-beijing.aliyuncs.com/opendcp/golang-env:latest
 
 ADD . $GOPATH/src/weibo.com/opendcp/jupiter
 
+RUN go get -u github.com/gpmgo/gopm
+
 WORKDIR $GOPATH/src/weibo.com/opendcp/jupiter
 
 RUN mkdir keys

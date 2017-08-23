@@ -70,15 +70,23 @@ service docker restart
 echo "4、下载octans-agent镜像"
 #4、下载octans-agent镜像
 
-docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:2.0
+docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest
 
 echo "5、检查镜像是否下载成功"
 #5、检查镜像是否下载成功
-checkImage registry.cn-beijing.aliyuncs.com/opendcp/octans-agent  2.0
+checkImage registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role  latest
 
+echo "6、下载基础roles"
+mkdir /root/ansible
+mkdir /root/ansible/roles
+wget -P /root/tmp/ http://$8:8081/remote_step/download/base
+tar -zxf /root/tmp/base -C /root/ansible/roles/
 
-#6、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)
-echo "6、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)"
+wget -P /root/tmp/ http://$8:8081/remote_step/download/hubble_nginx
+tar -zxf /root/tmp/hubble_nginx -C /root/ansible/roles/
+
+#7、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)
+echo "7、启动octans-agent容器，并且修改配置(通过环境变量设置到容器内部)"
 
 #hn=`hostname`
 #echo "hostname=" $hn
@@ -93,7 +101,7 @@ echo "6、启动octans-agent容器，并且修改配置(通过环境变量设置
 #10.85.41.168:8083
 #i-2zeen6mal4s9qvpqb4iq
 #47.93.162.228
-docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4" -e "ssh_port=$7" --net=host --name octans-agent registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:2.0
+docker run -d -e "mysql_url=$1" -e "get_key_url=$2" -e "report_url=$3" -e "instance_id=$4" -e "ssh_port=$7" -v /root/ansible/roles/:/data/octans/ansible/roles/ --net=host --name octans-agent-role registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest
 
 #检查octans是否启动
 TIMES=5
@@ -109,7 +117,7 @@ do
         sleep 2
 done
 
-docker exec octans-agent python /data/octans/octans/tool/auto_report.py $4
+docker exec octans-agent-role python /data/octans/octans/tool/auto_report.py $4
 
 echo "[DONE] --------------"
 echo "###################end:"`date +%Y%m%d" "%H":"%M":"%S`

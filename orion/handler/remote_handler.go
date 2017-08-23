@@ -63,13 +63,15 @@ var (
 	task_type  = ""
 	roles_file = ""
 	roles_url  = beego.AppConfig.String("octans_host_addr")
+	tasks = [] string{}
 	logService = service.Logs
 )
 
 const (
 	checkTimeout = 120
 	maxCount     = 1000
-	ANSIBLE_ROLE = "ansible_task"
+	ANSIBLE_ROLE = "ansible_role"
+	ANSIBLE_TASK = "ansible_task"
 )
 
 // GetType implements method of interface Handler, returns "remote".
@@ -85,6 +87,9 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	batchId := nodes[0].Batch.Id
 
 	step := action.Name
+	roles_file = ""
+	task_type  = ""
+	tasks = tasks[:0]
 
 	logService.Debug(fid, batchId, corrId, fmt.Sprintf("Handle remote step:", step))
 
@@ -120,6 +125,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	}
 
 	if isRole == 0 {
+		task_type = ANSIBLE_TASK
 		logService.Debug(fid, batchId, corrId, fmt.Sprintf("the step taskstep is not a ansible_role task"))
 	} else if isRole < len(actionList) {
 		logService.Error(fid, batchId, corrId, fmt.Sprintf("the step cannot be mixed type"))
@@ -132,6 +138,10 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		if err != nil {
 			logService.Error(fid, batchId, corrId, fmt.Sprintf("fail to pack err:%s", err))
 			return Err("fail to pack: " + step)
+		}
+
+		for _, action := range actionList {
+			tasks = append(tasks, action.Name)
 		}
 
 		roles_file = step
@@ -344,12 +354,18 @@ func (h *RemoteHandler) callExecutor(ips *[]string, user string, execID string,
 	data["nodes"] = ips
 	data["user"] = user
 	data["name"] = execID
-	data["tasks"] = content
+	//data["tasks"] = content
 	data["params"] = params
 	data["fork_num"] = forkNum
 	data["task_type"] = task_type
 	data["roles_url"] = roles_url
 	data["roles_file"] = roles_file
+
+	if len(tasks) > 0 {
+		data["tasks"] = tasks
+	} else {
+		data["tasks"] = content
+	}
 
 	url := fmt.Sprintf(runURL, remoteAddr)
 	msg, err := utils.Http.Post(url, &data, &header)

@@ -187,14 +187,14 @@ class AnsibleTask(Task):
         for h in self.hosts:
             
             # get ssh_key content
-            # key_content = _get_ssh_key(h)
+            key_content = _get_ssh_key(h)
 
             Logger.debug("read ssh_key for host: {} global_id: {}".format(h, self.global_id))
 
             # write ssh private key
-            # key_path = _write_ssh_key(h, key_content)
+            key_path = _write_ssh_key(h, key_content)
 
-            key_path = "tmp/167"
+            # key_path = "tmp/167"
             Logger.debug("write ssh_key for host: {} global_id: {}".format(h, self.global_id))
 
             host_vars = dict(ansible_port=22,
@@ -295,7 +295,7 @@ class AnsibleTask(Task):
         finally:
             if tqm is not None:
                 tqm.cleanup()
-                #_rm_tmp_key(key_files)
+                _rm_tmp_key(key_files)
 
     def failed(self, error):
         err_json = dict(msg=str(error))

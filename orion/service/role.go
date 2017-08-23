@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	ROLES_URL           = "./roles/"
+	ROLES_URL           = "./"
 	ROLES_REPO          = "./tmp/"
 	TASKS               = "tasks/"
 	TEMPLATES           = "templates/"
@@ -67,8 +67,8 @@ func (f *RoleService) CheckRoleParams(params []string) (string, error) {
 }
 
 func (f *RoleService) PackRoles(stepName string, rolesName []string) error {
-	for _, roleName := range rolesName {
-		roleName = ROLES_URL + roleName
+	for idx, roleName := range rolesName {
+		rolesName[idx] = roleName + "/"
 	}
 	packageName := ROLES_REPO + stepName
 
@@ -138,6 +138,7 @@ func (f *RoleService) WriteRoleFile(roleName string, resources []models.RoleReso
 	varNames := []string {}
 	if len(resources) > 0 {
 		for _, resource := range resources {
+			fileName := resource.Name
 			suffix := ""
 			switch resource.ResourceType {
 			case "template":
@@ -145,13 +146,15 @@ func (f *RoleService) WriteRoleFile(roleName string, resources []models.RoleReso
 			case "var":
 				suffix = YAML_SUFFIX
 				varNames = append(varNames, resource.Name)
+				fileName = MAIN
 			case "task":
 				suffix = YAML_SUFFIX
 				taskNames = append(taskNames, resource.Name)
+				fileName = MAIN
 			default:
 				suffix = YAML_SUFFIX
 			}
-			outputFile, err := os.OpenFile(ROLES_URL+roleName+"/"+resource.ResourceType+"s/"+resource.Name+suffix, os.O_WRONLY|os.O_CREATE, DEFAULT_FILE_PERM)
+			outputFile, err := os.OpenFile(ROLES_URL+roleName+"/"+resource.ResourceType+"s/"+fileName+suffix, os.O_WRONLY|os.O_CREATE, DEFAULT_FILE_PERM)
 			if err != nil {
 				return err
 			}
@@ -161,36 +164,21 @@ func (f *RoleService) WriteRoleFile(roleName string, resources []models.RoleReso
 			outputWriter.Flush()
 		}
 
-		// generate the main.yml of resource
-		if len(taskNames) > 0 {
-			taskOutputFile, err := os.OpenFile(ROLES_URL+roleName+"/"+TASKS+MAIN+YAML_SUFFIX, os.O_WRONLY|os.O_CREATE, DEFAULT_FILE_PERM)
-			defer taskOutputFile.Close()
-
-			taskOutputWrite := bufio.NewWriter(taskOutputFile)
-			taskOutputWrite.WriteString("---\n")
-			for _, name := range taskNames {
-				if err != nil {
-					return err
-				}
-				taskOutputWrite.WriteString(ANSIBLE_INCLUDE+name+YAML_SUFFIX+"\n")
-			}
-			taskOutputWrite.Flush()
-		}
-
-		if len(varNames) > 0 {
-			varOutputFile, err := os.OpenFile(ROLES_URL+roleName+"/"+VARS+MAIN+YAML_SUFFIX, os.O_WRONLY|os.O_CREATE, DEFAULT_FILE_PERM)
-			defer varOutputFile.Close()
-
-			varOutputWrite := bufio.NewWriter(varOutputFile)
-			varOutputWrite.WriteString("---\n")
-			for _, name := range varNames {
-				if err != nil {
-					return err
-				}
-				varOutputWrite.WriteString(ANSIBLE_INCLUDE+name+YAML_SUFFIX+"\n")
-			}
-			varOutputWrite.Flush()
-		}
+		//// generate the main.yml of resource
+		//if len(taskNames) > 0 {
+		//	taskOutputFile, err := os.OpenFile(ROLES_URL+roleName+"/"+TASKS+MAIN+YAML_SUFFIX, os.O_WRONLY|os.O_CREATE, DEFAULT_FILE_PERM)
+		//	defer taskOutputFile.Close()
+		//
+		//	taskOutputWrite := bufio.NewWriter(taskOutputFile)
+		//	taskOutputWrite.WriteString("---\n")
+		//	for _, name := range taskNames {
+		//		if err != nil {
+		//			return err
+		//		}
+		//		taskOutputWrite.WriteString(ANSIBLE_INCLUDE+name+YAML_SUFFIX+"\n")
+		//	}
+		//	taskOutputWrite.Flush()
+		//}
 
 	} else {
 		return fmt.Errorf("A role must contain some resources.")

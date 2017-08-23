@@ -54,6 +54,8 @@ func (f *RoleApi) URLMapping() {
 	f.Mapping("RoleResourceAppend", f.RoleResourceAppend)
 	f.Mapping("RoleResourceDelete", f.RoleResourceDelete)
 	f.Mapping("RoleResourceUpdate", f.RoleResourceUpdate)
+
+	f.Mapping("TestPack", f.TestPack)
 }
 
 func (f *RoleApi) RoleList() {
@@ -349,4 +351,19 @@ func (f *RoleApi) roleResourceCheckId() int {
 		return 0
 	}
 	return idInt
+}
+
+func (f *RoleApi) TestPack() {
+	step := f.Ctx.Input.Param(":step")
+	roleName := f.Ctx.Input.Param(":name")
+	roleNames := []string {roleName}
+
+	err := service.Role.PackRoles(step, roleNames)
+
+	if err != nil {
+		f.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	f.ReturnSuccess("")
 }

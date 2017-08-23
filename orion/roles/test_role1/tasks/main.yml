@@ -1,0 +1,3 @@
+---
+- name: echo self
+  shell: echo "{{ test_role1 }}" > ~/test_role

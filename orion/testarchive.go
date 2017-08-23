@@ -1,7 +1,7 @@
 package main
-
+//
 //import (
-//	//"github.com/mholt/archiver"
+//	"github.com/mholt/archiver"
 //	"fmt"
 //	"os"
 //)
@@ -14,11 +14,7 @@ package main
 //func main() {
 //	fmt.Println(os.Getwd())
 //
-//	//err := archiver.TarGz.Make(ROLES_REPO + "test2", []string{ROLES_URL + "test_role1", ROLES_URL + "test_role2", ROLES_URL + "test_role3"})
-//	//fmt.Println(err)
-//
-//
-//	err := os.Remove(ROLES_URL_TEST+"test_role_4")
+//	err := archiver.TarGz.Make(ROLES_REPO_TEST + "test2", []string{ROLES_URL_TEST + "test_role1"})
 //	fmt.Println(err)
 //
 //}

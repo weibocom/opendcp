@@ -375,7 +375,7 @@ def parallel_run_task():
         tasktype = conform_param(req_json, "task_type", basestring, default_value="ansible_task")
         roles_url = conform_param(req_json, "roles_url", basestring, allowNone=True)
         roles_file = conform_param(req_json, "roles_file", basestring, allowNone=True)
-        params = conform_param(req_json, "params", dict,{},True)
+        params = conform_param(req_json, "params", dict, {}, True)
         user_name = conform_param(req_json, "user", basestring, allowNone=True)
         fork_num = conform_param(req_json, "fork_num", int, allowNone=True)
 
