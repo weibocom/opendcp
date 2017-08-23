@@ -17,25 +17,24 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package utils
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	log "github.com/astaxie/beego"
-	"fmt"
 )
 
 var (
 	Http   = &httpUtil{}
 	client = &http.Client{
-		Timeout: 2 * 60 * time.Second,
+		Timeout: 5 * 60 * time.Second,
 	}
 )
 

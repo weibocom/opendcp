@@ -22,8 +22,8 @@
 //站点配置
 define("MY_SITE_ROOT_PATH", "/");//站点根路径
 define("MY_SITE_TITLE", "DCP Open");//站点全局title
-define("MY_SITE_ALIAS", "微博混合云");//站点名称
-define("MY_SITE_AUTHOR", "微博平台研发");//Author
+define("MY_SITE_ALIAS", "OpenDCP混合云");//站点名称
+define("MY_SITE_AUTHOR", "OpenDCP平台研发");//Author
 
 //数据库配置信息
 define('DB_NAME', 'open');
@@ -89,7 +89,7 @@ $myPageCount=1;//总页数
 //页脚
 $myFooter='<footer>'."\n";
 $myFooter.='  <div class="pull-right">'."\n";
-$myFooter.='    2016 - 2016 &copy; Powered by: 微博平台研发 '."\n";
+$myFooter.='     '."\n";
 $myFooter.='  </div>'."\n";
 $myFooter.='  <div class="clearfix"></div>'."\n";
 $myFooter.='</div>'."\n";

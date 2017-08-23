@@ -17,12 +17,14 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package service
 
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+
+	"fmt"
+	"time"
 	"weibo.com/opendcp/orion/models"
 )
 
@@ -30,15 +32,41 @@ type ClusterService struct {
 	BaseService
 }
 
+func (c *ClusterService) GetAllExecTask() ([]*models.ExecTask, error) {
+	var (
+		taskList []*models.ExecTask
+		o        = orm.NewOrm()
+	)
+	if _, err := o.QueryTable(&models.ExecTask{}).
+		RelatedSel().All(&taskList); err != nil {
+		return nil, fmt.Errorf("db load ExecTask failed: %v", err)
+	}
+	for _, task := range taskList {
+		if _, err := o.LoadRelated(task, "CronItems"); err != nil {
+			return nil, fmt.Errorf("db load %d CronItems failed: %v", task.Id, err)
+		}
+		if _, err := o.LoadRelated(task, "DependItems"); err != nil {
+			return nil, fmt.Errorf("db load %d DependItems failed: %v", task.Id, err)
+		}
+	}
+
+	return taskList, nil
+}
 func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool) []int {
 	o := orm.NewOrm()
 
 	respDatas := make([]int, 0, len(ips))
 
 	for _, ip := range ips {
-		data := models.Node{
-			Ip:   ip,
-			Pool: pool,
+		data := models.NodeState{
+			Ip:          ip,
+			Pool:        pool,
+			Flow:        &models.Flow{Id: 0},
+			Status:      models.STATUS_INIT,
+			CreatedTime: time.Now(),
+			UpdatedTime: time.Now(),
+			NodeType:    models.Manual,
+			Deleted:     false,
 		}
 		_, err := o.Insert(&data)
 		if err != nil {
@@ -52,18 +80,33 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool) []int {
 }
 
 // SearchPoolByIP returs the pool id of the ip given, if it exists
-func (c* ClusterService) SearchPoolByIP(ips []string) map[string]int {
+func (c *ClusterService) SearchPoolByIP(ips []string) map[string]int {
+	o := orm.NewOrm()
 
 	result := make(map[string]int)
 	for _, ip := range ips {
-		node := &models.Node{Ip: ip}
-		err := c.GetBy(node, "ip")
+		node := &models.NodeState{Ip: ip}
+		err := o.QueryTable(node).Filter("deleted", false).Filter("ip", ip).One(node)
+		//err := c.GetBy(node, "ip")
 		id := -1
-		if err == nil {
+		if err == nil && !node.Deleted {
 			id = node.Pool.Id
 		}
 		result[ip] = id
 	}
 
 	return result
+}
+
+func (c *ClusterService) ListNodesByType(pool_id int, node_type string) ([]models.NodeState, error) {
+	o := orm.NewOrm()
+
+	list := make([]models.NodeState, 0)
+
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Pool", pool_id).Filter("NodeType", node_type).All(&list)
+
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }

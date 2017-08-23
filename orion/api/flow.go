@@ -17,14 +17,14 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego"
 
@@ -32,7 +32,6 @@ import (
 	"weibo.com/opendcp/orion/handler"
 	. "weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
-	"fmt"
 )
 
 type FlowApi struct {
@@ -49,18 +48,20 @@ type flow_struct struct {
 	Options     []*StepOption `json:"options"`
 	StepLen     int           `json:"step_len"`
 	OpUser      string        `json:"opr_user"`
+	RunTime     float64       `json:"runTime"`
 	CreatedTime time.Time     `json:"created"`
 	UpdatedTime time.Time     `json:"updated"`
 	Stat        []int         `json:"stat`
 }
 
 type node_state struct {
-	Id       int    `json:"id"`
-	Ip       string `json:"ip"`
-	Status   int    `json:"state"`
-	Steps    string `json:"steps"`
-	PoolName string `json:"pool_name"`
-	VmId     string `json:"vm_id"`
+	Id       int       `json:"id"`
+	Ip       string    `json:"ip"`
+	Status   int       `json:"state"`
+	Steps    string    `json:"steps"`
+	PoolName string    `json:"pool_name"`
+	VmId     string    `json:"vm_id"`
+	RunTime  float64   `json:"runTime"`
 	Created  time.Time `josn:"created"`
 	Updated  time.Time `josn:""`
 }
@@ -174,7 +175,7 @@ func (c *FlowApi) ListFlowImpl() {
 
 	list := make([]FlowImpl, 0, pageSize)
 
-	count, err := service.Flow.ListByPageWithSort(page, pageSize, &FlowImpl{}, &list,"-id")
+	count, err := service.Flow.ListByPageWithSort(page, pageSize, &FlowImpl{}, &list, "-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -223,7 +224,7 @@ func (c *FlowApi) FlowImplUpdate() {
 	c.ReturnSuccess("")
 }
 
-//删除FlowImpl
+//delete FlowImpl
 func (f *FlowApi) DeleteFlowImpl() {
 	id := f.Ctx.Input.Param(":id")
 	idInt, _ := strconv.Atoi(id)
@@ -237,7 +238,7 @@ func (f *FlowApi) DeleteFlowImpl() {
 	f.ReturnSuccess(nil)
 }
 
-//列出可用ActionImpl
+//ActionImpl list
 func (f *FlowApi) ListTaskStep() {
 	page := f.Query2Int("page", 1)
 	pageSize := f.Query2Int("page_size", 10)
@@ -279,8 +280,15 @@ func (f *FlowApi) RunFlow() {
 
 	opUser := f.Ctx.Input.Header("Authorization")
 
+	flowImpl := &FlowImpl{Id: req.TaskImplId}
+	err = service.Flow.GetBase(flowImpl)
+	if err != nil {
+		f.ReturnFailed("template not found: "+strconv.Itoa(req.TaskImplId), 400)
+		return
+	}
+
 	nodes := make([]string, 0)
-	nodeList := make([]*Node, 0, len(nodes))
+	nodeList := make([]*NodeState, 0, len(nodes))
 	errorNodesIp := ""
 
 	for _, n := range req.Nodes {
@@ -295,27 +303,33 @@ func (f *FlowApi) RunFlow() {
 			errorNodesIp += nodeIp + ","
 			continue
 		}
+		node.Deleted = true
+		node.UpdatedTime = time.Now()
+		err = service.Flow.UpdateBase(node)
+		if err != nil {
+			beego.Error("node :[", node.Ip, "] update db err:", err)
+			continue
+		}
 		nodeList = append(nodeList, node)
 	}
 
-	if len(errorNodesIp) >0 {
-		f.ReturnFailed(fmt.Sprintf("node :[%s] not found...",errorNodesIp), 400)
+	if len(errorNodesIp) > 0 {
+		f.ReturnFailed(fmt.Sprintf("node :[%s] not found...", errorNodesIp), 400)
 	}
 
 	context := make(map[string]interface{})
 	context["overrideParams"] = map[string]interface{}{}
 	context["opUser"] = opUser
 
-
-	err = executor.Executor.Run(req.TaskImplId, req.TaskName,
+	err = executor.Executor.Run(flowImpl, req.TaskName,
 		&executor.ExecOption{MaxNum: stepLen}, nodeList, context)
 
 	if err != nil {
 		beego.Error("Run", req.TaskName, "[", req.TaskImplId, "] fails:", err)
 		f.ReturnFailed("run task fails: "+err.Error(), 400)
+	} else {
+		f.ReturnSuccess(nil)
 	}
-
-	f.ReturnSuccess(nil)
 }
 
 /*
@@ -409,14 +423,22 @@ func (f *FlowApi) StartFlow() {
 		f.ReturnFailed("flow not found id: "+_id, 400)
 		return
 	}
-
+	//reload flow options
+	if obj.Impl != nil {
+		obj.Options = obj.Impl.Steps
+	} else {
+		beego.Error("flowImp is not found " + _id)
+		f.ReturnFailed("flowImp is not found "+_id, 400)
+		return
+	}
 	err = executor.Executor.Start(obj)
 	if err != nil {
 		beego.Error("start flow ", _id, "fails: ", err)
-		f.ReturnFailed("start task "+_id+" fails", 400)
+		f.ReturnFailed("start task "+_id+" fails： "+err.Error(), 400)
+	} else {
+		f.ReturnSuccess(nil)
 	}
 
-	f.ReturnSuccess(nil)
 }
 
 func (f *FlowApi) StopFlow() {
@@ -436,11 +458,10 @@ func (f *FlowApi) StopFlow() {
 	err = executor.Executor.Stop(obj)
 	if err != nil {
 		beego.Error("stop flow ", _id, "fails: ", err)
-		f.ReturnFailed("stop task "+_id+" fails", 400)
+		f.ReturnFailed("stop task "+_id+" fails: "+err.Error(), 400)
+	} else {
+		f.ReturnSuccess(nil)
 	}
-
-	f.ReturnSuccess(nil)
-
 }
 
 func (f *FlowApi) PauseFlow() {
@@ -460,10 +481,10 @@ func (f *FlowApi) PauseFlow() {
 	err = executor.Executor.Pause(obj)
 	if err != nil {
 		beego.Error("pause flow ", _id, "fails: ", err)
-		f.ReturnFailed("pause task "+_id+" fails", 400)
+		f.ReturnFailed("pause task "+_id+" fails: "+err.Error(), 400)
+	} else {
+		f.ReturnSuccess(nil)
 	}
-
-	f.ReturnSuccess(nil)
 }
 
 func (f *FlowApi) GetFlow() {
@@ -483,7 +504,6 @@ func (f *FlowApi) GetFlow() {
 	flowstru := flow_struct{}
 	f.popFlowStruct(obj, &flowstru)
 
-	//def := flow.Impl
 	f.ReturnSuccess(flowstru)
 }
 
@@ -550,7 +570,6 @@ func (f *FlowApi) GetNodeStates() {
 	f.ReturnSuccess(ret)
 }
 
-
 func (f *FlowApi) GetFlowLogById() {
 	_id := f.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(_id)
@@ -558,12 +577,12 @@ func (f *FlowApi) GetFlowLogById() {
 	flow := &Flow{Id: id}
 	err := service.Flow.GetBase(flow)
 	if err != nil {
-		f.ReturnFailed("Flow not found: " + strconv.Itoa(id), 400)
+		f.ReturnFailed("Flow not found: "+strconv.Itoa(id), 400)
 		return
 	}
 
 	logList := make([]Logs, 0)
-	_, err = service.Flow.ListByPageWithFilter(0, 1000,&Logs{}, &logList, "fid", id)
+	_, err = service.Flow.ListByPageWithFilter(0, 1000, &Logs{}, &logList, "fid", id)
 	if err != nil {
 		f.ReturnFailed(err.Error(), 400)
 		return
@@ -575,16 +594,16 @@ func (f *FlowApi) GetFlowLogById() {
 // GetLog get log using nodeState Id
 func (f *FlowApi) GetLog() {
 	idStr := f.Ctx.Input.Param(":nsid")
-	nodeStateId, err:= strconv.Atoi(idStr)
+	nodeStateId, err := strconv.Atoi(idStr)
 	if err != nil {
-		f.ReturnFailed("Bad node state : " + idStr, 400)
+		f.ReturnFailed("Bad node state : "+idStr, 400)
 		return
 	}
 
 	nodeState := &NodeState{Id: nodeStateId}
 	err = service.Flow.GetBase(nodeState)
 	if err != nil {
-		f.ReturnFailed("Node state not found: " + strconv.Itoa(nodeStateId), 400)
+		f.ReturnFailed("Node state not found: "+strconv.Itoa(nodeStateId), 400)
 		return
 	}
 
@@ -598,6 +617,7 @@ func (f *FlowApi) GetLog() {
 }
 
 var handlers = make(map[string]*handler.Handler)
+
 func getLog(nodeState *NodeState) ([]map[string]string, error) {
 	logs := make([]map[string]string, 0)
 
@@ -635,7 +655,7 @@ func getLog(nodeState *NodeState) ([]map[string]string, error) {
 		}
 
 		log := (*hdl).GetLog(nodeState)
-		stepLog := map[string]string {
+		stepLog := map[string]string{
 			step.Name: log,
 		}
 		logs = append(logs, stepLog)
@@ -655,6 +675,7 @@ func (f *FlowApi) popFlowStruct(obj *Flow, flowstru *flow_struct) {
 	json.Unmarshal([]byte(obj.Options), &flowstru.Options)
 	flowstru.StepLen = obj.StepLen
 	flowstru.OpUser = obj.OpUser
+	flowstru.RunTime = obj.RunTime
 	flowstru.CreatedTime = obj.CreatedTime
 	flowstru.UpdatedTime = obj.UpdatedTime
 	flowstru.TplId = obj.Impl.Id
@@ -665,7 +686,7 @@ func (f *FlowApi) popFlowStruct(obj *Flow, flowstru *flow_struct) {
 	}
 
 	// get statistics
-	stat := make([]int, 4)
+	stat := make([]int, 5)
 
 	states := make([]*NodeState, 0)
 	_, err := service.Flow.ListByPageWithFilter(0, 10000,
@@ -688,6 +709,7 @@ func (f *FlowApi) popNodeStruct(obj *NodeState, state *node_state) {
 	state.VmId = obj.VmId
 	state.Status = obj.Status
 	state.Steps = obj.Steps
+	state.RunTime = obj.RunTime
 	state.Created = obj.CreatedTime
 	state.Updated = obj.UpdatedTime
 	if obj.Pool != nil {

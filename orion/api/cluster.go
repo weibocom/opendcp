@@ -17,19 +17,18 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package api
 
 import (
 	"encoding/json"
-
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-	"errors"
 
 	"github.com/astaxie/beego"
 
+	"time"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 )
@@ -53,6 +52,8 @@ type pool_struct struct {
 	Tasks     map[string]interface{} `json:"tasks"`
 	ServiceId int                    `json:"service_id"`
 	Nodecount int                    `json:"node_count"`
+	IsBeDepen int                    `json:"is_bedepen"`
+	IsHasCron int                    `json:"is_hascron"`
 }
 
 type service_struct struct {
@@ -95,8 +96,10 @@ func (c *ClusterApi) URLMapping() {
 	c.Mapping("PoolAppend", c.PoolAppend)
 	c.Mapping("PoolDelete", c.PoolDelete)
 	c.Mapping("PoolUpdate", c.PoolUpdate)
+	c.Mapping("AllPoolList", c.AllPoolList)
 
 	c.Mapping("NodeList", c.NodeList)
+	c.Mapping("NodeRegister", c.NodeRegister)
 	c.Mapping("NodeAppend", c.NodeAppend)
 	c.Mapping("NodeDelete", c.NodeDelete)
 
@@ -105,8 +108,8 @@ func (c *ClusterApi) URLMapping() {
 
 //集群管理
 func (c *ClusterApi) ClusterInfo() {
-	idInt := c.clusterCheckId();
-	if (idInt < 1) {
+	idInt := c.clusterCheckId()
+	if idInt < 1 {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
@@ -129,7 +132,7 @@ func (c *ClusterApi) ClusterList() {
 
 	list := make([]models.Cluster, 0, pageSize)
 
-	count, err := service.Cluster.ListByPageWithSort(page, pageSize, &models.Cluster{}, &list,"-id")
+	count, err := service.Cluster.ListByPageWithSort(page, pageSize, &models.Cluster{}, &list, "-id")
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -142,7 +145,7 @@ func (c *ClusterApi) ClusterList() {
 func (c *ClusterApi) ClusterAppend() {
 	req := cluster_struct{}
 	err := c.clusterCheckParam(&req)
-	if err != nil{
+	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
@@ -161,8 +164,8 @@ func (c *ClusterApi) ClusterAppend() {
 }
 
 func (c *ClusterApi) ClusterDelete() {
-	idInt := c.clusterCheckId();
-	if (idInt < 1) {
+	idInt := c.clusterCheckId()
+	if idInt < 1 {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
@@ -197,23 +200,22 @@ func (c *ClusterApi) ClusterDelete() {
 }
 
 func (c *ClusterApi) ClusterUpdate() {
-	idInt := c.clusterCheckId();
-	if (idInt < 1) {
+	idInt := c.clusterCheckId()
+	if idInt < 1 {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
 
 	req := cluster_struct{}
 	err := c.clusterCheckParam(&req)
-	if err != nil{
+	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 
-
 	cluster := &models.Cluster{Id: idInt}
 	err = service.Remote.GetBase(cluster)
-	if (len(cluster.Name) < 1) {
+	if len(cluster.Name) < 1 {
 		c.ReturnFailed("old data not found !", 400)
 		return
 	}
@@ -231,9 +233,9 @@ func (c *ClusterApi) ClusterUpdate() {
 
 }
 
-func (c *ClusterApi) clusterCheckId() int{
+func (c *ClusterApi) clusterCheckId() int {
 	id := c.Ctx.Input.Param(":id")
-	if(len(id) < 1) {
+	if len(id) < 1 {
 		return 0
 	}
 
@@ -245,28 +247,23 @@ func (c *ClusterApi) clusterCheckId() int{
 	return idInt
 }
 
-
-func (c *ClusterApi) clusterCheckParam(req *cluster_struct) error{
+func (c *ClusterApi) clusterCheckParam(req *cluster_struct) error {
 	err := c.Body2Json(&req)
 	if err != nil {
 		return err
 	}
 
-	if (len(req.Name) < 1) {
+	if len(req.Name) < 1 {
 		return errors.New("param is error!")
 	}
 
 	return nil
 }
 
-
-
-
-
 //服务管理
 func (c *ClusterApi) ServiceInfo() {
 	idInt := c.serviceCheckId()
-	if (idInt < 1) {
+	if idInt < 1 {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
@@ -323,7 +320,7 @@ func (c *ClusterApi) ServiceList() {
 func (c *ClusterApi) ServiceAppend() {
 	req := service_struct{}
 	err := c.serviceCheckParam(&req)
-	if err != nil{
+	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
@@ -349,7 +346,7 @@ func (c *ClusterApi) ServiceAppend() {
 
 func (c *ClusterApi) ServiceDelete() {
 	idInt := c.serviceCheckId()
-	if (idInt < 1) {
+	if idInt < 1 {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
@@ -379,14 +376,14 @@ func (c *ClusterApi) ServiceDelete() {
 
 func (c *ClusterApi) ServiceUpdate() {
 	idInt := c.serviceCheckId()
-	if (idInt < 1) {
+	if idInt < 1 {
 		c.ReturnFailed("id is error !", 400)
 		return
 	}
 
 	req := service_struct{}
 	err := c.serviceCheckParam(&req)
-	if err != nil{
+	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
@@ -397,7 +394,6 @@ func (c *ClusterApi) ServiceUpdate() {
 		c.ReturnFailed(err.Error(), 404)
 		return
 	}
-
 
 	servicem.Desc = req.Desc
 	servicem.ServiceType = req.ServiceType
@@ -415,10 +411,9 @@ func (c *ClusterApi) ServiceUpdate() {
 	c.ReturnSuccess("")
 }
 
-
-func (c *ClusterApi) serviceCheckId() int{
+func (c *ClusterApi) serviceCheckId() int {
 	id := c.Ctx.Input.Param(":id")
-	if(len(id) < 1) {
+	if len(id) < 1 {
 		return 0
 	}
 
@@ -430,22 +425,18 @@ func (c *ClusterApi) serviceCheckId() int{
 	return idInt
 }
 
-
-func (c *ClusterApi) serviceCheckParam(req *service_struct) error{
+func (c *ClusterApi) serviceCheckParam(req *service_struct) error {
 	err := c.Body2Json(&req)
 	if err != nil {
 		return err
 	}
 
-	if (len(req.Name) < 1 || len(req.Name) < 1 || len(req.DockerImage) < 1 || req.ClusterId < 1) {
+	if len(req.Name) < 1 || len(req.Name) < 1 || len(req.DockerImage) < 1 || req.ClusterId < 1 {
 		return errors.New("param is error!")
 	}
 
 	return nil
 }
-
-
-
 
 //服务池管理
 func (c *ClusterApi) PoolInfo() {
@@ -502,12 +493,12 @@ func (c *ClusterApi) PoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &liststruct[i].Tasks)
 		liststruct[i].ServiceId = fi.Service.Id
 
-		count, err = service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
+		nodeCount, err := service.Cluster.GetCountWithFilter(&models.NodeState{}, "Pool", &models.Pool{Id: fi.Id}, "deleted", false)
 		if err != nil {
 			c.ReturnFailed(err.Error(), 400)
 			return
 		}
-		liststruct[i].Nodecount = count
+		liststruct[i].Nodecount = nodeCount
 
 	}
 
@@ -553,10 +544,10 @@ func (c *ClusterApi) PoolDelete() {
 		return
 	}
 
-	list := make([]models.Node, 0, 1)
+	list := make([]models.NodeState, 0, 1)
 
-	count, err := service.Cluster.ListByPageWithFilter(0, 1,
-		&models.Node{}, &list, "pool_id", pool.Id)
+	count, err := service.Cluster.ListByPageWithTwoFilter(0, 1,
+		&models.NodeState{}, &list, "pool_id", pool.Id, "deleted", false)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -620,16 +611,47 @@ func (c *ClusterApi) NodeList() {
 
 	c.CheckPage(&page, &pageSize)
 
-	list := make([]models.Node, 0, pageSize)
+	list := make([]models.NodeState, 0, pageSize)
 
-	count, err := service.Cluster.ListByPageWithFilter(page, pageSize,
-		&models.Node{}, &list, "pool_id", poolId)
+	count, err := service.Cluster.ListByPageWithTwoFilter(page, pageSize,
+		&models.NodeState{}, &list, "pool_id", poolId, "deleted", false)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
 
 	c.ReturnPageContent(page, pageSize, count, list)
+}
+
+func (c *ClusterApi) NodeRegister() {
+	idStr := c.Ctx.Input.Param(":sid")
+	sid, _ := strconv.Atoi(idStr)
+
+	pools := make([]models.Pool, 0)
+	_, err := service.Cluster.ListWithFilter(&models.Pool{}, &pools, "sd_id", sid)
+	if err != nil {
+		c.ReturnFailed(err.Error(), 500)
+		return
+	}
+	pids := make([]int, 0)
+
+	for _, pool := range pools {
+		pids = append(pids, pool.Id)
+	}
+
+	list := make([]models.NodeState, 0)
+	_, err = service.Flow.ListNodeRegister(&models.NodeState{}, &list, pids)
+	if err != nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	ips := make([]string, 0)
+	for _, nodestate := range list {
+		ips = append(ips, nodestate.Ip)
+	}
+
+	c.ReturnSuccess(ips)
 }
 
 func (c *ClusterApi) NodeAppend() {
@@ -645,12 +667,16 @@ func (c *ClusterApi) NodeAppend() {
 		return
 	}
 
-	//repeat ip check
-
+	//check ip repeat and empty
 	for _, ip := range req.Ips {
-		count, err1 := service.Cluster.GetCount(&models.Node{}, "ip", ip)
+		ip = strings.TrimSpace(ip)
+		if ip == "" {
+			c.ReturnFailed("ip is empty", 400)
+			return
+		}
+		count, err1 := service.Cluster.GetCountWithFilter(&models.NodeState{}, "ip", ip, "deleted", false)
 		if err1 != nil || count > 0 {
-			c.ReturnFailed("ip exists already", 404)
+			c.ReturnFailed("ip: "+ip+" exists already", 404)
 			return
 		}
 	}
@@ -664,14 +690,6 @@ func (c *ClusterApi) NodeAppend() {
 	if err != nil {
 		c.ReturnFailed("pool_id is not vaild", 404)
 		return
-	}
-
-	//check IP list
-	for _, ip := range req.Ips {
-		if strings.TrimSpace(ip) == "" {
-			c.ReturnFailed("ip is empty", 400)
-			return
-		}
 	}
 
 	back := service.Cluster.AppendIpList(req.Ips, pool)
@@ -691,20 +709,33 @@ func (c *ClusterApi) NodeDelete() {
 		return
 	}
 
-	fmt.Println(req)
 	for _, id := range req.NodeIds {
-
-		//idInt,_:=strconv.Atoi(id)
-		err := service.Cluster.DeleteBase(&models.Node{Id: id})
+		//NodeState check
+		nodeState := &models.NodeState{
+			Id: id,
+		}
+		err = service.Cluster.GetBase(nodeState)
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
-			c.ReturnFailed("error when delete id: " + strconv.Itoa(id) + ", err:" + err.Error(), 400)
+			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
+			return
+		}
+		if nodeState.Status == models.STATUS_RUNNING || nodeState.Deleted {
+			beego.Warn("deleting id:", id, ", is runnineg or deleted!")
+			continue
+		}
+		//update nodeState to delete
+		nodeState.UpdatedTime = time.Now()
+		nodeState.Deleted = true
+		err := service.Cluster.UpdateBase(nodeState)
+		if err != nil {
+			beego.Error("Error when deleting id:", id, ", error:", err)
+			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
 			return
 		}
 	}
 
 	c.ReturnSuccess(nil)
-
 }
 
 func (c *ClusterApi) SearchPoolByIP() {
@@ -714,4 +745,63 @@ func (c *ClusterApi) SearchPoolByIP() {
 	poolIds := service.Cluster.SearchPoolByIP(ips)
 
 	c.ReturnSuccess(poolIds)
+}
+
+func (c *ClusterApi) AllPoolList() {
+	page := c.Query2Int("page", 1)
+	pageSize := c.Query2Int("page_size", 10)
+
+	c.CheckPage(&page, &pageSize)
+
+	poolList := make([]models.Pool, 0, pageSize)
+
+	count, err := service.Flow.ListByPageWithSort(page, pageSize, &models.Pool{}, &poolList, "-id")
+	if err != nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	liststruct := make([]pool_struct, 0, count)
+	taskList, err := service.Cluster.GetAllExecTask()
+	if err != nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+	for _, fi := range poolList {
+		temp_pool := pool_struct{
+			Id:        fi.Id,
+			Name:      fi.Name,
+			Desc:      fi.Desc,
+			VmType:    fi.VmType,
+			SdId:      fi.SdId,
+			ServiceId: fi.Service.Id,
+			Nodecount: 0,
+		}
+		flag := true
+		for _, task := range taskList {
+			if task.Pool.Id == fi.Id && len(task.CronItems) > 0 {
+				flag = false
+			}
+
+		}
+		if !flag {
+			temp_pool.IsHasCron = 1
+		} else {
+			temp_pool.IsHasCron = 0
+		}
+		temp_pool.IsBeDepen = 0
+		for _, task := range taskList {
+			if task.Pool.Id != fi.Id {
+				for _, depen := range task.DependItems {
+					if depen.Pool.Id == fi.Id {
+						temp_pool.IsBeDepen = 1
+					}
+				}
+			}
+		}
+
+		json.Unmarshal([]byte(fi.Tasks), &temp_pool.Tasks)
+		liststruct = append(liststruct, temp_pool)
+	}
+	c.ReturnPageContent(page, pageSize, len(liststruct), liststruct)
 }

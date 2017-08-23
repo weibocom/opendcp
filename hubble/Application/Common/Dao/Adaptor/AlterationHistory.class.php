@@ -37,7 +37,7 @@ class AlterationHistory {
         $this->historyTbl = M('AlterationHistory');
     }
 
-    public function addRecord($type, $task_id, $task_name, $channel, $user){
+    public function addRecord($type, $task_id, $task_name, $channel, $user,$cor_id=''){
 
         $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
@@ -46,7 +46,7 @@ class AlterationHistory {
             'task_id'     => $task_id,
             'task_name'   => $task_name,
             'channel'     => $channel,
-            'global_id'   => I('server.HTTP_X_CORRELATION_ID'),
+            'global_id'   => I('server.HTTP_X_CORRELATION_ID')?I('server.HTTP_X_CORRELATION_ID'):$cor_id,
             'create_time' => date("Y-m-d H:i:s"),
             'opr_user'    => $user,
         ];
@@ -61,7 +61,31 @@ class AlterationHistory {
         $return['content'] = $ret;
         return $return;
     }
+    
+    //修改后的addTaskRecord方法，更新alteration_history的部分数据
+    public function addTaskRecord($type, $task_id, $task_name, $channel,$cor_id=''){
+        //根据sid填入task_id和task_name以及type，channel
+        $return = ['code' => 0, 'msg' => 'success', 'content' => ''];
 
+        $data =[
+            'type'        => $type,
+            'task_id'     => $task_id,
+            'task_name'   => $task_name,
+            'channel'     => $channel,
+            'create_time' => date("Y-m-d H:i:s"),
+        ];
+        $map['task_name']  = array('eq','');
+        $map['sid'] = $cor_id;
+        $ret = $this->historyTbl->where($map)->save($data);
+        if($ret === false){
+            $return['code'] = 1;
+            $return['msg'] = "add alteration record failed, ERROR: " .$this->historyTbl->getDbError();
+            return $return;
+        }
+        $return['content'] = $ret;
+        return $return;
+    }
+    
     public function exist($id){
         $ret = $this->historyTbl->where(['id'=>$id])->find();
 
@@ -79,7 +103,10 @@ class AlterationHistory {
     }
 
     public function existGid($gid){
-        $ret = $this->historyTbl->where(['global_id'=>$gid])->find();
+        $in['global_id']=$gid;
+        $in['task_id']=array('neq',0);
+        $ret = $this->historyTbl->where($in)->order('id desc')->limit(1)->select();
+        $ret=$ret[0];
 
         if($ret === false){
             hubble_log(HUBBLE_ERROR, $this->historyTbl->getLastSql().' ERROR: '. $this->historyTbl->getDbError());

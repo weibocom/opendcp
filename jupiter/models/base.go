@@ -33,5 +33,6 @@ func init() {
 		new(Network),
 		new(Zone),
 		new(Instance),
+		new(Detail),
 	)
 }

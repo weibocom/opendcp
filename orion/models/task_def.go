@@ -17,7 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
 package models
 
 type RetryOption struct {
@@ -31,6 +30,11 @@ type StepOption struct {
 	Name   string       `json:"name"`
 	Values ParamValues  `json:"param_values"`
 	Retry  *RetryOption `json:"retry"`
+}
+
+type StepRunTime struct {
+	Name    string  `json:"name"`
+	RunTime float64 `json:"runTime:"`
 }
 
 //任务流定义
