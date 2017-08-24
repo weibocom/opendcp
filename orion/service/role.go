@@ -40,6 +40,7 @@ const (
 	DEFAULT_FILE_PERM   = 0666
 	DEFAULT_FOLDER_PERM = 0755
 	YAML_SUFFIX         = ".yml"
+	JINJA2_SUFFIX       = ".j2"
 )
 
 type RoleService struct {
@@ -142,7 +143,7 @@ func (f *RoleService) WriteRoleFile(roleName string, resources []models.RoleReso
 			suffix := ""
 			switch resource.ResourceType {
 			case "template":
-				suffix = ""
+				suffix = JINJA2_SUFFIX
 			case "var":
 				suffix = YAML_SUFFIX
 				varNames = append(varNames, resource.Name)
@@ -163,23 +164,6 @@ func (f *RoleService) WriteRoleFile(roleName string, resources []models.RoleReso
 			outputWriter.WriteString(resource.ResourceContent)
 			outputWriter.Flush()
 		}
-
-		//// generate the main.yml of resource
-		//if len(taskNames) > 0 {
-		//	taskOutputFile, err := os.OpenFile(ROLES_URL+roleName+"/"+TASKS+MAIN+YAML_SUFFIX, os.O_WRONLY|os.O_CREATE, DEFAULT_FILE_PERM)
-		//	defer taskOutputFile.Close()
-		//
-		//	taskOutputWrite := bufio.NewWriter(taskOutputFile)
-		//	taskOutputWrite.WriteString("---\n")
-		//	for _, name := range taskNames {
-		//		if err != nil {
-		//			return err
-		//		}
-		//		taskOutputWrite.WriteString(ANSIBLE_INCLUDE+name+YAML_SUFFIX+"\n")
-		//	}
-		//	taskOutputWrite.Flush()
-		//}
-
 	} else {
 		return fmt.Errorf("A role must contain some resources.")
 	}

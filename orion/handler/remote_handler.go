@@ -59,11 +59,8 @@ var (
 	runURL     = "http://%s" + beego.AppConfig.String("remote_command_url")
 	checkURL   = "http://%s" + beego.AppConfig.String("remote_check_url")
 	logURL     = "http://%s" + beego.AppConfig.String("remote_log_url")
-	forkNum    = 5
-	task_type  = ""
-	roles_file = ""
 	roles_url  = beego.AppConfig.String("octans_host_addr")
-	tasks = [] string{}
+	forkNum    = 5
 	logService = service.Logs
 )
 
@@ -86,9 +83,9 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	fid := nodes[0].Flow.Id
 
 	step := action.Name
-	roles_file = ""
-	task_type  = ""
-	tasks = tasks[:0]
+	roles_file := ""
+	task_type  := ""
+	tasks := []string {}
 
 	logService.Debug(fid, corrId, fmt.Sprintf("Handle remote step:", step))
 
@@ -113,7 +110,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	service.Remote.GetByStringValues(&models.RemoteAction{}, &actionList,
 		"name", actNames)
 
-	logService.Debug(fid, batchId, corrId, fmt.Sprintf("jurdge step type"))
+	logService.Debug(fid, corrId, fmt.Sprintf("jurdge step type"))
 	remoteActionNames := []string{}
 	isRole := 0
 	for _, action := range actionList {
@@ -125,17 +122,17 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 
 	if isRole == 0 {
 		task_type = ANSIBLE_TASK
-		logService.Debug(fid, batchId, corrId, fmt.Sprintf("the step taskstep is not a ansible_role task"))
+		logService.Debug(fid, corrId, fmt.Sprintf("the step taskstep is not a ansible_role task"))
 	} else if isRole < len(actionList) {
-		logService.Error(fid, batchId, corrId, fmt.Sprintf("the step cannot be mixed type"))
+		logService.Error(fid, corrId, fmt.Sprintf("the step cannot be mixed type"))
 
 		return Err("the step cannot be mixed type: " + step)
 	} else if isRole == len(actionList) {
-		logService.Debug(fid, batchId, corrId, fmt.Sprintf("the step is ansible role step, start to pack the associated files"))
+		logService.Debug(fid, corrId, fmt.Sprintf("the step is ansible role step, start to pack the associated files"))
 		err := service.Role.PackRoles(step, remoteActionNames)
 
 		if err != nil {
-			logService.Error(fid, batchId, corrId, fmt.Sprintf("fail to pack err:%s", err))
+			logService.Error(fid, corrId, fmt.Sprintf("fail to pack err:%s", err))
 			return Err("fail to pack: " + step)
 		}
 
@@ -189,7 +186,7 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	ipRet := make(map[string]*NodeResult, len(nodes))
 
 	for _, node := range nodes {
-		go h.callAndCheck(fid, corrId, node.Ip, rstep.Name, &tpls, &stepParams, ipsChan)
+		go h.callAndCheck(fid, corrId, node.Ip, rstep.Name, &tpls, &stepParams, ipsChan, roles_file, task_type, tasks)
 	}
 
 	for i := 0; i < len(nodes); i++ {
@@ -247,10 +244,11 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	}
 }
 
-func (h *RemoteHandler) callAndCheck(fid int, corrId string, ip string, setupName string, tpls *[]interface{}, stepParams *map[string]interface{}, ipsChan chan map[string]*NodeResult) {
+func (h *RemoteHandler) callAndCheck(fid int, corrId string, ip string, setupName string, tpls *[]interface{}, stepParams *map[string]interface{}, ipsChan chan map[string]*NodeResult,
+	roles_file string, task_type string, tasks []string) {
 	execID, user := ip+"_"+setupName+"_"+fmt.Sprint(time.Now().UnixNano()), "root"
 
-	_, err := h.callExecutor(&[]string{ip}, user, execID, tpls, stepParams, corrId)
+	_, err := h.callExecutor(&[]string{ip}, user, execID, tpls, stepParams, corrId, roles_file, task_type, tasks)
 	if err != nil {
 		logService.Error(fid, corrId, fmt.Sprintf("%s fail to execute command %v", ip, err.Error()))
 
@@ -343,7 +341,7 @@ func (h *RemoteHandler) ListAction() []models.ActionImpl {
 }
 
 func (h *RemoteHandler) callExecutor(ips *[]string, user string, execID string,
-	content *[]interface{}, params *map[string]interface{}, corrId string) (string, error) {
+	content *[]interface{}, params *map[string]interface{}, corrId string, roles_file string, task_type string, tasks []string) (string, error) {
 
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
