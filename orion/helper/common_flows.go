@@ -28,6 +28,7 @@ import (
 
 	"github.com/astaxie/beego"
 
+	"time"
 	"weibo.com/opendcp/orion/executor"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
@@ -55,13 +56,13 @@ const (
 
 // Expand will expand a service pool by add vms and start service on them.
 func Expand(poolId int, num int, opUser string) error {
-	pool, flow, steps, error := getModels(poolId, EXPAND)
+	pool, flowImpl, steps, error := getModels(poolId, EXPAND)
 	if error != nil {
 		return error
 	}
 
 	if len(steps) < 1 || steps[0].Name != "create_vm" {
-		return errors.New("first step of expand template is not create_vm: " + flow.Steps)
+		return errors.New("first step of expand template is not create_vm: " + flowImpl.Steps)
 	}
 
 	if num < 0 || num > 500 {
@@ -70,18 +71,19 @@ func Expand(poolId int, num int, opUser string) error {
 
 	// create nodes & states
 	beego.Debug("creating nodes...")
-	nodes := make([]*models.Node, num)
+	nodes := make([]*models.NodeState, num)
 	for i := 0; i < num; i++ {
-		n := &models.Node{
+		n := &models.NodeState{
 			Ip:       "-",
+			VmId:     "",
 			Pool:     pool,
 			Status:   models.STATUS_INIT,
 			NodeType: models.Manual,
+			Deleted:  false,
 		}
 		nodes[i] = n
-
 		// save the node to DB
-		service.Cluster.InsertBase(n)
+		//service.Cluster.InsertBase(n)
 	}
 
 	// Use vm_type & service discovery info from Pool
@@ -94,7 +96,7 @@ func Expand(poolId int, num int, opUser string) error {
 
 	name := searchStartServiceStep(steps)
 	if name == "" {
-		beego.Warn("No step found starting with 'start_service' in flow: ", flow.Id, flow.Name)
+		beego.Warn("No step found starting with 'start_service' in flow: ", flowImpl.Id, flowImpl.Name)
 	} else {
 		// override tag with the new tag given
 		override[name] = map[string]interface{}{KEY_TAG: pool.Service.DockerImage}
@@ -108,7 +110,7 @@ func Expand(poolId int, num int, opUser string) error {
 		",sd_id =", pool.SdId)
 
 	beego.Debug("exec flow ...")
-	err := executor.Executor.Run(flow.Id, "expand_"+pool.Name,
+	err := executor.Executor.Run(flowImpl, EXPAND+"_"+pool.Name,
 		&executor.ExecOption{MaxNum: num}, nodes, context)
 	beego.Debug("exec flow ... [DONE]")
 
@@ -117,28 +119,37 @@ func Expand(poolId int, num int, opUser string) error {
 
 // Shrink will shrink a service pool by stopping service on vms and return them.
 func Shrink(poolId int, nodeIps []string, opUser string) error {
-
-	pool, flow, steps, error := getModels(poolId, SHRINK)
+	pool, flowImpl, steps, error := getModels(poolId, SHRINK)
 	if error != nil {
 		return error
 	}
 
 	if len(steps) < 1 || steps[len(steps)-1].Name != "return_vm" {
-		return errors.New("last step of shrink template is not return_vm: " + flow.Steps)
+		return errors.New("last step of shrink template is not return_vm: " + flowImpl.Steps)
 	}
 
-	nodes := make([]*models.Node, 0)
+	nodes := make([]*models.NodeState, 0)
 	for _, ip := range nodeIps {
-		n := &models.Node{Ip: ip}
-		err := service.Cluster.GetBy(n, "Ip")
+		//n := &models.NodeState{Ip: ip}
+		n, err := service.Flow.GetNodeByIp(ip)
+		if err != nil || n.Deleted || n.Status == models.STATUS_RUNNING {
+			beego.Error("Node with IP ", ip, " deleted:", n.Deleted, " status: ", n.Status, "err:", err, " ignore")
+			continue
+		}
+		n.Deleted = true
+		n.UpdatedTime = time.Now()
+		err = service.Flow.UpdateBase(n)
 		if err != nil {
-			beego.Error("Node with IP ", ip, "not foud, ignore")
+			beego.Error("update Node with IP ", ip, " db error:", err)
 			continue
 		}
 		nodes = append(nodes, n)
 	}
-	service.Flow.DeleteNode(nodeIps)
-
+	if len(nodes) == 0 {
+		return errors.New("all node is running! ")
+	}
+	//service.Flow.DeleteNode(nodeIps)
+	//beego.Debug("exec shrink flow...")
 	// Use vm_type & service discovery info from Pool
 	override := map[string]interface{}{
 		RETURN_VM:  map[string]interface{}{KEY_VM_TYPE: pool.VmType},
@@ -150,7 +161,7 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 	context["opUser"] = opUser
 
 	beego.Debug("exec shrink flow...")
-	err := executor.Executor.Run(flow.Id, "shrink_"+pool.Name,
+	err := executor.Executor.Run(flowImpl, SHRINK+"_"+pool.Name,
 		&executor.ExecOption{MaxNum: len(nodes)}, nodes, context)
 	beego.Debug("exec flow ... [DONE]")
 
@@ -159,22 +170,41 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 
 func Deploy(poolId int, tag string, maxNum int, opUser string) error {
 
-	pool, flow, steps, error := getModels(poolId, DEPLOY)
+	pool, flowImpl, steps, error := getModels(poolId, DEPLOY)
 	if error != nil {
 		return error
 	}
 
-	nodes := make([]*models.Node, 0)
-	count, err := service.Cluster.ListByPageWithFilter(0, 10000,
-		&models.Node{}, &nodes, "Pool", poolId)
+	nodes := make([]*models.NodeState, 0)
+	count, err := service.Cluster.ListByPageWithTwoFilter(0, 10000,
+		&models.NodeState{}, &nodes, "Pool", poolId, "deleted", false)
 	if err != nil {
 		return err
+	}
+	//delete nodestate
+	deployNodes := make([]*models.NodeState, 0)
+	for _, node := range nodes {
+		if node.Status == models.STATUS_RUNNING || node.Deleted || node.Ip == "-" {
+			beego.Error("Node with IP: ", node.Ip, " status: ", node.Status, " deleted: ", node.Deleted, " ignore")
+			continue
+		}
+		node.Deleted = false
+		node.UpdatedTime = time.Now()
+		err = service.Flow.UpdateBase(node)
+		if err != nil {
+			beego.Error("update Node with IP ", node.Ip, " db error:", err)
+			continue
+		}
+		deployNodes = append(deployNodes, node)
+	}
+	if len(deployNodes) == 0 {
+		return errors.New("none node to deploy! ")
 	}
 
 	override := make(map[string]interface{})
 	name := searchStartServiceStep(steps)
 	if name == "" {
-		beego.Warn("No step found starting with 'start_service' in flow: ", flow.Id, flow.Name)
+		beego.Warn("No step found starting with 'start_service' in flow: ", flowImpl.Id, flowImpl.Name)
 	} else {
 		// override tag with the new tag given
 		override[name] = map[string]interface{}{KEY_TAG: tag}
@@ -185,8 +215,8 @@ func Deploy(poolId int, tag string, maxNum int, opUser string) error {
 	context["opUser"] = opUser
 
 	beego.Debug("exec flow on Pool[", pool.Name, "] node_cound=", count, "...")
-	err = executor.Executor.Run(flow.Id, "deploy_"+pool.Name,
-		&executor.ExecOption{MaxNum: maxNum}, nodes, context)
+	err = executor.Executor.Run(flowImpl, DEPLOY+"_"+pool.Name,
+		&executor.ExecOption{MaxNum: maxNum}, deployNodes, context)
 	beego.Debug("exec flow ... [DONE]")
 
 	return err

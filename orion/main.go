@@ -63,7 +63,7 @@ func initOrm() {
 	orm.RegisterDataBase("default", "mysql", dbUrl, dbpoolsize)
 
 	//register model
-	orm.RegisterModel(&(Cluster{}), &(Service{}), &(Pool{}), &(Node{}), &(Logs{}))
+	orm.RegisterModel(&(Cluster{}), &(Service{}), &(Pool{}), &(Logs{}))
 	orm.RegisterModel(&(FlowImpl{}), &(Flow{}), &(NodeState{}))
 	orm.RegisterModel(&(RemoteStep{}), &(RemoteAction{}), &(RemoteActionImpl{}))
 	orm.RegisterModel(&(CronItem{}), &(DependItem{}), &(ExecTask{}))
