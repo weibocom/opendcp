@@ -720,14 +720,10 @@ func (c *ClusterApi) NodeDelete() {
 			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
 			return
 		}
-		if nodeState.Status == models.STATUS_RUNNING || nodeState.Deleted {
-			beego.Warn("deleting id:", id, ", is runnineg or deleted!")
-			continue
-		}
 		//update nodeState to delete
 		nodeState.UpdatedTime = time.Now()
 		nodeState.Deleted = true
-		err := service.Cluster.UpdateBase(nodeState)
+		err := service.Flow.DeleteNodeById(nodeState)
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
 			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)

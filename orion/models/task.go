@@ -136,10 +136,10 @@ type Flow struct {
 
 // Hold the status of one vm node
 type NodeState struct {
-	Id     int    `json:"id" orm:"pk;auto"`
-	Ip     string `json:"ip"`
-	VmId   string `json:"vm_id"`
-	CorrId string `json:"corr_id" orm:"null"` // Correlation ID
+	Id   int    `json:"id" orm:"pk;auto"`
+	Ip   string `json:"ip"`
+	VmId string `json:"vm_id"`
+	//CorrId string `json:"corr_id" orm:"null"` // Correlation ID
 	//Node   *Node  `json:"-" orm:"rel(fk);null;on_delete(set_null)"`
 	Pool *Pool `json:"-" orm:"rel(fk)"`
 	Flow *Flow `json:"-" orm:"rel(fk);on_delete(cascade)"`
