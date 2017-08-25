@@ -19,8 +19,7 @@ import (
 	"strconv"
 )
 
-//1.由于接口完全是阿里云的接口，已经实现的函数无法实现相应功能
-//2.无法实现功能的方法如何处理
+
 
 type openstackProvider struct {
 	client *gophercloud.ServiceClient
@@ -40,9 +39,7 @@ var networksInOpenStack = map[string]string{}
 var networksList []string
 
 //列出所有server
-//openstack不需要提供pageNumber和pageSize,该如何处理
-//返回的示例中包含所有信息，之后根据需要进行适当的删减
-//要求：搞清楚前端调用时到底需要哪些参数，以什么顺序排列
+
 func (driver openstackProvider) List(regionId string, pageNumber int, pageSize int) (*models.ListInstancesResponse, error) {
 	opts1 := servers.ListOpts{}
 	pager := servers.List(driver.client, opts1)
@@ -81,7 +78,7 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 }
 
 
-//将instanceType对应OpenStack中的flavor
+
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
 	var instanceTypesList []string
@@ -192,7 +189,7 @@ func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (stri
 
 }
 
-//创建实例代码待做
+
 func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
 
 	createdInstances := make(chan string, number)
@@ -236,7 +233,7 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
-	//待解决问题：不管产不产生error，传回的errs变量都不为nil,在service/instance的方法里都会返回，故在此返回nil，日后找到原因后再改为errs
+
 	return instanceIds, errs
 }
 
@@ -267,7 +264,6 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 }
 
 //列出镜像列表
-//这里使用的镜像是阿里云的镜像，之后根据情况添加openstack镜像的相关参数
 func (driver openstackProvider) ListImages(regionId string, snapshotId string, pageSize int, pageNumber int) (*models.ImagesResp, error) {
 
 

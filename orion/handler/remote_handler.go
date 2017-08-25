@@ -81,19 +81,23 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 
 	step := action.Name
 
+
 	logService.Debug(fid, "Handle remote step:", step)
 
 	rstep := models.RemoteStep{Name: step}
 	err := service.Remote.GetBy(&rstep, "Name")
 
 	if err != nil {
+
 		logService.Error(fid, "remote step not found step:", step)
+
 
 		return Err("remote step not found: " + step)
 	}
 
 	// get actions
 	actions := rstep.Actions
+
 	logService.Debug(fid, "remote step has actions", actions)
 
 	var actNames []string
@@ -108,11 +112,14 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 	tpls := make([]interface{}, len(actionList))
 	for _, action := range actionList {
 		actID := action.Id
+
 		logService.Debug(fid, fmt.Sprintf("getting act impl for %d", actID))
+
 
 		act := models.RemoteActionImpl{ActionId: actID}
 		err = service.Remote.GetBy(&act, "ActionId")
 		if err != nil {
+
 			logService.Error(fid, fmt.Sprintf("Cannot find act impl %d", actID))
 			return Err("act impl not found: " + strconv.Itoa(actID))
 		}
@@ -120,19 +127,22 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		tpl := make(map[string]interface{})
 		err = json.Unmarshal([]byte(act.Template), &tpl)
 		if err != nil {
-			logService.Error(fid, fmt.Sprintf("Bad act impl template, actid:%d Template:%s", actID, act.Template), err)
 
+			logService.Error(fid, fmt.Sprintf("Bad act impl template, actid:%d Template:%s", actID, act.Template), err)
 			return Err("bad impl template: " + strconv.Itoa(actID))
 		}
 
 		idx := h.indexOf(actNames, action.Name)
 		if idx == -1 {
+
 			logService.Error(fid, fmt.Sprintf("Action [%s] not in action list:%v", action.Name, actNames))
+
 
 			return Err("Action: " + action.Name)
 		}
 
 		tpls[idx] = tpl
+
 		logService.Debug(fid, fmt.Sprintf("template of %d is %s", actID, act.Template))
 	}
 
@@ -152,12 +162,16 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		select {
 		case nodeRespMapList := <-ipsChan:
 			for ipString, nodeResp := range nodeRespMapList {
+
 				logService.Debug(fid, fmt.Sprintf("%s runAndCheck is end !", ipString))
+
 				ipRet[ipString] = nodeResp
 			}
 
 		case <-time.After(time.Second*checkTimeout*5 + 1):
+
 			logService.Debug(fid, "runAndCheck timeout !")
+
 		}
 	}
 
@@ -208,6 +222,7 @@ func (h *RemoteHandler) callAndCheck(fid int, corrId string, ip string, setupNam
 
 	_, err := h.callExecutor(&[]string{ip}, user, execID, tpls, stepParams, corrId)
 	if err != nil {
+
 		logService.Error(fid, fmt.Sprintf("%s fail to execute command %v", ip, err.Error()))
 
 		rs := make(map[string]*NodeResult)
@@ -223,6 +238,7 @@ func (h *RemoteHandler) callAndCheck(fid int, corrId string, ip string, setupNam
 	// check until got result
 	for i := 0; i < checkTimeout; i++ {
 		time.Sleep(5 * time.Second)
+
 		logService.Debug(fid, fmt.Sprintf("Checking result for task %s for times %d", execID, i+1))
 
 		resp, err := h.checkResult(execID, corrId)
@@ -232,6 +248,7 @@ func (h *RemoteHandler) callAndCheck(fid int, corrId string, ip string, setupNam
 		}
 
 		logService.Debug(fid, fmt.Sprintf("Checking result for task %s for times %d status:%d", execID, i+1, resp.Task.Status))
+
 		switch resp.Task.Status {
 		case CODE_INIT, CODE_RUNNING:
 			continue
