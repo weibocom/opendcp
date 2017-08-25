@@ -24,6 +24,7 @@ import (
 )
 
 type Logs struct {
+
 	Id  int `json:"id" orm:"pk;auto"`
 	Fid int `json:"fid"`
 	Message string `json:"message"` //日志信息
@@ -33,6 +34,7 @@ type Logs struct {
 func NewLogsInit(Fid int, Message string) (result *Logs) {
 	result = &Logs{}
 	result.Fid = Fid
+
 	result.Message = Message
 	result.Ctime = int(time.Now().Unix())
 	return result

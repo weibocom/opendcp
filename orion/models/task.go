@@ -136,6 +136,7 @@ type Flow struct {
 
 // Hold the status of one vm node
 type NodeState struct {
+
 	Id   int    `json:"id" orm:"pk;auto"`
 	Ip   string `json:"ip"`
 	VmId string `json:"vm_id"`
@@ -153,6 +154,8 @@ type NodeState struct {
 	RunTime     float64   `json:"run_time" orm:"default(0.0)"`
 	CreatedTime time.Time `json:"created" orm:"auto_now_add;type(datetime)"`
 	UpdatedTime time.Time `json:"updated" orm:"auto_now_add;type(datetime)"`
+
 	Deleted     bool      `json:"deleted" orm:"default(0)"` //是否删除 0 未删除，1 删除
+
 	NodeType    string    `json:"node_type" orm:"default("manual")"`
 }

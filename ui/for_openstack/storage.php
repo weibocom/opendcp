@@ -1,4 +1,23 @@
 <?php
+/**
+ *    Copyright (C) 2016 Weibo Inc.
+ *
+ *    This file is part of Opendcp.
+ *
+ *    Opendcp is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2 of the License.
+ *
+ *    Opendcp is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Opendcp; if not, write to the Free Software
+ *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
+ */
+
 
 require_once('../include/config.inc.php');
 require_once('../include/function.php');
@@ -130,59 +149,73 @@ require_once('../include/navbar.php');
                 <div class="" style="background-color:#fff;">
                     <div class="" role="tabpanel" data-example-id="togglable-tabs">
                         <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist" style="margin-bottom: 10px;">
-                            <li id="tab_1" role="presentation">
-                                <a data-toggle="tab" role="tab" aria-expanded="true"
+                            <li id="tab_1" role="presentation" >
+                                <a data-toggle="tab" role="tab" aria-expanded="false"
                                    onclick="location.href='/for_openstack/machine.php';">物理节点管理</a>
                             </li>
-                            <li id="tab_2" role="presentation" class="active">
-                                <a data-toggle="tab" role="tab" aria-expanded="false" onclick="getList('service')">初始化任务列表</a>
+                            <li id="tab_2" role="presentation">
+                                <a data-toggle="tab" role="tab" aria-expanded="false"
+                                   onclick="location.href='/for_openstack/initlist.php';">初始化任务列表</a>
                             </li>
-                            <li id="tab_1" role="presentation">
+                            <li id="tab_3" role="presentation" class="active">
                                 <a data-toggle="tab" role="tab" aria-expanded="true"
-                                   onclick="location.href='/for_openstack/storage.php';">存储节点管理</a>
+                                   onclick="getList('service');">存储节点管理</a>
                             </li>
                         </ul>
                         <div id="myTabContent" class="tab-content">
                             <div role="tabpanel" class="tab-pane fade active in" id="tab_content1"
                                  aria-labelledby="home-tab">
                                 <div class="x_panel" style="border: 0px;">
+                                    <div class="row">
+                                        <div class="col-md-5 col-sm-5">
+                                            <div class="dataTables_info" id="table-pageinfo" role="status"
+                                                 aria-live="polite">存储节点
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5 col-sm-5">
+                                            <div class="dataTables_info" id="table-pageinfo" role="status"
+                                                 aria-live="polite">
+                                                <a class="btn btn-primary btn-xs" data-toggle="modal"
+                                                   data-target="#myAddStorageModal" href="add_compute.php?type=3">添加</a>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <?php
 
-                                    require_once('../include/node_init.php');
-                                    $arr_list = node_init::getNodeInitList(1, 1000);
+                                    require_once('../include/openstack.php');
+                                    openstack::needOpenstackLogin();
+                                    $arr_host = openstack::getStorageHostList();
                                     ?>
                                     <table class="table table-bordered table-hover">
                                         <thead class="flip-content">
                                         <tr>
-                                            <th>ip</th>
-                                            <th width="20%">类型</th>
-                                            <th width="20%">状态</th>
-                                            <th width="8%">操作</th>
+                                            <th>hostname</th>
+                                            <th width="10%">已使用卷数</th>
+                                            <th width="10%">已使用卷大小(GB)</th>
+                                            <th width="10%">已使用快照数</th>
+                                            <th width="10%">已使用快照大小(GB)</th>
+
                                         </tr>
                                         </thead>
                                         <tbody id="task_process">
-                                        <?php foreach ($arr_list['data'] as $oneinit) { ?>
+                                        <?php foreach ($arr_host as $onehost) {
+                                                foreach ($onehost['host'] as $host_detail){?>
+
                                             <tr>
-                                                <td><?= $oneinit['ip'] ?></td>
-                                                <td><?= node_init::$arr_type[$oneinit['type']] ?></td>
-                                                <td>
-                                                    <span class="badge <?php if ($oneinit['status'] == 10) { ?>bg-green<?php } elseif ($oneinit['status'] == 11) { ?>bg-red<?php } elseif ($oneinit['status'] == 1) { ?>bg-yellow<?php } ?>"><?= node_init::$arr_status[$oneinit['status']] ?></span>
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group btn-group-xs btn-group-solid"><a
-                                                                class="text-primary tooltips" title="查看详情"
-                                                                href="task_detail.php?task_id=<?= $oneinit['id'] ?>"
-                                                                target="_blank"><i class="fa fa-info"></i></a></div>
-                                                </td>
+                                                <td><?= $host_detail['resource']['host'] ?></td>
+                                                <td><?= $host_detail['resource']['volume_count'] ?></td>
+                                                <td><?= $host_detail['resource']['total_volume_gb'] ?></td>
+                                                <td><?= $host_detail['resource']['snapshot_count'] ?></td>
+                                                <td><?= $host_detail['resource']['total_snapshot_gb'] ?></td>
                                             </tr>
-                                        <?php } ?>
+                                        <?php } }?>
                                         </tbody>
                                     </table>
 
 
                                     <form method="post" class="form-horizontal">
-                                        <div class="modal fade bs-modal-lg" id="myAddComputeModal" role="dialog"
+                                        <div class="modal fade bs-modal-lg" id="myAddStorageModal" role="dialog"
                                              aria-hidden="true">
                                             <div class="modal-dialog modal-lg">
                                                 <div class="modal-content">
@@ -190,11 +223,11 @@ require_once('../include/navbar.php');
                                                         <button type="button" class="close" data-dismiss="modal"
                                                                 aria-label="Close"><span
                                                                     aria-hidden="true">&times;</span></button>
-                                                        <h4 class="modal-title" id="myAddComputeModalLabel">Loading
+                                                        <h4 class="modal-title" id="myAddStorageModalLabel">Loading
                                                             ...</h4>
                                                     </div>
                                                     <div class="modal-body" style="overflow:auto;"
-                                                         id="myAddComputeModalBody">
+                                                         id="myAddStorageModalBody">
                                                         <p>
 
                                                         </p>
@@ -212,6 +245,8 @@ require_once('../include/navbar.php');
                                             </div>
                                         </div>
                                     </form>
+
+
 
                                 </div>
                             </div>

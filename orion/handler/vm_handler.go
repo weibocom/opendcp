@@ -107,6 +107,7 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
+
 	//correlationId := utils.GetCorrelationId(fid, 0)
 
 	logService.Debug(fid, fmt.Sprintf("vm handler recieve new action: [%s]", action.Name))
@@ -168,7 +169,6 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	tmpList, ok := content.([]interface{})
 	if !ok {
 		logService.Error(fid, fmt.Sprintf("Bad id list content:%s", content))
-
 		return Err("Bad id list: " + fmt.Sprint(content))
 	}
 

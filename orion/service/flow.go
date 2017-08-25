@@ -117,6 +117,7 @@ func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, er
 
 func (f *FlowService) DeleteNode(ips []string) error {
 	o := orm.NewOrm()
+
 	for _, ip := range ips {
 		n := &models.NodeState{Ip: ip}
 		err := o.Read(n, "ip")
@@ -146,7 +147,9 @@ func (f *FlowService) DeleteNode(ips []string) error {
 func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids []int) (int, error) {
 	o := orm.NewOrm()
 
+
 	num, err := o.QueryTable(obj).Exclude("deleted", true).Filter("steps", "register").Filter("pool_id__in", pids).All(list)
+
 
 	if err != nil {
 		return 0, err

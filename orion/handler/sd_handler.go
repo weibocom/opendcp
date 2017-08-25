@@ -265,7 +265,9 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		}
 
 		if resp.Code != 0 {
+
 			logService.Error(fid, corrId, "check result return fail")
+
 
 			continue
 		}
@@ -313,15 +315,26 @@ func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 
 	corrId = fmt.Sprintf("%d-%d-%s", nodeState.Flow.Id, pool.SdId, nodeState.Ip)
 
+	pool := &models.Pool{Id: nodeState.Pool.Id}
+	err := service.Cluster.GetBase(pool)
+	if err != nil {
+		beego.Error("Get pool for", instanceId, "fails:", err)
+		return "<NO LOG>"
+	}
+
+	corrId = fmt.Sprintf("%d-%d-%s", nodeState.Flow.Id, pool.SdId, nodeState.Ip)
+
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["APPKEY"] = SD_APPKEY
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
+
 	handleResult := h.callAPI("GET", url, nil, &header, resp)
 	if handleResult != nil {
 		beego.Error("Get log for", instanceId, "fails:", handleResult.Msg)
+
 		return "<NO LOG>"
 	}
 
@@ -349,7 +362,9 @@ func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]i
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
+
 		if node.Ip != "-" && node.Deleted == false {
+
 			ips[i] = node.Ip
 		}
 	}
