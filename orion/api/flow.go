@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -305,7 +304,8 @@ func (f *FlowApi) RunFlow() {
 		}
 		node.Deleted = true
 		node.UpdatedTime = time.Now()
-		err = service.Flow.UpdateBase(node)
+		err = service.Flow.DeleteNodeById(node)
+		//err = service.Flow.UpdateBase(node)
 		if err != nil {
 			beego.Error("node :[", node.Ip, "] update db err:", err)
 			continue
@@ -622,14 +622,14 @@ func getLog(nodeState *NodeState) ([]map[string]string, error) {
 	logs := make([]map[string]string, 0)
 
 	// load flow definition
-	ss := strings.Split(nodeState.CorrId, "-")
-	flowId, err := strconv.Atoi(ss[0])
-	if err != nil {
-		return logs, err
-	}
+	//ss := strings.Split(nodeState.CorrId, "-")
+	flowId := nodeState.Flow.Id
+	//if err != nil {
+	//	return logs, err
+	//}
 
 	flow := &Flow{Id: flowId}
-	err = service.Flow.GetBase(flow)
+	err := service.Flow.GetBase(flow)
 	if err != nil {
 		return logs, err
 	}

@@ -27,6 +27,7 @@ import (
 
 	"github.com/astaxie/beego"
 
+	"strconv"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
@@ -301,7 +302,7 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 }
 
 func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
-	corrId, instanceId := nodeState.CorrId, nodeState.VmId
+	corrId, instanceId := strconv.Itoa(nodeState.Flow.Id), nodeState.VmId
 
 	pool := &models.Pool{Id: nodeState.Pool.Id}
 	err := service.Cluster.GetBase(pool)

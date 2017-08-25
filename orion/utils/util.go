@@ -43,6 +43,6 @@ func ToInt(v interface{}) (int, error) {
 		", type : " + reflect.TypeOf(v).String())
 }
 
-func GetCorrelationId(fid int, batchId int) string {
-	return fmt.Sprintf("%d-%d", fid, batchId)
-}
+//func GetCorrelationId(fid int, batchId int) string {
+//	return fmt.Sprintf("%d-%d", fid, batchId)
+//}
