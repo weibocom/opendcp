@@ -143,11 +143,9 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 		}
 		nodes = append(nodes, n)
 	}
-
 	if len(nodes) == 0 {
 		return errors.New("all node is running! ")
 	}
-
 	override := map[string]interface{}{
 		RETURN_VM:  map[string]interface{}{KEY_VM_TYPE: pool.VmType},
 		UNREGISTER: map[string]interface{}{KEY_SD_ID: pool.SdId},

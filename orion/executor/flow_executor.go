@@ -183,17 +183,13 @@ func (exec *FlowExecutor) Start(flow *models.Flow) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-
 	//correlationId := exec.getCorrelationId(flow.Id)
-
 
 	orign_flow_status := flow.Status
 
 	if exec.isFlowInState(flow, models.STATUS_RUNNING) {
 		logInfo := "Flow " + flow.Name + " is in state running: " + strconv.Itoa(flow.Status) + " do not start"
-
 		logService.Info(flow.Id, logInfo)
-
 
 		return errors.New(logInfo)
 	}
@@ -243,7 +239,6 @@ func (exec *FlowExecutor) Pause(flow *models.Flow) error {
 
 	return exec.SetFlowStatus(flow, models.STATUS_STOPPED)
 }
-
 // Stop stopped a running flow by setting its status to SUCCESS.
 func (exec *FlowExecutor) Stop(flow *models.Flow) error {
 	lock.Lock()
@@ -256,14 +251,14 @@ func (exec *FlowExecutor) Stop(flow *models.Flow) error {
 		beego.Error("Stop failed: flow", flow.Name, ":", err.Error())
 		return errors.New("Stop failed: flow" + flow.Name + ":" + err.Error())
 	}
-
 	if flow.Status == models.STATUS_SUCCESS || flow.Status == models.STATUS_FAILED {
 		beego.Error("Stop failed: flow", flow.Name, "already finished")
 		return errors.New("Flow " + flow.Name + " already finished")
 	}
-
 	return exec.SetFlowStatus(flow, models.STATUS_SUCCESS)
 }
+
+
 
 func (exec *FlowExecutor) SetFlowStatus(flow *models.Flow, status int) error {
 
@@ -317,15 +312,12 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 	defer func() {
 		logService.Info(flow.Id, fmt.Sprintf("Finish running flow[%s,%d]", flow.Name, flow.Id))
 	}()
-
 	if !exec.isRunning(flow) {
 		logService.Info(flow.Id, fmt.Sprintf("Flow %s %d state =%d not in running state, ignore", flow.Name, flow.Id, flow.Status))
 
 		return nil
 	}
-
 	// load node states
-
 	nodeStateList, oknodesNum, runnodeNum, err := exec.loadNodeStates(flow)
 	if err != nil {
 		logService.Error(flow.Id, "load node states happen error: "+err.Error())
@@ -373,7 +365,6 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 	if oknodesNum != 0 {
 		resultFlowStatus = models.STATUS_SUCCESS
 	}
-
 	maxNodeStatesCostTime := 0.0
 	faileNodeCount := 0
 	for i := 0; i < len(nodeStateList); i++ {
@@ -408,9 +399,7 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 // Run a batch of task.
 func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.NodeState, oknodesNum int,
 	steps []*models.ActionImpl, stepOptions []*models.StepOption, resultChannel chan *models.NodeState) error {
-
 	fid := flow.Id
-
 	//correlationId := exec.getCorrelationId(fid)
 
 	logService.Info(fid, fmt.Sprintf("Run Node, flow:%s flowId:%d nodeId:%d", flow.Name, flow.Id, nodeState.Id))
@@ -474,7 +463,6 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		}
 		handler := handler.GetHandler(step.Type)
 		if handler == nil {
-
 			logService.Error(fid, fmt.Sprintf("Handler not found for type %s", step.Type))
 			//spendTime := time.Since(currentTime).Seconds() + startRunTime
 			nodeState.Status = models.STATUS_FAILED
@@ -496,8 +484,6 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		if retryOption == nil {
 			retryOption = dftRetryOpt
 		}
-
-
 		needRunStepNodeState := make([]*models.NodeState, 0)
 		needRunStepNodeState = append(needRunStepNodeState, nodeState)
 
@@ -506,12 +492,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		if len(okNodes) == 0 {
 			nodeState.Status = models.STATUS_FAILED
 			logService.Warn(fid, fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
-
 			//put nodeState to chan
 			resultChannel <- nodeState // Send nodeState to channel
 			return nil
 		} else {
-
 			nodeState.Status = models.STATUS_RUNNING
 			logService.Warn(fid, fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 		}
@@ -541,7 +525,6 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 
 	fid := nstates[0].Flow.Id
 
-
 	logService.Debug(fid, fmt.Sprintf("Start running step %s params: %s", step.Name, paramsJson))
 	defer func() {
 		logService.Debug(fid, fmt.Sprintf("Finish running step %s", step.Name))
@@ -565,10 +548,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		if i > 0 {
 			time.Sleep(retryInterval * time.Second)
 		}
-
-
 		logService.Debug(fid, fmt.Sprintf("Run step %s for %d times", step.Name, i+1))
-
 
 		result := h.Handle(step, stepParams, toRun, strconv.Itoa(fid))
 
@@ -576,9 +556,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		if result.Code == handler.CODE_ERROR {
 			errNodes = toRun
 			msg := fmt.Sprintf("Fail to run step [%s]: %s", step.Name, result.Msg)
-
 			logService.Error(fid, msg)
-
 			continue
 		}
 
@@ -587,9 +565,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		if results == nil {
 			errNodes = toRun
 			msg := fmt.Sprintf("Node results is empty for [%s]", step.Name)
-
 			logService.Error(fid, msg)
-
 			continue
 		}
 
@@ -599,7 +575,6 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 			//node := state.Node
 			nr := results[i]
 			if nr == nil {
-
 				logService.Warn(fid, fmt.Sprintf("Result for node %d %s missing, set it as failed", state.Id, state.Ip))
 				state.Status = models.STATUS_FAILED
 				state.Log += step.Name + ":" + "<Missing result>\n"
@@ -607,7 +582,6 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 				state.StepNum = stepIndex
 				errNodes = append(errNodes, state)
 			} else {
-
 				logService.Debug(fid, fmt.Sprintf("Result for node [%d %s] is %d %s", state.Id, state.Ip, nr.Code, nr.Data))
 				if nr.Code == models.STATUS_SUCCESS {
 					state.Status = models.STATUS_RUNNING
@@ -623,7 +597,6 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 			stepRunTimeArray[stepIndex].RunTime = time.Since(beginRunStepTime).Seconds()
 			err := exec.updateNodeStatus(step.Name, stepIndex, stepRunTimeArray, state, models.STATUS_RUNNING)
 			if err != nil {
-
 				logService.Error(fid, fmt.Sprintf("Fail to update state for node[%d %s]", state.Id, state.Ip), err)
 			}
 		}
@@ -709,7 +682,6 @@ func (exec *FlowExecutor) rollBackFlowStatus(flow *models.Flow, oknodesNum int, 
 	}
 }
 
-
 func (exec *FlowExecutor) loadNodeStates(flow *models.Flow) ([]*models.NodeState, int, int, error) {
 	beego.Debug("Load nodes & states for flow", flow.Id)
 	states, err := flowService.GetNodeStatusByFlowId(flow.Id)
@@ -727,7 +699,6 @@ func (exec *FlowExecutor) loadNodeStates(flow *models.Flow) ([]*models.NodeState
 			filterNodeList = append(filterNodeList, state)
 		} else if state.Status == models.STATUS_INIT {
 			filterNodeList = append(filterNodeList, state)
-
 		} else if state.Status == models.STATUS_SUCCESS {
 			oknodes++
 		} else if state.Status == models.STATUS_RUNNING {
@@ -735,10 +706,8 @@ func (exec *FlowExecutor) loadNodeStates(flow *models.Flow) ([]*models.NodeState
 		}
 	}
 
-
 	return filterNodeList, oknodes, runnodes, nil
 }
-
 
 /*
  * Create a flow instance in DB, set its state to INIT
@@ -762,7 +731,6 @@ func (exec *FlowExecutor) createFlowInstance(name string, flowImpl *models.FlowI
 		Pool:        pool,
 		StepLen:     option.MaxNum,
 		OpUser:      opUser,
-
 		FlowType:    runType,
 		RunTime:     0.0,
 		CreatedTime: time.Now(),
@@ -776,7 +744,6 @@ func (exec *FlowExecutor) createFlowInstance(name string, flowImpl *models.FlowI
 func (exec *FlowExecutor) createNodeStates(flow *models.Flow, nodes []*models.NodeState) ([]*models.NodeState, error) {
 	states := make([]*models.NodeState, len(nodes))
 	for i, node := range nodes {
-
 		//corr_Id := fmt.Sprintf("%d-%d", flow.Id, 0)
 		state := &models.NodeState{
 			Ip:          node.Ip,
@@ -807,7 +774,6 @@ func (exec *FlowExecutor) createNodeStates(flow *models.Flow, nodes []*models.No
 	return states, nil
 }
 
-
 func (exec *FlowExecutor) getNodeRunTime(stepRunTimeArray []*models.StepRunTime) float64 {
 	nodeStateRunSpendTime := 0.0
 	for _, stepTime := range stepRunTimeArray {
@@ -815,7 +781,6 @@ func (exec *FlowExecutor) getNodeRunTime(stepRunTimeArray []*models.StepRunTime)
 	}
 	return nodeStateRunSpendTime
 }
-
 
 func (exec *FlowExecutor) updateNodeStatus(stepName string, stepIndex int,
 	stepRunTimeArray []*models.StepRunTime, state *models.NodeState, stateCode int) error {
@@ -832,7 +797,6 @@ func (exec *FlowExecutor) updateNodeStatus(stepName string, stepIndex int,
 	state.StepNum = stepIndex
 	state.StepRunTime = merged
 	state.UpdatedTime = time.Now()
-
 
 	err := flowService.UpdateNode(state)
 	if err != nil {

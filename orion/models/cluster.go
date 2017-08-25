@@ -45,7 +45,6 @@ type Pool struct {
 	Service *Service `json:"-" orm:"rel(fk);on_delete(cascade)"`
 }
 
-
 //type Node struct {
 //	Id       int    `json:"id" orm:"pk;auto"`
 //	Ip       string `json:"ip" orm:"null"`
