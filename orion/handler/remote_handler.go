@@ -120,8 +120,8 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		tpl := make(map[string]interface{})
 		err = json.Unmarshal([]byte(act.Template), &tpl)
 		if err != nil {
-
 			logService.Error(fid, fmt.Sprintf("Bad act impl template, actid:%d Template:%s", actID, act.Template), err)
+
 			return Err("bad impl template: " + strconv.Itoa(actID))
 		}
 
@@ -153,9 +153,9 @@ func (h *RemoteHandler) Handle(action *models.ActionImpl,
 		case nodeRespMapList := <-ipsChan:
 			for ipString, nodeResp := range nodeRespMapList {
 				logService.Debug(fid, fmt.Sprintf("%s runAndCheck is end !", ipString))
-
 				ipRet[ipString] = nodeResp
 			}
+
 		case <-time.After(time.Second*checkTimeout*5 + 1):
 			logService.Debug(fid, "runAndCheck timeout !")
 		}

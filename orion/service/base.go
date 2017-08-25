@@ -228,7 +228,6 @@ func (b *BaseService) ListByPageWithFilter(page int, pageSize int, obj interface
 	return int(count), nil
 }
 
-
 func (b *BaseService) ListByPageWithTwoFilter(page int, pageSize int, obj interface{}, list interface{},
 	filterkey string, filtervalue interface{}, filter2key string, filter2value interface{}) (int, error) {
 
