@@ -901,7 +901,6 @@ var updateSelect = function (name, idx) {
     }
 }
 
-
 var get = function (idx, tab) {
     if (!tab) tab = $('#tab').val();
     var url = '/api/for_layout/' + tab + '.php', postData = {};

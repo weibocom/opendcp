@@ -228,6 +228,26 @@ func (b *BaseService) ListByPageWithFilter(page int, pageSize int, obj interface
 	return int(count), nil
 }
 
+
+func (b *BaseService) ListByPageWithTwoFilter(page int, pageSize int, obj interface{}, list interface{},
+	filterkey string, filtervalue interface{}, filter2key string, filter2value interface{}) (int, error) {
+
+	o := orm.NewOrm()
+
+	qr := o.QueryTable(obj).Filter(filterkey, filtervalue).Filter(filter2key, filter2value)
+
+	count, err := qr.Count()
+	if err != nil {
+		return 0, err
+	}
+	_, err = qr.Limit(pageSize, (page-1)*pageSize).All(list)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
 func (b *BaseService) ListWithFilter(obj interface{}, list interface{}, filterkey string, filtervalue interface{}) (int, error) {
 
 	o := orm.NewOrm()
@@ -251,6 +271,17 @@ func (b *BaseService) GetCount(obj interface{}, filterkey string, filtervalue in
 	o := orm.NewOrm()
 
 	qr := o.QueryTable(obj).Filter(filterkey, filtervalue)
+
+	count, err := qr.Count()
+
+	return int(count), err
+}
+
+func (b *BaseService) GetCountWithFilter(obj interface{}, filterkey string, filtervalue interface{}, filterkey2 string, filtervalue2 interface{}) (int, error) {
+
+	o := orm.NewOrm()
+
+	qr := o.QueryTable(obj).Filter(filterkey, filtervalue).Filter(filterkey2, filtervalue2)
 
 	count, err := qr.Count()
 

@@ -107,9 +107,10 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	correlationId := utils.GetCorrelationId(fid, 0)
 
-	logService.Debug(fid, correlationId, fmt.Sprintf("vm handler recieve new action: [%s]", action.Name))
+	//correlationId := utils.GetCorrelationId(fid, 0)
+
+	logService.Debug(fid, fmt.Sprintf("vm handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case createVM:
@@ -117,7 +118,7 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 	case returnVM:
 		return v.returnVMs(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid, correlationId, fmt.Sprintf("Unknown VM action: %s", action.Name))
+		logService.Error(fid, fmt.Sprintf("Unknown VM action: %s", action.Name))
 
 		return Err("Unknown VM action: " + action.Name)
 	}
@@ -131,21 +132,20 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 	fid := nodes[0].Flow.Id
 
-	correlationId := utils.GetCorrelationId(fid, 0)
+	//correlationId := utils.GetCorrelationId(fid, 0)
 
 	msg := fmt.Sprintf("creating vm, vm_type_id =%v vmTypeIdtype:%v", params[vmTypeId], reflect.TypeOf(params[vmTypeId]))
-	logService.Debug(fid, correlationId, msg)
+	logService.Debug(fid, msg)
 
 	cluStr := params[vmTypeId]
 	cluster, err := utils.ToInt(cluStr)
 	if err != nil {
-		logService.Error(fid, correlationId, fmt.Sprintf("Bad cluster:[%d]", cluStr))
-
+		logService.Error(fid, fmt.Sprintf("Bad cluster:[%d]", cluStr))
 		return Err("Bad cluster")
 	}
 
 	// call create vm api
-	logService.Info(fid, correlationId, fmt.Sprintf("Creating VM in cluster %d, num=%d", cluster, num))
+	logService.Info(fid, fmt.Sprintf("Creating VM in cluster %d, num=%d", cluster, num))
 
 	url := fmt.Sprintf(apiCreate, jupiterAddr, cluster, num)
 	header := map[string]interface{}{
@@ -155,17 +155,10 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	if hr != nil {
 		// remove all node since it fails here
 		for _, nodeState := range nodes {
-			//logService.Info(fid, batchId, correlationId, fmt.Sprintf("Deleting node [%d],", nodeState.Node.Id))
-			//
-			//service.Cluster.DeleteBase(nodeState.Node)
-			nodeState.Node.Status = models.STATUS_FAILED
-			if nodeState.Node.Ip == "-" {
-				ip := fmt.Sprintf("%d", nodeState.Node.Id)
-				nodeState.Node.Ip = ip
-			}
-			service.Cluster.UpdateBase(nodeState.Node)
+			nodeState.Status = models.STATUS_FAILED
 			nodeState.Log = "[jupiter]: " + hr.Msg + "\n"
-			service.Cluster.UpdateBase(nodeState)
+			nodeState.UpdatedTime = time.Now()
+			service.Flow.UpdateNode(nodeState)
 		}
 		return hr
 	}
@@ -175,8 +168,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 	tmpList, ok := content.([]interface{})
 	if !ok {
-		logService.Error(fid, correlationId, fmt.Sprintf("Bad id list content:%s", content))
-
+		logService.Error(fid, fmt.Sprintf("Bad id list content:%s", content))
 		return Err("Bad id list: " + fmt.Sprint(content))
 	}
 
@@ -187,14 +179,13 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	vmIds := list
 
 	if len(vmIds) != len(nodes) {
-		logService.Warn(fid, correlationId, fmt.Sprintf("Number of vm ids (%d) doesn't equal that of nodes (%d)", len(vmIds), len(nodes)))
+		logService.Warn(fid, fmt.Sprintf("Number of vm ids (%d) doesn't equal that of nodes (%d)", len(vmIds), len(nodes)))
 	}
 
 	// update nodes
 	nodeMap := make(map[string]*models.NodeState)
 	idxMap := make(map[string]int)
 	for i, vmID := range vmIds {
-		nodes[i].Node.VmId = vmID
 		nodes[i].VmId = vmID
 		nodeMap[vmID] = nodes[i]
 		idxMap[vmID] = i
@@ -203,41 +194,35 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	// for missing vm ids, mark then as failed
 	for i := 0; i < len(nodes)-len(vmIds); i++ {
 		node := nodes[i+len(vmIds)]
-		node.Status = CODE_ERROR
+		node.Status = models.STATUS_FAILED
 		node.UpdatedTime = time.Now()
-
-		service.Cluster.UpdateBase(node)
-		//service.Cluster.DeleteBase(node.Node)
-		node.Node.Status = models.STATUS_FAILED
-		ip := fmt.Sprintf("%d", node.Node.Id)
-		node.Node.Ip = ip
-		service.Cluster.UpdateBase(node.Node)
+		service.Flow.UpdateNode(node)
 	}
 
 	// start checking result
-	logService.Info(fid, correlationId, fmt.Sprintf("VM creating command sent for cluster:%d, vm ids = %v", cluster, vmIds))
+	logService.Info(fid, fmt.Sprintf("VM creating command sent for cluster:%d, vm ids = %v", cluster, vmIds))
 
 	var failed, done []string
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, correlationId, fmt.Sprintf("check result for times %d", i+1))
+		logService.Info(fid, fmt.Sprintf("check result for times %d", i+1))
 
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
 		msg, err := utils.Http.Get(url, nil)
 		if err != nil {
-			logService.Warn(fid, correlationId, "check result err: \n")
+			logService.Warn(fid, "check result err: \n")
 			continue
 		}
 
 		resp, err := utils.Json.ToMap(msg)
 		if err != nil {
-			logService.Error(fid, correlationId, fmt.Sprintf("bad response: %s, err:%v", msg, err))
+			logService.Error(fid, fmt.Sprintf("bad response: %s, err:%v", msg, err))
 			continue
 		}
 
 		statuses, ok := resp["content"].([]interface{})
 		if !ok {
-			logService.Error(fid, correlationId, fmt.Sprintf("bad response content: ", msg))
+			logService.Error(fid, "bad response content: ", msg)
 			continue
 		}
 
@@ -249,18 +234,18 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			toDel := false
 			switch state {
 			case vmSuccess:
-				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] OK", id))
+				logService.Debug(fid, fmt.Sprintf("Node[%s] OK", id))
 				done = append(done, id)
 			case vmInitTimeout:
-				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] init timeout", id))
+				logService.Debug(fid, fmt.Sprintf("Node[%s] init timeout", id))
 				failed = append(failed, id)
 				toDel = true
 			case vmError, vmUninit:
-				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] init error", id))
+				logService.Debug(fid, fmt.Sprintf("Node[%s] init error", id))
 				failed = append(failed, id)
 				toDel = true
 			default:
-				logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] in progress, status=%d", id, state))
+				logService.Debug(fid, fmt.Sprintf("Node[%s] in progress, status=%d", id, state))
 				running = append(running, id)
 			}
 
@@ -269,23 +254,22 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 				n.Ip = tmp["ip_address"].(string)
 				n.VmId = tmp["instance_id"].(string)
 				n.Status = models.STATUS_RUNNING
-				n.Node.Ip = n.Ip
-				n.Node.VmId = n.VmId
-
-				// save node and this will add node to pool
-				service.Cluster.UpdateBase(n.Node)
-				service.Cluster.UpdateBase(n)
+				n.UpdatedTime = time.Now()
+				service.Flow.UpdateNodeMachine(n)
 			}
 
 			// if failed, remove the node from pool
 			if toDel {
-				logService.Info(fid, correlationId, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
-				nodeMap[id].Node.Status = models.STATUS_FAILED
-				if nodeMap[id].Node.Ip == "-" {
-					ip := fmt.Sprintf("%d", nodeMap[id].Node.Id)
-					nodeMap[id].Node.Ip = ip
-				}
-				service.Cluster.UpdateBase(nodeMap[id].Node)
+				logService.Info(fid, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
+				nodeMap[id].Status = models.STATUS_FAILED
+				nodeMap[id].UpdatedTime = time.Now()
+				service.Flow.UpdateNode(nodeMap[id])
+
+				//if nodeMap[id].Node.Ip == "-" {
+				//	ip := fmt.Sprintf("%d", nodeMap[id].Node.Id)
+				//	nodeMap[id].Node.Ip = ip
+				//}
+				//service.Cluster.UpdateBase(nodeMap[id])
 
 			}
 		}
@@ -301,25 +285,29 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	// this nodes are timeout, mark them as failed
 	if len(list) != 0 {
 		for _, id := range list {
-			logService.Debug(fid, correlationId, fmt.Sprintf("Node[%s] timeout", id))
+			logService.Debug(fid, fmt.Sprintf("Node[%s] timeout", id))
 
 			failed = append(failed, id)
 			n := nodeMap[id]
 			n.Status = models.STATUS_FAILED
-			service.Cluster.UpdateBase(n)
+			n.UpdatedTime = time.Now()
 
-			logService.Info(fid, correlationId, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
+			service.Flow.UpdateNode(n)
 
-			n.Node.Status = models.STATUS_FAILED
-			if nodeMap[id].Node.Ip == "-" {
-				ip := fmt.Sprintf("%d", n.Node.Id)
-				n.Node.Ip = ip
-			}
-			service.Cluster.UpdateBase(n.Node)
+			//service.Cluster.UpdateBase(n)
+
+			logService.Info(fid, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
+
+			//n.Node.Status = models.STATUS_FAILED
+			//if nodeMap[id].Node.Ip == "-" {
+			//	ip := fmt.Sprintf("%d", n.Node.Id)
+			//	n.Node.Ip = ip
+			//}
+			//service.Cluster.UpdateBase(n.Node)
 		}
 	}
 
-	logService.Info(fid, correlationId, "All finished")
+	logService.Info(fid, "All finished")
 
 	ret := make([]*NodeResult, len(nodes))
 	for _, vid := range done {
@@ -363,17 +351,18 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 	ids := make([]string, 0)
 	cannotDelete := make(map[int]bool)
 	for _, node := range nodes {
-		vmId := node.Node.VmId
+		vmId := node.VmId
 		if vmId != "" {
 			ids = append(ids, vmId)
 			cannotDelete[node.Id] = false
 		} else {
 			// for vmId == "", we cannot delete them
-			if node.Ip != fmt.Sprintf("%d", node.Node.Id) {
-				cannotDelete[node.Id] = true
-			} else {
-				cannotDelete[node.Id] = false
-			}
+			cannotDelete[node.Id] = true
+			//if node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+			//	cannotDelete[node.Id] = true
+			//} else {
+			//	cannotDelete[node.Id] = false
+			//}
 		}
 	}
 	if len(ids) != 0 {
@@ -390,13 +379,17 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 
 	// delete nodes from pool
 	for _, node := range nodes {
-		if !cannotDelete[node.Id] {
-			//id := node.Node.Id
-			//service.Cluster.DeleteBase(node)
-			service.Cluster.DeleteBase(&models.Node{Id: node.Node.Id})
-		}
-		node.Deleted = models.DELETED
-		service.Cluster.UpdateBase(node)
+		//if !cannotDelete[node.Id] {
+		//	//id := node.Node.Id
+		//	//service.Cluster.DeleteBase(node)
+		//	service.Cluster.DeleteBase(&models.Node{Id: node.Node.Id})
+		//}
+		node.UpdatedTime = time.Now()
+		node.Deleted = true
+
+		service.Flow.DeleteNodeById(node)
+
+		//service.Cluster.UpdateBase(node)
 	}
 
 	success := false
@@ -455,7 +448,7 @@ func (v *VMHandler) callAPI(method string, url string,
 }
 
 func (v *VMHandler) GetLog(nodeState *models.NodeState) string {
-	corrId, instanceId := nodeState.CorrId, nodeState.VmId
+	corrId, instanceId := strconv.Itoa(nodeState.Flow.Id), nodeState.VmId
 	header := make(map[string]interface{})
 	header["X-CORRELATION-ID"] = corrId
 	header["X-SOURCE"] = "orion"

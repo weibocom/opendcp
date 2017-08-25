@@ -27,6 +27,7 @@ import (
 
 	"github.com/astaxie/beego"
 
+	"strconv"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
@@ -200,7 +201,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+		if node.Ip != "-" && node.Deleted == false {
 			ips[i] = node.Ip
 		}
 	}
@@ -264,7 +265,9 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid, corrId, fmt.Sprintf("check result return fail"))
+
+			logService.Error(fid, corrId, "check result return fail")
+
 
 			continue
 		}
@@ -301,7 +304,16 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 }
 
 func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
-	corrId, instanceId := nodeState.CorrId, nodeState.VmId
+	corrId, instanceId := strconv.Itoa(nodeState.Flow.Id), nodeState.VmId
+
+	pool := &models.Pool{Id: nodeState.Pool.Id}
+	err := service.Cluster.GetBase(pool)
+	if err != nil {
+		beego.Error("Get pool for", instanceId, "fails:", err)
+		return "<NO LOG>"
+	}
+
+	corrId = fmt.Sprintf("%d-%d-%s", nodeState.Flow.Id, pool.SdId, nodeState.Ip)
 
 	pool := &models.Pool{Id: nodeState.Pool.Id}
 	err := service.Cluster.GetBase(pool)
@@ -318,9 +330,11 @@ func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
-	error := h.callAPI("GET", url, nil, &header, resp)
-	if error != nil {
-		beego.Error("Get log for", instanceId, "fails:", err)
+
+	handleResult := h.callAPI("GET", url, nil, &header, resp)
+	if handleResult != nil {
+		beego.Error("Get log for", instanceId, "fails:", handleResult.Msg)
+
 		return "<NO LOG>"
 	}
 
@@ -348,7 +362,9 @@ func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]i
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+
+		if node.Ip != "-" && node.Deleted == false {
+
 			ips[i] = node.Ip
 		}
 	}

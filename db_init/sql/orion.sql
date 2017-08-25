@@ -77,18 +77,6 @@ CREATE TABLE IF NOT EXISTS `depend_item` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
---  Table Structure for `weibo.com/opendcp/orion/models.Node`
--- --------------------------------------------------
-CREATE TABLE IF NOT EXISTS `node` (
-    `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-    `ip` varchar(255),
-    `vm_id` varchar(255),
-    `status` integer NOT NULL DEFAULT 0 ,
-    `pool_id` integer NOT NULL,
-    `node_type` varchar(255) NOT NULL DEFAULT 'manual'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------
 --  Table Structure for `weibo.com/opendcp/orion/models.FlowImpl`
 -- --------------------------------------------------
 CREATE TABLE IF NOT EXISTS `flow_impl` (
@@ -123,8 +111,6 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `ip` varchar(255) NOT NULL DEFAULT '' ,
     `vm_id` varchar(255) NOT NULL DEFAULT '' ,
-    `corr_id` varchar(255),
-    `node_id` integer NOT NULL DEFAULT 0,
     `pool_id` integer NOT NULL,
     `flow_id` integer NOT NULL,
     `status` integer NOT NULL DEFAULT 0 ,
@@ -137,7 +123,8 @@ CREATE TABLE IF NOT EXISTS `node_state` (
     `created_time` datetime NOT NULL,
     `updated_time` datetime NOT NULL,
     `node_type` varchar(255) NOT NULL DEFAULT 'manual',
-    `deleted`   int(11) NOT NULL DEFAULT 0
+    `deleted`   tinyint(1) DEFAULT 0
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------
@@ -177,7 +164,6 @@ CREATE TABLE IF NOT EXISTS `remote_action_impl` (
 CREATE TABLE IF NOT EXISTS `logs` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `fid` int(10) NOT NULL,
-  `correlation_id` varchar(20) NOT NULL DEFAULT '0' COMMENT '全局id',
   `message` text NOT NULL,
   `ctime` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
