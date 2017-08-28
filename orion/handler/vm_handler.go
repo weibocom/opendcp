@@ -41,16 +41,6 @@ const (
 )
 
 const (
-	//vmPending = iota
-	//vmSuccess
-	//vmUninit
-	//vmIniting
-	//vmInitTimeout
-	//vmDeleted
-	//vmUninstalling
-	//vmUniTimeout
-	//vmDeleting
-	//vmError
 	vmPending     = iota //正在创建
 	vmSuccess            //初始化完成
 	vmUninit             //未初始化
@@ -107,7 +97,6 @@ func (v *VMHandler) Handle(action *models.ActionImpl, actionParams map[string]in
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
-	//correlationId := utils.GetCorrelationId(fid, 0)
 
 	logService.Debug(fid, fmt.Sprintf("vm handler recieve new action: [%s]", action.Name))
 
@@ -130,8 +119,6 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	num := len(nodes)
 
 	fid := nodes[0].Flow.Id
-
-	//correlationId := utils.GetCorrelationId(fid, 0)
 
 	msg := fmt.Sprintf("creating vm, vm_type_id =%v vmTypeIdtype:%v", params[vmTypeId], reflect.TypeOf(params[vmTypeId]))
 	logService.Debug(fid, msg)
@@ -264,13 +251,6 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 				nodeMap[id].Status = models.STATUS_FAILED
 				nodeMap[id].UpdatedTime = time.Now()
 				service.Flow.UpdateNode(nodeMap[id])
-
-				//if nodeMap[id].Node.Ip == "-" {
-				//	ip := fmt.Sprintf("%d", nodeMap[id].Node.Id)
-				//	nodeMap[id].Node.Ip = ip
-				//}
-				//service.Cluster.UpdateBase(nodeMap[id])
-
 			}
 		}
 
@@ -291,19 +271,9 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			n := nodeMap[id]
 			n.Status = models.STATUS_FAILED
 			n.UpdatedTime = time.Now()
-
 			service.Flow.UpdateNode(n)
 
-			//service.Cluster.UpdateBase(n)
-
 			logService.Info(fid, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
-
-			//n.Node.Status = models.STATUS_FAILED
-			//if nodeMap[id].Node.Ip == "-" {
-			//	ip := fmt.Sprintf("%d", n.Node.Id)
-			//	n.Node.Ip = ip
-			//}
-			//service.Cluster.UpdateBase(n.Node)
 		}
 	}
 
@@ -358,11 +328,6 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 		} else {
 			// for vmId == "", we cannot delete them
 			cannotDelete[node.Id] = true
-			//if node.Ip != fmt.Sprintf("%d", node.Node.Id) {
-			//	cannotDelete[node.Id] = true
-			//} else {
-			//	cannotDelete[node.Id] = false
-			//}
 		}
 	}
 	if len(ids) != 0 {
@@ -379,17 +344,10 @@ func (v *VMHandler) returnVMs(params map[string]interface{},
 
 	// delete nodes from pool
 	for _, node := range nodes {
-		//if !cannotDelete[node.Id] {
-		//	//id := node.Node.Id
-		//	//service.Cluster.DeleteBase(node)
-		//	service.Cluster.DeleteBase(&models.Node{Id: node.Node.Id})
-		//}
 		node.UpdatedTime = time.Now()
 		node.Deleted = true
 
 		service.Flow.DeleteNodeById(node)
-
-		//service.Cluster.UpdateBase(node)
 	}
 
 	success := false

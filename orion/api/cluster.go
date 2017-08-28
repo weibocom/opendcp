@@ -799,5 +799,6 @@ func (c *ClusterApi) AllPoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &temp_pool.Tasks)
 		liststruct = append(liststruct, temp_pool)
 	}
+
 	c.ReturnPageContent(page, pageSize, len(liststruct), liststruct)
 }

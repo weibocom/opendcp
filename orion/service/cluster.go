@@ -87,7 +87,6 @@ func (c *ClusterService) SearchPoolByIP(ips []string) map[string]int {
 	for _, ip := range ips {
 		node := &models.NodeState{Ip: ip}
 		err := o.QueryTable(node).Filter("deleted", false).Filter("ip", ip).One(node)
-		//err := c.GetBy(node, "ip")
 		id := -1
 		if err == nil && !node.Deleted {
 			id = node.Pool.Id

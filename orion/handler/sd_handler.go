@@ -240,15 +240,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		time.Sleep(5 * time.Second)
 		logService.Info(fid, corrId, fmt.Sprintf("check result for times %d", i+1))
 
-		//data := make(map[string]interface{})
-		//data["task_id"] = taskId
-		//data["appkey"] = SD_APPKEY
-
-		//header := map[string]interface{} {
-		//	"APPKEY": SD_APPKEY,
-		//}
-
-		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //, "task_id", taskId, "appkey", SD_APPKEY)
+		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //"task_id", taskId, "appkey", SD_APPKEY)
 		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
 			logService.Warn(fid, corrId, fmt.Sprintf("check result err: \n%v", err))
