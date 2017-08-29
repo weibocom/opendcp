@@ -230,7 +230,6 @@ func (exec *FlowExecutor) Pause(flow *models.Flow) error {
 
 	return exec.SetFlowStatus(flow, models.STATUS_STOPPED)
 }
-
 // Stop stopped a running flow by setting its status to SUCCESS.
 func (exec *FlowExecutor) Stop(flow *models.Flow) error {
 	lock.Lock()
@@ -240,15 +239,16 @@ func (exec *FlowExecutor) Stop(flow *models.Flow) error {
 
 	err := exec.loadFlowStatus(flow)
 	if err != nil {
+
 		beego.Error("Stop failed: flow", flow.Name, ":", err.Error())
 		return errors.New("Stop failed: flow" + flow.Name + ":" + err.Error())
 	}
+
 
 	if flow.Status == models.STATUS_SUCCESS || flow.Status == models.STATUS_FAILED {
 		beego.Error("Stop failed: flow", flow.Name, "already finished")
 		return errors.New("Flow " + flow.Name + " already finished")
 	}
-
 	return exec.SetFlowStatus(flow, models.STATUS_SUCCESS)
 }
 
@@ -308,9 +308,9 @@ func (exec *FlowExecutor) runFlow(flow *models.Flow, orign_flow_status int) erro
 	defer func() {
 		logService.Info(flow.Id, fmt.Sprintf("Finish running flow[%s,%d]", flow.Name, flow.Id))
 	}()
-
 	if !exec.isRunning(flow) {
 		logService.Info(flow.Id, fmt.Sprintf("Flow %s %d state =%d not in running state, ignore", flow.Name, flow.Id, flow.Status))
+
 		return nil
 	}
 
@@ -834,3 +834,8 @@ func (exec *FlowExecutor) MergeParams(options []*models.StepOption,
 		}
 	}
 }
+
+//func (exec *FlowExecutor) getCorrelationId(fid int) string {
+//	return utils.GetCorrelationId(fid, 0)
+//}
+
