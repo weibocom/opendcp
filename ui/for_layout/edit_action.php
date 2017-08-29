@@ -121,19 +121,19 @@
                   </div>
                     <div class="form-group" hidden>
                         <label for="desc" class="col-sm-2 control-label">var文件</label>
-                        <div id="vars_file" >
+                        <div style="overflow:auto;" id="vars_file" >
 
                         </div>
                     </div>
                     <div class="form-group" hidden>
                         <label for="desc" class="col-sm-2 control-label">task文件</label>
-                        <div id="tasks_file" >
+                        <div style="overflow:auto;" id="tasks_file" >
 
                         </div>
                     </div>
                     <div class="form-group" hidden>
                         <label for="desc" class="col-sm-2 control-label">template文件</label>
-                        <div id="tems_file">
+                        <div style="overflow:auto;" id="tems_file">
 
                         </div>
                     </div>

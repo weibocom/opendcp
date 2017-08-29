@@ -246,8 +246,6 @@ var get = function (idx,resourceData) {
                         $('#task_file').html('');
                         if(tab=='role'){
                             if (data.content.vars != 'undefined'){
-                                // var str = data.content.vars;
-                                // var var_array = str.split(",");
                                 var var_array = data.content.vars;
                             }
 
@@ -261,40 +259,23 @@ var get = function (idx,resourceData) {
                                 for(var i=0;i<resourceData.length;i++){
                                     resource_id = resourceData[i].id.toString();
                                     if(resourceData[i].resource_type=='var'){
-                                        // if(var_array.indexOf(resource_id)!=-1){
-                                        //     var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
-                                        //     $('#var_file').append(var_checkboxes);
-                                        // }else{
-                                        //     var var_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
-                                        //     $('#var_file').append(var_checkboxes);
-                                        //
-                                        // }
 
                                         if(var_array == resource_id){
-                                            var var_checkboxes = '<span class="col-sm-2"><input type="radio" checked id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
+                                            var var_checkboxes = '<label style="margin:10px"><input type="radio" checked id="' + resource_id + '" name="var">' + resourceData[i].name + '</label>';
                                             $('#var_file').append(var_checkboxes);
                                         }else{
-                                            var var_checkboxes = '<span class="col-sm-2"><input type="radio" id="' + resource_id + '" name="var">' + resourceData[i].name + '</span>';
+                                            var var_checkboxes = '<label style="margin:10px"><input type="radio" id="' + resource_id + '" name="var">' + resourceData[i].name + '</label>';
                                             $('#var_file').append(var_checkboxes);
 
                                         }
                                     }
 
                                     if(resourceData[i].resource_type=='task'){
-                                        // if(task_array.indexOf(resource_id)!=-1){
-                                        //     var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
-                                        //     $('#task_file').append(task_checkboxes);
-                                        // }else{
-                                        //     var task_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
-                                        //     $('#task_file').append(task_checkboxes);
-                                        //
-                                        // }
-
                                         if(task_array == resource_id){
-                                            var task_checkboxes = '<span class="col-sm-2"><input type="radio" checked id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
+                                            var task_checkboxes = '<label style="margin:10px"><input type="radio" checked id="' + resource_id + '" name="task">' + resourceData[i].name + '</label>';
                                             $('#task_file').append(task_checkboxes);
                                         }else{
-                                            var task_checkboxes = '<span class="col-sm-2"><input type="radio" id="' + resource_id + '" name="task">' + resourceData[i].name + '</span>';
+                                            var task_checkboxes = '<label style="margin:10px"><input type="radio" id="' + resource_id + '" name="task">' + resourceData[i].name + '</label>';
                                             $('#task_file').append(task_checkboxes);
 
                                         }
@@ -304,10 +285,10 @@ var get = function (idx,resourceData) {
 
                                     if(resourceData[i].resource_type=='template'){
                                         if(tem_array.indexOf(resource_id)!=-1){
-                                            var tem_checkboxes = '<span class="col-sm-2"><input type="checkbox" checked id="' + resource_id + '" name="template">' + resourceData[i].name + '</span>';
+                                            var tem_checkboxes = '<label style="margin:10px"><input type="checkbox" checked id="' + resource_id + '" name="template">' + resourceData[i].name + '</label>';
                                             $('#tem_file').append(tem_checkboxes);
                                         }else{
-                                            var tem_checkboxes = '<span class="col-sm-2"><input type="checkbox" id="' + resource_id + '" name="template">' + resourceData[i].name + '</span>';
+                                            var tem_checkboxes = '<label style="margin:10px"><input type="checkbox" id="' + resource_id + '" name="template">' + resourceData[i].name + '</label>';
                                             $('#tem_file').append(tem_checkboxes);
 
                                         }

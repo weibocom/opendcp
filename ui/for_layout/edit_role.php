@@ -55,17 +55,17 @@
           </div>
           <div class="form-group">
               <label for="args" class="col-sm-2 control-label">包含tasks</label>
-              <div id="task_file">
+              <div id="task_file" style="overflow:auto;">
               </div>
           </div>
            <div class="form-group">
                 <label for="args" class="col-sm-2 control-label">包含vars</label>
-                <div id="var_file">
+                <div id="var_file" style="overflow:auto;">
                 </div>
            </div>
            <div class="form-group">
                 <label for="args" class="col-sm-2 control-label">包含templates</label>
-                <div id="tem_file">
+                <div id="tem_file" style="overflow:auto;" >
                 </div>
            </div>
 
