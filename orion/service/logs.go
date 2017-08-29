@@ -37,39 +37,39 @@ var (
 	isPrintBeego = true
 )
 
-func (store *LogsService) Debug(Fid int, correlationId string, v ...interface{}) {
+func (store *LogsService) Debug(Fid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Debug(v...)
 	}
 
-	go store.saveToDb(Fid, correlationId, v...)
+	go store.saveToDb(Fid, v...)
 }
 
-func (store *LogsService) Info(Fid int, correlationId string, v ...interface{}) {
+func (store *LogsService) Info(Fid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Info(v...)
 	}
 
-	go store.saveToDb(Fid, correlationId, v...)
+	go store.saveToDb(Fid, v...)
 }
 
-func (store *LogsService) Warn(Fid int, correlationId string, v ...interface{}) {
+func (store *LogsService) Warn(Fid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Warn(v...)
 	}
 
-	go store.saveToDb(Fid, correlationId, v...)
+	go store.saveToDb(Fid, v...)
 }
 
-func (store *LogsService) Error(Fid int, correlationId string, v ...interface{}) {
+func (store *LogsService) Error(Fid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Error(v...)
 	}
 
-	go store.saveToDb(Fid, correlationId, v...)
+	go store.saveToDb(Fid, v...)
 }
 
-func (store *LogsService) saveToDb(Fid int, correlationId string, v ...interface{}) {
+func (store *LogsService) saveToDb(Fid int, v ...interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			beego.Info("saveToDb is error !", r)
@@ -81,9 +81,9 @@ func (store *LogsService) saveToDb(Fid int, correlationId string, v ...interface
 		msg = fmt.Sprintf(msg, v...)
 	}
 
-	logs := models.NewLogsInit(Fid, correlationId, msg)
-	orm := orm.NewOrm()
-	id, err := orm.Insert(logs)
+	logs := models.NewLogsInit(Fid, msg)
+	o := orm.NewOrm()
+	id, err := o.Insert(logs)
 
 	if err != nil {
 		beego.Error("[Store] LogMessage fail!", err)

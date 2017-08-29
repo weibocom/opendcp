@@ -32,6 +32,7 @@ type TaskService struct {
 
 func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (*models.ExecTask, error) {
 	o := orm.NewOrm()
+
 	task := &models.ExecTask{}
 	var err error
 	if task_type == "" || task_type == " " || task_type == "all" {
@@ -55,21 +56,27 @@ func (t *TaskService) GetAllTaskByPool(pool_id int, task_type string) (*models.E
 
 	return task, nil
 }
+
 func (t *TaskService) GetCronTaskById(id int) (*models.CronItem, error) {
 	o := orm.NewOrm()
+
 	cron_item := &models.CronItem{}
 	err := o.QueryTable(cron_item).Filter("Id", id).One(cron_item)
 	if err != nil {
 		return nil, err
 	}
+
 	return cron_item, nil
 }
+
 func (t *TaskService) GetDependTaskById(id int) (*models.DependItem, error) {
 	o := orm.NewOrm()
+
 	depend_item := &models.DependItem{}
 	err := o.QueryTable(depend_item).Filter("Id", id).One(depend_item)
 	if err != nil {
 		return nil, err
 	}
+
 	return depend_item, nil
 }

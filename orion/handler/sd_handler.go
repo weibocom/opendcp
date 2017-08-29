@@ -27,6 +27,7 @@ import (
 
 	"github.com/astaxie/beego"
 
+	"strconv"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
@@ -200,7 +201,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+		if node.Ip != "-" && node.Deleted == false {
 			ips[i] = node.Ip
 		}
 	}
@@ -239,15 +240,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		time.Sleep(5 * time.Second)
 		logService.Info(fid, corrId, fmt.Sprintf("check result for times %d", i+1))
 
-		//data := make(map[string]interface{})
-		//data["task_id"] = taskId
-		//data["appkey"] = SD_APPKEY
-
-		//header := map[string]interface{} {
-		//	"APPKEY": SD_APPKEY,
-		//}
-
-		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //, "task_id", taskId, "appkey", SD_APPKEY)
+		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //"task_id", taskId, "appkey", SD_APPKEY)
 		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
 			logService.Warn(fid, corrId, fmt.Sprintf("check result err: \n%v", err))
@@ -264,7 +257,7 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid, corrId, fmt.Sprintf("check result return fail"))
+			logService.Error(fid, corrId, "check result return fail")
 
 			continue
 		}
@@ -301,7 +294,7 @@ func (v *ServiceDiscoveryHandler) callAPI(method string, url string,
 }
 
 func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
-	corrId, instanceId := nodeState.CorrId, nodeState.VmId
+	corrId, instanceId := strconv.Itoa(nodeState.Flow.Id), nodeState.VmId
 
 	pool := &models.Pool{Id: nodeState.Pool.Id}
 	err := service.Cluster.GetBase(pool)
@@ -318,9 +311,9 @@ func (h *ServiceDiscoveryHandler) GetLog(nodeState *models.NodeState) string {
 
 	resp := &sdLogResp{}
 	url := fmt.Sprintf(SD_LOG_URL, SD_ADDR, corrId)
-	error := h.callAPI("GET", url, nil, &header, resp)
-	if error != nil {
-		beego.Error("Get log for", instanceId, "fails:", err)
+	handleResult := h.callAPI("GET", url, nil, &header, resp)
+	if handleResult != nil {
+		beego.Error("Get log for", instanceId, "fails:", handleResult.Msg)
 		return "<NO LOG>"
 	}
 
@@ -348,7 +341,7 @@ func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]i
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
-		if node.Node.Ip != "-" || node.Node.Ip != fmt.Sprintf("%d", node.Node.Id) {
+		if node.Ip != "-" && node.Deleted == false {
 			ips[i] = node.Ip
 		}
 	}

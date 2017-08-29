@@ -28,6 +28,7 @@ import (
 
 	"github.com/astaxie/beego"
 
+	"time"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
 )
@@ -492,7 +493,7 @@ func (c *ClusterApi) PoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &liststruct[i].Tasks)
 		liststruct[i].ServiceId = fi.Service.Id
 
-		nodeCount, err := service.Cluster.GetCount(&models.Node{}, "Pool", &models.Pool{Id: fi.Id})
+		nodeCount, err := service.Cluster.GetCountWithFilter(&models.NodeState{}, "Pool", &models.Pool{Id: fi.Id}, "deleted", false)
 		if err != nil {
 			c.ReturnFailed(err.Error(), 400)
 			return
@@ -543,10 +544,10 @@ func (c *ClusterApi) PoolDelete() {
 		return
 	}
 
-	list := make([]models.Node, 0, 1)
+	list := make([]models.NodeState, 0, 1)
 
-	count, err := service.Cluster.ListByPageWithFilter(0, 1,
-		&models.Node{}, &list, "pool_id", pool.Id)
+	count, err := service.Cluster.ListByPageWithTwoFilter(0, 1,
+		&models.NodeState{}, &list, "pool_id", pool.Id, "deleted", false)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -610,10 +611,10 @@ func (c *ClusterApi) NodeList() {
 
 	c.CheckPage(&page, &pageSize)
 
-	list := make([]models.Node, 0, pageSize)
+	list := make([]models.NodeState, 0, pageSize)
 
-	count, err := service.Cluster.ListByPageWithFilter(page, pageSize,
-		&models.Node{}, &list, "pool_id", poolId)
+	count, err := service.Cluster.ListByPageWithTwoFilter(page, pageSize,
+		&models.NodeState{}, &list, "pool_id", poolId, "deleted", false)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return
@@ -666,12 +667,16 @@ func (c *ClusterApi) NodeAppend() {
 		return
 	}
 
-	//repeat ip check
-
+	//check ip repeat and empty
 	for _, ip := range req.Ips {
-		count, err1 := service.Cluster.GetCount(&models.Node{}, "ip", ip)
+		ip = strings.TrimSpace(ip)
+		if ip == "" {
+			c.ReturnFailed("ip is empty", 400)
+			return
+		}
+		count, err1 := service.Cluster.GetCountWithFilter(&models.NodeState{}, "ip", ip, "deleted", false)
 		if err1 != nil || count > 0 {
-			c.ReturnFailed("ip exists already", 404)
+			c.ReturnFailed("ip: "+ip+" exists already", 404)
 			return
 		}
 	}
@@ -687,22 +692,12 @@ func (c *ClusterApi) NodeAppend() {
 		return
 	}
 
-	//check IP list
-	for _, ip := range req.Ips {
-		if strings.TrimSpace(ip) == "" {
-			c.ReturnFailed("ip is empty", 400)
-			return
-		}
-	}
-
 	back := service.Cluster.AppendIpList(req.Ips, pool)
 
 	c.ReturnSuccess(back)
 }
 
 func (c *ClusterApi) NodeDelete() {
-
-	//req := delnodes_struct{}
 	req := struct {
 		NodeIds []int `json:"nodes"`
 	}{}
@@ -712,11 +707,21 @@ func (c *ClusterApi) NodeDelete() {
 		return
 	}
 
-	fmt.Println(req)
 	for _, id := range req.NodeIds {
-
-		//idInt,_:=strconv.Atoi(id)
-		err := service.Cluster.DeleteBase(&models.Node{Id: id})
+		//NodeState check
+		nodeState := &models.NodeState{
+			Id: id,
+		}
+		err = service.Cluster.GetBase(nodeState)
+		if err != nil {
+			beego.Error("Error when deleting id:", id, ", error:", err)
+			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
+			return
+		}
+		//update nodeState to delete
+		nodeState.UpdatedTime = time.Now()
+		nodeState.Deleted = true
+		err := service.Flow.DeleteNodeById(nodeState)
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
 			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
@@ -725,7 +730,6 @@ func (c *ClusterApi) NodeDelete() {
 	}
 
 	c.ReturnSuccess(nil)
-
 }
 
 func (c *ClusterApi) SearchPoolByIP() {
@@ -793,5 +797,6 @@ func (c *ClusterApi) AllPoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &temp_pool.Tasks)
 		liststruct = append(liststruct, temp_pool)
 	}
+
 	c.ReturnPageContent(page, pageSize, len(liststruct), liststruct)
 }

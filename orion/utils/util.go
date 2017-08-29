@@ -42,7 +42,3 @@ func ToInt(v interface{}) (int, error) {
 	return -1, errors.New("cannot convert to int:" + fmt.Sprintln(v) +
 		", type : " + reflect.TypeOf(v).String())
 }
-
-func GetCorrelationId(fid int, batchId int) string {
-	return fmt.Sprintf("%d-%d", fid, batchId)
-}

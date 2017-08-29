@@ -123,6 +123,7 @@ func (c *RemoteApi) ActionAppend() {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
+
 	c.ReturnSuccess(data.Id)
 }
 
@@ -236,6 +237,7 @@ func (c *RemoteApi) ActionDelete() {
 		c.ReturnFailed(err.Error(), 404)
 		return
 	}
+
 	c.ReturnSuccess("")
 }
 
@@ -264,6 +266,7 @@ func (c *RemoteApi) RemoteStepAppend() {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
+
 	c.ReturnSuccess(data.Id)
 }
 
@@ -301,6 +304,7 @@ func (c *RemoteApi) RemoteStepUpdate() {
 		c.ReturnFailed(err.Error(), 404)
 		return
 	}
+
 	c.ReturnSuccess("")
 }
 
@@ -325,6 +329,7 @@ func (c *RemoteApi) GetRemoteStep() {
 	remotestepstruct.Name = remotestep.Name
 	remotestepstruct.Desc = remotestep.Desc
 	json.Unmarshal([]byte(remotestep.Actions), &remotestepstruct.Actions)
+
 	c.ReturnSuccess(remotestepstruct)
 }
 
@@ -372,6 +377,7 @@ func (c *RemoteApi) RemoteStepDelete() {
 		c.ReturnFailed(err.Error(), 404)
 		return
 	}
+
 	c.ReturnSuccess("")
 }
 
@@ -414,11 +420,6 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 			strconv.Itoa(req.ActionId)+"["+req.Type+"]", 400)
 	}
 
-	//if !utils.GetValidateUtil().ValidateString(string(templatestr)) {
-	//	c.ReturnFailed("the template format is not correct "+
-	//		strconv.Itoa(req.ActionId)+"["+req.Type+"]", 400)
-	//}
-
 	data := models.RemoteActionImpl{
 		//Id:       req.Id,
 		Type:     req.Type,
@@ -432,6 +433,7 @@ func (c *RemoteApi) RemoteActionImplAppend() {
 		c.ReturnFailed(err.Error(), 400)
 		return
 	}
+
 	c.ReturnSuccess(data.Id)
 }
 
@@ -442,7 +444,6 @@ func (c *RemoteApi) GetRemoteActionImpl() {
 
 	actionId := c.Ctx.Input.Param(":actionId")
 	idInt, _ := strconv.Atoi(actionId)
-	//actionType := c.Ctx.Input.Param(":type")
 	actionType := ANSIBLE
 
 	remoteactionimpl := &models.RemoteActionImpl{}
@@ -474,7 +475,6 @@ func (c *RemoteApi) RemoteActionImplDelete() {
 
 	id := c.Ctx.Input.Param(":id")
 	idInt, _ := strconv.Atoi(id)
-	//actionType := c.Ctx.Input.Param(":type")
 	actionType := ANSIBLE
 
 	remoteactionimpl := &models.RemoteActionImpl{}
@@ -489,6 +489,7 @@ func (c *RemoteApi) RemoteActionImplDelete() {
 		c.ReturnFailed(err.Error(), 404)
 		return
 	}
+
 	c.ReturnSuccess("")
 }
 
@@ -526,7 +527,6 @@ func (c *RemoteApi) RemoteActionImplUpdate() {
 	remoteactionimpl.TaskType = req.TaskType
 	templateStr, _ := json.Marshal(req.Template)
 	remoteactionimpl.Template = string(templateStr)
-	//remoteactionimpl.ActionId = req.ActionId
 
 	err = service.Remote.UpdateBase(remoteactionimpl)
 
@@ -534,6 +534,7 @@ func (c *RemoteApi) RemoteActionImplUpdate() {
 		c.ReturnFailed(err.Error(), 404)
 		return
 	}
+
 	c.ReturnSuccess("")
 }
 

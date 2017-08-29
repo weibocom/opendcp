@@ -24,6 +24,7 @@ import (
 	"github.com/astaxie/beego/orm"
 
 	"fmt"
+	"time"
 	"weibo.com/opendcp/orion/models"
 )
 
@@ -57,9 +58,15 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool) []int {
 	respDatas := make([]int, 0, len(ips))
 
 	for _, ip := range ips {
-		data := models.Node{
-			Ip:   ip,
-			Pool: pool,
+		data := models.NodeState{
+			Ip:          ip,
+			Pool:        pool,
+			Flow:        &models.Flow{Id: 0},
+			Status:      models.STATUS_INIT,
+			CreatedTime: time.Now(),
+			UpdatedTime: time.Now(),
+			NodeType:    models.Manual,
+			Deleted:     false,
 		}
 		_, err := o.Insert(&data)
 		if err != nil {
@@ -74,13 +81,14 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool) []int {
 
 // SearchPoolByIP returs the pool id of the ip given, if it exists
 func (c *ClusterService) SearchPoolByIP(ips []string) map[string]int {
+	o := orm.NewOrm()
 
 	result := make(map[string]int)
 	for _, ip := range ips {
-		node := &models.Node{Ip: ip}
-		err := c.GetBy(node, "ip")
+		node := &models.NodeState{Ip: ip}
+		err := o.QueryTable(node).Filter("deleted", false).Filter("ip", ip).One(node)
 		id := -1
-		if err == nil {
+		if err == nil && !node.Deleted {
 			id = node.Pool.Id
 		}
 		result[ip] = id
@@ -89,12 +97,12 @@ func (c *ClusterService) SearchPoolByIP(ips []string) map[string]int {
 	return result
 }
 
-func (c *ClusterService) ListNodesByType(pool_id int, node_type string) ([]models.Node, error) {
+func (c *ClusterService) ListNodesByType(pool_id int, node_type string) ([]models.NodeState, error) {
 	o := orm.NewOrm()
 
-	list := make([]models.Node, 0)
+	list := make([]models.NodeState, 0)
 
-	_, err := o.QueryTable(&models.Node{}).Filter("Pool", pool_id).Filter("NodeType", node_type).All(&list)
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Pool", pool_id).Filter("NodeType", node_type).All(&list)
 
 	if err != nil {
 		return nil, err

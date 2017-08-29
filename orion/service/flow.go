@@ -23,6 +23,7 @@ import (
 	"github.com/astaxie/beego/orm"
 
 	"github.com/astaxie/beego"
+	"time"
 	"weibo.com/opendcp/orion/models"
 )
 
@@ -66,11 +67,11 @@ func (f *FlowService) GetActionImplByName(name string) (*models.ActionImpl, erro
 	return action, nil
 }
 
-func (f *FlowService) GetNodeByIp(ip string) (*models.Node, error) {
+func (f *FlowService) GetNodeByIp(ip string) (*models.NodeState, error) {
 	o := orm.NewOrm()
 
-	node := &models.Node{}
-	err := o.QueryTable(node).Filter("ip", ip).One(node)
+	node := &models.NodeState{}
+	err := o.QueryTable(node).Filter("ip", ip).Filter("deleted", false).One(node)
 	if err != nil {
 		return nil, err
 	}
@@ -78,36 +79,57 @@ func (f *FlowService) GetNodeByIp(ip string) (*models.Node, error) {
 	return node, nil
 }
 
-/*
-func (f *FlowService) GetNodesByFlowId(flowId int) ([]*models.Node, error) {
+func (f *FlowService) UpdateNodeMachine(state *models.NodeState) error {
 	o := orm.NewOrm()
-
-	nodeList := make([]*models.Node, 0)
-
-	_, err := o.QueryTable(&models.Node{}).Filter("Flow", flowId).All(&nodeList)
-
-	return nodeList, err
+	if state.Ip == "" || state.Ip == "-" {
+		_, err := o.Update(state, "vm_id", "updated_time")
+		return err
+	}
+	_, err := o.Update(state, "ip", "vm_id", "updated_time")
+	return err
 }
-*/
+
+func (f *FlowService) UpdateNode(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state,
+		"status", "steps", "step_num", "log",
+		"last_op", "step_run_time", "run_time",
+		"updated_time",
+	)
+	return err
+}
+
+func (f *FlowService) DeleteNodeById(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state, "deleted", "updated_time")
+	return err
+}
 
 func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, error) {
 	o := orm.NewOrm()
 
 	nodeList := make([]*models.NodeState, 0)
 
-	_, err := o.QueryTable(&models.NodeState{}).Filter("Flow", flowId).All(&nodeList)
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Flow", flowId).Filter("deleted", false).All(&nodeList)
 
 	return nodeList, err
 }
 
 func (f *FlowService) DeleteNode(ips []string) error {
 	o := orm.NewOrm()
-	_, err := o.QueryTable(&models.NodeState{}).Filter("ip__in", ips).Update(orm.Params{
-		"deleted": models.DELETED,
-	})
-
-	if err != nil {
-		beego.Error("Error when update nodestate %v with err:", ips, err)
+	for _, ip := range ips {
+		n := &models.NodeState{Ip: ip}
+		err := o.Read(n, "ip")
+		if err != nil {
+			return err
+		}
+		n.Deleted = true
+		n.UpdatedTime = time.Now()
+		_, err = o.Update(n, "deleted", "updated_time")
+		if err != nil {
+			beego.Error("Error when update nodestate ", ip, " with err:", ip, err)
+			return err
+		}
 	}
 
 	return nil
@@ -116,7 +138,7 @@ func (f *FlowService) DeleteNode(ips []string) error {
 func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids []int) (int, error) {
 	o := orm.NewOrm()
 
-	num, err := o.QueryTable(obj).Exclude("deleted", models.DELETED).Filter("steps", "register").Filter("pool_id__in", pids).All(list)
+	num, err := o.QueryTable(obj).Exclude("deleted", true).Filter("steps", "register").Filter("pool_id__in", pids).All(list)
 
 	if err != nil {
 		return 0, err
@@ -124,10 +146,3 @@ func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids [
 
 	return int(num), nil
 }
-
-/*
-func (f *FlowService) GetLog(correlationId string) (string, error) {
-
-
-}
-*/

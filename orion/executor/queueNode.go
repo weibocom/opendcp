@@ -38,8 +38,6 @@ type ToRunNodeState struct {
 	nodeState      *models.NodeState
 }
 
-// Job represents a task to be run by worker.
-
 // NewWorker creates a new worker.
 func NewQueueNode() *QueueNode {
 	return &QueueNode{workNodeQueue: make(chan ToRunNodeState, 500)}
@@ -53,7 +51,6 @@ func (q *QueueNode) loop() {
 			// queue closed
 			break
 		}
-		//修改使任务并行运行
 		go q.safeRun(runNode)
 	}
 }
@@ -76,7 +73,6 @@ func (q *QueueNode) safeRun(runNode ToRunNodeState) {
 }
 
 // Submit submits new job into queue of this worker, and return error
-// if the queue if full.
 func (q *QueueNode) Submit(runNode ToRunNodeState) {
 	select {
 	case q.workNodeQueue <- runNode:

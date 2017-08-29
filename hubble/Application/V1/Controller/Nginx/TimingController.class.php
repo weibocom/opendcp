@@ -47,6 +47,7 @@ class TimingController extends RestController
             $map['task_name']  = array('eq','');
             $judge=1;
             while($judge>0){
+
                 //1.查询history数据表是否存在未发布数据
                 $resone = $this->alterationHistory->distinct(true)->where($map)->field('sid,opr_user')->select();
                 $res=$resone;
@@ -97,6 +98,7 @@ class TimingController extends RestController
                         ];
                         return $return;
                     }
+
                     //下发时，标志是服务发现类型的id
                     $task = $this->upstream->callTunnel($content['script_id'], $content['name'], $res[$i]['opr_user'], true, $content['group_id'], '', $res[$i]['id']);
 
