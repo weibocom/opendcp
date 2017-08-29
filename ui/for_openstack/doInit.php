@@ -19,6 +19,10 @@ $arr_type = array(
 		'pool_id'=>3,
 		'template_id'=>7,
 	),
+    3=>array(
+        'pool_id'=>5,
+        'template_id'=>10,
+    ),
 );
 
 
@@ -35,8 +39,7 @@ foreach($arr['data'] as $oneinit){
 	$ip = $oneinit['ip'];
 	$password = $oneinit['password'];
 
-
-	//del 
+	//del
 	delip($ip, $mylayout, $mycloud);
 	if($oneinit['type']==2){
 		//del original controllerip
@@ -105,7 +108,7 @@ foreach($arr['data'] as $oneinit){
 	sleep(5);
 	
 	dolog('go do task');
-        $retArr=$mylayout->get(
+	$retArr=$mylayout->get(
 		'root',
 		'task',
 		'create', 
@@ -131,11 +134,13 @@ function dolog($msg){
         printf('[logid:'.$logid.']['.date('Y-m-d H:i:s').'] '.$msg."\n");
 }
 
+//打印日志到后台
 function doaddlog($task_id, $title, $status, $text){
 	exec('curl -v "http://host_ip:8888/api/for_openstack/machine.php?action=addlog&task_id='.$task_id.'&title='.$title.'&status='.$status.'&text='.$text.'"', $ret);
 	dolog('curl ret: '.print_r($ret,true));
 }
 
+//打印日志到前端
 function doaddlogfinal($task_id, $title, $status, $text, $final = 10){
 	exec('curl -v "http://host_ip:8888/api/for_openstack/machine.php?action=addlog&task_id='.$task_id.'&title='.$title.'&status='.$status.'&text='.$text.'&final='.$final.'"', $ret);
 	dolog('curl ret: '.print_r($ret,true));

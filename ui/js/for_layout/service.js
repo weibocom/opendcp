@@ -550,6 +550,7 @@ var twiceCheck = function (action, idx, desc, ipidx) {
         modalTitle = '非法请求';
         notice = '<div class="note note-danger">错误信息：参数错误</div>';
         pageNotify('error', '非法请求！', '错误信息：参数错误');
+
     } else {
         switch (tab) {
             case 'service':
@@ -1502,6 +1503,7 @@ function addTaskCron(idx) {
 function isNgore() {
     checkSave();
 }
+
 function checkSave() {
     compDepenService();
     var taskType = $('#task_type').val();
@@ -1635,6 +1637,7 @@ function isRatio() {
 
     checkSave();
 }
+
 function isFloat() {
     if ($.isNumeric(event.target.value)) {
         num = parseFloat(event.target.value);
@@ -1651,6 +1654,7 @@ function isFloat() {
     }
     checkSave();
 }
+
 function isNum() {
     if ($.isNumeric(event.target.value)) {
         if (event.target.value.indexOf(".") == -1) {
@@ -1667,6 +1671,7 @@ function isNum() {
     }
     checkSave();
 }
+
 function compTime() {
     var trList = $("#cron_body").children("tr");
     var total_num = 0;
@@ -1730,6 +1735,7 @@ function compDepenService() {
         total_num = 0;
     }
 }
+
 function checkTime() {
     var reg = /^(20|21|22|23|[0-1]\d):[0-5]\d$/;
     var regExp = new RegExp(reg);
@@ -2074,4 +2080,8 @@ var saveCronAndDependTask = function () {
         }
     });
 }
+
+
+
+
 
