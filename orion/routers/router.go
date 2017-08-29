@@ -145,7 +145,6 @@ func init() {
 		beego.NSRouter("/delete/:id:int", &api.RoleApi{}, "*:RoleDelete"),
 		beego.NSRouter("/update/:id:int", &api.RoleApi{}, "*:RoleUpdate"),
 		beego.NSRouter("/list", &api.RoleApi{}, "*:RoleList"),
-		beego.NSRouter("/test/:step:string/:name:string", &api.RoleApi{}, "*:TestPack"),
 	)
 
 	roleresource := beego.NewNamespace("/roleresource",

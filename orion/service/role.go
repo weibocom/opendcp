@@ -35,7 +35,7 @@ const (
 	TASKS               = "tasks/"
 	TEMPLATES           = "templates/"
 	VARS                = "vars/"
-	MAIN 				= "main"
+	MAIN                = "main"
 	ANSIBLE_INCLUDE     = "- include: "
 	DEFAULT_FILE_PERM   = 0666
 	DEFAULT_FOLDER_PERM = 0755
@@ -67,13 +67,39 @@ func (f *RoleService) CheckRoleParams(params []string) (string, error) {
 	return "", nil
 }
 
+func (f *RoleService) GetRoleByName(roleName string) (*models.Role, error) {
+	obj := &models.Role{Name: roleName}
+	err := f.GetBy(obj, "name")
+	if err != nil {
+		return nil, err
+	}
+
+	return obj, nil
+}
+
 func (f *RoleService) PackRoles(stepName string, rolesName []string) error {
 	for idx, roleName := range rolesName {
+		_, err := os.Stat(roleName)
+		if err != nil {
+			if os.IsNotExist(err) {
+				role, err := f.GetRoleByName(roleName)
+				if err != nil {
+					return err
+				}
+				err = f.BuildRoleFile(role)
+				if err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
 		rolesName[idx] = roleName + "/"
 	}
 	packageName := ROLES_REPO + stepName
 
-	err := archiver.TarGz.Make(packageName, rolesName)
+	err := os.RemoveAll(packageName)
+	err = archiver.TarGz.Make(packageName, rolesName)
 
 	return err
 }
@@ -96,7 +122,6 @@ func (f *RoleService) BuildRoleFile(role *models.Role) error {
 	if len(ids) < 1 {
 		return fmt.Errorf("The role must contain some resource.")
 	}
-
 
 	for _, id := range ids {
 		idInt, _ := strconv.Atoi(id)
@@ -135,8 +160,8 @@ func (f *RoleService) WriteRoleFile(roleName string, resources []models.RoleReso
 	}
 
 	// write resource
-	taskNames := []string {}
-	varNames := []string {}
+	taskNames := []string{}
+	varNames := []string{}
 	if len(resources) > 0 {
 		for _, resource := range resources {
 			fileName := resource.Name

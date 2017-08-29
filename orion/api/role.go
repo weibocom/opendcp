@@ -354,16 +354,12 @@ func (f *RoleApi) roleResourceCheckId() int {
 }
 
 func (f *RoleApi) TestPack() {
-	step := f.Ctx.Input.Param(":step")
-	roleName := f.Ctx.Input.Param(":name")
-	roleNames := []string {roleName}
-
-	err := service.Role.PackRoles(step, roleNames)
+	role, err := service.Role.GetRoleByName("test_role_1")
 
 	if err != nil {
 		f.ReturnFailed(err.Error(), 400)
 		return
 	}
 
-	f.ReturnSuccess("")
+	f.ReturnSuccess(role.Name)
 }
