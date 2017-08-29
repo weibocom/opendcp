@@ -89,7 +89,6 @@ func Expand(poolId int, num int, opUser string) error {
 		CREATE_VM:      map[string]interface{}{KEY_VM_TYPE: pool.VmType},
 		REGISTER:       map[string]interface{}{KEY_SD_ID: pool.SdId},
 		ADD_NGINX_NODE: map[string]interface{}{KEY_SD_ID: pool.SdId},
-		//name:      map[string]interface{}{KEY_TAG: pool.Service.DockerImage},
 	}
 
 	name := searchStartServiceStep(steps)
@@ -128,7 +127,6 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 
 	nodes := make([]*models.NodeState, 0)
 	for _, ip := range nodeIps {
-		//n := &models.NodeState{Ip: ip}
 		n, err := service.Flow.GetNodeByIp(ip)
 		if err != nil || n.Deleted {
 			beego.Error("Node with IP ", ip, " deleted:", n.Deleted, " status: ", n.Status, "err:", err, " ignore")
