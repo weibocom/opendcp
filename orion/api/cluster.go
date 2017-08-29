@@ -698,8 +698,6 @@ func (c *ClusterApi) NodeAppend() {
 }
 
 func (c *ClusterApi) NodeDelete() {
-
-	//req := delnodes_struct{}
 	req := struct {
 		NodeIds []int `json:"nodes"`
 	}{}
