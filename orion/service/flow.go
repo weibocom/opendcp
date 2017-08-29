@@ -130,16 +130,8 @@ func (f *FlowService) DeleteNode(ips []string) error {
 			beego.Error("Error when update nodestate ", ip, " with err:", ip, err)
 			return err
 		}
-		//nodes = append(nodes, n)
 	}
-	//o := orm.NewOrm()
-	//_, err := o.QueryTable(&models.NodeState{}).Filter("deleted", false).Filter("ip__in", ips).Update(orm.Params{
-	//	"deleted": true,
-	//})
-	//
-	//if err != nil {
-	//	beego.Error("Error when update nodestate %v with err:", ips, err)
-	//}
+
 	return nil
 }
 
@@ -154,10 +146,3 @@ func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids [
 
 	return int(num), nil
 }
-
-/*
-func (f *FlowService) GetLog(correlationId string) (string, error) {
-
-
-}
-*/
