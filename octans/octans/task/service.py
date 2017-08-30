@@ -219,7 +219,6 @@ class TaskService(BaseService):
 
             if err is not None:
                 obj.err = err
-
             session.add(obj)
             session.commit()
         except Exception as err:

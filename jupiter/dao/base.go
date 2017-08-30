@@ -37,6 +37,7 @@ const INSTANCE_ORGANIZATION_TABLE = "instance_organization"
 const NETWORK_TABLE = "network"
 const ZONE_TABLE = "zone"
 const DETAIL_TABLE = "detail"
+const INSTANCE_ITEM_TABLE = "instance_item"
 
 var globalOrm orm.Ormer
 var once sync.Once

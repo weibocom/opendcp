@@ -31,7 +31,6 @@ import (
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/bill"
-	"weibo.com/opendcp/jupiter/logstore"
 	"errors"
 	"github.com/astaxie/beego"
 	"strings"
@@ -39,7 +38,10 @@ import (
 	"reflect"
 	"encoding/json"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"weibo.com/opendcp/jupiter/service/task"
 )
+
+var its task.InstanceTaskService
 
 func GetCluster(clusterId int64) (*models.Cluster, error) {
 	cluster, err := dao.GetClusterById(clusterId)
@@ -89,7 +91,7 @@ func DeleteCluster(clusterId int64) (bool, error) {
 	return isDeleted, err
 }
 
-func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
+/*func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
 	if err != nil {
 		return nil, err
@@ -151,6 +153,35 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		}
 	}
 	go UpdateInstanceDetail()
+	return instanceIds, nil
+}*/
+
+func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
+	tasks := make([]models.InstanceItem, num)
+	taskId := fmt.Sprintf("TASKS-%s-[%d]", time.Now().Format("15:04:05"), len(tasks))
+	beego.Info("First. Begin to create instance task, task id:", taskId)
+
+	for i := 0; i<num; i++  {
+		task := models.InstanceItem{
+				TaskId: taskId,
+				Cluster: cluster,
+				CreateTime: time.Now(),
+			}
+		tasks[i] = task
+	}
+
+	err := its.CreateTasks(tasks)
+	if err != nil {
+		beego.Error("Create instance tasks err:", err)
+		return nil, err
+	}
+
+	its.WaitTasksComplete(tasks)
+
+	instanceIds := make([]string, 0)
+	instanceIds = append(instanceIds, "nothing")
+	go UpdateInstanceDetail()
+
 	return instanceIds, nil
 }
 

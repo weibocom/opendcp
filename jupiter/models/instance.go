@@ -50,6 +50,16 @@ const (
 	StateError
 )
 
+type TaskState int
+
+const (
+	StateReady TaskState = iota
+	StateRunning
+	StateSuccess
+	StateFailed
+)
+
+
 // Describes a tag.
 type Tag struct {
 
@@ -258,4 +268,15 @@ type StateReason struct {
 	//
 	//    Client.InvalidSnapshot.NotFound: The specified snapshot was not found.
 	Message string `locationName:"message" type:"string"`
+}
+
+type InstanceItem struct {
+	Id         int       `json:"id" orm:"pk;auto"`
+	TaskId     string    `json:"task_id"`
+	Cluster    *Cluster   `orm:"rel(fk);on_delte(do_nothing)"`
+	Ip         string    `json:"ip""`
+	InstanceId string    `json:"instance_id"`
+	CreateTime time.Time `orm:"type(datetime)"`
+	Status	   TaskState
+	Result     string `orm:"type(text);null"`
 }
