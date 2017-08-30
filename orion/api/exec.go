@@ -110,7 +110,6 @@ func (c *ExecApi) DeployPool() {
 	}
 
 	err = h.Deploy(poolId, req.Tag, req.MaxNum, opUser)
-	//err = h.Deploy(poolId, req.MaxNum)
 	if err != nil {
 		c.ReturnFailed(err.Error(), 400)
 		return

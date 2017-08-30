@@ -698,8 +698,6 @@ func (c *ClusterApi) NodeAppend() {
 }
 
 func (c *ClusterApi) NodeDelete() {
-
-	//req := delnodes_struct{}
 	req := struct {
 		NodeIds []int `json:"nodes"`
 	}{}
@@ -720,14 +718,10 @@ func (c *ClusterApi) NodeDelete() {
 			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
 			return
 		}
-		if nodeState.Status == models.STATUS_RUNNING || nodeState.Deleted {
-			beego.Warn("deleting id:", id, ", is runnineg or deleted!")
-			continue
-		}
 		//update nodeState to delete
 		nodeState.UpdatedTime = time.Now()
 		nodeState.Deleted = true
-		err := service.Cluster.UpdateBase(nodeState)
+		err := service.Flow.DeleteNodeById(nodeState)
 		if err != nil {
 			beego.Error("Error when deleting id:", id, ", error:", err)
 			c.ReturnFailed("error when delete id: "+strconv.Itoa(id)+", err:"+err.Error(), 400)
@@ -803,5 +797,6 @@ func (c *ClusterApi) AllPoolList() {
 		json.Unmarshal([]byte(fi.Tasks), &temp_pool.Tasks)
 		liststruct = append(liststruct, temp_pool)
 	}
+
 	c.ReturnPageContent(page, pageSize, len(liststruct), liststruct)
 }

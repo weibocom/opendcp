@@ -11,6 +11,7 @@ class node_init {
 	static $arr_type = array(
 		1 => '计算节点初始化',
 		2 => '控制节点初始化',
+		3 => '存储节点初始化',
 	);
 
 	static function getOneNodeInit($id){
@@ -28,6 +29,11 @@ class node_init {
 		$row=$query->fetch_array(MYSQL_ASSOC);
 		return empty($row) ? array() : $row;
 	}
+
+	static function getOneDiskNameByIp($ip){
+
+        return self::getOneTaskByIp($ip);
+	}
 	static function getNodeInitList($page = 1, $pagesize = 20){
 
 		$page--;
@@ -38,7 +44,6 @@ class node_init {
 		while($row=$query->fetch_array(MYSQL_ASSOC)){
 			$arrRet[]=$row;
 		}
-
 
 		$sql = 'select count(*) as num from '.self::$table;
 		$query = $db->query($sql);
@@ -52,15 +57,13 @@ class node_init {
 
 		$now = time();
 		$type = empty($data['type']) ? 1 : $data['type'];
-		$sql = 'insert into '.self::$table.' (ip, password, type, create_time) values (\''.@mysql_escape_string($data['ip']).'\',\''.@mysql_escape_string($data['password']).'\',\''.$type.'\', '.$now.')';
+		$sql = 'insert into '.self::$table.' (ip, password, type, create_time, disk_name) values (\''.@mysql_escape_string($data['ip']).'\',\''.@mysql_escape_string($data['password']).'\',\''.$type.'\',\' '.$now.'\',\''.@mysql_escape_string($data['disk_name']).'\')';
 		global $db;
 		$ret = $db->query($sql);
 		$id = $db->insert_id;
 		if(!empty($id) && $type==2){
 			require_once('keydata.php');
 			keydata::update('controller_ip', $data['ip']);
-
-
 			require_once('cloud.php');
 			$mycloud = new cloud();
 			$ret = $mycloud->get('root', 'instance/openstack', 'POST', array(
@@ -73,6 +76,7 @@ class node_init {
 		}
 		return $id;
 	}
+	//在数据库中更新节点状态
 	static function modifyOneNodeInit($id, $data){
 		global $db;
 		$now = time();

@@ -79,17 +79,31 @@ func (f *FlowService) GetNodeByIp(ip string) (*models.NodeState, error) {
 	return node, nil
 }
 
-/*
-func (f *FlowService) GetNodesByFlowId(flowId int) ([]*models.Node, error) {
+func (f *FlowService) UpdateNodeMachine(state *models.NodeState) error {
 	o := orm.NewOrm()
-
-	nodeList := make([]*models.Node, 0)
-
-	_, err := o.QueryTable(&models.Node{}).Filter("Flow", flowId).All(&nodeList)
-
-	return nodeList, err
+	if state.Ip == "" || state.Ip == "-" {
+		_, err := o.Update(state, "vm_id", "updated_time")
+		return err
+	}
+	_, err := o.Update(state, "ip", "vm_id", "updated_time")
+	return err
 }
-*/
+
+func (f *FlowService) UpdateNode(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state,
+		"status", "steps", "step_num", "log",
+		"last_op", "step_run_time", "run_time",
+		"updated_time",
+	)
+	return err
+}
+
+func (f *FlowService) DeleteNodeById(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state, "deleted", "updated_time")
+	return err
+}
 
 func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, error) {
 	o := orm.NewOrm()
@@ -109,27 +123,15 @@ func (f *FlowService) DeleteNode(ips []string) error {
 		if err != nil {
 			return err
 		}
-		if n.Deleted || n.Status == models.STATUS_RUNNING {
-			beego.Error("Node with IP ", ip, " is deleted or is running, ignore")
-			continue
-		}
 		n.Deleted = true
 		n.UpdatedTime = time.Now()
-		_, err = o.Update(n)
+		_, err = o.Update(n, "deleted", "updated_time")
 		if err != nil {
-			beego.Error("Error when update nodestate %v with err:", ip, err)
+			beego.Error("Error when update nodestate ", ip, " with err:", ip, err)
 			return err
 		}
-		//nodes = append(nodes, n)
 	}
-	//o := orm.NewOrm()
-	//_, err := o.QueryTable(&models.NodeState{}).Filter("deleted", false).Filter("ip__in", ips).Update(orm.Params{
-	//	"deleted": true,
-	//})
-	//
-	//if err != nil {
-	//	beego.Error("Error when update nodestate %v with err:", ips, err)
-	//}
+
 	return nil
 }
 
@@ -144,10 +146,3 @@ func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids [
 
 	return int(num), nil
 }
-
-/*
-func (f *FlowService) GetLog(correlationId string) (string, error) {
-
-
-}
-*/

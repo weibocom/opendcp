@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/astaxie/beego"
@@ -75,7 +74,6 @@ type flowImpl struct {
 	Name  string       `json:"name"`
 	Desc  string       `json:"desc"`
 	Steps []StepOption `json:"steps"`
-	//Options []StepOption		  `json:"options"`
 }
 
 func (f *FlowApi) URLMapping() {
@@ -91,7 +89,6 @@ func (f *FlowApi) URLMapping() {
 
 	f.Mapping("ListTaskStep", f.ListTaskStep)
 
-	//f.Mapping("AppendFlow", f.AppendFlow)
 	f.Mapping("StartFlow", f.StartFlow)
 	f.Mapping("RunFlow", f.RunFlow)
 	f.Mapping("StopFlow", f.StopFlow)
@@ -126,7 +123,6 @@ func (c *FlowApi) AppendFlowImpl() {
 		Name:  req.Name,
 		Steps: string(stepsByte),
 		Desc:  string(req.Desc),
-		//Options:string(optStr),
 	}
 
 	err = service.Flow.InsertBase(obj)
@@ -212,8 +208,6 @@ func (c *FlowApi) FlowImplUpdate() {
 	stepStr, _ := json.Marshal(req.Steps)
 
 	flowimpl.Steps = string(stepStr)
-	//paramsStr, _ := json.Marshal(req.Options)
-	//flowimpl.Options = string(paramsStr)
 
 	err = service.Remote.UpdateBase(flowimpl)
 
@@ -293,7 +287,7 @@ func (f *FlowApi) RunFlow() {
 
 	for _, n := range req.Nodes {
 		nodeIp, ok := n["ip"].(string)
-		if !ok {
+		if !ok || nodeIp == "-" || nodeIp == "" {
 			beego.Error("node :[", n, "] has not ip")
 			continue
 		}
@@ -305,7 +299,7 @@ func (f *FlowApi) RunFlow() {
 		}
 		node.Deleted = true
 		node.UpdatedTime = time.Now()
-		err = service.Flow.UpdateBase(node)
+		err = service.Flow.DeleteNodeById(node)
 		if err != nil {
 			beego.Error("node :[", node.Ip, "] update db err:", err)
 			continue
@@ -331,84 +325,6 @@ func (f *FlowApi) RunFlow() {
 		f.ReturnSuccess(nil)
 	}
 }
-
-/*
- * Create a new task instance
- */
-/*
-func (f *FlowApi) AppendFlow() {
-	req := struct {
-		TaskImplId int               `json:"task_def_id"`
-		Ratio      float32           `json:"ratio"`
-		MaxNum     int               `json:"max_num"`
-		RemoteUser string            `json:"opr_user"`
-		Nodes      []string          `json:"nodes"`
-		Params     map[string]string `json:"params"`
-	}{}
-
-	err := f.Body2Json(&req)
-	if err != nil {
-		f.ReturnFailed(err.Error(), 400)
-		return
-	}
-
-	//ratio check
-	if req.Ratio <= 0 || req.Ratio > 1 {
-		f.ReturnFailed("ratio error", 400)
-		return
-	}
-
-	//flowImpl check
-	flowImpl := &FlowImpl{Id: req.TaskImplId}
-	err = service.Flow.GetBase(flowImpl)
-	if err != nil {
-		f.ReturnFailed("flowimpl not found", 404)
-		return
-	}
-
-	//nodes check
-	if len(req.Nodes) == 0 {
-		f.ReturnFailed("nodes is empty", 400)
-		return
-	}
-	for _, nodeIp := range req.Nodes {
-		_, err = service.Flow.GetNodeByIp(nodeIp)
-		if err != nil {
-			f.ReturnFailed("node not found", 404)
-			return
-		}
-	}
-
-	//计算步长
-	stepLen := int(float32(len(req.Nodes)) * req.Ratio)
-	if stepLen > req.MaxNum {
-		stepLen = req.MaxNum
-	}
-
-	//步长check
-	if stepLen <= 0 {
-		f.ReturnFailed("stepLen is empty", 400)
-		return
-	}
-
-	//Flow落地
-	paramsByte, _ := json.Marshal(req.Params)
-
-	flow := &Flow{
-		Options:      string(paramsByte),
-		CreatedTime: time.Now(),
-		Impl:        flowImpl,
-		StepLen:     stepLen,
-	}
-	err = service.Flow.InsertBase(flow)
-	if err != nil {
-		f.ReturnFailed(err.Error(), 400)
-		return
-	}
-
-	f.ReturnSuccess(flow.Id)
-}
-*/
 
 func (f *FlowApi) StartFlow() {
 	_id := f.Ctx.Input.Param(":id")
@@ -621,15 +537,10 @@ var handlers = make(map[string]*handler.Handler)
 func getLog(nodeState *NodeState) ([]map[string]string, error) {
 	logs := make([]map[string]string, 0)
 
-	// load flow definition
-	ss := strings.Split(nodeState.CorrId, "-")
-	flowId, err := strconv.Atoi(ss[0])
-	if err != nil {
-		return logs, err
-	}
+	flowId := nodeState.Flow.Id
 
 	flow := &Flow{Id: flowId}
-	err = service.Flow.GetBase(flow)
+	err := service.Flow.GetBase(flow)
 	if err != nil {
 		return logs, err
 	}
