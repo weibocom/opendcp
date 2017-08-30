@@ -82,8 +82,8 @@ func (store *LogsService) saveToDb(Fid int, v ...interface{}) {
 	}
 
 	logs := models.NewLogsInit(Fid, msg)
-	orm := orm.NewOrm()
-	id, err := orm.Insert(logs)
+	o := orm.NewOrm()
+	id, err := o.Insert(logs)
 
 	if err != nil {
 		beego.Error("[Store] LogMessage fail!", err)

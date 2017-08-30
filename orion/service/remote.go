@@ -30,20 +30,8 @@ type RemoteStepService struct {
 	BaseService
 }
 
-/*
-type RemoteActionService struct {
-	BaseService
-}
-
-type RemoteActionImplService struct {
-	BaseService
-}
-*/
-
 var (
 	remoteStepService = &RemoteStepService{}
-	//remoteActionService = &RemoteActionService{}
-	//remoteActionImplService = &RemoteActionImplService{}
 )
 
 /**
