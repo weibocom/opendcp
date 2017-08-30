@@ -59,7 +59,6 @@ const (
 	StateFailed
 )
 
-
 // Describes a tag.
 type Tag struct {
 
@@ -271,12 +270,12 @@ type StateReason struct {
 }
 
 type InstanceItem struct {
-	Id         int       `json:"id" orm:"pk;auto"`
-	TaskId     string    `json:"task_id"`
-	Cluster    *Cluster   `orm:"rel(fk);on_delte(do_nothing)"`
-	Ip         string    `json:"ip""`
-	InstanceId string    `json:"instance_id"`
-	CreateTime time.Time `orm:"type(datetime)"`
-	Status	   TaskState
-	Result     string `orm:"type(text);null"`
+	Id            int    `orm:"pk;auto"`
+	TaskId        string `json:"task_id"`
+	CorrelationId string
+	Cluster       *Cluster `orm:"rel(fk);on_delte(do_nothing)"`
+	InstanceId    string
+	CreateTime    time.Time `orm:"type(datetime)"`
+	Status        TaskState
+	ErrLog        string `orm:"type(text);null"`
 }

@@ -218,13 +218,13 @@ func (clusterController *ClusterController) ExpandInstances() {
 		clusterController.RespJsonWithStatus()
 		return
 	}
-	instanceIds, err := cluster.Expand(theCluster, expandNumber, correlationId)
-	if len(instanceIds) == 0 {
+	taskInfo, err := cluster.Expand(theCluster, expandNumber, correlationId)
+	if err != nil {
 		beego.Error("expand instances failed:", err)
 		clusterController.RespServiceError(err)
 		return
 	}
-	resp.Content = instanceIds
+	resp.Content = taskInfo
 	resp.Ext = clusterId
 	clusterController.ApiResponse = resp
 	clusterController.Status = SERVICE_SUCCESS

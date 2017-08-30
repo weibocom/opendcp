@@ -52,7 +52,6 @@ func (sf *StartFuture) Run() error {
 	if err != nil {
 		return err
 	}
-	logstore.Info(sf.CorrelationId, sf.InstanceId, "----- Begin start instance in future -----")
 	logstore.Info(sf.CorrelationId, sf.InstanceId, "(1). wait for instances to start")
 	for j := 0; j < INTERVAL; j++ {
 		logstore.Info(sf.CorrelationId, sf.InstanceId, "wait for instance", sf.InstanceId, "to stop:", j)

@@ -74,17 +74,14 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 
 			taskItem, err := dao.GetItemById(task.Id)
 			if err != nil {
-				beego.Debug("Task ", task.Id, "failed, err:",err)
+				beego.Error("Get task ", task.TaskId, "failed,id:",task.Id,", err:",err)
 				continue
 			}
 
 			tasks[index].Status = taskItem.Status
-			tasks[index].Ip = taskItem.Ip
-			tasks[index].InstanceId = taskItem.InstanceId
-			tasks[index].Result = taskItem.Result
 
 			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
-				beego.Debug("task", task.Id, "finished, status =", taskItem.Status)
+				beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
 				continue
 			}
 

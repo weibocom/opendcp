@@ -69,9 +69,8 @@ func DeleteOldItems(before time.Time) error {
 
 func GetItemsByStatus(status int) ([]models.InstanceItem, error) {
 	o := GetOrmer()
-
 	var items []models.InstanceItem
-	_, err := o.QueryTable(INSTANCE_ITEM_TABLE).Filter("status", status).OrderBy("-id").All(&items)
+	_, err := o.QueryTable(INSTANCE_ITEM_TABLE).RelatedSel().Filter("status", status).OrderBy("-id").All(&items)
 	if err != nil {
 		return nil, err
 	}
