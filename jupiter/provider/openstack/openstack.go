@@ -17,6 +17,8 @@ import (
 	"github.com/rackspace/gophercloud/openstack/networking/v2/networks"
 	"weibo.com/opendcp/jupiter/conf"
 	"strconv"
+	"github.com/rackspace/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
+	"github.com/rackspace/gophercloud/openstack/blockstorage/v1/volumetypes"
 )
 
 
@@ -35,8 +37,9 @@ func init(){
 var instanceTypesInOpenStack = map[string]string{}
 var VcpuInOpenStack = map[string]string{}
 var RamInOpenStack = map[string]string{}
+var DiskInOpenStack = map[string]string{}
 var networksInOpenStack = map[string]string{}
-var networksList []string
+
 
 //列出所有server
 
@@ -95,12 +98,14 @@ func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 			instanceTypesInOpenStack[flavor.ID] = flavor.Name
 			RamInOpenStack[flavor.ID] = strconv.Itoa(flavor.RAM)
 			VcpuInOpenStack[flavor.ID] = strconv.Itoa(flavor.VCPUs)
+			DiskInOpenStack[flavor.ID] = strconv.Itoa(flavor.Disk)
 		}
 		return true, err
 	})
 	return instanceTypesList, err
 }
 
+//返回的格式为"instanceType#cpu#ram"
 func (driver openstackProvider) GetInstanceType(key string) string{
 	instanceType := instanceTypesInOpenStack[key]
 	ram := RamInOpenStack[key]
@@ -189,11 +194,90 @@ func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (stri
 
 }
 
-
+//创建实例，如果有存储节点，则将卷作为启动盘启动实例，否则从nova启动实例
 func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
+
+	pager := volumetypes.List(driver.client)
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
+		return true, nil
+	})
+	if err != nil{
+		return driver.CreateInstanceFromVolumes(cluster, number)
+	}
+
+	return driver.CreateInstanceFromImages(cluster, number)
+}
+
+//通过卷作为启动盘创建实例
+func (driver openstackProvider) CreateInstanceFromVolumes(cluster *models.Cluster, number int) ([]string, []error) {
 
 	createdInstances := make(chan string, number)
 	createdError := make(chan error, number)
+
+	for i := 0; i < number; i++ {
+		go func(i int) {
+
+			//获取Flavor的硬盘大小，并将其作为卷大小
+			diskSize, _:= strconv.Atoi( DiskInOpenStack[cluster.FlavorId])
+			bd := []bootfromvolume.BlockDevice{
+				bootfromvolume.BlockDevice{
+					BootIndex:           0,
+					DeleteOnTermination: true,
+					DestinationType:     "volume",
+					UUID:                cluster.ImageId,
+					SourceType:          bootfromvolume.Image,
+					VolumeSize:          diskSize,
+				},
+			}
+
+			serverCreateOpts := servers.CreateOpts{
+				Name: cluster.Name,
+				FlavorRef:        cluster.FlavorId,
+				AvailabilityZone: "nova",
+				Networks:         []servers.Network{{UUID: cluster.Network.VpcId}},
+			}
+			server, err := bootfromvolume.Create(driver.client, bootfromvolume.CreateOptsExt{
+				serverCreateOpts,
+				bd,
+			}).Extract()
+
+			if err != nil {
+				for i := 0; i < 3; i++ {
+					server, err := bootfromvolume.Create(driver.client, bootfromvolume.CreateOptsExt{
+						serverCreateOpts,
+						bd,
+					}).Extract()
+					if err == nil {
+						createdInstances <- server.ID
+						return
+					}
+				}
+				createdError <- err
+				return
+			}
+			createdInstances <- server.ID
+		}(i)
+	}
+	instanceIds := make([]string, 0)
+	errs := make([]error, 0)
+	for i := 0; i < number; i++ {
+		select {
+		case instanceId := <-createdInstances:
+			instanceIds = append(instanceIds, instanceId)
+		case err := <-createdError:
+			errs = append(errs, err)
+		}
+	}
+	return instanceIds, errs
+
+}
+
+//通过卷创建实例
+func (driver openstackProvider) CreateInstanceFromImages(cluster *models.Cluster, number int) ([]string, []error){
+
+	createdInstances := make(chan string, number)
+	createdError := make(chan error, number)
+
 	for i := 0; i < number; i++ {
 		go func(i int) {
 			result, err := servers.Create(driver.client, servers.CreateOpts{
@@ -233,10 +317,8 @@ func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]s
 			errs = append(errs, err)
 		}
 	}
-
 	return instanceIds, errs
 }
-
 
 
 func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance, error) {
