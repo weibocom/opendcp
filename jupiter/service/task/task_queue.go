@@ -83,7 +83,7 @@ func (iq *InstanceQueue) run() {
 	iq.setTaskState(tasks, models.StateRunning)
 
 	startTime := time.Now().Format("2006-01-02 15:04:05")
-	msg := fmt.Sprintf("--- Begin %d instance tasks at %s, %d left ---" ,len(tasks), startTime,len(initTask) - len(tasks))
+	msg := fmt.Sprintf("--- Begin %d instance tasks at %s, %d left ---", len(tasks), startTime, len(initTask)-len(tasks))
 	beego.Info(msg)
 	iq.createInstances(tasks)
 }
@@ -210,6 +210,6 @@ func createCloudInstance(cluster *models.Cluster, correlationId string) (*models
 
 func InitInstanceTask() {
 	go func() {
-			instanceTask.Start()
+		instanceTask.Start()
 	}()
 }

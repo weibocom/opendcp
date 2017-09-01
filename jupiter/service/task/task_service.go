@@ -1,14 +1,14 @@
 package task
 
 import (
+	"github.com/astaxie/beego"
 	"time"
 	"weibo.com/opendcp/jupiter/dao"
 	"weibo.com/opendcp/jupiter/models"
-	"github.com/astaxie/beego"
 )
 
 const (
-	WAIT_AGAIN_TIMES = 33    //AWS创建机器时间比较长，此处设置较大的值
+	WAIT_AGAIN_TIMES = 33 //AWS创建机器时间比较长，此处设置较大的值
 	TIME_INTERVAL    = 6
 )
 
@@ -65,7 +65,7 @@ func (its *InstanceTaskService) GetTasks(status models.TaskState) ([]models.Inst
 
 func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) error {
 	num := len(tasks)
-	for i := 0; i < num + WAIT_AGAIN_TIMES; i++ {    //等待所有instance获取到instanceId
+	for i := 0; i < num+WAIT_AGAIN_TIMES; i++ { //等待所有instance获取到instanceId
 		allDone := true
 		beego.Debug("Wait task complete, times:", i+1)
 		for index, task := range tasks {
@@ -75,7 +75,7 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 
 			taskItem, err := dao.GetItemById(task.Id)
 			if err != nil {
-				beego.Error("Get task ", task.TaskId, "failed,id:",task.Id,", err:",err)
+				beego.Error("Get task ", task.TaskId, "failed,id:", task.Id, ", err:", err)
 				continue
 			}
 
