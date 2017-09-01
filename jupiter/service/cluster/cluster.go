@@ -176,9 +176,9 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 		return nil, err
 	}
 
-	go UpdateInstanceDetail()
-
 	its.WaitTasksComplete(tasks)
+
+	go UpdateInstanceDetail()
 
 	instanceIds := make([]string, num)
 	for index, task := range tasks {
