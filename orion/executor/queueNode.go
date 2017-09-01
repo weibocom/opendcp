@@ -34,7 +34,6 @@ type ToRunNodeState struct {
 	flow           *models.Flow
 	steps          []*models.ActionImpl
 	stepOptions    []*models.StepOption
-	successNodeNum int
 	nodeState      *models.NodeState
 }
 
@@ -63,8 +62,8 @@ func (q *QueueNode) safeRun(runNode ToRunNodeState) {
 	}()
 
 	beego.Info("Start running nodeState on flow [", runNode.flow.Id, "]")
-	err := Executor.RunNodeState(runNode.flow, runNode.nodeState,
-		runNode.successNodeNum, runNode.steps, runNode.stepOptions, runNode.resultChannel)
+	err := Executor.RunNodeState(runNode.flow, runNode.nodeState, runNode.steps,
+		runNode.stepOptions, runNode.resultChannel)
 	if err == nil {
 		beego.Info("Finish running nodeState on flow [", runNode.flow.Id, "]")
 	} else {
