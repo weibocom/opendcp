@@ -191,7 +191,7 @@ func (exec *FlowExecutor) Start(flow *models.Flow) error {
 	job := func() error {
 		logService.Info(flow.Id, "Run flow...")
 
-		_, _, err := exec.RunFlow(flow, orign_flow_status)
+		err := exec.RunFlow(flow, orign_flow_status)
 		if err != nil {
 			logService.Error(flow.Id, "Run flow error：", err)
 			return err
@@ -302,7 +302,7 @@ func (exec *FlowExecutor) isRunning(flow *models.Flow) bool {
 }
 
 // run the task by batches.
-func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) (int, int, error) {
+func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) error{
 
 	logService.Info(flow.Id, fmt.Sprintf("Start running flow[%s,%d]", flow.Name, flow.Id))
 	var (
@@ -314,7 +314,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) (int
 	if !exec.isRunning(flow) {
 		logService.Info(flow.Id, fmt.Sprintf("Flow %s %d state =%d not in running state, ignore", flow.Name, flow.Id, flow.Status))
 
-		return oknum, failednum, nil
+		return nil
 	}
 
 	// load node states
@@ -395,7 +395,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) (int
 	}
 	exec.SetFlowStatusWithSpenTime(flow, maxNodeStatesCostTime, resultFlowStatus)
 
-	return oknum, failednum, nil
+	return  nil
 }
 
 // Run a batch of task.
