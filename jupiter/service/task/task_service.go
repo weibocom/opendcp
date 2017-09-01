@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	waitTimes    = 10
-	timeInterVal = 5
+	WAIT_AGAIN_TIMES = 33    //AWS创建机器时间比较长，此处设置较大的值
+	TIME_INTERVAL    = 6
 )
 
 type InstanceTaskService struct {
@@ -64,9 +64,10 @@ func (its *InstanceTaskService) GetTasks(status models.TaskState) ([]models.Inst
 }
 
 func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) error {
-	for i := 0; i < waitTimes; i++ {
+	num := len(tasks)
+	for i := 0; i < num + WAIT_AGAIN_TIMES; i++ {    //等待所有instance获取到instanceId
 		allDone := true
-		beego.Warn(">>>>>>>>>>>>>>>>>>Wait task times:", i+1)
+		beego.Debug("Wait task complete, times:", i+1)
 		for index, task := range tasks {
 			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
 				continue
@@ -79,6 +80,7 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 			}
 
 			tasks[index].Status = taskItem.Status
+			tasks[index].InstanceId = taskItem.InstanceId
 
 			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
 				beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
@@ -89,9 +91,10 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 		}
 
 		if allDone {
+			beego.Debug("Tasks have completed")
 			break
 		} else {
-			time.Sleep(timeInterVal * time.Second)
+			time.Sleep(TIME_INTERVAL * time.Second)
 		}
 	}
 

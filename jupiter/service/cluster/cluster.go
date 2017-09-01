@@ -155,7 +155,7 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	return instanceIds, nil
 }*/
 
-func Expand(cluster *models.Cluster, num int, correlationId string) (string, error) {
+func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
 	tasks := make([]models.InstanceItem, num)
 	taskId := fmt.Sprintf("TASKS-[%s]-[%d]", time.Now().Format("15:04:05"), len(tasks))
 	beego.Info("First. Begin to create instance task, task id:", taskId)
@@ -173,14 +173,18 @@ func Expand(cluster *models.Cluster, num int, correlationId string) (string, err
 	err := its.CreateTasks(tasks)
 	if err != nil {
 		beego.Error("Create instance tasks err:", err)
-		return "", err
+		return nil, err
 	}
 
 	go UpdateInstanceDetail()
-	task.InitInstanceTask()    //开启任务队列
 
-	taskInfo := taskId + "create successfully"
-	return taskInfo, nil
+	its.WaitTasksComplete(tasks)
+
+	instanceIds := make([]string, num)
+	for index, task := range tasks {
+		instanceIds[index] = task.InstanceId
+	}
+	return instanceIds, nil
 }
 
 func ListClusters() ([]models.Cluster, error) {

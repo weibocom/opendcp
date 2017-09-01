@@ -13,11 +13,12 @@ func InsertItem(item models.InstanceItem) error {
 
 func InsertItems(items []models.InstanceItem) error {
 	o := GetOrmer()
-	err := o.Begin()
+	/*err := o.Begin()
 	if err != nil {
 		return err
-	}
+	}*/
 
+	var err error
 	for index, task := range items {
 		_, err = o.Insert(&task)
 		if err != nil {
@@ -26,31 +27,31 @@ func InsertItems(items []models.InstanceItem) error {
 		items[index].Id = task.Id
 	}
 
-	if err != nil {
+	/*if err != nil {
 		o.Rollback()
 		return err
 	} else {
 		o.Commit()
-	}
-	return nil
+	}*/
+	return err
 }
 
 func UpdateItem(item models.InstanceItem) error {
 	o := GetOrmer()
-	err := o.Begin()
+	/*err := o.Begin()
 	if err != nil {
 		return err
-	}
+	}*/
 
-	_, err = o.Update(&item)
+	_, err := o.Update(&item)
 
-	if err != nil {
+	/*if err != nil {
 		o.Rollback()
 		return err
 	} else {
 		o.Commit()
-	}
-	return nil
+	}*/
+	return err
 
 }
 

@@ -69,8 +69,7 @@ func (iq *InstanceQueue) run() {
 	}
 
 	if len(initTask) == 0 {
-		beego.Info("There're no new tasks to run,now exit!")
-		iq.Stop()
+		beego.Info("There're no new tasks to run!")
 		return
 	}
 
@@ -82,6 +81,10 @@ func (iq *InstanceQueue) run() {
 	}
 
 	iq.setTaskState(tasks, models.StateRunning)
+
+	startTime := time.Now().Format("2006-01-02 15:04:05")
+	msg := fmt.Sprintf("--- Begin %d instance tasks at %s, %d left ---" ,len(tasks), startTime,len(initTask) - len(tasks))
+	beego.Info(msg)
 	iq.createInstances(tasks)
 }
 
@@ -93,8 +96,6 @@ func (iq *InstanceQueue) setTaskState(tasks []models.InstanceItem, state models.
 }
 
 func (iq *InstanceQueue) createInstances(tasks []models.InstanceItem) {
-	exeTime := time.Now().Format("2006-01-02 15:04:05")
-	beego.Info("--- Begin to execute ", len(tasks), "instance tasks at ", exeTime, "---")
 	num := len(tasks)
 	success := make(chan *models.InstanceItem, num)
 	failed := make(chan *models.InstanceItem, num)
@@ -153,11 +154,11 @@ func (iq *InstanceQueue) createOneInstance(task models.InstanceItem) (*models.In
 		}
 	}()
 
-	cluster := task.Cluster
-	ins, err := createCloudInstance(cluster, task.CorrelationId)
+	ins, err := createCloudInstance(task.Cluster, task.CorrelationId)
 	if err != nil {
 		return nil, err
 	}
+
 	return ins, err
 }
 
@@ -209,9 +210,6 @@ func createCloudInstance(cluster *models.Cluster, correlationId string) (*models
 
 func InitInstanceTask() {
 	go func() {
-		tasks, _ := taskService.GetTasks(models.StateReady)  //数据库里没有创建实例的信息则不启动任务队列
-		if len(tasks) != 0 {
 			instanceTask.Start()
-		}
 	}()
 }
