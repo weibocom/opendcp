@@ -240,148 +240,170 @@ $arrJson=($myJson)?json_decode($myJson,true):array();
 $logFlag = true;
 $logDesc = '';
 $arrRecodeLog=array(
-  't_time' => date('Y-m-d H:i:s'),
-  't_user' => $myUser,
-  't_module' => '任务调度',
-  't_action' => '',
-  't_desc' => 'Resource:' . $_SERVER['REMOTE_ADDR'] . '.',
-  't_code' => '传入：' . $myJson . "\n\n",
+    't_time' => date('Y-m-d H:i:s'),
+    't_user' => $myUser,
+    't_module' => '任务调度',
+    't_action' => '',
+    't_desc' => 'Resource:' . $_SERVER['REMOTE_ADDR'] . '.',
+    't_code' => '传入：' . $myJson . "\n\n",
 );
 //返回
 $retArr = array(
-  'code' => 1,
-  'action' => $myAction,
+    'code' => 1,
+    'action' => $myAction,
 );
 if($hasLimit){
-  $retArr['msg'] = 'Param Error!';
-  switch($myAction){
-    case 'list':
-      $logFlag = false;//本操作不记录日志
-      $arrJson = array(
-        'page' => $myPage,
-        'page_size' => $myPageSize,
-        'name' => $fIdx,
-      );
-      $retArr = $mySelf->getList($myUser, $arrJson);
-      $retArr['page'] = $myPage;
-      $retArr['pageSize'] = $myPageSize;
-      if(!isset($retArr['pageCount']) || $retArr['page'] > $retArr['pageCount']) $retArr['page'] = 1;
-    break;
-    case 'info':
-      $logFlag = false;//本操作不记录日志
-      $retArr = $mySelf->getInfo($myUser,$fIdx);
-      break;
-    case 'result':
-      $logFlag = false;//本操作不记录日志
-      $retArr = $mySelf->getResult($myUser,$fIdx);
-      break;
-    case 'nodes':
-      $logFlag = false;//本操作不记录日志
-      $retArr = $mySelf->getTaskNode($myUser,$fIdx);
-      break;
-    case 'insert':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '创建';
-      if(isset($arrJson) && !empty($arrJson)){
-        if(isset($arrJson['id'])) unset($arrJson['id']);
-        if(isset($arrJson['cluster'])) unset($arrJson['cluster']);
-        if(isset($arrJson['service'])) unset($arrJson['service']);
-        if(isset($arrJson['pool'])) unset($arrJson['pool']);
-        if(isset($arrJson['check_all'])) unset($arrJson['check_all']);
-        if(isset($arrJson['list'])) unset($arrJson['list']);
-        if(isset($arrJson['template_id'])) $arrJson['template_id']=(int)$arrJson['template_id'];
-        if(isset($arrJson['timeout'])) $arrJson['timeout']=(int)$arrJson['timeout'];
-        if(isset($arrJson['auto'])) $arrJson['auto']=(int)$arrJson['auto'];
-        if(isset($arrJson['max_num'])) $arrJson['max_num']=(int)$arrJson['max_num'];
-        if(isset($arrJson['max_ratio'])) $arrJson['max_ratio']=(int)$arrJson['max_ratio'];
-        $tArr=preg_split("/[\s,;]+/",$arrJson['ip']);
-        foreach($tArr as $ip){
-          $arrJson['nodes'][]=array('ip'=>$ip);
-        }
-        if(isset($arrJson['ip'])) unset($arrJson['ip']);
-        $arrJson['opr_user']=$myUser;
-        $retArr = $mySelf->update($myUser,'create', $arrJson);
-        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-      }
-      break;
-    case 'start':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '启动';
-      if(isset($arrJson) && !empty($arrJson)){
-        if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
-        $retArr = $mySelf->update($myUser, 'start', $arrJson, $arrJson['id']);
-        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-      }
-    break;
-    case 'pause':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '暂停';
-      if(isset($arrJson) && !empty($arrJson)){
-        if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
-        $retArr = $mySelf->update($myUser, 'pause', $arrJson, $arrJson['id']);
-        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-      }
-      break;
-    case 'finish':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '暂停';
-      if(isset($arrJson) && !empty($arrJson)){
-        if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
-        $retArr = $mySelf->update($myUser, 'stop', $arrJson, $arrJson['id']);
-        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-      }
-      break;
-    case 'stop_sub':
-      if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-      $arrRecodeLog['t_action'] = '停止子任务';
-      if(isset($arrJson) && !empty($arrJson)){
-        if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
-        $retArr=$mySelf->update($myUser, 'stop_sub', $arrJson, $arrJson['id']);
-        $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-      }
-      break;
-    case 'expandList':
-          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-          $arrRecodeLog['t_action'] = '扩容';
-          if(isset($arrJson) && !empty($arrJson)){
-              if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
-              $retArr=$mySelf->getExpandOrUploadList($myUser, 'expandList', $arrJson, $arrJson['pool_id']);
-              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-          }
-       break;
-    case 'uploadList':
-          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-          $arrRecodeLog['t_action'] = '上线';
-          if(isset($arrJson) && !empty($arrJson)){
-              if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
-              $retArr=$mySelf->getExpandOrUploadList($myUser, 'uploadList', $arrJson, $arrJson['pool_id']);
-              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-          }
-       break;
-    case 'saveTask':
-          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-          $arrRecodeLog['t_action'] = '保存任务';
-          if(isset($arrJson) && !empty($arrJson)){
-              if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
-              $retArr=$mySelf->update($myUser, 'saveTask', $arrJson, '');
-              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
-          }
-          break;
-    case 'tasklog':
-      $logFlag = false;//本操作不记录日志
-      $retArr = $mySelf->getTaskLog($myUser,$fIdx);
-  }
+    $retArr['msg'] = 'Param Error!';
+    switch($myAction){
+        case 'list':
+            $logFlag = false;//本操作不记录日志
+            $arrJson = array(
+                'page' => $myPage,
+                'page_size' => $myPageSize,
+                'name' => $fIdx,
+            );
+            $retArr = $mySelf->getList($myUser, $arrJson);
+            $retArr['page'] = $myPage;
+            $retArr['pageSize'] = $myPageSize;
+            if(!isset($retArr['pageCount']) || $retArr['page'] > $retArr['pageCount']) $retArr['page'] = 1;
+            break;
+        case 'info':
+            $logFlag = false;//本操作不记录日志
+            $retArr = $mySelf->getInfo($myUser,$fIdx);
+            break;
+        case 'result':
+            $logFlag = false;//本操作不记录日志
+            $retArr = $mySelf->getResult($myUser,$fIdx);
+            break;
+        case 'nodes':
+            $logFlag = false;//本操作不记录日志
+            $retArr = $mySelf->getTaskNode($myUser,$fIdx);
+            break;
+        case 'insert':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '创建';
+            if(isset($arrJson) && !empty($arrJson)){
+                if(isset($arrJson['id'])) unset($arrJson['id']);
+                if(isset($arrJson['cluster'])) unset($arrJson['cluster']);
+                if(isset($arrJson['service'])) unset($arrJson['service']);
+                if(isset($arrJson['pool'])) unset($arrJson['pool']);
+                if(isset($arrJson['check_all'])) unset($arrJson['check_all']);
+                if(isset($arrJson['list'])) unset($arrJson['list']);
+                if(isset($arrJson['template_id'])) $arrJson['template_id']=(int)$arrJson['template_id'];
+                if(isset($arrJson['timeout'])) $arrJson['timeout']=(int)$arrJson['timeout'];
+                if(isset($arrJson['auto'])) $arrJson['auto']=(int)$arrJson['auto'];
+                if(isset($arrJson['max_num'])) $arrJson['max_num']=(int)$arrJson['max_num'];
+                if(isset($arrJson['max_ratio'])) $arrJson['max_ratio']=(int)$arrJson['max_ratio'];
+                $tArr=preg_split("/[\s,;]+/",$arrJson['ip']);
+                foreach($tArr as $ip){
+                    $arrJson['nodes'][]=array('ip'=>$ip);
+                }
+                if(isset($arrJson['ip'])) unset($arrJson['ip']);
+                $arrJson['opr_user']=$myUser;
+                $retArr = $mySelf->update($myUser,'create', $arrJson);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'finish':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '启动';
+            if(isset($arrJson) && !empty($arrJson)){
+                $tmpNodeIds = $arrJson["node_ids"];
+                foreach ($tmpNodeIds  as $k => $v)
+                    $tmpNodeIds[$k] = (int)($v);
+
+                $arrJson["node_ids"] = $tmpNodeIds;
+                if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
+                $retArr = $mySelf->update($myUser, 'stop', $arrJson, $arrJson['id']);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'start':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '启动';
+            if(isset($arrJson) && !empty($arrJson)){
+                $tmpNodeIds = $arrJson["node_ids"];
+                foreach ($tmpNodeIds  as $k => $v)
+                    $tmpNodeIds[$k] = (int)($v);
+                if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
+                $arrJson["node_ids"] = $tmpNodeIds;
+                $retArr = $mySelf->update($myUser, 'start', $arrJson, $arrJson['id']);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'pause':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '暂停';
+            if(isset($arrJson) && !empty($arrJson)){
+                $tmpNodeIds = $arrJson["nodes_ids"];
+                foreach ($tmpNodeIds  as $k => $v)
+                    $tmpNodeIds[$k] = (int)($v);
+
+                $arrJson["node_ids"] = $tmpNodeIds;
+                if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
+                $retArr = $mySelf->update($myUser, 'pause', $arrJson, $arrJson['id']);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+//        case 'finish':
+//            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+//            $arrRecodeLog['t_action'] = '完成';
+//            if(isset($arrJson) && !empty($arrJson)){
+//                $retArr = $mySelf->update($myUser, 'stop', $arrJson);
+//                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+//            }
+//            break;
+        case 'stop_sub':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '停止子任务';
+            if(isset($arrJson) && !empty($arrJson)){
+                if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
+                $retArr=$mySelf->update($myUser, 'stop_sub', $arrJson, $arrJson['id']);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'expandList':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '扩容';
+            if(isset($arrJson) && !empty($arrJson)){
+                if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
+                $retArr=$mySelf->getExpandOrUploadList($myUser, 'expandList', $arrJson, $arrJson['pool_id']);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'uploadList':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '上线';
+            if(isset($arrJson) && !empty($arrJson)){
+                if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
+                $retArr=$mySelf->getExpandOrUploadList($myUser, 'uploadList', $arrJson, $arrJson['pool_id']);
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'saveTask':
+            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+            $arrRecodeLog['t_action'] = '保存任务';
+            if(isset($arrJson) && !empty($arrJson)){
+                if(isset($arrJson['pool_id'])) $arrJson['pool_id']=(int)$arrJson['pool_id'];
+                $retArr=$mySelf->update($myUser, 'saveTask', $arrJson, '');
+                $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+            }
+            break;
+        case 'tasklog':
+            $logFlag = false;//本操作不记录日志
+            $retArr = $mySelf->getTaskLog($myUser,$fIdx);
+    }
 }else{
-  $retArr['msg'] = 'Permission Denied!';
+    $retArr['msg'] = 'Permission Denied!';
 }
 //记录日志
 if($logFlag){
-  $arrRecodeLog['t_desc'] = $logDesc.', '.$arrRecodeLog['t_desc'];
-  $arrRecodeLog['t_code'] .= '外部接口传入：' . json_encode($arrJson,JSON_UNESCAPED_UNICODE) . "\n\n";
-  $arrRecodeLog['t_code'] .= '外部接口返回：' . str_replace(array("\n", "\r"), '', $retArr['ret']) . "\n\n";
-  $arrRecodeLog['t_code'] .= '返回：' . json_encode($retArr,JSON_UNESCAPED_UNICODE);
-  if(empty($arrRecodeLog['t_action'])) $arrRecodeLog['t_action'] = $myAction;
-  logRecord($arrRecodeLog);
+    $arrRecodeLog['t_desc'] = $logDesc.', '.$arrRecodeLog['t_desc'];
+    $arrRecodeLog['t_code'] .= '外部接口传入：' . json_encode($arrJson,JSON_UNESCAPED_UNICODE) . "\n\n";
+    $arrRecodeLog['t_code'] .= '外部接口返回：' . str_replace(array("\n", "\r"), '', $retArr['ret']) . "\n\n";
+    $arrRecodeLog['t_code'] .= '返回：' . json_encode($retArr,JSON_UNESCAPED_UNICODE);
+    if(empty($arrRecodeLog['t_action'])) $arrRecodeLog['t_action'] = $myAction;
+    logRecord($arrRecodeLog);
 }
 //返回结果
 if(isset($retArr['action']) && !empty($retArr['action'])) $retArr['action'] = $myAction;
