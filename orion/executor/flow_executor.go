@@ -191,7 +191,7 @@ func (exec *FlowExecutor) Start(flow *models.Flow) error {
 	job := func() error {
 		logService.Info(flow.Id, "Run flow...")
 
-		_, _, err := exec.RunFlow(flow, orign_flow_status)
+		err := exec.RunFlow(flow, orign_flow_status)
 		if err != nil {
 			logService.Error(flow.Id, "Run flow error：", err)
 			return err
@@ -302,7 +302,7 @@ func (exec *FlowExecutor) isRunning(flow *models.Flow) bool {
 }
 
 // run the task by batches.
-func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) (int, int, error) {
+func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) error{
 
 	logService.Info(flow.Id, fmt.Sprintf("Start running flow[%s,%d]", flow.Name, flow.Id))
 	var (
@@ -314,7 +314,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) (int
 	if !exec.isRunning(flow) {
 		logService.Info(flow.Id, fmt.Sprintf("Flow %s %d state =%d not in running state, ignore", flow.Name, flow.Id, flow.Status))
 
-		return oknum, failednum, nil
+		return nil
 	}
 
 	// load node states
@@ -395,7 +395,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, orign_flow_status int) (int
 	}
 	exec.SetFlowStatusWithSpenTime(flow, maxNodeStatesCostTime, resultFlowStatus)
 
-	return oknum, failednum, nil
+	return  nil
 }
 
 // Run a batch of task.
@@ -437,10 +437,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 	for i := startStepIndex; i < len(steps); i++ {
 		step := steps[i]
 		//read db to judge flow is stopped
-		ns, _ := flowService.GetNodeById(fid)
-		if ns.Status == models.STATUS_STOPPED || ns.Status == models.STATUS_SUCCESS {
-			logService.Warn(fid, "the step: "+step.Name+"begin stop!")
-			err := exec.UpdateNodeStatus(step.Name, i, stepRunTimeArray, nodeState, ns.Status)
+		flow, _ := flowService.GetFlowWithRel(fid)
+		if flow.Status == models.STATUS_STOPPED || flow.Status == models.STATUS_SUCCESS {
+			logService.Warn(fid, "the step: "+step.Name+" begin stop!")
+			err := exec.UpdateNodeStatus(step.Name, i, stepRunTimeArray, nodeState, flow.Status)
 			if err != nil {
 				logService.Error(fid, fmt.Sprintf("update node state db error: %s", err.Error()))
 			}
@@ -838,7 +838,4 @@ func (exec *FlowExecutor) MergeParams(options []*models.StepOption,
 	}
 }
 
-//func (exec *FlowExecutor) getCorrelationId(fid int) string {
-//	return utils.GetCorrelationId(fid, 0)
-//}
 

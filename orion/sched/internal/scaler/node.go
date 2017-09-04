@@ -1,34 +1,27 @@
 package scaler
 
 import (
-
-	"weibo.com/opendcp/orion/models"
-
 	"github.com/astaxie/beego/orm"
+	"weibo.com/opendcp/orion/models"
 )
-
-// blame: who designed the table ?
-//type Node struct {
-//	n models.NodeState
-//}
 
 func onlineNodesList(pid int) (int, []*models.NodeState, []*models.NodeState, []*models.NodeState, []*models.NodeState, []*models.NodeState, error) {
 	var (
 		init    = make([]*models.NodeState, 0)
-		ok 	= make([]*models.NodeState, 0)
-		failed 	= make([]*models.NodeState, 0)
+		ok      = make([]*models.NodeState, 0)
+		failed  = make([]*models.NodeState, 0)
 		running = make([]*models.NodeState, 0)
 		stopped = make([]*models.NodeState, 0)
-		online 	= make([]*models.NodeState, 0)
-		o      	= orm.NewOrm()
+		online  = make([]*models.NodeState, 0)
+		o       = orm.NewOrm()
 	)
 
-	count, err := o.QueryTable(&models.NodeState{}).Filter("deleted",false).
+	count, err := o.QueryTable(&models.NodeState{}).Filter("deleted", false).
 		Filter("Pool", pid).Filter("NodeType", models.Crontab).
-		All(&online);
+		All(&online)
 
-	if err != nil && err == orm.ErrNoRows{
-		return count, init, ok, failed, running, stopped, nil
+	if err != nil && err == orm.ErrNoRows {
+		return int(count), init, ok, failed, running, stopped, nil
 	}
 
 	//get status of nodeStates
@@ -47,5 +40,5 @@ func onlineNodesList(pid int) (int, []*models.NodeState, []*models.NodeState, []
 		}
 	}
 
-	return count, init, ok, failed, running, stopped, err
+	return int(count), init, ok, failed, running, stopped, err
 }

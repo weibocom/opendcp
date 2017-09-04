@@ -18,16 +18,17 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/davecgh/go-spew/spew"
-	gosync "github.com/lrita/gosync"
+	theGosync "github.com/lrita/gosync"
+	"errors"
 )
 
 var (
-	gmutex = gosync.NewMutexGroup()
-	pmutex = gosync.NewMutexGroup()
+	gmutex = theGosync.NewMutexGroup()
+	pmutex = theGosync.NewMutexGroup()
 )
 
 func init() {
-	gosync.PanicOnBug = false
+	theGosync.PanicOnBug = false
 }
 
 type configs interface {
@@ -59,9 +60,15 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 	}
 
 	should := cfg.CronItems[idx].InstanceNum
-	count,_, _, _, _, _, err := onlineNodesList(cfg.Pool.Id)
+
+	expand, picked, err := initScalePool(should, cfg.Pool)
+
+	if len(picked) == 0{
+		beego.Info(fmt.Sprintf("task(%d) pool(%d) onlinde nodes is okay!", cfg.Id, cfg.Pool.Id))
+		return
+	}
 	if err != nil {
-		beego.Error(fmt.Sprintf("get online pool(%d) nodes failed: %v", cfg.Pool.Id, err))
+		beego.Error(err.Error())
 		return
 	}
 
@@ -74,23 +81,19 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 	}
 
 	//run node channel
-	dependc := make(chan *dependNotice, should)
-	expand := false
+	dependc := make(chan *dependNotice, len(picked))
 
-	if should-count>= 0 {
-		expand = true
-	}
+	scaleDependPool(ctx, cfg, len(picked), dependc)
+
+	wg.Add(1)
 
 	ctx = context.WithValue(ctx, "expand", expand)
 	ctx = context.WithValue(ctx, "isdep", false)
-
-	scaleDependPool(ctx, cfg, expand, should, dependc)
-
-	wg.Add(1)
-	go scalePool(ctx, cfg.Pool, expand, false, should, dependc)
+	ctx = context.WithValue(ctx, "noticeStep", "")
+	go scalePool(ctx, cfg.Pool, expand, picked, dependc)
 }
 
-func scaleDependPool(ctx context.Context, cfg *models.ExecTask, expand bool, should int, dependc chan *dependNotice) {
+func scaleDependPool(ctx context.Context, cfg *models.ExecTask, should int, dependc chan *dependNotice) {
 	var (
 		wg    = ctx.Value("wg").(*sync.WaitGroup)
 		ctrls = make(map[int]*dependCtrl)
@@ -102,73 +105,62 @@ func scaleDependPool(ctx context.Context, cfg *models.ExecTask, expand bool, sho
 		}
 		// TODO ElasticCount
 		num := int(math.Ceil(float64(should) * dep.Ratio))
-		depc := make(chan *dependNotice, num)
+
+		dependExpand, dependNodes, err := initScalePool(num, dep.Pool)
+		if err != nil {
+			beego.Error(fmt.Sprintf("pool(%d) get expand and nodes err: %v", dep.Pool.Id, err.Error()))
+			continue
+		}
+		if len(dependNodes) == 0{
+			beego.Error(fmt.Sprintf("pool(%d) get none nodes to run", dep.Pool.Id))
+			continue
+		}
+
+		depc := make(chan *dependNotice, len(dependNodes))
+
 		ctrls[dep.Pool.Id] = &dependCtrl{
 			base:    should,
-			num:     num,
+			num:     len(dependNodes),
 			elastic: dep.ElasticCount,
 			ratio:   dep.Ratio,
 			dependc: depc,
 		}
 		wg.Add(1)
+		ctx = context.WithValue(ctx, "expand", dependExpand)
 		ctx = context.WithValue(ctx, "isdep", true)
-		go scalePool(ctx, dep.Pool, expand, true, num, depc)
+		ctx = context.WithValue(ctx, "noticeStep", dep.StepName)
+		go scalePool(ctx, dep.Pool, dependExpand, dependNodes, depc)
 	}
 
 	wg.Add(1)
-	go dependNoticeGoroutine(ctx, expand, should, dependc, ctrls)
+	go dependNoticeGoroutine(ctx, should, dependc, ctrls)
 }
 
-// why so long ?
-func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, should int, dependc chan *dependNotice) {
+func initScalePool(should int, pool *models.Pool) (bool, []*models.NodeState, error) {
 	var (
-		operation                            string
-		picked 				     []*models.NodeState
-		actions                              []*models.ActionImpl
-		steps                                []*models.StepOption
-		flow                                 *models.FlowImpl
-		ff                                   *models.Flow
-		wg                                   = ctx.Value("wg").(*sync.WaitGroup)
+		expand = false
+		picked = make([]*models.NodeState, 0)
 	)
-
-	pmutex.Lock(pool.Id)
-	defer wg.Done()
-	defer pmutex.UnLockAndFree(pool.Id)
-
 	onlineCount, init, ok, failed, running, stopped, err := onlineNodesList(pool.Id)
 	if err != nil {
-		beego.Error(fmt.Sprintf("get online pool(%d) nodes failed: %v", pool.Id, err))
-		return
+		return expand, picked, fmt.Errorf(fmt.Sprintf("get shit online pool(%d) nodes failed: %v", pool.Id, err))
 	}
-
-	defer func() {
-		if err != nil {
-			beego.Error(fmt.Sprintf("scalePool pool(%d) exit on error: %v", err, pool.Id))
-			if expand == isdep {
-				dependc <- &dependNotice{pid: pool.Id, num: len(ok)}
-			}
-		}
-	}()
-
 	beego.Info(fmt.Sprintf("pool(%d) should(%d) online(%d) ok(%d) failed(%d) stopped(%d) running(%d)",
 		pool.Id, should, onlineCount, len(ok), len(failed), len(stopped), len(running)))
 
 	num := should - onlineCount
-	if num >= 0 isdep{
-		noticeDepentSuccess(ok,dependc)
-		noticeDepentSuccess(running,dependc)
+
+	if num >= 0 {
+		expand = true
 	}
+
 	// pick up which nodes should to expand/shrink
 	switch {
-	case num == 0 && expand:
+	case num == 0:
 		for _, nn := range [][]*models.NodeState{init, failed, stopped} {
 			picked = append(picked, nn...)
 		}
-		if len(picked) == 0 {
-			beego.Info(fmt.Sprintf("pool(%d) has enough nodes online", pool.Id))
-			return
-		}
-	case num > 0 && expand:
+	case num > 0:
 		for _, nn := range [][]*models.NodeState{init, failed, stopped} {
 			picked = append(picked, nn...)
 		}
@@ -177,30 +169,44 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 			nn[i] = new(models.NodeState)
 		}
 		picked = append(picked, nn...)
-	case num < 0 && !expand:
+	case num < 0:
 		num = -num
 		for _, nn := range [][]*models.NodeState{init, failed, stopped, running, ok} {
 			if n := num - len(picked); n > 0 {
 				picked = append(picked, nn[:min(n, len(nn))]...)
 			}
 		}
-		if isdep && should > len(picked) {
-			for i := 0; i < should - len(picked); i++ {
-				dependc <- &dependNotice{num: 1}
-			}
-		}
 	default:
-		beego.Error(fmt.Sprintf("pool(%d) has a bug!!! should(%d) online(%d) expand(%v)",
+		return expand, picked, fmt.Errorf(fmt.Sprintf("pool(%d) has a fuck bug!!! should(%d) online(%d) expand(%v)",
 			pool.Id, should, onlineCount, expand))
-		return
 	}
+
+	return expand, picked, nil
+}
+
+// why so long ?
+func scalePool(ctx context.Context, pool *models.Pool, expand bool, picked []*models.NodeState, dependc chan *dependNotice) {
+	var (
+		operation  string
+		nodeStates []*models.NodeState
+		actions    []*models.ActionImpl
+		steps      []*models.StepOption
+		flow       *models.FlowImpl
+		ff         *models.Flow
+		wg         = ctx.Value("wg").(*sync.WaitGroup)
+	)
+
+	pmutex.Lock(pool.Id)
+	defer wg.Done()
+	defer pmutex.UnLockAndFree(pool.Id)
 
 	tname := models.TaskExpend
 	if !expand {
 		tname = models.TaskShrink
 	}
 
-	flow, steps, err = flowAndSteps(pool, tname)
+	flow, steps, err := flowAndSteps(pool, tname)
+
 	if err != nil {
 		beego.Error(fmt.Sprintf("pool(%d) get flow and steps failed %v", pool.Id, err))
 		return
@@ -235,9 +241,8 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 		operation = models.TaskShrink
 	}
 
-	ff, err = executor.Executor.CreateFlowInstance(pool.Name+"_"+tname, flow, pool,
-		models.Crontab, steps, &executor.ExecOption{MaxNum: num}, models.Crontab)
-	if err != nil {
+	if ff, err = executor.Executor.CreateFlowInstance(pool.Name+"_"+tname, flow, pool,
+		models.Crontab, steps, &executor.ExecOption{MaxNum: len(picked)}, models.Crontab); err != nil {
 		beego.Error(fmt.Sprintf("create the fucking real flow failed: %v", err))
 		return
 	}
@@ -247,25 +252,27 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 
 	defer func() {
 		if err != nil {
-			if _, e := orm.NewOrm().Delete(ff); e != nil {
-				lg.Errorf("pool(%d) delete real flow failed %v", pool.Id, e)
+			if e := executor.Executor.SetFlowStatus(ff, models.STATUS_FAILED); e != nil {
+				lg.Errorf("pool(%d) set real flow status failed err: %v", pool.Id, e)
 			}
+			lg.Errorf(err.Error())
 		}
 	}()
 
-	nodeStates, resultErr := createNodeState(pool, ff, picked, operation)
-	if resultErr != nil {
-		err = resultErr
-		lg.Errorf(err)
+	beego.Error("---------------------------------------------")
+	beego.Error("--picked-----", len(picked))
+
+	if nodeStates, err = createNodeState(pool, ff, picked, operation); err != nil {
 		return
 	}
 
 	if actions, err = actionImpls(steps); err != nil {
-		lg.Errorf(err)
 		return
 	}
 
-	executor.Executor.SetFlowStatus(ff, models.STATUS_RUNNING)
+	if err = executor.Executor.SetFlowStatus(ff, models.STATUS_RUNNING); err != nil {
+		return
+	}
 	// cancel point
 	select {
 	case <-ctx.Done():
@@ -275,7 +282,11 @@ func scalePool(ctx context.Context, pool *models.Pool, expand, isdep bool, shoul
 	default:
 	}
 
-	oknum, failednum, stopped:= doEachStep(ctx, ff, nodeStates, steps, actions, expand, isdep, dependc)
+	beego.Error("---------------------------------------------")
+	beego.Error("---nodeStates---", len(nodeStates))
+	//beego.Error("dddddddddddddddddddddddddddd", nodeStates[0].Flow.Id)
+
+	oknum, failednum, _ := doEachStep(ctx, ff, nodeStates, steps, actions, dependc)
 
 	lg.Infof("pool(%d) flow(%d) finished ok(%d) failed(%d) status(%d)",
 		pool.Id, ff.Id, oknum, failednum, ff.Status)
@@ -313,11 +324,6 @@ func flowAndSteps(pool *models.Pool, taskname string) (*models.FlowImpl, []*mode
 	return flow, steps, nil
 }
 
-func noticeDepentSuccess(nodes []*models.NodeState, dependc chan *dependNotice){
-	for i := 0; i < len(nodes); i++{
-		dependc <- &dependNotice{num: 1}
-	}
-}
 func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeState, operation string) (ns []*models.NodeState, err error) {
 	o := orm.NewOrm()
 
@@ -325,7 +331,7 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeSta
 
 	if err = o.Begin(); err != nil {
 		err = fmt.Errorf("tx begin failed: %v", err)
-		return
+		return ns, err
 	}
 
 	defer func() {
@@ -337,20 +343,25 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeSta
 	}()
 
 	//delete old nodes
+	deleteNodes := make([]*models.NodeState, 0)
 	for _, n := range nodes {
 		//if nodeStatus is not running
-		if n.Id != 0 && n.Status != models.STATUS_RUNNING{
-			service.Flow.DeleteNodeById(n)
-			ns = append(ns, n)
-		}else if n.Id == 0{
-			ns = append(ns, n)
+		if n.Id != 0 && n.Status != models.STATUS_RUNNING {
+			if err := service.Flow.DeleteNodeById(n); err != nil {
+				err = fmt.Errorf("delete node %d failed %v", n.Id, err)
+				beego.Error(err)
+			} else {
+				deleteNodes = append(deleteNodes, n)
+			}
+		} else if n.Id == 0 {
+			deleteNodes = append(deleteNodes, n)
 		}
 	}
 	//insert nodes
-	for _, n := range ns {
+	for _, n := range deleteNodes {
 		state := &models.NodeState{
-			Ip:          n.Ip,
-			VmId:        n.VmId,
+			Ip:          "-",
+			VmId:        "",
 			Flow:        ff,
 			Pool:        pool,
 			Status:      models.STATUS_INIT,
@@ -365,6 +376,10 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeSta
 			Deleted:     false,
 			NodeType:    models.Crontab,
 		}
+		if n.Id != 0 {
+			state.Ip = n.Ip
+			state.VmId = n.VmId
+		}
 		if n.LastOp != operation {
 			// Reset step num if current operation is different from last operation.
 			// If current operation is equal the last operation, we run this task as
@@ -377,18 +392,20 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeSta
 
 		if _, err := o.Insert(state); err != nil {
 			err = fmt.Errorf("node insert %d failed %v", n.Id, err)
-			return
+			return ns, err
 		}
 		ns = append(ns, state)
 	}
 	err = o.Commit()
-	return
+	return ns, err
 }
 
 func min(a, b int) int {
+
 	if a > b {
 		return b
 	}
+
 	return a
 }
 
@@ -404,24 +421,54 @@ func actionImpls(steps []*models.StepOption) ([]*models.ActionImpl, error) {
 	return actions, nil
 }
 
-func doEachStep(ctx context.Context, flow *models.Flow, nodes []*models.NodeState, steps []*models.StepOption,
-		actions []*models.ActionImpl, expand, isdep bool, dependc chan *dependNotice) (oknum, failednum, stoppednum int) {
-	lg := ctx.Value("lg").(*logger)
-	resultChannel := make(chan *models.NodeState, len(nodes))
+func runNodeToChannel(ctx context.Context, flow *models.Flow, actions []*models.ActionImpl,
+	steps []*models.StepOption, runNodes []*models.NodeState,
+	resultChannel chan *models.NodeState, dependc chan *dependNotice) error {
 
-	for _, ns := range nodes {
-		toRunNodes := make([]*models.NodeState, 0)
-		toRunNodes = append(toRunNodes, ns)
-		go doNodeEachStep(ctx, flow, toRunNodes, actions, steps, resultChannel, dependc)
+	var (
+		runSleep = time.Microsecond // sleep 1us to run next
+	)
+	//put nodes to channel
+	runNodeChannel := make(chan *models.NodeState, len(runNodes))
+	defer close(runNodeChannel)
+
+	for _, n := range runNodes {
+		runNodeChannel <- n
+		beego.Info("runNode channel add runNnode")
+	}
+	//run nodes from channel
+	for i := 0; i < len(runNodes); i++ {
+		ns, ok := <-runNodeChannel
+		if !ok {
+			return errors.New("runNodeChannel was closed!")
+		}
+		go doNodeEachStep(ctx, flow, ns, actions, steps, resultChannel, dependc)
+		time.Sleep(runSleep) // sleep 1us to run next
+	}
+	return nil
+}
+func doEachStep(ctx context.Context, flow *models.Flow, nodes []*models.NodeState, steps []*models.StepOption,
+	actions []*models.ActionImpl, dependc chan *dependNotice) (oknum, failednum, stoppednum int) {
+
+	var (
+		lg                    = ctx.Value("lg").(*logger)
+		timeout               = time.After(15 * time.Minute)
+		resultFlowStatus      = models.STATUS_FAILED
+		resultChannel         = make(chan *models.NodeState, len(nodes))
+		maxNodeStatesCostTime = 0.0
+	)
+
+	defer close(resultChannel)
+
+	if err := runNodeToChannel(ctx, flow, actions, steps, nodes, resultChannel, dependc); err != nil {
+		lg.Errorf("run node to channel err: ", err.Error())
+		return oknum, failednum, stoppednum
 	}
 
-	resultFlowStatus := models.STATUS_FAILED
-	maxNodeStatesCostTime := 0.0
 	for i := 0; i < len(nodes); i++ {
 		select {
 		case nodeStatesResult := <-resultChannel:
 			if nodeStatesResult.Status == models.STATUS_SUCCESS {
-				resultFlowStatus = models.STATUS_SUCCESS
 				oknum++
 			} else if nodeStatesResult.Status == models.STATUS_FAILED {
 				failednum++
@@ -431,117 +478,112 @@ func doEachStep(ctx context.Context, flow *models.Flow, nodes []*models.NodeStat
 			if nodeStatesResult.RunTime > maxNodeStatesCostTime {
 				maxNodeStatesCostTime = nodeStatesResult.RunTime
 			}
-			if isdep && expand{
-
-			}
-		case <-time.After(time.Minute*15):
+		case <-timeout:
 			failednum++
-			lg.Errorf(flow.Id, "RunAndCheck node timeout!")
+			lg.Errorf("RunAndCheck run node timeout!")
 		}
 	}
-	close(resultChannel)
 	//if all nodeNodestate failed then the flow is failed
-	if failednum == len(nodes) && oknum == 0 {
+	if oknum != 0 {
+		resultFlowStatus = models.STATUS_SUCCESS
+	} else if failednum == len(nodes) {
 		resultFlowStatus = models.STATUS_FAILED
-	}
-	if stoppednum == len(nodes) && oknum == 0{
+	} else if stoppednum == len(nodes) {
 		resultFlowStatus = models.STATUS_STOPPED
 	}
 	executor.Executor.SetFlowStatusWithSpenTime(flow, maxNodeStatesCostTime, resultFlowStatus)
-}
 
+	return oknum, failednum, stoppednum
+}
 
 func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.NodeState,
 	steps []*models.ActionImpl, stepOptions []*models.StepOption,
 	resultChannel chan *models.NodeState, dependc chan *dependNotice) {
 
 	var (
-		stopped bool
-		depidx  = -1
-		expand  = ctx.Value("expand").(bool)
-		isdep   = ctx.Value("isdep").(bool)
-		lg      = ctx.Value("lg").(*logger)
+		stopped    = false
+		depidx     = -1
+		expand     = ctx.Value("expand").(bool)
+		isdep      = ctx.Value("isdep").(bool)
+		noticeStep = ctx.Value("noticeStep")
+		lg         = ctx.Value("lg").(*logger)
+		runSuccess = true
+		hasNotice  = false
 	)
+
+	defer func() {
+		resultChannel <- nodeState // Send nodeState to channel
+		//send notice
+		if isdep && !hasNotice {
+			dependc <- &dependNotice{num: 0}
+			hasNotice = true
+		}
+	}()
 
 	if expand && !isdep {
 		depidx = len(steps) - 1
-	} else if !expand && isdep {
+	} else if !expand && !isdep {
 		depidx = 0
+	} else if !expand && isdep {
+		noticeStep = helper.RETURN_VM
+		depidx = -1
+	} else if expand && isdep {
+		depidx = -1
 	}
 
 	lg.Infof("depend action index is %d", depidx)
 
-	//nodeRunnedTime := nodeState.RunTime
-	startStepIndex := nodeState.StepNum
-
-	var stepRunTimeArray []*models.StepRunTime
-	err := json.Unmarshal([]byte(nodeState.StepRunTime), &stepRunTimeArray)
+	stepRunTimeArray, startStepIndex, err := generateRunTimeStep(nodeState, steps)
 	if err != nil {
 		lg.Errorf("Fail to load StepRunTime:", nodeState.StepRunTime, ", err:", err)
 	}
-	//generate nodes runTime steps
-	if len(stepRunTimeArray) == 0 {
-		for _, step := range steps {
-			stepRunTimeElement := &models.StepRunTime{
-				Name:    step.Name,
-				RunTime: 0.0,
+
+	if isdep {
+		for initStart := 0; initStart < startStepIndex; initStart++ {
+			if steps[initStart].Name == noticeStep && !hasNotice {
+				dependc <- &dependNotice{num: 1}
+				hasNotice = true
+				return
 			}
-			stepRunTimeArray = append(stepRunTimeArray, stepRunTimeElement)
 		}
-	} else {
-		stepRunTimeArray[startStepIndex].RunTime = 0.0
 	}
 	//update nodesState to running
 	executor.Executor.UpdateNodeStatus(steps[startStepIndex].Name, startStepIndex, stepRunTimeArray, nodeState, models.STATUS_INIT)
-
-
-	success := true
 	i := startStepIndex
-	step := steps[startStepIndex]
-	for i = startStepIndex; i < len(steps); i++ {
+	step := steps[0]
+	for ; i < len(steps); i++ {
 		step = steps[i]
 		lg.Infof("run step %s(%d)", step.Name, i)
-		flow, _ := service.Flow.GetFlowWithRel(flow.Id)
-		if flow.Status == models.STATUS_STOPPED {
-			stopped = true
-		}
-		// cancel point
-		select {
-		case <-ctx.Done():
-			stopped = true
-		default:
-		}
-		if stopped {
+
+		if stopped = checFlowAndNodeStop(ctx, flow, nodeState); stopped {
 			lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
 			nodeState.Status = models.STATUS_STOPPED
-			success = false
+			runSuccess = false
 			break
 		}
 		if i == depidx {
 			if !isdep {
 				should := waitDependNotice(ctx, dependc, lg)
-				if should == 0{
+				if should == 0 {
 					lg.Errorf("depend node is error!")
 					nodeState.Status = models.STATUS_FAILED
-					success = false
+					runSuccess = false
+					break
+				}
+				// check flow status again
+				if stopped = checFlowAndNodeStop(ctx, flow, nodeState); stopped {
+					lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
+					nodeState.Status = models.STATUS_STOPPED
+					runSuccess = false
 					break
 				}
 			}
 		}
-		// check flow status again
-		flow, _ = service.Flow.GetFlowWithRel(flow.Id)
-		if flow.Status == models.STATUS_STOPPED {
-			lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
-			nodeState.Status = models.STATUS_STOPPED
-			success = false
-			break
-		}
-
 		theHandler := handler.GetHandler(step.Type)
 		if theHandler == nil {
 			lg.Errorf(fmt.Sprintf("Handler not found for type %s", step.Type))
 			nodeState.Status = models.STATUS_FAILED
-			success = false
+			runSuccess = false
 			break
 		}
 		// get param values
@@ -556,6 +598,16 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 			}
 		}
 
+		if nodeState.Ip != "-" && step.Name == "create_vm" {
+			lg.Infof(fmt.Sprintf("node %d already create_vm no neeed to run: %s skip", nodeState.Id, step.Name))
+			nodeState.Status = models.STATUS_RUNNING
+			//send notice
+			if isdep && step.Name == noticeStep && runSuccess && !hasNotice {
+				dependc <- &dependNotice{num: 1}
+				hasNotice = true
+			}
+			continue
+		}
 		needRunStepNodeState := make([]*models.NodeState, 0)
 		needRunStepNodeState = append(needRunStepNodeState, nodeState)
 
@@ -564,33 +616,27 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		if len(okNodes) == 0 {
 			lg.Warnf(fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
 			nodeState.Status = models.STATUS_FAILED
-			success = false
+			runSuccess = false
 			break
 
 		} else {
 			lg.Infof(fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 			nodeState.Status = models.STATUS_RUNNING
 		}
+		//send notice
+		if isdep && step.Name == noticeStep && runSuccess && !hasNotice {
+			dependc <- &dependNotice{num: 1}
+			hasNotice = true
+		}
 	}
 
-	if success {
+	if runSuccess {
 		nodeState.Status = models.STATUS_SUCCESS
 		lg.Infof(fmt.Sprintf("node %d run success all steps", nodeState.Id))
 	}
-	err = executor.Executor.UpdateNodeStatus(step.Name, i, stepRunTimeArray, nodeState, nodeState.Status)
-	if err != nil {
+	if err := executor.Executor.UpdateNodeStatus(step.Name, i, stepRunTimeArray, nodeState, nodeState.Status); err != nil {
 		lg.Errorf(fmt.Sprintf("update node state db error: %s", err.Error()))
 	}
-	//put nodeState to chan
-	resultChannel <- nodeState // Send nodeState to channel
-
-	if isdep && success{
-		dependc <- &dependNotice{num: 1}
-	}else if isdep && !success{
-		dependc <- &dependNotice{num: 0}
-	}
-
-	return
 }
 
 func waitDependNotice(ctx context.Context, dependc chan *dependNotice, lg *logger) int {
@@ -605,6 +651,54 @@ func waitDependNotice(ctx context.Context, dependc chan *dependNotice, lg *logge
 	case <-ctx.Done():
 		lg.Warnf("wait depend canceled")
 	}
+
 	return 0
 }
 
+//generate nodes runTime steps
+func generateRunTimeStep(nodeState *models.NodeState, steps []*models.ActionImpl) ([]*models.StepRunTime, int, error) {
+	var (
+		stepRunTimeArray = make([]*models.StepRunTime, 0)
+		startIndex       = 0
+	)
+
+	if err := json.Unmarshal([]byte(nodeState.StepRunTime), &stepRunTimeArray); err != nil {
+		return stepRunTimeArray, startIndex, err
+	}
+	//generate nodes runTime steps
+	for _, step := range steps {
+		stepRunTimeElement := &models.StepRunTime{
+			Name:    step.Name,
+			RunTime: 0.0,
+		}
+		stepRunTimeArray = append(stepRunTimeArray, stepRunTimeElement)
+
+	}
+
+	if steps[0].Name == helper.CREATE_VM && nodeState.Ip != "-" {
+		startIndex = 1
+	}
+
+	return stepRunTimeArray, startIndex, nil
+}
+
+func checFlowAndNodeStop(ctx context.Context, flow *models.Flow, node *models.NodeState) bool {
+	var stopped = false
+	freshFlow, _ := service.Flow.GetFlowWithRel(flow.Id)
+	if freshFlow.Status == models.STATUS_STOPPED {
+		stopped = true
+	} else {
+		freshNode, _ := service.Flow.GetNodeById(node.Id)
+		if freshNode.Status == models.STATUS_STOPPED {
+			stopped = true
+		}
+	}
+	// cancel point
+	select {
+	case <-ctx.Done():
+		stopped = true
+	default:
+	}
+
+	return stopped
+}

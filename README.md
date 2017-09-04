@@ -43,7 +43,7 @@ OpenDCP是一个基于Docker的云资源管理与调度平台，集镜像仓库�
 -   Wang Guansheng
 
 
-##交流
+## 交流
 [![Gitter](https://badges.gitter.im/weibocom/opendcp.svg)](https://gitter.im/weibocom/opendcp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)  
 
 opendcp交流qq群：369485460  
