@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `status` int(11) NOT NULL DEFAULT '0',
   `public_key` longtext,
   `private_key` longtext,
+  `label` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

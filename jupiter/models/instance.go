@@ -34,6 +34,7 @@ const (
 	Deleted                           //资源已删除
 	Deleting                          //正在删除
 	StatusError                       //错误状态
+	AddToPoolSuccess                  //录入服务池成功
 )
 
 // State represents the state of a host
@@ -137,6 +138,7 @@ type Instance struct {
 	TenantID string `mapstructure:"tenant_id"`
 	UserID   string `mapstructure:"user_id"`
 	Name     string
+	Label    string `json:"label"`
 }
 
 type SshKey struct {
