@@ -94,7 +94,30 @@ class myself{
     $ret['ret'] = $strList;
     return $ret;
   }
-
+  function getAllLabels($myUser = '', $action = '', $param = array()){
+        global $thisClass;
+        $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
+        if($action){
+            if($strList = $thisClass->get($myUser, $this->module.'/'.$id, $action, $param)){
+                $arrList = json_decode($strList,true);
+                if(isset($arrList['code']) && $arrList['code'] == 0){
+                    $ret = array(
+                        'code' => 0,
+                        'msg' => 'success',
+                        'content' => array(),
+                    );
+                    $ret['content']=$arrList['data'];
+                }else{
+                    $ret['code'] = 1;
+                    $arrList = json_decode($strList,true);
+                    $ret['msg'] = (isset($arrList['msg']))?$arrList['msg']:$strList;
+                    $ret['remote'] = $strList;
+                }
+            }
+            $ret['ret'] = $strList;
+        }
+        return $ret;
+    }
   function update($myUser = '', $action = '', $param = array(), $id = ''){
     global $thisClass;
     $ret = array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
@@ -224,6 +247,16 @@ if($hasLimit){
         }
       }
       break;
+      case 'labelList':
+          if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
+          $arrRecodeLog['t_action'] = '获取标签列表';
+          if(isset($arrJson) && !empty($arrJson)){
+              $poolId=$arrJson['id'];
+              if(isset($arrJson['id'])) unset($arrJson['id']);
+              $retArr=$mySelf->getAllLabels($myUser, 'listLabels', $arrJson);
+              $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
+          }
+          break;
   }
 }else{
   $retArr['msg'] = 'Permission Denied!';

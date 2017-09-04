@@ -31,6 +31,7 @@ import (
 	"time"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
+
 )
 
 type ClusterApi struct {
@@ -78,6 +79,13 @@ type delnodes_struct struct {
 	nodes []string `json:"nodes"`
 }
 
+type AppendPhyDevContent struct {
+	Success int      `json:"success"`
+	Failed  int      `json:"failed"`
+	SuccessList  []string `json:"successes"`
+	ErrorList  []string `json:"errors"`
+	ErrorMsg   []string `json:"error_msg"`
+}
 func (c *ClusterApi) URLMapping() {
 	c.Mapping("ClusterInfo", c.ClusterInfo)
 	c.Mapping("ClusterList", c.ClusterList)
@@ -102,6 +110,8 @@ func (c *ClusterApi) URLMapping() {
 	c.Mapping("NodeRegister", c.NodeRegister)
 	c.Mapping("NodeAppend", c.NodeAppend)
 	c.Mapping("NodeDelete", c.NodeDelete)
+	c.Mapping("GetLabels", c.GetLabels)
+	c.Mapping("PhyDevAppend", c.PhyDevAppend)
 
 	c.Mapping("search_by_ip", c.SearchPoolByIP)
 }
@@ -654,6 +664,78 @@ func (c *ClusterApi) NodeRegister() {
 	c.ReturnSuccess(ips)
 }
 
+func (c *ClusterApi) PhyDevAppend() {
+	_id := c.Ctx.Input.Param(":id")
+	id, _ := strconv.Atoi(_id)
+	req := struct {
+		Ips []string `json:"nodes"`
+		Labels string `json:"label"`
+	}{}
+
+	err := c.Body2Json(&req)
+	if err != nil {
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	//check ip repeat and empty
+	for _, ip := range req.Ips {
+		ip = strings.TrimSpace(ip)
+		if ip == "" {
+			c.ReturnFailed("ip is empty", 400)
+			return
+		}
+
+	}
+
+	//Pool check
+	pool := &models.Pool{
+		Id: id,
+	}
+
+	err = service.Cluster.GetBase(pool)
+	if err != nil {
+		c.ReturnFailed("pool_id is not vaild", 404)
+		return
+	}
+	successCount := 0
+	failedCount := 0
+	errList := make([]string, 0)
+	successList := make([]string, 0)
+	errMsg := make([]string, 0)
+	for _, ip := range req.Ips {
+		count, err1 := service.Cluster.GetCountWithFilter(&models.NodeState{}, "ip", ip, "deleted", false)
+		if err1 != nil || count > 0 {
+			failedCount++
+			errMsg = append(errMsg,"is already in db")
+			errList = append(errList, ip)
+			continue
+		}
+		back := service.Cluster.AppendIp(ip, pool,req.Labels)
+		if(back == 0){
+			failedCount++
+			errList = append(errList,ip)
+			errMsg = append(errMsg, err.Error())
+		}else{
+			successCount++
+			successList = append(successList, ip)
+		}
+	}
+	resp := AppendPhyDevContent{
+		Success:   successCount,
+		Failed:    failedCount,
+		SuccessList:  successList,
+		ErrorList:    errList,
+		ErrorMsg:     errMsg,
+	}
+	if(failedCount == 0){
+		c.ReturnSuccess(resp)
+	}else{
+		c.ReturnFailedWithContent(resp,404)
+	}
+
+
+}
 func (c *ClusterApi) NodeAppend() {
 	_id := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(_id)
@@ -692,7 +774,7 @@ func (c *ClusterApi) NodeAppend() {
 		return
 	}
 
-	back := service.Cluster.AppendIpList(req.Ips, pool)
+	back := service.Cluster.AppendIpList(req.Ips, pool,"")
 
 	c.ReturnSuccess(back)
 }
@@ -731,6 +813,28 @@ func (c *ClusterApi) NodeDelete() {
 
 	c.ReturnSuccess(nil)
 }
+
+func (c *ClusterApi) GetLabels() {
+	beego.Debug("Begin enter GetLabels")
+
+	page := c.Query2Int("page", 1)
+	pageSize := c.Query2Int("page_size", 10)
+
+	c.CheckPage(&page, &pageSize)
+
+	labels,err:= service.Cluster.GetAllLabels()
+	if(err != nil){
+		c.ReturnFailed(err.Error(), 400)
+		return
+	}
+
+	count := len(labels)
+	c.ReturnPageContent(page, pageSize, count, labels)
+
+}
+
+
+
 
 func (c *ClusterApi) SearchPoolByIP() {
 	ipList := c.Ctx.Input.Param(":iplist")

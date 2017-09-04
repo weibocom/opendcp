@@ -6,13 +6,41 @@
 
 <div class="modal-body" style="overflow:auto;" id="myModalBody">
     <div class="form-group">
-        <div class="col-md-8 col-md-offset-2">
-            <label>输入列表</label>
+        <label class="col-sm-2 control-label">输入列表</label>
+        <div class="col-sm-10">
             <textarea class="form-control" id="instancelist" name="InstanceList" onkeyup="checkPhyDev()" rows="3"
                       placeholder="每行一个，按照 'PublicIP,PrivateIP,Password,Port(可选)' 格式输入"></textarea>
         </div>
 
     </div>
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">服务池</label>
+        <div class="col-sm-10">
+            <select class="form-control" id="pools" name="poolId">
+                <option value="">请选择</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="tpl_expand" class="col-sm-2 control-label js-example-tags" onchange="getLabel()">标签</label>
+        <div class="col-sm-10">
+            <div class="form-group">
+                <select class="form-control" id="sql_labels"  multiple="multiple">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                    <input type="button" class="btn btn-default" name="user_label" value="自定义标签" onclick="addLabels()">
+            </div>
+            <div class="form-group" hidden>
+                    <input type="text"  class="form-control" id="user_label" name="user_label" onclick="addLabels()" placeholder="支持写多个标签，每个标签用逗号隔离">
+            </div>
+        </div>
+    </div>
+
+
 
 
     <!--
@@ -59,3 +87,6 @@
             disabled>确认
     </button>
 </div>
+<script>
+    getPoolAndLabel();
+</script>

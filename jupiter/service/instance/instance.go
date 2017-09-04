@@ -35,6 +35,9 @@ import (
 	"weibo.com/opendcp/jupiter/response"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/ssh"
+
+	"weibo.com/opendcp/jupiter/handler"
+
 )
 
 const (
@@ -440,6 +443,94 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 		return status, err
 	}
 	return status, nil
+}
+
+
+ func IsSuccess(successList []string, poolID int, label string, correlationId string) error{
+	time.Sleep(3 * time.Minute)
+	if len(successList) > 0 {
+		for i := 0; i < 50; i++{
+			finalList := make([]string, 0)
+			finalInstanceId := make([]string, 0)
+			queryList := make([]string, 0)
+			instances, err := dao.GetInstancesByPublicIps(successList)
+			if(err != nil){
+				return err
+			}
+			for _, ins := range instances {
+				logstore.Info(correlationId, ins.InstanceId, "begin to query the status of phyDev")
+				if(ins.Status == models.Success){
+					finalList = append(finalList, ins.PublicIpAddress)
+					finalInstanceId = append(finalInstanceId, ins.InstanceId)
+				}
+			}
+
+			if len(finalList) > 0 {
+				flag := true
+				for _ , ip := range successList {
+					for _, final := range finalList{
+						if(ip == final){
+							flag = false
+							break
+						}
+					}
+					if(flag){
+						queryList = append(queryList , ip)
+					}
+
+				}
+				resp,err := handler.AddPhyDevToPool(finalList, poolID, label,correlationId,finalInstanceId)
+				if(err != nil){
+					if(resp.Code == 400){
+						for _, instanceId := range finalInstanceId{
+							logstore.Error(correlationId, instanceId, resp.Message)
+						}
+					}
+					if(resp.Code == 404){
+						if(resp.Content.Success > 0){
+							for _, ip := range resp.Content.SuccessList {
+								instance, err := dao.GetInstanceByPublicIp(ip)
+								if(err != nil){
+									return err
+								}
+								logstore.Info(correlationId, instance.InstanceId, "############### add pool successfully")
+								dao.UpdateInstanceStatus(instance.PublicIpAddress, models.AddToPoolSuccess)
+							}
+
+
+						}
+						if(resp.Content.Failed > 0){
+							for index, ip := range resp.Content.ErrorList {
+								instance, err := dao.GetInstanceByPublicIp(ip)
+								if(err != nil){
+									return err
+								}
+								logstore.Error(correlationId, instance.InstanceId, ip+" "+resp.Content.ErrorMsg[index])
+							}
+
+						}
+					}
+
+				}else{
+					for _, instanceId := range finalInstanceId{
+						logstore.Info(correlationId, instanceId, "############### add pool successfully")
+					}
+					for _, ip := range finalList{
+						dao.UpdateInstanceStatus(ip, models.AddToPoolSuccess)
+					}
+				}
+
+			}
+			successList = queryList
+			if(len(successList) == 0){
+				break
+			}
+			time.Sleep(20*time.Second)
+
+		}
+	}
+
+	return nil
 }
 
 func ManageDev(ip, password, instanceId, correlationId string, port int) (ssh.Output, error) {

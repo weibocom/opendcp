@@ -17,29 +17,29 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package cluster
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/astaxie/beego"
+	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
+	"unsafe"
 	"weibo.com/opendcp/jupiter/dao"
 	"weibo.com/opendcp/jupiter/future"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/bill"
-	"weibo.com/opendcp/jupiter/logstore"
-	"errors"
-	"github.com/astaxie/beego"
-	"strings"
-	"unsafe"
-	"reflect"
-	"encoding/json"
 	"weibo.com/opendcp/jupiter/service/instance"
+	"weibo.com/opendcp/jupiter/service/task"
 )
+
+var its task.InstanceTaskService
 
 func GetCluster(clusterId int64) (*models.Cluster, error) {
 	cluster, err := dao.GetClusterById(clusterId)
@@ -57,7 +57,7 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 	}
 
 	//在openstack中，Flavor的名称就是对应的类型，不需要再进行转换
-	if(cluster.Provider == "aliyun") {
+	if cluster.Provider == "aliyun" {
 		instanceTypeModel := cluster.InstanceType
 		validNumber := regexp.MustCompile("[0-9]")
 		cpuAndRam := validNumber.FindAllString(instanceTypeModel, -1)
@@ -66,13 +66,13 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 		ram, _ := strconv.Atoi(cpuAndRam[1])
 		cluster.Cpu = cpu
 		cluster.Ram = ram
-	}else if(cluster.Provider == "openstack"){
+	} else if cluster.Provider == "openstack" {
 		cluster.FlavorId = cluster.InstanceType
 		resp := providerDriver.GetInstanceType(cluster.InstanceType)
 		strs := strings.Split(resp, "#")
 		cluster.InstanceType = strs[0]
 		cluster.Cpu, _ = strconv.Atoi(strs[1])
-		ram , _ := strconv.Atoi(strs[2])
+		ram, _ := strconv.Atoi(strs[2])
 		cluster.Ram = ram / 1024
 	}
 	id, err := dao.InsertCluster(cluster)
@@ -82,13 +82,14 @@ func CreateCluster(cluster *models.Cluster) (int64, error) {
 
 func DeleteCluster(clusterId int64) (bool, error) {
 	instances, err := dao.ListInstancesByClusterId(clusterId)
-	if  len(instances) > 0 {
+	if len(instances) > 0 {
 		return false, errors.New("Can't delete this cluster, because still exsit instance by cluster model created.")
 	}
 	isDeleted, err := dao.DeleteCluster(clusterId)
 	return isDeleted, err
 }
 
+/*
 func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
 	providerDriver, err := provider.New(cluster.Provider)
 	if err != nil {
@@ -152,6 +153,38 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	}
 	go UpdateInstanceDetail()
 	return instanceIds, nil
+}*/
+
+func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, error) {
+	tasks := make([]models.InstanceItem, num)
+	taskId := fmt.Sprintf("TASKS-[%s]-[%d]", time.Now().Format("15:04:05"), len(tasks))
+	beego.Info("First. Begin to create instance task, task id:", taskId)
+
+	for i := 0; i < num; i++ {
+		task := models.InstanceItem{
+			TaskId:        taskId,
+			CorrelationId: correlationId,
+			Cluster:       cluster,
+			CreateTime:    time.Now(),
+		}
+		tasks[i] = task
+	}
+
+	err := its.CreateTasks(tasks)
+	if err != nil {
+		beego.Error("Create instance tasks err:", err)
+		return nil, err
+	}
+
+	its.WaitTasksComplete(tasks)
+
+	go UpdateInstanceDetail()
+
+	instanceIds := make([]string, num)
+	for index, task := range tasks {
+		instanceIds[index] = task.InstanceId
+	}
+	return instanceIds, nil
 }
 
 func ListClusters() ([]models.Cluster, error) {
@@ -161,7 +194,6 @@ func ListClusters() ([]models.Cluster, error) {
 	}
 	return clusters, nil
 }
-
 
 func UpdateInstanceDetail() error {
 	instanceInfo, err := GetLatestDetail()
@@ -175,15 +207,15 @@ func UpdateInstanceDetail() error {
 	}
 
 	detail := &models.Detail{
-		InstanceNumber:	string(instanceData),
-		RunningTime:	time.Now(),
+		InstanceNumber: string(instanceData),
+		RunningTime:    time.Now(),
 	}
 
 	err = dao.InsertDetail(detail)
 	return err
 }
 
-func GetRecentDetail(beginTime, endTime  time.Time) ([]models.Detail, error) {
+func GetRecentDetail(beginTime, endTime time.Time) ([]models.Detail, error) {
 	begin := beginTime.Format("2006-01-02 15:04:05")
 	end := endTime.Format("2006-01-02 15:04:05")
 	details, err := dao.GetDetailByTimePeriod(begin, end)
@@ -196,23 +228,23 @@ func GetRecentDetail(beginTime, endTime  time.Time) ([]models.Detail, error) {
 
 func GetRecentInstanceDetail(hour int) ([]models.InstanceDetail, error) {
 	endTime := time.Now()
-	beginTime := endTime.Add(-time.Duration(hour)*time.Hour)
-	beego.Info("Get the instances number from begin time", beginTime,"to end time", endTime)
+	beginTime := endTime.Add(-time.Duration(hour) * time.Hour)
+	beego.Info("Get the instances number from begin time", beginTime, "to end time", endTime)
 	details, err := GetRecentDetail(beginTime, endTime)
 	if err != nil {
 		return nil, err
 	}
-	insDetails := make([]models.InstanceDetail,0)
+	insDetails := make([]models.InstanceDetail, 0)
 	for _, v := range details {
 		bytes := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&v.InstanceNumber))))
-		number := make(map[string] int)
+		number := make(map[string]int)
 		err := json.Unmarshal(bytes, &number)
 		if err != nil {
 			return nil, err
 		}
 		insDetail := models.InstanceDetail{
 			InstanceNumber: number,
-			RunningTime:	GetCstTime(v.RunningTime),
+			RunningTime:    GetCstTime(v.RunningTime),
 		}
 		insDetails = append(insDetails, insDetail)
 	}
@@ -220,7 +252,7 @@ func GetRecentInstanceDetail(hour int) ([]models.InstanceDetail, error) {
 }
 
 func GetLatestDetail() (map[string]int, error) {
-	instanceInfo := make(map[string] int)
+	instanceInfo := make(map[string]int)
 	allIns, err := instance.ListAllInstances()
 	if err != nil {
 		return nil, err
@@ -241,8 +273,8 @@ func GetLatestDetail() (map[string]int, error) {
 	return instanceInfo, nil
 }
 
-func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
-	details := make([]models.InstanceDetail,0)
+func GetLatestInstanceDetail() ([]models.InstanceDetail, error) {
+	details := make([]models.InstanceDetail, 0)
 	instanceInfo, err := GetLatestDetail()
 	if err != nil {
 		return nil, err
@@ -250,15 +282,15 @@ func GetLatestInstanceDetail() ([]models.InstanceDetail, error)  {
 
 	instanceDetail := models.InstanceDetail{
 		InstanceNumber: instanceInfo,
-		RunningTime: 	GetCstTime(time.Now()),
+		RunningTime:    GetCstTime(time.Now()),
 	}
 	details = append(details, instanceDetail)
 	return details, nil
 }
 
-func GetPastInstanceDetail(specificTime string) (*models.InstanceDetail, error)  {
+func GetPastInstanceDetail(specificTime string) (*models.InstanceDetail, error) {
 	theTime, err := time.ParseInLocation("2006-01-02 15:04:05", specificTime, time.Local)
-	convertTime := theTime.Add(-time.Duration(8)*time.Hour)
+	convertTime := theTime.Add(-time.Duration(8) * time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -267,24 +299,24 @@ func GetPastInstanceDetail(specificTime string) (*models.InstanceDetail, error) 
 		return nil, err
 	}
 	bytes := *(*[]byte)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&detail.InstanceNumber))))
-	number := make(map[string] int)
+	number := make(map[string]int)
 	err = json.Unmarshal(bytes, &number)
 	if err != nil {
 		return nil, err
 	}
 	insDetail := &models.InstanceDetail{
 		InstanceNumber: number,
-		RunningTime:	GetCstTime(detail.RunningTime),
+		RunningTime:    GetCstTime(detail.RunningTime),
 	}
 	return insDetail, nil
 }
 
-func GetCstTime(converTime time.Time) string  {
+func GetCstTime(converTime time.Time) string {
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	return converTime.In(loc).Format("2006-01-02 15:04:05")
 }
 
-func InitInstanceDetailCron()  {
+func InitInstanceDetailCron() {
 	detailCron := future.NewCronbFuture("Instance detail task", future.DETAIL_INTERVAL, UpdateInstanceDetail)
 	if detailCron != nil {
 		future.Exec.Submit(detailCron)
@@ -299,4 +331,3 @@ func ListProviders() ([]string, error) {
 	return providers, nil
 
 }
-
