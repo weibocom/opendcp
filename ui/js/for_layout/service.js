@@ -190,7 +190,7 @@ var processBody = function (data, head, body) {
         head.html(tr);
     }
     if (data.content) {
-        cache.pool = data.content;
+        // cache.pool = data.content;
         if (data.content.length > 0) {
             var tab = $('#tab').val();
             cache.copy.ip = [];
@@ -226,6 +226,7 @@ var processBody = function (data, head, body) {
                         break;
                     case 'pool':
                         if (i == 0) cache.pool_id = v.id;
+                        cache.pool.push(v);
                         td = '<td title="服务池ID: ' + v.id + '"><a class="tooltips" title="查看服务池详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'pool\',\'' + v.id + '\')">' + v.name + '</a></td>';
                         tr.append(td);
                         var tA = '<a class="tooltips" title="查看服务详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'service\',\'' + v.service_id + '\')">' + getName('service', v.service_id) + '</a>';

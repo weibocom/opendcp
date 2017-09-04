@@ -1,6 +1,7 @@
 cache = {
     task_id: 0,
     task: {},
+    nodes: {},
     state: {},
     flag: true, //是否自动更新
     waiting: {  //上次加载是否完成
@@ -100,11 +101,12 @@ var getTask = function (action) {
                             updateEle('task');
                             updateEle('num');
                             updateEle('overview');
-                            getTask('state')
+                            getTask('state');
                             updateEle('state', cache.task.state);
                             cache.waiting.info = true;
                             break;
                         case 'state':
+                            cache.nodes = data.content;
                             cache.ip.ready = [];
                             cache.ip.running = [];
                             cache.ip.success = [];
@@ -360,6 +362,9 @@ var updateEle = function (o, idx) {
             }
             break;
         case 'ip':
+            $("[id=SelectAll]:checkbox").each(function(i){
+                 $(this).attr("checked",false);
+             });
             var body = $('#task_' + idx);
             switch (idx) {
                 case 'ready':
@@ -385,7 +390,7 @@ var updateEle = function (o, idx) {
                     var v = data[i];
                     if (n > cache.listcount) break;
                     var tr = $('<tr></tr>');
-                    td = '<td><input type="checkbox" id="list_' + idx + '" name="list_' + idx + '[]" value="' + v.id + '_' + v.ip + '"></td>';
+                    td = '<td><input type="checkbox" id="list_' + idx + '" name="list_' + idx + '[]" value="' + v.id + '_' + v.ip +'_'+v.state+ '"></td>';
                     tr.append(td);
                     td = '<td>' + n + '</td>';
                     tr.append(td);
@@ -453,49 +458,213 @@ var updateEle = function (o, idx) {
 var twiceCheck = function (action, idx, ip) {
     NProgress.start();
     if (!idx) idx = cache.task_id;
-    var modalTitle = '', modalBody = '', notice = '', btnDisable = false;
+    var modalTitle = '', modalBody = '', notice = '',list = '', btnDisable = false;
     if (!action || !idx) {
         modalTitle = '非法请求';
         notice = '<div class="alert alert-danger">错误信息：参数错误</div>';
         pageNotify('error', '非法请求！', '错误信息：参数错误');
     } else {
+        var count = 0, diableCount = 0,postNodeIds=[];
         switch (action) {
             case 'start':
                 modalTitle = '启动任务';
                 //除任务处在执行中不能重新启动任务外，其他状况均可重新启动任务
-                if (cache.task.state == '1') {
-                    notice = '<div class="alert alert-danger">错误信息：任务执行中</div>';
-                }
+                // if (cache..state == '1') {
+                //     notice = '<div class="alert alert-danger">错误信息：任务执行中</div>';
+                // }
                 // if(cache.task.state=='1'||cache.task.state=='2'||cache.task.state=='3'){
                 //   notice='<div class="alert alert-danger">错误信息：任务执行中或已完成</div>';
                 // }
+
+                if(cache.ip.ready.length > 0){
+                        $('input:checkbox[id=list_ready]:checked').each(function(i){
+                            count++;
+                            var node = $(this).val().split("_");
+                            var node_id = node[0];
+                            var node_ip = node[1];
+                            postNodeIds.push(node_id);
+                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+
+
+                        });
+                    }
+                    if(cache.ip.running.length > 0){
+                        $('input:checkbox[id=list_running]:checked').each(function(i){
+                            var node = $(this).val().split("_");
+                            var node_ip = node[1];
+                            diableCount++;
+                            list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'(<span style="margin-left:3px;" class="badge bg-purple">任务执行中</span>)</span>';
+                            notice = '<div class="alert alert-danger">错误信息：任务执行中</div>';
+
+                        });
+                    }
+                    if(cache.ip.success.length > 0){
+                        $('input:checkbox[id=list_success]:checked').each(function(i){
+                            count++;
+                            var node = $(this).val().split("_");
+                            var node_id = node[0];
+                            var node_ip = node[1];
+                            postNodeIds.push(node_id);
+                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+
+                        });
+                    }
+                    if(cache.ip.failed.length > 0){
+                        $('input:checkbox[id=list_failed]:checked').each(function(i){
+                            count++;
+                            var node = $(this).val().split("_");
+                            var node_id = node[0];
+                            var node_ip = node[1];
+                            postNodeIds.push(node_id);
+                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+
+                        });
+                }
+                if(cache.ip.stoped.length > 0){
+                    $('input:checkbox[id=list_stoped]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+
+                    });
+                }
+
                 break;
             case 'pause':
                 modalTitle = '暂停任务';
-                if (cache.task.state != '1') {
-                    notice = '<div class="alert alert-danger">错误信息：只有执行中的任务才允许暂停</div>';
+                if(cache.ip.ready.length > 0){
+                    $('input:checkbox[id=list_ready]:checked').each(function(i){
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        diableCount++;
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(0)+')</span>';
+                        notice = '<div class="alert alert-danger">错误信息：只有执行中的任务才允许暂停</div>';
+
+                    });
                 }
+                if(cache.ip.running.length > 0){
+                    $('input:checkbox[id=list_running]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    });
+                }
+                if(cache.ip.success.length > 0){
+                    $('input:checkbox[id=list_success]:checked').each(function(i){
+                        diableCount++;
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(2)+')</span>';
+                        notice = '<div class="alert alert-danger">错误信息：只有执行中的任务才允许暂停</div>';
+
+                    });
+                }
+                if(cache.ip.failed.length > 0){
+                    $('input:checkbox[id=list_failed]:checked').each(function(i){
+                        diableCount++;
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(3)+')</span>';
+                        notice = '<div class="alert alert-danger">错误信息：只有执行中的任务才允许暂停</div>';
+
+                    });
+                }
+                if(cache.ip.stoped.length > 0){
+                    $('input:checkbox[id=list_stoped]:checked').each(function(i){
+                        diableCount;
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(4)+')</span>';
+                        notice = '<div class="alert alert-danger">错误信息：只有执行中的任务才允许暂停</div>';
+
+                    });
+                }
+                // if (cache.task.state != '1') {
+                //     notice = '<div class="alert alert-danger">错误信息：只有执行中的任务才允许暂停</div>';
+                // }
                 break;
             case 'finish':
                 modalTitle = '完成任务';
                 //当状态是未启动或者是已经完成或时，完成任务不可操作，其他状态均可完成
-                if (cache.task.state == '0' || cache.task.state == '2') {
-                    notice = '<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
-                }
+                // if (cache.task.state == '0' || cache.task.state == '2') {
+                //     notice = '<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+                // }
                 // if(cache.task.state=='0'||cache.task.state=='2'||cache.task.state=='3'){
                 //   notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
                 // }
+
+
+                if(cache.ip.ready.length > 0){
+                    $('input:checkbox[id=list_ready]:checked').each(function(i){
+                        diableCount++;
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(0)+')</span>';
+                        notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+
+                    });
+                }
+                if(cache.ip.running.length > 0){
+                    $('input:checkbox[id=list_running]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    });
+                }
+                if(cache.ip.success.length > 0){
+                    $('input:checkbox[id=list_success]:checked').each(function(i){
+                        diableCount++;
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(2)+')</span>';
+                        notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+
+                    });
+                }
+
+                if(cache.ip.failed.length > 0){
+                    $('input:checkbox[id=list_failed]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    });
+                }
+
+                if(cache.ip.stoped.length > 0){
+                    $('input:checkbox[id=list_stoped]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    });
+                }
                 break;
             default:
                 modalTitle = '';
                 break;
         }
-        modalBody = modalBody + '<div class="col-sm-12">';
+        modalBody = modalBody + '<div class="form-group col-sm-12">';
         modalBody = modalBody + '<h4>确认' + modalTitle + '? <span class="text text-primary">警告! 请谨慎操作!</span></h4>';
-        modalBody = modalBody + '任务ID: ' + idx + '<br/>';
-        if (ip) modalBody = modalBody + '目标IP: ' + ip + '<br/>';
+        modalBody+='<p><strong class="text-primary">选中总数</strong>: 共 <span class="badge badge-danger">'+count+'</span> 个 </p>';
+        modalBody = modalBody + '<strong class="text-primary">任务ID: ' + idx + '</strong><br/>';
+        modalBody+='<div style="margin-top:5px;" class="col-sm-12">'+list+'</div>';
         modalBody = modalBody + '</div>';
         modalBody = modalBody + '<div class="col-sm-12" id="modalNotice"></div>';
+        modalBody+='<textarea class="hidden" id="node_idss" name="node_ids">'+JSON.stringify(postNodeIds)+'</textarea>'
         modalBody = modalBody + '<input type="hidden" id="page_action" name="page_action" value="' + action + '">';
         modalBody = modalBody + '<input type="hidden" id="id" name="id" value="' + idx + '">';
     }
@@ -508,15 +677,43 @@ var twiceCheck = function (action, idx, ip) {
     if (ip) modalTitle += ' / ' + idx;
     $('#myModalLabel').html(modalTitle);
     $('#myModalBody').html(modalBody);
-    if (notice != '') {
-        $('#modalNotice').html(notice);
+    if(count == 0){
         $('#btnCommit').attr('disabled', true);
-    } else {
-        $('#btnCommit').attr('disabled', btnDisable);
+        if (notice != '') {
+            $('#modalNotice').html(notice);
+        }else{
+            $('#modalNotice').html('<div class="alert alert-danger">错误信息：没有选中任何节点</div>');
+        }
+    }else{
+        if (notice != '') {
+            $('#modalNotice').html(notice);
+            $('#btnCommit').attr('disabled', true);
+        } else {
+            $('#btnCommit').attr('disabled', btnDisable);
+        }
     }
+
     NProgress.done();
 }
 
+var getStatusAlias = function(status){
+    var str=status;
+    switch(status){
+        case 0:
+            str='<span style="margin-left:3px;" class="badge">准备中</span>';break;
+        case 1:
+            str='<span style="margin-left:3px;" class="badge bg-blue-sky">执行中</span>';break;
+        case 2:
+            str='<span style="margin-left:3px;" class="badge bg-green">已完成</span>';break;
+        case 3:
+            str='<span style="margin-left:3px;" class="badge bg-red">失败</span>';break;
+        case 4:
+            str='<span style="margin-left:3px;" class="badge bg-orange">暂停</span>';break;
+        default:
+            str='<span style="margin-left:3px;" class="badge">未知状态</span>';break;
+    }
+    return str;
+}
 //增删改查
 var change = function () {
     var url = '/api/for_layout/task.php';
@@ -566,12 +763,15 @@ var change = function () {
                 cache.refreshInterval = setInterval('getTask(\'info\');', 10000);
             }
             actionDesc += '启动任务';
+            postData["node_ids"]=JSON.parse(postData.node_ids);
             break;
         case 'pause':
             actionDesc += '暂停任务';
+            postData["node_ids"]=JSON.parse(postData.node_ids);
             break;
         case 'finish':
             actionDesc += '完成任务';
+            postData["node_ids"]=JSON.parse(postData.node_ids);
             break;
         default:
             actionDesc = action;
@@ -1009,4 +1209,10 @@ var timeStampToSting = function (data) {
     s = (s < 10) ? '0' + s : s;
 
     return y + '-' + m + '-' + d + ' ' + h + ':' + mm + ':' + s;
+}
+
+var checkAll = function(o,idx){
+    var body = 'list_' + idx;
+    $('[id='+body+']:checkbox').prop('checked', o.checked);
+
 }

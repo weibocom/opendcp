@@ -41,12 +41,15 @@ class layout{
     'expand'    =>  'POST',
     'shrink'    =>  'POST',
     'deploy'    =>  'POST',
+    'stop'      =>  'POST',
+    'pause'     =>  'POST',
     'list_nodes'      =>  'GET',
     'add_nodes'       =>  'POST',
     'remove_nodes'    =>  'POST',
     'expandList'      =>  'POST',
     'uploadList'      =>  'POST',
     'saveTask'        =>  'POST',
+
 
   );
 
