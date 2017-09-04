@@ -4,14 +4,7 @@ import (
 	"fmt"
 
 	"weibo.com/opendcp/orion/service"
-	"weibo.com/opendcp/orion/utils"
 )
-
-func newLogger(fid int) *logger {
-	return &logger{
-		fid: fid,
-	}
-}
 
 type logger struct {
 	fid int

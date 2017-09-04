@@ -116,6 +116,7 @@ func Expand(poolId int, num int, opUser string) error {
 
 // Shrink will shrink a service pool by stopping service on vms and return them.
 func Shrink(poolId int, nodeIps []string, opUser string) error {
+
 	pool, flowImpl, steps, err := getModels(poolId, SHRINK)
 	if err != nil {
 		return err
