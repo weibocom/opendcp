@@ -17,6 +17,8 @@ import (
 	_ "weibo.com/opendcp/jupiter/provider/aws"
 	_ "weibo.com/opendcp/jupiter/provider/openstack"
 	"weibo.com/opendcp/jupiter/service/cluster"
+
+
 )
 
 const DEFAULT_CPU = 1
@@ -29,6 +31,8 @@ type InstanceController struct {
 
 type AppendPhyDevRequest struct {
 	InstanceList []models.PhyAuth `json:"instancelist"`
+	PoolID    int  `  json:"poolId"`
+	Label     string `json:"label"`
 }
 
 type AppendPhyDevResponse struct {
@@ -569,6 +573,11 @@ func (ic *InstanceController) ManagePhyDev() {
 	successCount := 0
 	failedCount := 0
 	errList := make([]string, 0)
+	successList := make([]string, 0)
+	poolID := request.PoolID
+	label := request.Label
+	labels := label + ",phy"
+	//resultChannel := make(chan *models.Instance,len(request.InstanceList))
 	for _, info := range request.InstanceList {
 		ip := info.PublicIp
 		if ip == "" {
@@ -586,6 +595,7 @@ func (ic *InstanceController) ManagePhyDev() {
 		ins.Ram = DEFAULT_RAM
 		ins.PublicIpAddress = info.PublicIp
 		ins.PrivateIpAddress = info.PrivateIp
+		ins.Label = labels
 
 		logstore.Info(correlationId, ins.InstanceId, "1. Insert the instance into db")
 		ins, err = instance.InputPhyDev(ins)
@@ -595,13 +605,16 @@ func (ic *InstanceController) ManagePhyDev() {
 			errList = append(errList, err.Error())
 		} else {
 			successCount++
+			successList = append(successList,info.PublicIp)
 			// asynchronous manage
-			logstore.Info(correlationId, ins.InstanceId, "Insert the instance into db successfully")
+			logstore.Info(correlationId, ins.InstanceId, " the instance into db successfully")
 			logstore.Info(correlationId, ins.InstanceId, "2. Begin to execute init operation in the instance")
 			go instance.ManageDev(ip, info.Password, ins.InstanceId, correlationId, info.Port)
 		}
 	}
 	go cluster.UpdateInstanceDetail()
+
+	go instance.IsSuccess(successList, poolID, labels, correlationId)
 
 	// 3. response
 	resp := ApiResponse{}
@@ -616,12 +629,27 @@ func (ic *InstanceController) ManagePhyDev() {
 	} else {
 		ic.Status = SERVICE_ERRROR
 	}
+
 	ic.RespJsonWithStatus()
+
+
+
+
+	//if successCount != 0 {
+	//	_,err := handler.AddPhyDevToPool(successList,poolID,label)
+	//	if(err != nil){
+	//		ic.RespAddPoolFail(err)
+	//	}
+	//}
+
 }
 
 // @Title Update machine status
 // @Description change openstack config
 // @router /openstack [post]
+
+
+
 
 func (ic *InstanceController) ChangeOpenStackConf() {
 	var OpConf models.OpenStackConf
