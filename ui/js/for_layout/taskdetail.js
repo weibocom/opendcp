@@ -363,8 +363,8 @@ var updateEle = function (o, idx) {
             break;
         case 'ip':
             $("[id=SelectAll]:checkbox").each(function(i){
-                 $(this).attr("checked",false);
-             });
+                $(this).attr("checked",false);
+            });
             var body = $('#task_' + idx);
             switch (idx) {
                 case 'ready':
@@ -477,48 +477,48 @@ var twiceCheck = function (action, idx, ip) {
                 // }
 
                 if(cache.ip.ready.length > 0){
-                        $('input:checkbox[id=list_ready]:checked').each(function(i){
-                            count++;
-                            var node = $(this).val().split("_");
-                            var node_id = node[0];
-                            var node_ip = node[1];
-                            postNodeIds.push(node_id);
-                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    $('input:checkbox[id=list_ready]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
 
 
-                        });
-                    }
-                    if(cache.ip.running.length > 0){
-                        $('input:checkbox[id=list_running]:checked').each(function(i){
-                            var node = $(this).val().split("_");
-                            var node_ip = node[1];
-                            diableCount++;
-                            list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'(<span style="margin-left:3px;" class="badge bg-purple">任务执行中</span>)</span>';
-                            notice = '<div class="alert alert-danger">错误信息：任务执行中</div>';
+                    });
+                }
+                if(cache.ip.running.length > 0){
+                    $('input:checkbox[id=list_running]:checked').each(function(i){
+                        var node = $(this).val().split("_");
+                        var node_ip = node[1];
+                        diableCount++;
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'(<span style="margin-left:3px;" class="badge bg-purple">任务执行中</span>)</span>';
+                        notice = '<div class="alert alert-danger">错误信息：任务执行中</div>';
 
-                        });
-                    }
-                    if(cache.ip.success.length > 0){
-                        $('input:checkbox[id=list_success]:checked').each(function(i){
-                            count++;
-                            var node = $(this).val().split("_");
-                            var node_id = node[0];
-                            var node_ip = node[1];
-                            postNodeIds.push(node_id);
-                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    });
+                }
+                if(cache.ip.success.length > 0){
+                    $('input:checkbox[id=list_success]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
 
-                        });
-                    }
-                    if(cache.ip.failed.length > 0){
-                        $('input:checkbox[id=list_failed]:checked').each(function(i){
-                            count++;
-                            var node = $(this).val().split("_");
-                            var node_id = node[0];
-                            var node_ip = node[1];
-                            postNodeIds.push(node_id);
-                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                    });
+                }
+                if(cache.ip.failed.length > 0){
+                    $('input:checkbox[id=list_failed]:checked').each(function(i){
+                        count++;
+                        var node = $(this).val().split("_");
+                        var node_id = node[0];
+                        var node_ip = node[1];
+                        postNodeIds.push(node_id);
+                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
 
-                        });
+                    });
                 }
                 if(cache.ip.stoped.length > 0){
                     $('input:checkbox[id=list_stoped]:checked').each(function(i){

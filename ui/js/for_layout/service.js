@@ -204,6 +204,7 @@ var processBody = function (data, head, body) {
                 var btnAdd = '', btnEdit = '', btnDel = '', btnSet = '';
                 switch (tab) {
                     case 'service':
+                        []
                         if (i == 0) cache.service_id = v.id;
                         cache.service.push(v);
                         td = '<td title="服务ID: ' + v.id + '"><a class="tooltips" title="查看服务详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'service\',\'' + v.id + '\')">' + v.name + '</a></td>';
@@ -252,7 +253,7 @@ var processBody = function (data, head, body) {
                         td = '<td><div class="btn-group btn-group-xs btn-group-solid">' + btnAdd + '</div></td>';
                         tr.append(td);
                         btnEdit = '<a class="text-success tooltips" title="修改" data-toggle="modal" data-target="#myModal" href="edit_' + tab + '.php?action=edit&par_id=' + $('#fService').val() + '&par_name=' + $('#fService').find("option:selected").text() + '&idx=' + v.id + '"><i class="fa fa-edit"></i></a>';
-                        btnSet = '<a class="text-success tooltips" hidden title="任务设置" data-toggle="modal" data-target="#myModal" href="set_' + tab + '.php?action=expandList&idx=' + v.id + '" ><i class="fa fa-tasks"></i></a>';
+                        btnSet = '<a class="text-success tooltips" title="任务设置" data-toggle="modal" data-target="#myModal" href="set_' + tab + '.php?action=expandList&idx=' + v.id + '" ><i class="fa fa-tasks"></i></a>';
                         btnDel = '<a class="text-danger tooltips" title="删除" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'del\',\'' + v.id + '\',\'' + v.name + '\')"><i class="fa fa-trash-o"></i></a>';
                         break;
                     case 'node':

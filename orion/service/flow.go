@@ -79,6 +79,18 @@ func (f *FlowService) GetNodeByIp(ip string) (*models.NodeState, error) {
 	return node, nil
 }
 
+func (f *FlowService) GetNodeById(id int) (*models.NodeState, error) {
+	o := orm.NewOrm()
+
+	node := &models.NodeState{Id:id}
+	err := o.Read(node)
+	if err != nil {
+		return nil, err
+	}
+
+	return node, nil
+}
+
 func (f *FlowService) UpdateNodeMachine(state *models.NodeState) error {
 	o := orm.NewOrm()
 	if state.Ip == "" || state.Ip == "-" {
