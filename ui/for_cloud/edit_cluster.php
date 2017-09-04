@@ -185,7 +185,6 @@
                         <span class="help-block">单位G, 范围5-32768, 请参阅官方手册</span>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label for="DataDiskNum" class="col-sm-2 control-label">数据盘数量</label>
                     <div class="col-sm-10">

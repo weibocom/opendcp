@@ -634,14 +634,6 @@ func (ic *InstanceController) ManagePhyDev() {
 
 
 
-
-	//if successCount != 0 {
-	//	_,err := handler.AddPhyDevToPool(successList,poolID,label)
-	//	if(err != nil){
-	//		ic.RespAddPoolFail(err)
-	//	}
-	//}
-
 }
 
 // @Title Update machine status
