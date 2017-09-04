@@ -83,7 +83,7 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 	//run node channel
 	dependc := make(chan *dependNotice, len(picked))
 
-	scaleDependPool(ctx, cfg, len(picked), dependc)
+	scaleDependPool(ctx, cfg, should, len(picked), dependc)
 
 	wg.Add(1)
 
@@ -93,7 +93,7 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 	go scalePool(ctx, cfg.Pool, expand, picked, dependc)
 }
 
-func scaleDependPool(ctx context.Context, cfg *models.ExecTask, should int, dependc chan *dependNotice) {
+func scaleDependPool(ctx context.Context, cfg *models.ExecTask, currentNum, should int, dependc chan *dependNotice) {
 	var (
 		wg    = ctx.Value("wg").(*sync.WaitGroup)
 		ctrls = make(map[int]*dependCtrl)
@@ -104,7 +104,7 @@ func scaleDependPool(ctx context.Context, cfg *models.ExecTask, should int, depe
 			continue
 		}
 		// TODO ElasticCount
-		num := int(math.Ceil(float64(should) * dep.Ratio))
+		num := int(math.Ceil(float64(currentNum) * dep.Ratio))
 
 		dependExpand, dependNodes, err := initScalePool(num, dep.Pool)
 		if err != nil {
@@ -119,7 +119,7 @@ func scaleDependPool(ctx context.Context, cfg *models.ExecTask, should int, depe
 		depc := make(chan *dependNotice, len(dependNodes))
 
 		ctrls[dep.Pool.Id] = &dependCtrl{
-			base:    should,
+			base:    currentNum,
 			num:     len(dependNodes),
 			elastic: dep.ElasticCount,
 			ratio:   dep.Ratio,
@@ -347,7 +347,9 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeSta
 	for _, n := range nodes {
 		//if nodeStatus is not running
 		if n.Id != 0 && n.Status != models.STATUS_RUNNING {
-			if err := service.Flow.DeleteNodeById(n); err != nil {
+			n.Deleted = true
+			n.UpdatedTime = time.Now()
+			if _,err := o.Update(n, "deleted", "updated_time"); err != nil {
 				err = fmt.Errorf("delete node %d failed %v", n.Id, err)
 				beego.Error(err)
 			} else {
