@@ -102,6 +102,17 @@ func GetInstanceByPublicIp(ip string) (*models.Instance, error) {
 	return &instance, nil
 }
 
+func GetInstancesByPublicIps(ips []string) ([]*models.Instance, error) {
+	o := GetOrmer()
+	var instances []*models.Instance
+
+	_, err := o.QueryTable(INSTANCE_TABLE).RelatedSel().Filter("public_ip_address__in", ips).Exclude("status", models.Deleted).All(&instances)
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}
+
 func InsertInstance(instance *models.Instance) error {
 	o := GetOrmer()
 	_, err := o.Insert(instance)

@@ -216,6 +216,8 @@ class myself{
         }
 
         $arrJson['InstanceList'] = $retArr;
+        $poolId = intval($arrJson['poolId']);
+        $arrJson['poolId'] = $poolId;
       if($strList = $thisClass->get($myUser, 'instance/phydev', $method,$arrJson)){
         $arrList = json_decode($strList,true);
         if(isset($arrList['code']) && $arrList['code'] == 0){

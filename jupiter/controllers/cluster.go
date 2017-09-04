@@ -24,12 +24,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
+	"strconv"
+	"strings"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
 	"weibo.com/opendcp/jupiter/service/instance"
-	"strconv"
-	"strings"
 )
 
 // Operations about cluster
@@ -219,7 +219,7 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 	instanceIds, err := cluster.Expand(theCluster, expandNumber, correlationId)
-	if len(instanceIds) == 0 {
+	if err != nil {
 		beego.Error("expand instances failed:", err)
 		clusterController.RespServiceError(err)
 		return
@@ -230,7 +230,6 @@ func (clusterController *ClusterController) ExpandInstances() {
 	clusterController.Status = SERVICE_SUCCESS
 	clusterController.RespJsonWithStatus()
 }
-
 
 // @Title get total instances number
 // @Description get total instances number
@@ -260,9 +259,9 @@ func (cc *ClusterController) GetInstancesNumber() {
 		}
 	}
 
-	result := make([] map[string]string,0)
+	result := make([]map[string]string, 0)
 	for _, detail := range details {
-		info := make(map[string] string)
+		info := make(map[string]string)
 		info["time"] = detail.RunningTime
 		for k, v := range detail.InstanceNumber {
 			info[k] = strconv.Itoa(v)
@@ -282,8 +281,8 @@ func (cc *ClusterController) GetInstancesNumber() {
 // @router /oldnumber/:time [get]
 func (cc *ClusterController) GetPastInstancesNumber() {
 	timeStr := cc.GetString(":time")
-	specificTime := strings.Replace(timeStr,"%20"," ", -1)
- 	detail, err := cluster.GetPastInstanceDetail(specificTime)
+	specificTime := strings.Replace(timeStr, "%20", " ", -1)
+	detail, err := cluster.GetPastInstanceDetail(specificTime)
 	if err != nil {
 		beego.Error("Get instance detail at the time err:", err)
 		cc.RespServiceError(err)

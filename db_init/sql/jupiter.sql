@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `instance` (
   `status` int(11) NOT NULL DEFAULT '0',
   `public_key` longtext,
   `private_key` longtext,
+  `label` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -182,5 +183,17 @@ CREATE TABLE IF NOT EXISTS `detail` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance_number` longtext NOT NULL,
   `running_time` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `instance_item` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task_id` VARCHAR(255) NOT NULL DEFAULT '',
+  `correlation_id` varchar(255) NOT NULL DEFAULT '',
+  `cluster_id` bigint(20) NOT NULL,
+  `instance_id` VARCHAR(255) NOT NULL DEFAULT '',
+  `create_time` datetime NOT NULL,
+  `status` INT(11) NOT NULL DEFAULT '0',
+  `err_log`  VARCHAR(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

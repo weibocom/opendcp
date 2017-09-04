@@ -62,6 +62,7 @@ func (b *baseAPI) Body2Json(obj interface{}) error {
 	}
 
 	fmt.Println(string(bytes[:]))
+	fmt.Println("123456")
 	return json.Unmarshal(bytes, obj)
 }
 
@@ -129,6 +130,18 @@ func (b *baseAPI) ReturnFailed(msg string, code int) {
 		Code:    code,
 		Msg:     msg,
 		Content: struct{}{},
+	}
+	b.Ctx.Output.SetStatus(code)
+	b.ServeJSON()
+}
+
+func (b *baseAPI) ReturnFailedWithContent(content interface{}, code int) {
+	if content == nil {
+		content = struct{}{}
+	}
+	b.Data["json"] = apiResponse{
+		Code:    code,
+		Content: content,
 	}
 	b.Ctx.Output.SetStatus(code)
 	b.ServeJSON()

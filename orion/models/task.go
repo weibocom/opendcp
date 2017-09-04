@@ -135,6 +135,7 @@ type NodeState struct {
 	StepNum     int       `json:"step_num"`
 	Log         string    `json:"log" orm:"type(text)"`
 	LastOp      string    `json:"last_op"`
+	Label       string    `json:"label"`
 	StepRunTime string    `json:"step_run_time" orm:"type(text)"`
 	RunTime     float64   `json:"run_time" orm:"default(0.0)"`
 	CreatedTime time.Time `json:"created" orm:"auto_now_add;type(datetime)"`
