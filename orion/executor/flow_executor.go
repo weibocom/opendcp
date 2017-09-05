@@ -32,7 +32,6 @@ import (
 	"weibo.com/opendcp/orion/handler"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
-	"go/misc/cgo/nocgo"
 )
 
 var (
