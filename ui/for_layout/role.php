@@ -359,42 +359,43 @@ require_once('../include/navbar.php');
 <!-- Custom Notification -->
 <script>
     $(document).ready(function() {
-        list();
+        list()
+        $("select.form-control").select2({width:'100%'})
         $('#fIdx').bind('keypress',function(event){
             if(event.keyCode == "13"){
-                list(1);
+                list(1)
             }
-        });
-    });
+        })
+    })
     $("#myModal").on("shown.bs.modal", function(){
-        $("select.form-control").select2();
-    });
+        $("select.form-control").select2()
+    })
     $("#myModal").on("hidden.bs.modal", function() {
-        $(this).removeData("bs.modal");
-        $('#myModalBody').css('height','');
-        $('#myModalLabel').html('Loading ...');
-        $("#myModalBody").html('<p> </p>');
-    });
+        $(this).removeData("bs.modal")
+        $('#myModalBody').css('height','')
+        $('#myModalLabel').html('Loading ...')
+        $("#myModalBody").html('<p> </p>')
+    })
 
     $("#myChildModal").on("shown.bs.modal", function(){
-        $("select.form-control").select2();
-    });
+        $("select.form-control").select2()
+    })
     $("#myChildModal").on("hidden.bs.modal", function() {
-        $(this).removeData("bs.modal");
-        $('#myChildModalBody').css('height','');
-        $('#myChildModalLabel').html('Loading ...');
-        $("#myChildModalBody").html('<p> </p>');
-    });
+        $(this).removeData("bs.modal")
+        $('#myChildModalBody').css('height','')
+        $('#myChildModalLabel').html('Loading ...')
+        $("#myChildModalBody").html('<p> </p>')
+    })
 
     $("#myViewModal").on("shown.bs.modal", function(){
-        $("select.form-control").select2();
-    });
+        $("select.form-control").select2()
+    })
     $("#myViewModal").on("hidden.bs.modal", function() {
-        $(this).removeData("bs.modal");
-        $('#myViewModalBody').css('height','');
-        $('#myViewModalLabel').html('Loading ...');
-        $("#myViewModalBody").html('<p> </p>');
-    });
+        $(this).removeData("bs.modal")
+        $('#myViewModalBody').css('height','')
+        $('#myViewModalLabel').html('Loading ...')
+        $("#myViewModalBody").html('<p> </p>')
+    })
 
 
 
