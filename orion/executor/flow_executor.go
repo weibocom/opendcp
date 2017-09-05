@@ -442,12 +442,16 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		needRunStepNodeState := make([]*models.NodeState, 0)
 		needRunStepNodeState = append(needRunStepNodeState, nodeState)
 
-		okNodes, _ := exec.RunStep(doHandler, step, runStepIndex, needRunStepNodeState, stepParams, retryOption, stepRunTimeArray)
+		okNodes, errNodes := exec.RunStep(doHandler, step, runStepIndex, needRunStepNodeState, stepParams, retryOption, stepRunTimeArray)
 
+		logService.Error(fid, fmt.Sprintf("node run result: ok(%d) err(%d)", len(okNodes), len(errNodes)))
+		
 		if len(okNodes) == 0 {
+			nodeState = errNodes[0]
 			logService.Error(fid, fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
 			break
 		} else {
+			nodeState = okNodes[0]
 			logService.Info(fid, fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 		}
 	}
