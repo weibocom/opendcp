@@ -893,7 +893,7 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
 
 	var (
-		timeout = time.After(15 * time.Minute)
+		timeout = time.After(25 * time.Minute)
 	)
 
 	for i := 0; i < len(nodes); i++ {
