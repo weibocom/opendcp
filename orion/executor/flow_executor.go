@@ -368,7 +368,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeStat
 		go workNodeQueue.Submit(toRunState)
 	}
 	//wait until all nodes have done
-	if err = exec.waitNodesResult(resultChannel, nodeStateList); err != nil {
+	if err = exec.waitNodesResult(flow, resultChannel, nodeStateList); err != nil {
 		logService.Warn(flow.Id, err.Error())
 	}
 
@@ -890,7 +890,7 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 	return filterNodeList, nil
 }
 
-func (exec *FlowExecutor) waitNodesResult(resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
+func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
 
 	var (
 		timeout = time.After(15 * time.Minute)
@@ -900,6 +900,17 @@ func (exec *FlowExecutor) waitNodesResult(resultChannel chan *models.NodeState, 
 		select {
 		case <-resultChannel:
 		case <-timeout:
+			runningNodes, err := flowService.GetAllNodeStatusByFlowId(flow.Id, models.STATUS_RUNNING)
+			if err != nil{
+				return err
+			}
+		        for _, runNode := range runningNodes {
+				runNode.Status = models.STATUS_FAILED
+				runNode.UpdatedTime = time.Now()
+				if err := flowService.ChangeNodeStatusById(runNode); err != nil{
+					logService.Error(flow.Id, "update node status err:", err.Error())
+				}
+			}
 			return errors.New("get node run result timeout")
 		}
 	}
