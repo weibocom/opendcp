@@ -113,12 +113,12 @@ func (exec *FlowExecutor) Create(flowImpl *models.FlowImpl, name string, option 
 
 	if option == nil {
 		beego.Error("Option is nil")
-		return nil, errors.New("option is nil")
+		return instances, newNodes, errors.New("option is nil")
 	}
 
 	if len(nodes) == 0 {
 		beego.Error("nodes is empty")
-		return nil, errors.New("nodes is empty")
+		return instances, newNodes, errors.New("nodes is empty")
 	}
 
 	// make sure all nodes are in the same pool
@@ -130,14 +130,14 @@ func (exec *FlowExecutor) Create(flowImpl *models.FlowImpl, name string, option 
 	err := json.Unmarshal([]byte(flowImpl.Steps), &stepOps)
 	if err != nil {
 		beego.Error("Bad step options: ", flowImpl.Steps, "[err]: ", err)
-		return nil, errors.New("Bad step options: " + flowImpl.Steps + ", err:" + err.Error())
+		return instances, newNodes, errors.New("Bad step options: " + flowImpl.Steps + ", err:" + err.Error())
 	}
 
 	//merge override params with params
 	overrideParams, ok := context["overrideParams"].(map[string]interface{})
 	if !ok {
 		beego.Error("bad overrideParams:", context["overrideParams"])
-		return nil, errors.New("bad overrideParams!")
+		return instances, newNodes, errors.New("bad overrideParams!")
 	}
 	exec.MergeParams(stepOps, overrideParams)
 
@@ -150,7 +150,7 @@ func (exec *FlowExecutor) Create(flowImpl *models.FlowImpl, name string, option 
 	beego.Info("opUser Create new task ", opUser)
 	if !ok {
 		beego.Error("bad opUser:", context["opUser"])
-		return nil, errors.New("bad opUser!")
+		return instances, newNodes, errors.New("bad opUser!")
 	}
 
 	for pid, node := range nodesarray {
@@ -159,13 +159,13 @@ func (exec *FlowExecutor) Create(flowImpl *models.FlowImpl, name string, option 
 		instance, err := exec.CreateFlowInstance(name, flowImpl, &models.Pool{Id: poolID}, poolNode[0].NodeType, stepOps, option, opUser)
 		if err != nil {
 			beego.Error("Fail to create flow instance", err)
-			return nil, err
+			return instances, newNodes, err
 		}
 		newNodes, err := exec.CreateNodeStates(instance, poolNode)
 		if err != nil {
 			beego.Error("Fail to create node states for flow: ", instance.Name, err)
 			flowService.DeleteBase(instance)
-			return nil, err
+			return instances, newNodes, err
 		}
 		newNodes[instance.Id] = newNodes
 		instances = append(instances, instance)
@@ -499,7 +499,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		if isStopped, _ := exec.isStoppedNode(node.Flow, node); isStopped {
 			okNodes = append(okNodes, node)
 		} else {
-			toRun = append(node)
+			toRun = append(toRun, node)
 			stepRunTimeArray[stepIndex].RunTime = time.Since(beginRunStepTime).Seconds()
 			err := exec.UpdateNodeStatus(step.Name, stepIndex, stepRunTimeArray, node, models.STATUS_RUNNING)
 			if err != nil {
@@ -525,7 +525,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 			if isStopped, _ := exec.isStoppedNode(node.Flow, node); isStopped {
 				okNodes = append(okNodes, node)
 			} else {
-				TrytoRun = append(node)
+				TrytoRun = append(TrytoRun, node)
 			}
 
 		}
@@ -903,7 +903,7 @@ func (exec *FlowExecutor) waitNodesResult(resultChannel chan *models.NodeState, 
 	return nil
 }
 
-func (exec *FlowExecutor) generateRunStepTime(nodeState models.NodeState, steps []*models.ActionImpl) (stepRunTimeArray []*models.StepRunTime, err error) {
+func (exec *FlowExecutor) generateRunStepTime(nodeState *models.NodeState, steps []*models.ActionImpl) (stepRunTimeArray []*models.StepRunTime, err error) {
 
 	if err = json.Unmarshal([]byte(nodeState.StepRunTime), &stepRunTimeArray); err != nil {
 		return stepRunTimeArray, err
