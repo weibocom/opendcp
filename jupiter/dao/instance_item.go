@@ -3,6 +3,7 @@ package dao
 import (
 	"time"
 	"weibo.com/opendcp/jupiter/models"
+	"fmt"
 )
 
 func InsertItem(item models.InstanceItem) error {
@@ -63,7 +64,7 @@ func DeleteItem(item models.InstanceItem) error {
 
 func DeleteOldItems(before time.Time) error {
 	o := GetOrmer()
-	sql := "DELETE FROM task_item WHERE create_time < ?"
+	sql := fmt.Sprintf("DELETE FROM %s WHERE create_time < ?", INSTANCE_ITEM_TABLE)
 	_, err := o.Raw(sql, before).Exec()
 	return err
 }
