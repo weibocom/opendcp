@@ -21,7 +21,12 @@ package executor
 
 import (
 	"github.com/astaxie/beego"
+	"time"
 	"weibo.com/opendcp/orion/models"
+)
+
+const (
+	runNodeInterval = time.Microsecond //1us
 )
 
 // Worker keep a queue to hold tasks, and run them one by one.
@@ -30,11 +35,11 @@ type QueueNode struct {
 }
 
 type ToRunNodeState struct {
-	resultChannel  chan *models.NodeState
-	flow           *models.Flow
-	steps          []*models.ActionImpl
-	stepOptions    []*models.StepOption
-	nodeState      *models.NodeState
+	resultChannel chan *models.NodeState
+	flow          *models.Flow
+	steps         []*models.ActionImpl
+	stepOptions   []*models.StepOption
+	nodeState     *models.NodeState
 }
 
 // NewWorker creates a new worker.
@@ -51,6 +56,7 @@ func (q *QueueNode) loop() {
 			break
 		}
 		go q.safeRun(runNode)
+		time.Sleep(runNodeInterval)
 	}
 }
 

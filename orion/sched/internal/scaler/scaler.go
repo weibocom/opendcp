@@ -15,11 +15,11 @@ import (
 	"weibo.com/opendcp/orion/service"
 	"weibo.com/opendcp/orion/utils"
 
+	"errors"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/davecgh/go-spew/spew"
 	theGosync "github.com/lrita/gosync"
-	"errors"
 )
 
 var (
@@ -63,7 +63,7 @@ func Scale(ctx context.Context, cfgs configs, id, idx int) {
 
 	expand, picked, err := initScalePool(should, cfg.Pool)
 
-	if len(picked) == 0{
+	if len(picked) == 0 {
 		beego.Info(fmt.Sprintf("task(%d) pool(%d) onlinde nodes is okay!", cfg.Id, cfg.Pool.Id))
 		return
 	}
@@ -111,7 +111,7 @@ func scaleDependPool(ctx context.Context, cfg *models.ExecTask, currentNum, shou
 			beego.Error(fmt.Sprintf("pool(%d) get expand and nodes err: %v", dep.Pool.Id, err.Error()))
 			continue
 		}
-		if len(dependNodes) == 0{
+		if len(dependNodes) == 0 {
 			beego.Error(fmt.Sprintf("pool(%d) get none nodes to run", dep.Pool.Id))
 			continue
 		}
@@ -259,9 +259,6 @@ func scalePool(ctx context.Context, pool *models.Pool, expand bool, picked []*mo
 		}
 	}()
 
-	beego.Error("---------------------------------------------")
-	beego.Error("--picked-----", len(picked))
-
 	if nodeStates, err = createNodeState(pool, ff, picked, operation); err != nil {
 		return
 	}
@@ -281,10 +278,6 @@ func scalePool(ctx context.Context, pool *models.Pool, expand bool, picked []*mo
 		return
 	default:
 	}
-
-	beego.Error("---------------------------------------------")
-	beego.Error("---nodeStates---", len(nodeStates))
-	//beego.Error("dddddddddddddddddddddddddddd", nodeStates[0].Flow.Id)
 
 	oknum, failednum, _ := doEachStep(ctx, ff, nodeStates, steps, actions, dependc)
 
@@ -349,7 +342,7 @@ func createNodeState(pool *models.Pool, ff *models.Flow, nodes []*models.NodeSta
 		if n.Id != 0 && n.Status != models.STATUS_RUNNING {
 			n.Deleted = true
 			n.UpdatedTime = time.Now()
-			if _,err := o.Update(n, "deleted", "updated_time"); err != nil {
+			if _, err := o.Update(n, "deleted", "updated_time"); err != nil {
 				err = fmt.Errorf("delete node %d failed %v", n.Id, err)
 				beego.Error(err)
 			} else {
