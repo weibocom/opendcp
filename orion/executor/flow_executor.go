@@ -32,6 +32,7 @@ import (
 	"weibo.com/opendcp/orion/handler"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
+	"go/misc/cgo/nocgo"
 )
 
 var (
@@ -454,6 +455,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 			break
 		} else {
 			nodeState.Status = models.STATUS_RUNNING
+			err = exec.UpdateNodeStatus(step.Name, runStepIndex, stepRunTimeArray, nodeState, models.STATUS_RUNNING)
 			logService.Info(fid, fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 		}
 	}
