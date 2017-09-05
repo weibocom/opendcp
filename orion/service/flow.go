@@ -82,7 +82,7 @@ func (f *FlowService) GetNodeByIp(ip string) (*models.NodeState, error) {
 func (f *FlowService) GetNodeById(id int) (*models.NodeState, error) {
 	o := orm.NewOrm()
 
-	node := &models.NodeState{Id:id}
+	node := &models.NodeState{Id: id}
 	err := o.Read(node)
 	if err != nil {
 		return nil, err
@@ -111,9 +111,33 @@ func (f *FlowService) UpdateNode(state *models.NodeState) error {
 	return err
 }
 
+func (f *FlowService) UpdateNodeRunTime(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state,
+		"step_run_time", "run_time", "updated_time",
+	)
+	return err
+}
+
+func (f *FlowService) UpdateNodeWithoutStatus(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state,
+		"steps", "step_num", "log",
+		"last_op", "step_run_time", "run_time",
+		"updated_time",
+	)
+	return err
+}
+
 func (f *FlowService) DeleteNodeById(state *models.NodeState) error {
 	o := orm.NewOrm()
 	_, err := o.Update(state, "deleted", "updated_time")
+	return err
+}
+
+func (f *FlowService) ChangeNodeStatusById(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state, "status", "updated_time")
 	return err
 }
 
@@ -123,6 +147,16 @@ func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, er
 	nodeList := make([]*models.NodeState, 0)
 
 	_, err := o.QueryTable(&models.NodeState{}).Filter("Flow", flowId).Filter("deleted", false).All(&nodeList)
+
+	return nodeList, err
+}
+
+func (f *FlowService) GetAllNodeStatusByFlowId(flowId int, status int) ([]*models.NodeState, error) {
+	o := orm.NewOrm()
+
+	nodeList := make([]*models.NodeState, 0)
+
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Flow", flowId).Filter("status", status).All(&nodeList)
 
 	return nodeList, err
 }
@@ -157,4 +191,12 @@ func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids [
 	}
 
 	return int(num), nil
+}
+
+func (f *FlowService) UpdateFlowStatus(flow *models.Flow) error {
+	o := orm.NewOrm()
+
+	_, err := o.Update(flow, "status", "updated_time")
+
+	return err
 }
