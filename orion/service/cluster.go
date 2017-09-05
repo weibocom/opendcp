@@ -54,7 +54,7 @@ func (c *ClusterService) GetAllExecTask() ([]*models.ExecTask, error) {
 
 	return taskList, nil
 }
-func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool,label string) []int {
+func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool, label string) []int {
 	o := orm.NewOrm()
 	beego.Info(label)
 	respDatas := make([]int, 0, len(ips))
@@ -65,7 +65,7 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool,label stri
 			Pool:        pool,
 			Flow:        &models.Flow{Id: 0},
 			Status:      models.STATUS_INIT,
-	  		CreatedTime: time.Now(),
+			CreatedTime: time.Now(),
 			UpdatedTime: time.Now(),
 			NodeType:    models.Manual,
 			Deleted:     false,
@@ -82,27 +82,28 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool,label stri
 	return respDatas
 }
 
-func (c *ClusterService)  AppendIp(ip string, pool *models.Pool, label string) int {
+func (c *ClusterService) AppendIp(ip string, pool *models.Pool, label string) int {
 	o := orm.NewOrm()
 	data := models.NodeState{
-		Ip:           ip,
-		Pool:         pool,
-		Flow:         &models.Flow{Id: 0},
-		Status:       models.STATUS_INIT,
-		CreatedTime:  time.Now(),
-		UpdatedTime:  time.Now(),
-		NodeType:     models.Manual,
-		Deleted:      false,
-		Label:        label,
+		Ip:          ip,
+		Pool:        pool,
+		Flow:        &models.Flow{Id: 0},
+		Status:      models.STATUS_INIT,
+		CreatedTime: time.Now(),
+		UpdatedTime: time.Now(),
+		NodeType:    models.Manual,
+		Deleted:     false,
+		Label:       label,
 	}
-	_,err := o.Insert(&data)
+	_, err := o.Insert(&data)
 	if err != nil {
-		beego.Error("insertinode failed,error:",err)
+		beego.Error("insertinode failed,error:", err)
 		return 0
 	}
 	return data.Id
 
 }
+
 // SearchPoolByIP returs the pool id of the ip given, if it exists
 func (c *ClusterService) SearchPoolByIP(ips []string) map[string]int {
 	o := orm.NewOrm()
@@ -142,6 +143,5 @@ func (c *ClusterService) GetAllLabels() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return providers,nil
+	return providers, nil
 }
-

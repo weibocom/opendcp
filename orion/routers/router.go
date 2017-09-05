@@ -81,8 +81,6 @@ func init() {
 		beego.NSRouter("/pause/:id:int", &api.FlowApi{}, "*:PauseFlow"),
 		beego.NSRouter("/flow/:id:int/log", &api.FlowApi{}, "*:GetFlowLogById"),
 
-
-
 		//beego.NSRouter("/run", &api.FlowApi{}, "*:RunFlow"),
 		beego.NSRouter("/list", &api.FlowApi{}, "*:ListFlow"),
 		beego.NSRouter("/:id:int", &api.FlowApi{}, "*:GetFlow"),
