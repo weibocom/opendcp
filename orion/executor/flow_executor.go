@@ -321,8 +321,8 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeStat
 		logService.Info(flow.Id, fmt.Sprintf("Finish running flow[%s,%d]", flow.Name, flow.Id))
 	}()
 
-	if exec.isFlowInState(flow, models.STATUS_RUNNING) {
-		logService.Info(flow.Id, fmt.Sprintf("Flow %s %d state =%d not in running state, ignore", flow.Name, flow.Id, flow.Status))
+	if !exec.isFlowInState(flow, models.STATUS_RUNNING) {
+		logService.Info(flow.Id, fmt.Sprintf("Flow %s %d state =%d in not running state, ignore", flow.Name, flow.Id, flow.Status))
 		return nil
 	}
 
