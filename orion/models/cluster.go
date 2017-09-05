@@ -44,5 +44,3 @@ type Pool struct {
 	Tasks   string   `json:"tasks"`   //对应任务(task_name arr)
 	Service *Service `json:"-" orm:"rel(fk);on_delete(cascade)"`
 }
-
-
