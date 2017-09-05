@@ -445,7 +445,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		okNodes, errNodes := exec.RunStep(doHandler, step, runStepIndex, needRunStepNodeState, stepParams, retryOption, stepRunTimeArray)
 
 		logService.Error(fid, fmt.Sprintf("node run result: ok(%d) err(%d)", len(okNodes), len(errNodes)))
-		
+
 		if len(okNodes) == 0 {
 			nodeState = errNodes[0]
 			logService.Error(fid, fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
@@ -539,6 +539,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 
 		// retry if failed
 		if result.Code == handler.CODE_ERROR {
+			errNodes = toRun
 			msg := fmt.Sprintf("Fail to run step [%s]: %s", step.Name, result.Msg)
 			logService.Error(fid, msg)
 			continue
@@ -547,6 +548,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		// handle result, retry if failed
 		results := result.Result
 		if results == nil {
+			errNodes = toRun
 			msg := fmt.Sprintf("Node results is empty for [%s]", step.Name)
 			logService.Error(fid, msg)
 			continue
