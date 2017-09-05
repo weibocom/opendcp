@@ -151,6 +151,16 @@ func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, er
 	return nodeList, err
 }
 
+func (f *FlowService) GetAllNodeStatesByFlowId(flowId int) ([]*models.NodeState, error) {
+	o := orm.NewOrm()
+
+	nodeList := make([]*models.NodeState, 0)
+
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Flow", flowId).All(&nodeList)
+
+	return nodeList, err
+}
+
 func (f *FlowService) GetAllNodeStatusByFlowId(flowId int, status int) ([]*models.NodeState, error) {
 	o := orm.NewOrm()
 

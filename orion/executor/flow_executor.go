@@ -807,7 +807,7 @@ func (exec *FlowExecutor) terminateFlow(flow *models.Flow) (err error) {
 		flowStatus             int
 	)
 
-	if states, err = flowService.GetNodeStatusByFlowId(flow.Id); err != nil {
+	if states, err = flowService.GetAllNodeStatesByFlowId(flow.Id); err != nil {
 		return err
 	}
 
