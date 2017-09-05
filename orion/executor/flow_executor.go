@@ -161,13 +161,13 @@ func (exec *FlowExecutor) Create(flowImpl *models.FlowImpl, name string, option 
 			beego.Error("Fail to create flow instance", err)
 			return instances, newNodes, err
 		}
-		newNodes, err := exec.CreateNodeStates(instance, poolNode)
+		createNodes, err := exec.CreateNodeStates(instance, poolNode)
 		if err != nil {
 			beego.Error("Fail to create node states for flow: ", instance.Name, err)
 			flowService.DeleteBase(instance)
 			return instances, newNodes, err
 		}
-		newNodes[instance.Id] = newNodes
+		newNodes[instance.Id] = createNodes
 		instances = append(instances, instance)
 	}
 
