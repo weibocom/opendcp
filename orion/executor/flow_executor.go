@@ -448,11 +448,11 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 
 		if len(okNodes) == 0 {
 			nodeState = errNodes[0]
-			logService.Error(fid, fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
+			logService.Error(fid, fmt.Sprintf("node %d status %d run fail at step %s", nodeState.Id, nodeState.Status, step.Name))
 			break
 		} else {
 			nodeState = okNodes[0]
-			logService.Info(fid, fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
+			logService.Info(fid, fmt.Sprintf("node %d status %d run success at step %s", nodeState.Id, nodeState.Status, step.Name))
 		}
 	}
 
@@ -612,6 +612,8 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		for _, node := range errNodes {
 			if _, err := exec.isStoppedNode(node.Flow, node); err != nil {
 				logService.Error(fid, "judge runNode is stopped status err: ", err)
+			}else {
+				node.Status = models.STATUS_FAILED
 			}
 		}
 	}
