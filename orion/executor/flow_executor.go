@@ -602,7 +602,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		for _, node := range errNodes {
 			if _, err := exec.isStoppedNode(node.Flow, node); err != nil {
 				logService.Error(fid, "judge runNode is stopped status err: ", err)
-			}else {
+			} else {
 				node.Status = models.STATUS_RUNNING
 			}
 		}
@@ -612,7 +612,7 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		for _, node := range errNodes {
 			if _, err := exec.isStoppedNode(node.Flow, node); err != nil {
 				logService.Error(fid, "judge runNode is stopped status err: ", err)
-			}else {
+			} else {
 				node.Status = models.STATUS_FAILED
 			}
 		}
@@ -892,32 +892,48 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 
 func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
 
-	var (
-		timeout = time.After(25 * time.Minute)
-	)
-
 	for i := 0; i < len(nodes); i++ {
 		select {
 		case <-resultChannel:
-		case <-timeout:
-			runningNodes, err := flowService.GetAllNodeStatusByFlowId(flow.Id, models.STATUS_RUNNING)
-			if err != nil{
-				return err
+		case <-time.After(25 * time.Minute):
+			logService.Error("Get node run result timeout")
+			if err := exec.handleNodeRunTimeOut(flow); err != nil {
+				logService.Error(flow.Id, "handle node run timeout err : ", err.Error())
+			} else {
+				logService.Info(flow.Id, "handle node run timeout done : ", err.Error())
 			}
-		        for _, runNode := range runningNodes {
-				runNode.Status = models.STATUS_FAILED
-				runNode.UpdatedTime = time.Now()
-				if err := flowService.ChangeNodeStatusById(runNode); err != nil{
-					logService.Error(flow.Id, "update node status err:", err.Error())
-				}
-			}
-			return errors.New("get node run result timeout")
 		}
 	}
 
 	return nil
 }
 
+func (exec *FlowExecutor) handleNodeRunTimeOut(flow *models.Flow) (err error) {
+	var (
+		runningNodes = make([]*models.NodeState, 0)
+		runLongNode  *models.NodeState
+		runLongTime  = 0.0
+	)
+	if runningNodes, err = flowService.GetAllNodeStatusByFlowId(flow.Id, models.STATUS_RUNNING); err != nil {
+		return err
+	}
+	if len(runningNodes) == 0 {
+		return nil
+	}
+	for _, runNode := range runningNodes {
+		if runNode.RunTime >= runLongTime {
+			runLongNode = runNode
+			runLongTime = runNode.RunTime
+		}
+	}
+	runLongNode.Status = models.STATUS_FAILED
+	runLongNode.UpdatedTime = time.Now()
+
+	if err = flowService.ChangeNodeStatusById(runLongNode); err != nil {
+		err = errors.New(fmt.Sprintf("update node status err: %s", err.Error()))
+	}
+	return err
+}
 func (exec *FlowExecutor) generateRunStepTime(nodeState *models.NodeState, steps []*models.ActionImpl) (stepRunTimeArray []*models.StepRunTime, err error) {
 
 	if err = json.Unmarshal([]byte(nodeState.StepRunTime), &stepRunTimeArray); err != nil {
