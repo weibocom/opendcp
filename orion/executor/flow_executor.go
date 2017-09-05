@@ -410,7 +410,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		return nil
 	}
 
-	for runStepIndex := startStepIndex; runStepIndex < len(steps); runStepIndex++ {
+	for runStepIndex = startStepIndex; runStepIndex < len(steps); runStepIndex++ {
 		step = steps[runStepIndex]
 		//read db to judge node is stopped
 		if isStopped, _ = exec.isStoppedNode(flow, nodeState); isStopped {
@@ -444,17 +444,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 
 		okNodes, _ := exec.RunStep(doHandler, step, runStepIndex, needRunStepNodeState, stepParams, retryOption, stepRunTimeArray)
 
-		if isStopped, _ = exec.isStoppedNode(flow, nodeState); isStopped {
-			logService.Info(fid, "the step: "+step.Name+" is terminate!")
-			break
-		}
-
 		if len(okNodes) == 0 {
 			logService.Error(fid, fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
 			break
 		} else {
-			nodeState.Status = models.STATUS_RUNNING
-			err = exec.UpdateNodeStatus(step.Name, runStepIndex, stepRunTimeArray, nodeState, models.STATUS_RUNNING)
 			logService.Info(fid, fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 		}
 	}
@@ -603,6 +596,8 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		for _, node := range errNodes {
 			if _, err := exec.isStoppedNode(node.Flow, node); err != nil {
 				logService.Error(fid, "judge runNode is stopped status err: ", err)
+			}else {
+				node.Status = models.STATUS_RUNNING
 			}
 		}
 		okNodes = append(okNodes, errNodes...)
