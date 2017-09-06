@@ -306,7 +306,7 @@ if($hasLimit){
             break;
         case 'finish':
             if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
-            $arrRecodeLog['t_action'] = '启动';
+            $arrRecodeLog['t_action'] = '完成';
             if(isset($arrJson) && !empty($arrJson)){
                 $tmpNodeIds = $arrJson["node_ids"];
                 foreach ($tmpNodeIds  as $k => $v)
@@ -325,8 +325,9 @@ if($hasLimit){
                 $tmpNodeIds = $arrJson["node_ids"];
                 foreach ($tmpNodeIds  as $k => $v)
                     $tmpNodeIds[$k] = (int)($v);
-                if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
+
                 $arrJson["node_ids"] = $tmpNodeIds;
+                if(isset($arrJson['id'])) $arrJson['id']=(int)$arrJson['id'];
                 $retArr = $mySelf->update($myUser, 'start', $arrJson, $arrJson['id']);
                 $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
             }
@@ -335,7 +336,7 @@ if($hasLimit){
             if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }
             $arrRecodeLog['t_action'] = '暂停';
             if(isset($arrJson) && !empty($arrJson)){
-                $tmpNodeIds = $arrJson["nodes_ids"];
+                $tmpNodeIds = $arrJson["node_ids"];
                 foreach ($tmpNodeIds  as $k => $v)
                     $tmpNodeIds[$k] = (int)($v);
 
@@ -344,6 +345,7 @@ if($hasLimit){
                 $retArr = $mySelf->update($myUser, 'pause', $arrJson, $arrJson['id']);
                 $logDesc = (isset($retArr['code']) && $retArr['code'] == 0) ? 'SUCCESS' : 'FAILED';
             }
+            break;
             break;
 //        case 'finish':
 //            if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }

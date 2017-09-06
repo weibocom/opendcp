@@ -358,7 +358,7 @@ func (f *FlowApi) StartFlow() {
 		return
 	}
 
-	restartNodes, err := f.getReStartNode(id)
+	restartNodes, err := f.getReStartNode(id, ids)
 	if err != nil {
 		f.ReturnFailed("get start nodes to err: "+err.Error(), 400)
 		return
@@ -694,7 +694,7 @@ func (f *FlowApi) popNodeStruct(obj *NodeState, state *node_state) {
 	}
 }
 
-func (f *FlowApi) getReStartNode(flowId int) ([]*NodeState, error) {
+func (f *FlowApi) getReStartNode(flowId int, ids []int) ([]*NodeState, error) {
 
 	restartNodes := make([]*NodeState, 0)
 
@@ -704,8 +704,12 @@ func (f *FlowApi) getReStartNode(flowId int) ([]*NodeState, error) {
 	}
 
 	for _, ns := range nodesList {
-		if ns.Status != STATUS_SUCCESS && ns.Status != STATUS_RUNNING {
-			restartNodes = append(restartNodes, ns)
+		for _, id := range ids{
+			if(ns.Id == id){
+				if ns.Status != STATUS_SUCCESS && ns.Status != STATUS_RUNNING {
+					restartNodes = append(restartNodes, ns)
+				}
+			}
 		}
 	}
 
