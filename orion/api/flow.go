@@ -354,7 +354,7 @@ func (f *FlowApi) StartFlow() {
 		return
 	}
 	if len(ids) == 0 {
-		f.ReturnFailed("no nodes to success", 400)
+		f.ReturnFailed("no nodes to start", 400)
 		return
 	}
 
@@ -364,7 +364,7 @@ func (f *FlowApi) StartFlow() {
 		return
 	}
 	if len(restartNodes) == 0 {
-		f.ReturnFailed("no nodes to start", 400)
+		f.ReturnFailed("no nodes to restart", 400)
 		return
 	}
 

@@ -378,8 +378,8 @@ func QueryLogByCorrelationIdAndInstanceId(instanceId string, correlationId strin
 	}
 	type octansResp struct {
 		Content struct {
-			Log []string
-		}
+				Log []string
+			}
 	}
 	resp := &octansResp{}
 	err = json.Unmarshal([]byte(raw), &resp)
@@ -446,7 +446,7 @@ func UpdateInstanceStatus(instanceId string, status models.InstanceStatus) (mode
 }
 
 
- func IsSuccess(successList []string, poolID int, label string, correlationId string) error{
+func IsSuccess(successList []string, poolID int, label string, correlationId string) error{
 	time.Sleep(3 * time.Minute)
 	if len(successList) > 0 {
 		for i := 0; i < 50; i++{

@@ -82,10 +82,11 @@ func (c *ClusterService) AppendIpList(ips []string, pool *models.Pool, label str
 	return respDatas
 }
 
-func (c *ClusterService) AppendIp(ip string, pool *models.Pool, label string) int {
+func (c *ClusterService) AppendIp(ip string, instanceId string, pool *models.Pool, label string) int {
 	o := orm.NewOrm()
 	data := models.NodeState{
 		Ip:          ip,
+		VmId:	     instanceId,
 		Pool:        pool,
 		Flow:        &models.Flow{Id: 0},
 		Status:      models.STATUS_INIT,
