@@ -353,6 +353,9 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeStat
 		exec.terminateFlow(flow)
 		return nil
 	}
+	// set all node to start
+
+
 
 	logService.Debug(flow.Id, fmt.Sprintf("Flow[%d] contains %d nodes", flow.Id, len(nodeStateList)))
 
@@ -875,12 +878,19 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 	filterNodeList := make([]*models.NodeState, 0)
 	for _, state := range states {
 		for _, rn := range runNodes {
-			if state.Id == rn.Id {
-				if state.Status != models.STATUS_RUNNING && state.Status != models.STATUS_SUCCESS {
-					filterNodeList = append(filterNodeList, state)
-				}
-				break
+			if state.Id != rn.Id {
+				continue
 			}
+			if state.Status != models.STATUS_RUNNING && state.Status != models.STATUS_SUCCESS {
+				state.Status = models.STATUS_RUNNING
+				state.UpdatedTime = time.Now()
+				if err := flowService.ChangeNodeStatusById(state); err != nil{
+					logService.Info(flow.Id, "update load node status err: ", err.Error())
+					continue
+				}
+				filterNodeList = append(filterNodeList, state)
+			}
+			break
 		}
 	}
 
