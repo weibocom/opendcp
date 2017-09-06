@@ -427,7 +427,7 @@ func (f *FlowApi) PauseFlow() {
 		return
 	}
 
-	obj, err := service.Flow.GetFlowWithRel(id)
+	_, err = service.Flow.GetFlowWithRel(id)
 	if err != nil {
 		f.ReturnFailed("flow not found id: "+_id, 400)
 		return
@@ -455,18 +455,21 @@ func (f *FlowApi) PauseFlow() {
 		return
 	}
 
+
+	f.ReturnSuccess(nil)
+
 	//if all running node is pause then flow is pause
-	if count == len(runningNodes) {
-		err = executor.Executor.Pause(obj)
-		if err != nil {
-			beego.Error("pause flow ", _id, "fails: ", err)
-			f.ReturnFailed("pause task "+_id+" fails: "+err.Error(), 400)
-		} else {
-			f.ReturnSuccess(nil)
-		}
-	} else {
-		f.ReturnSuccess(nil)
-	}
+	//if count == len(runningNodes) {
+	//	err = executor.Executor.Pause(obj)
+	//	if err != nil {
+	//		beego.Error("pause flow ", _id, "fails: ", err)
+	//		f.ReturnFailed("pause task "+_id+" fails: "+err.Error(), 400)
+	//	} else {
+	//		f.ReturnSuccess(nil)
+	//	}
+	//} else {
+	//	f.ReturnSuccess(nil)
+	//}
 }
 
 func (f *FlowApi) GetFlow() {
