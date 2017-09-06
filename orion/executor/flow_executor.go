@@ -181,12 +181,12 @@ func (exec *FlowExecutor) Start(flow *models.Flow, startNodes []*models.NodeStat
 
 	orign_flow_status := flow.Status
 
-	if exec.isFlowInState(flow, models.STATUS_RUNNING) {
-		logInfo := "Flow " + flow.Name + " is in state running: " + strconv.Itoa(flow.Status) + " do not start"
-		logService.Info(flow.Id, logInfo)
-
-		return errors.New(logInfo)
-	}
+	//if exec.isFlowInState(flow, models.STATUS_RUNNING) {
+	//	logInfo := "Flow " + flow.Name + " is in state running: " + strconv.Itoa(flow.Status) + " do not start"
+	//	logService.Info(flow.Id, logInfo)
+	//
+	//	return errors.New(logInfo)
+	//}
 
 	exec.SetFlowStatus(flow, models.STATUS_RUNNING)
 
