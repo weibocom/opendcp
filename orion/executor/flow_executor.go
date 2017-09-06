@@ -32,6 +32,7 @@ import (
 	"weibo.com/opendcp/orion/handler"
 	"weibo.com/opendcp/orion/models"
 	"weibo.com/opendcp/orion/service"
+	"net"
 )
 
 var (
@@ -179,7 +180,7 @@ func (exec *FlowExecutor) Start(flow *models.Flow, startNodes []*models.NodeStat
 	lock.Lock()
 	defer lock.Unlock()
 
-	orign_flow_status := flow.Status
+	//orign_flow_status := flow.Status
 
 	//if exec.isFlowInState(flow, models.STATUS_RUNNING) {
 	//	logInfo := "Flow " + flow.Name + " is in state running: " + strconv.Itoa(flow.Status) + " do not start"
@@ -194,7 +195,7 @@ func (exec *FlowExecutor) Start(flow *models.Flow, startNodes []*models.NodeStat
 	job := func() error {
 		logService.Info(flow.Id, "Run flow...")
 
-		err := exec.RunFlow(flow, startNodes, orign_flow_status)
+		err := exec.RunFlow(flow, startNodes)
 		if err != nil {
 			logService.Error(flow.Id, "Run flow error：", err)
 			return err
@@ -305,7 +306,7 @@ func (exec *FlowExecutor) isRunning(flow *models.Flow) bool {
 }
 
 // run the task by batches.
-func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeState, orign_flow_status int) (err error) {
+func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeState) (err error) {
 
 	var (
 		nodeStateList []*models.NodeState
@@ -421,10 +422,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 			break
 		}
 		//check the nodeState has create vm
-		if step.Name == "create_vm" && nodeState.Ip != "-" {
-			logService.Error(fid, "the node has already create the node ip: ", nodeState.Ip)
-			nodeState.Status = models.STATUS_FAILED
-			break
+		if step.Name == "create_vm" && exec.HaveIp(nodeState.Ip) {
+			logService.Warn(fid, "the node has already create the node ip: ", nodeState.Ip)
+			//nodeState.Status = models.STATUS_FAILED
+			continue
 		}
 		doHandler := handler.GetHandler(step.Type)
 		if doHandler == nil {
@@ -758,6 +759,15 @@ func (exec *FlowExecutor) MergeParams(options []*models.StepOption,
 	}
 }
 
+func (exec *FlowExecutor) HaveIp(ip string) bool{
+
+	if parseIp := net.ParseIP(ip); parseIp == nil{
+		return false
+	}
+
+	return true
+}
+
 /**
 * xxxxxxx
 *
@@ -801,9 +811,9 @@ func (exec *FlowExecutor) terminateFlow(flow *models.Flow) (err error) {
 
 	defer func() {
 		if err != nil {
-			logService.Error(flow.Id, "terminate Flow is err: ", err.Error())
+			logService.Error(flow.Id, "Terminate Flow is err: ", err.Error())
 		} else {
-			logService.Info(flow.Id, "terminate Flow status: ", flow.Status)
+			logService.Info(flow.Id, "Terminate Flow status: ", flow.Status)
 		}
 	}()
 

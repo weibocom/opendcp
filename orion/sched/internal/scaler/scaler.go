@@ -597,7 +597,7 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 			}
 		}
 
-		if nodeState.Ip != "-" && step.Name == "create_vm" {
+		if step.Name == "create_vm" && executor.Executor.HaveIp(nodeState.Ip){
 			lg.Infof(fmt.Sprintf("node %d already create_vm no neeed to run: %s skip", nodeState.Id, step.Name))
 			nodeState.Status = models.STATUS_RUNNING
 			//send notice
