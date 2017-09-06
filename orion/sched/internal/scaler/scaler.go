@@ -552,7 +552,9 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 
 		if stopped = checFlowAndNodeStop(ctx, flow, nodeState); stopped {
 			lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
-			nodeState.Status = models.STATUS_STOPPED
+			if nodeState.Status != models.STATUS_STOPPED && nodeState.Status != models.STATUS_SUCCESS{
+				nodeState.Status = models.STATUS_STOPPED
+			}
 			runSuccess = false
 			break
 		}
@@ -568,7 +570,9 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 				// check flow status again
 				if stopped = checFlowAndNodeStop(ctx, flow, nodeState); stopped {
 					lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
-					nodeState.Status = models.STATUS_STOPPED
+					if nodeState.Status != models.STATUS_STOPPED && nodeState.Status != models.STATUS_SUCCESS{
+						nodeState.Status = models.STATUS_STOPPED
+					}
 					runSuccess = false
 					break
 				}
@@ -615,8 +619,15 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 			break
 
 		} else {
-			lg.Infof(fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
-			nodeState.Status = models.STATUS_RUNNING
+			if okNodes[0].Status != models.STATUS_RUNNING{
+				nodeState.Status = okNodes[0].Status
+				runSuccess = false
+				lg.Infof(fmt.Sprintf("node %d status %d run stop at step %s", nodeState.Id, nodeState.Status, step.Name))
+				break
+			}else {
+				lg.Infof(fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
+				nodeState.Status = models.STATUS_RUNNING
+			}
 		}
 		//send notice
 		if isdep && step.Name == noticeStep && runSuccess && !hasNotice {
@@ -680,12 +691,14 @@ func generateRunTimeStep(nodeState *models.NodeState, steps []*models.ActionImpl
 func checFlowAndNodeStop(ctx context.Context, flow *models.Flow, node *models.NodeState) bool {
 	var stopped = false
 	freshFlow, _ := service.Flow.GetFlowWithRel(flow.Id)
-	if freshFlow.Status == models.STATUS_STOPPED {
+	if freshFlow.Status == models.STATUS_STOPPED || freshFlow.Status  == models.STATUS_SUCCESS{
+		node.Status = freshFlow.Status
 		stopped = true
 	} else {
 		freshNode, _ := service.Flow.GetNodeById(node.Id)
-		if freshNode.Status == models.STATUS_STOPPED {
+		if freshNode.Status == models.STATUS_STOPPED || freshNode.Status == models.STATUS_SUCCESS{
 			stopped = true
+			node.Status = freshNode.Status
 		}
 	}
 	// cancel point
