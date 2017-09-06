@@ -452,10 +452,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 			break
 		} else {
 			nodeState = okNodes[0]
-			if nodeState.Status != models.STATUS_RUNNING{
+			if nodeState.Status != models.STATUS_RUNNING {
 				logService.Error(fid, fmt.Sprintf("node %d status %d stop at step %s", nodeState.Id, nodeState.Status, step.Name))
 				break
-			}else {
+			} else {
 				logService.Info(fid, fmt.Sprintf("node %d status %d run success at step %s", nodeState.Id, nodeState.Status, step.Name))
 			}
 		}
