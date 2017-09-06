@@ -22,24 +22,21 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 	"github.com/astaxie/beego"
+	"time"
 
-	"weibo.com/opendcp/jupiter/logstore"
-	"net/http"
-	"io/ioutil"
 	"bytes"
 	"errors"
 	log "github.com/astaxie/beego"
-
+	"io/ioutil"
+	"net/http"
+	"weibo.com/opendcp/jupiter/logstore"
 )
 
-
-
 var (
-	ORION_ADDR    = beego.AppConfig.String("orion_mgr_addr")
+	ORION_ADDR = beego.AppConfig.String("orion_mgr_addr")
 
-	ADD_NODE_URL  = "http://%s/pool/%d/add_phy_dev"
+	ADD_NODE_URL = "http://%s/pool/%d/add_phy_dev"
 )
 
 var (
@@ -49,60 +46,56 @@ var (
 )
 
 type AppendPhyDevContent struct {
-	Success int      `json:"success"`
-	Failed  int      `json:"failed"`
-	SuccessList  []string `json:"successes"`
-	ErrorList  []string `json:"errors"`
-	ErrorMsg   []string `json:"error_msg"`
+	Success     int      `json:"success"`
+	Failed      int      `json:"failed"`
+	SuccessList []string `json:"successes"`
+	ErrorList   []string `json:"errors"`
+	ErrorMsg    []string `json:"error_msg"`
 }
 
 type sdCmdResp struct {
 	Code    int
-	Message string `json:"msg"`
+	Message string              `json:"msg"`
 	Content AppendPhyDevContent `json:"data"`
 }
 
+func AddPhyDevToPool(ips []string, pool_id int, label string, correlationId string, finalInstanceId []string) (*sdCmdResp, error) {
 
-
-func  AddPhyDevToPool(ips []string, pool_id int, label string, correlationId string, finalInstanceId []string) (*sdCmdResp, error) {
-
-	return do(ADD_NODE_URL, ips, pool_id,label, correlationId, finalInstanceId)
+	return do(ADD_NODE_URL, ips, pool_id, label, correlationId, finalInstanceId)
 }
 
+func do(action string, ips []string, pool_id int, label string, correlationId string, finalInstanceId []string) (*sdCmdResp, error) {
 
-func  do(action string, ips []string, pool_id int, label string, correlationId string, finalInstanceId []string) (*sdCmdResp, error) {
-
-	for _ , id := range finalInstanceId {
-		logstore.Info(correlationId,id, "begin to add to pool")
+	for _, id := range finalInstanceId {
+		logstore.Info(correlationId, id, "begin to add to pool")
 	}
 
 	data := make(map[string]interface{})
 	data["nodes"] = ips
-	data["label"]= label
-
+	data["label"] = label
+	data["instanceId"] =finalInstanceId
 
 	header := make(map[string]interface{})
 
-
 	resp := &sdCmdResp{}
 	url := fmt.Sprintf(action, ORION_ADDR, pool_id)
-	_ ,err := callAPI("POST", url, &data, &header, resp)
+	_, err := callAPI("POST", url, &data, &header, resp)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	beego.Info("hhhhhhhhhhhh")
 	beego.Info(resp.Content)
 	//beego.Info(resp.Content["errors"])
 	//beego.Info(resp.Content.(AppendPhyDevContent))
 	if resp.Code != 0 {
-		return resp,errors.New("add failed")
+		return resp, errors.New("add failed")
 	} else {
-		return resp,nil
+		return resp, nil
 	}
 }
 
-func  callAPI(method string, url string,
-	data *map[string]interface{}, header *map[string]interface{}, obj interface{}) (string, error) {
+func callAPI(method string, url string,
+data *map[string]interface{}, header *map[string]interface{}, obj interface{}) (string, error) {
 
 	msg, err := Do(method, url, data, header)
 	if err != nil {
@@ -114,14 +107,12 @@ func  callAPI(method string, url string,
 	if err != nil {
 		beego.Error("Fail to unmarshal", msg, "err:", err)
 		beego.Error("Bad resp:", msg)
-		return "",errors.New("Bad resp: " + msg)
+		return "", errors.New("Bad resp: " + msg)
 	}
-	return msg,nil
+	return msg, nil
 }
 
-
-
-func  Do(method string, url string, data *map[string]interface{}, header *map[string]interface{}) (string, error) {
+func Do(method string, url string, data *map[string]interface{}, header *map[string]interface{}) (string, error) {
 
 	jsonBytes, err := json.Marshal(&data)
 	if err != nil {
