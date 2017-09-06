@@ -433,13 +433,16 @@ func (f *FlowApi) PauseFlow() {
 		return
 	}
 
-	ids, err := f.getNodeId()
-	if err != nil {
-		f.ReturnFailed("get fucking nodes err: "+err.Error(), 400)
+	req := struct {
+		Ids []int `json:"node_ids"`
+	}{}
+	if err := f.Body2Json(&req); err != nil {
+		f.ReturnFailed("get fucking nodes err: " + err.Error(), 400)
 		return
 	}
-	if len(ids) == 0 {
-		f.ReturnFailed("no nodes to success", 400)
+
+	if len(req.Ids) == 0 {
+		f.ReturnFailed("no nodes to pause", 400)
 		return
 	}
 
@@ -449,7 +452,7 @@ func (f *FlowApi) PauseFlow() {
 		return
 	}
 
-	count, err := f.changeNodeStatus(ids, runningNodes, STATUS_STOPPED)
+	count, err := f.changeNodeStatus(req.Ids, runningNodes, STATUS_STOPPED)
 	if count == 0 && err != nil {
 		f.ReturnFailed("set fucking node stopped err: "+err.Error(), 400)
 		return
