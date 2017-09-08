@@ -110,6 +110,7 @@ func (f *RoleApi) RoleAppend() {
 		return
 	}
 
+	_ = service.Role.RemoveRoleFile(&obj)
 	err = service.Role.BuildRoleFile(&obj)
 	if err != nil {
 		dirtyObj := &models.Role{

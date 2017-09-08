@@ -241,7 +241,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `flow_impl` WRITE;
 INSERT INTO `flow_impl` VALUES
-    (1,'expand_nginx','扩容nginx服务','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"install_nginx\",\"param_values\":{\"check_port\":80,\"check_times\":30,\"eth\":\"eth1\",\"octans_host\":\"host_ip\"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
+    (1,'expand_nginx','扩容nginx服务','[{"name":"create_vm","param_values":{"vm_type_id":3},"retry":{"retry_times":0,"ignore_error":false}},{"name":"install_nginx","param_values":{},"retry":{"retry_times":0,"ignore_error":false}},{"name":"check_port","param_values":{"check_port":80,"check_times":30},"retry":{"retry_times":0,"ignore_error":false}}]'),
     (2,'undeploy_nginx','缩容nginx服务','[{\"name\":\"return_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":2,\"ignore_error\":false}}]'),
     (3,'noop','No op','[{\"name\":\"echo\",\"param_values\":{\"echo_word\":\"noop\"},\"retry\":{\"retry_times\":0,\"ignore_error\":true}}]'),
     (4,'expand_my_server','扩容my_server','[{\"name\":\"create_vm\",\"param_values\":{\"vm_type_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"start_service\",\"param_values\":{\"host\":\"host\",\"name\":\"my_server\",\"tag\":\"registry.cn-beijing.aliyuncs.com/opendcp/java-web:latest \"},\"retry\":{\"retry_times\":0,\"ignore_error\":false}},{\"name\":\"register\",\"param_values\":{\"service_discovery_id\":1},\"retry\":{\"retry_times\":0,\"ignore_error\":false}}]'),
@@ -260,7 +260,7 @@ INSERT INTO `remote_action` VALUES
     (3,'check_url','检测URL','ansible_task','{\"check_keyword\":\"string\",\"check_url\":\"string\"}'),
     (4,'stop_docker','停止Docker容器','ansible_task','{\"name\":\"string\"}'),
     (5,'echo','echo','ansible_task','{\"echo_word\":\"string\"}'),
-    (6,'install_nginx','安装nginx','ansible_task','{\"eth\":\"string\",\"octans_host\":\"string\"}'),
+    (6,'install_nginx','安装nginx','ansible_role','{}'),
     (7,'init_controller','初始化openstack控制节点','ansible_task','{\"opendcp_host\":\"string\"}'),
     (8,'init_compute','init_compute','ansible_task','{\"opendcp_host\":\"string\"}'),
     (9,'add-default-image','添加openstack Centos7缺省镜像','ansible_task','{}'),
@@ -274,7 +274,7 @@ INSERT INTO `remote_action_impl` VALUES
     (3,'ansible','ansible_task','{\"action\":{\"content\":\"sleep 20\\nres=`curl -m 400 {{check_url}} | grep {{check_keyword}}`\\nif [ \\\"\\\" != \\\"$res\\\" ]; then\\n    echo \\\"OK\\\"\\n    exit 0\\nfi\\n\\necho \\\"check fails\\\"\\nexit 1\\n\",\"module\":\"longscript\"}}',3),
     (4,'ansible','ansible_task','{\"action\":{\"content\":\"cname={{name}}\\ncontainer=`docker ps|grep -w $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n    docker stop $cname\\nfi\\nsleep 5\\ncontainer=`docker ps -af status=exited|grep -w  $cname`\\nif [ \\\"\\\" != \\\"$container\\\" ];then\\n        docker rm $cname\\nfi\\nexit 0\",\"module\":\"longscript\"}}',4),
     (5,'ansible','ansible_task','{\"action\":{\"args\":\"echo {{echo_word}} \",\"module\":\"shell\"}}',5),
-    (6,'ansible','ansible_task','{\"action\":{\"content\":\"#!/bin/sh\\n\\n# get ip address\\nIP=`ifconfig {{eth}} | grep -w inet | awk \'{print $2}\'`\\necho \\\"IP is $IP\\\"\\n\\n# run role\\necho \\\"Deploy nginx on $IP ...\\\"\\nNOW=`date +\\\"%Y%m%d-%H%M%S\\\"`\\ncurl -l -H \\\"Content-type: application/json\\\" -H \\\"X-CORRELATION-ID: $IP-$NOW\\\" -H \\\"X-SOURCE: orion\\\" -X POST \\\\\\n    -d  \\\"{\\\\\\\"tasks\\\\\\\": [\\\\\\\"hubble-nginx\\\\\\\"], \\\\\\\"name\\\\\\\": \\\\\\\"$IP-$NOW\\\\\\\", \\\\\\\"fork_num\\\\\\\":5, \\\\\\\"tasktype\\\\\\\": \\\\\\\"ansible_role\\\\\\\", \\\\\\\"nodes\\\\\\\": [\\\\\\\"$IP\\\\\\\"], \\\\\\\"user\\\\\\\": \\\\\\\"root\\\\\\\"}\\\" \\\\\\n    http://$IP:8000/api/parallel_run\\n \",\"module\":\"longscript\"}}',6),
+    (6,'ansible','ansible_role','{\"action\":{\"module\":\"role\"}}',6),
     (7,'ansible','ansible_task','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init.sh\\nsh init.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',7),
     (8,'ansible','ansible_task','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x init_compute.sh\\nsh init_compute.sh {{opendcp_host}} \\u003e /tmp/osk.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',8),
     (9,'ansible','ansible_task','{\"action\":{\"content\":\"docker rm -f oskfile\\ndocker pull registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\ndocker run --name=oskfile -tid registry.cn-beijing.aliyuncs.com/opendcp/openstack-scripts:latest\\nrm -rf /tmp/oskfile\\nmkdir -p /tmp/oskfile\\ndocker cp oskfile:/data1/openstack /tmp/oskfile\\ncd /tmp/oskfile/openstack\\necho \'start\'\\nchmod +x add-default-image.sh\\nsh add-default-image.sh \\u003e /tmp/addimage.log 2\\u003e\\u00261\\necho \'ok\'\\nrm -rf /tmp/oskfile\\ndocker rm -f oskfile\",\"module\":\"longscript\"}}',9),
@@ -284,13 +284,84 @@ UNLOCK TABLES;
 LOCK TABLES `remote_step` WRITE;
 INSERT INTO `remote_step` VALUES
     (3,'echo','echo','[\"echo\"]'),
-    (4,'install_nginx','安装nginx','[\"install_nginx\",\"check_port\"]'),
+    (4,'install_nginx','安装nginx','[\"install_nginx\"]'),
     (8,'start_service','启动服务','[\"start_docker\"]'),
     (9,'stop_service','停止服务','[\"stop_docker\"]'),
     (10,'init_controller','controller初始化','[\"init_controller\"]'),
     (11,'init_compute','init_compute','[\"init_compute\"]'),
     (12,'add-default-image','添加openstack缺省镜像','[\"add-default-image\"]'),
-    (13,'init_storage','init_storage','[\"init_storage\"]');
+    (13,'init_storage','init_storage','[\"init_storage\"]'),
+    (14,'check_port','check_port','[\"check_port\"]');
+UNLOCK TABLES;
+
+LOCK TABLES  `role_resource` WRITE;
+INSERT INTO `role_resource` VALUES
+    (1,'task_install_nginx', '安装nginx', 'task', '---
+- name: install rsync
+  yum: name=rsync state=present
+
+- name: create dest dir
+  shell: ''mkdir -p /usr/local/nginx_conf/upstream''
+
+- name: copy nginx main config file nginx.conf
+  copy: src=/etc/ansible/roles/install_nginx_role/templates/nginx.conf.j2 dest=/usr/local/nginx_conf/nginx.conf
+
+- name: copy nginx upstream config file default.upstream
+  copy: src=/etc/ansible/roles/install_nginx_role/templates/default.upstream.j2 dest=/usr/local/nginx_conf/upstream/default.upstream
+
+- name: start a docker container
+  shell: ''docker run -d -v /usr/local/nginx_conf:/usr/local/nginx/conf --name opendcp_lb_ngx_ctn --net=host registry.cn-beijing.aliyuncs.com/opendcp/hubble-nginx:latest ./run.sh''
+', '', 0, 0, 0, '2017-09-08 02:07:34', '2017-09-08 02:07:34', '', '', '', ''),
+    (2, 'default.upstream', 'default.upstream', 'template', '#DEFAULT.UPSTREAM
+upstream default_upstream{
+		keepalive 60;
+		server 127.0.0.1:8080 max_fails=0 fail_timeout=30s weight=20;
+		check interval=1000 rise=3 fall=2 timeout=3000 type=http default_down=false;
+		check_http_send "GET / HTTP/1.0\\r\\n\\r\\n";
+		check_http_expect_alive http_2xx;
+}
+', '', 0, 0, 0, '2017-09-08 02:08:31', '2017-09-08 02:08:31', '', '', '', ''),
+    (3, 'nginx.conf', 'nginx.conf', 'template', '#DEFAULT MAIN CONFIG FILE: nginx.conf
+error_log /usr/local/nginx/logs/error.log notice;
+pid /usr/local/nginx/logs/nginx.pid;
+
+events {
+	worker_connections 1024;
+	use   epoll;
+}
+
+http {
+	default_type  application/octet-stream;
+	log_format  main  ''$remote_addr - $remote_user [$time_local] "$request" ''
+					  ''$status $body_bytes_sent "$http_referer" ''
+					  ''"$http_user_agent" "$http_x_forwarded_for" $request_time'';
+
+	include upstream/*.upstream;
+
+	#DEFAULT VHOST
+	server {
+		listen       80;
+		server_name  0.0.0.0:80;
+		location / {
+			proxy_pass http://default_upstream;
+		}
+
+		location /status {
+			check_status;
+			access_log on;
+		}
+
+		access_log  logs/default_vhost.log main;
+	}
+
+	access_log logs/access.log  main;
+}
+', '', 0, 0, 0, '2017-09-08 02:09:01', '2017-09-08 02:09:01', '', '', '', '');
+UNLOCK TABLES;
+
+LOCK TABLES `role` WRITE;
+INSERT INTO `role` VALUES
+    (1, 'install_nginx', 'role_task_nginx', '', '', '', '', '1', '2,3', '', '', 0, '2017-09-08 02:09:48', '2017-09-08 02:09:48');
 UNLOCK TABLES;
 
 
