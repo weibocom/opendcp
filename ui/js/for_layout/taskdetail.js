@@ -485,7 +485,6 @@ var twiceCheck = function (action, idx, ip) {
                             postNodeIds.push(node_id);
                             list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
 
-
                         });
                     }
                     if(cache.ip.running.length > 0){
@@ -494,19 +493,17 @@ var twiceCheck = function (action, idx, ip) {
                             var node_ip = node[1];
                             diableCount++;
                             list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'(<span style="margin-left:3px;" class="badge bg-purple">任务执行中</span>)</span>';
-                            notice = '<div class="alert alert-danger">错误信息：任务执行中</div>';
+                            notice = '<div class="alert alert-danger">错误信息：任务执行中或者已成功</div>';
 
                         });
                     }
                     if(cache.ip.success.length > 0){
                         $('input:checkbox[id=list_success]:checked').each(function(i){
-                            count++;
                             var node = $(this).val().split("_");
-                            var node_id = node[0];
                             var node_ip = node[1];
-                            postNodeIds.push(node_id);
-                            list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
-
+                            diableCount++;
+                            list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(2)+')</span>';
+                            notice = '<div class="alert alert-danger">错误信息：任务执行中或者已成功</div>';
                         });
                     }
                     if(cache.ip.failed.length > 0){
@@ -606,7 +603,7 @@ var twiceCheck = function (action, idx, ip) {
                         var node = $(this).val().split("_");
                         var node_ip = node[1];
                         list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(0)+')</span>';
-                        notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+                        notice='<div class="alert alert-danger">错误信息：任务未启动、暂停或已完成</div>';
 
                     });
                 }
@@ -626,30 +623,30 @@ var twiceCheck = function (action, idx, ip) {
                         var node = $(this).val().split("_");
                         var node_ip = node[1];
                         list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(2)+')</span>';
-                        notice='<div class="alert alert-danger">错误信息：任务未启动或已完成</div>';
+                        notice='<div class="alert alert-danger">错误信息：任务未启动、暂停或已完成</div>';
 
                     });
                 }
 
                 if(cache.ip.failed.length > 0){
                     $('input:checkbox[id=list_failed]:checked').each(function(i){
-                        count++;
+                        diableCount++;
                         var node = $(this).val().split("_");
-                        var node_id = node[0];
                         var node_ip = node[1];
-                        postNodeIds.push(node_id);
-                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(3)+')</span>';
+                        notice='<div class="alert alert-danger">错误信息：任务未启动、暂停或已完成</div>';
+
                     });
                 }
 
                 if(cache.ip.stoped.length > 0){
                     $('input:checkbox[id=list_stoped]:checked').each(function(i){
-                        count++;
+                        diableCount++;
                         var node = $(this).val().split("_");
-                        var node_id = node[0];
                         var node_ip = node[1];
-                        postNodeIds.push(node_id);
-                        list+='<span class="col-sm-3" id="check_'+node_ip+'">'+node_ip+'</span>';
+                        list+='<span class="col-sm-3 text-success" id="check_'+node_ip+'">'+node_ip+'('+getStatusAlias(4)+')</span>';
+                        notice='<div class="alert alert-danger">错误信息：任务未启动、暂停或已完成</div>';
+
                     });
                 }
                 break;
@@ -657,9 +654,11 @@ var twiceCheck = function (action, idx, ip) {
                 modalTitle = '';
                 break;
         }
+        var total_count = count+diableCount;
         modalBody = modalBody + '<div class="form-group col-sm-12">';
         modalBody = modalBody + '<h4>确认' + modalTitle + '? <span class="text text-primary">警告! 请谨慎操作!</span></h4>';
-        modalBody+='<p><strong class="text-primary">选中总数</strong>: 共 <span class="badge badge-danger">'+count+'</span> 个 </p>';
+        modalBody+='<p><strong class="text-primary">选中总数</strong>: 共 <span class="badge badge-danger">'+total_count+'</span> 个 </p>';
+        modalBody+='<p><strong class="text-primary">可用总数</strong>: 共 <span class="badge badge-danger">'+count+'</span> 个 </p>';
         modalBody = modalBody + '<strong class="text-primary">任务ID: ' + idx + '</strong><br/>';
         modalBody+='<div style="margin-top:5px;" class="col-sm-12">'+list+'</div>';
         modalBody = modalBody + '</div>';
@@ -685,11 +684,9 @@ var twiceCheck = function (action, idx, ip) {
             $('#modalNotice').html('<div class="alert alert-danger">错误信息：没有选中任何节点</div>');
         }
     }else{
+        $('#btnCommit').attr('disabled', btnDisable);
         if (notice != '') {
             $('#modalNotice').html(notice);
-            $('#btnCommit').attr('disabled', true);
-        } else {
-            $('#btnCommit').attr('disabled', btnDisable);
         }
     }
 

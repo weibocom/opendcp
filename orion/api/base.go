@@ -62,7 +62,6 @@ func (b *baseAPI) Body2Json(obj interface{}) error {
 	}
 
 	fmt.Println(string(bytes[:]))
-	fmt.Println("123456")
 	return json.Unmarshal(bytes, obj)
 }
 

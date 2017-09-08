@@ -204,6 +204,7 @@ var processBody = function (data, head, body) {
                 var btnAdd = '', btnEdit = '', btnDel = '', btnSet = '';
                 switch (tab) {
                     case 'service':
+                        []
                         if (i == 0) cache.service_id = v.id;
                         cache.service.push(v);
                         td = '<td title="服务ID: ' + v.id + '"><a class="tooltips" title="查看服务详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'service\',\'' + v.id + '\')">' + v.name + '</a></td>';

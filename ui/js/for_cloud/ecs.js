@@ -237,9 +237,9 @@ var change=function(step){
         labels=postData['user_label'];
     }
     $.each(opts,function(i){
-      if(this.selected){
-        sql_labels += (sql_labels=='')?this.value:','+this.value;
-      }
+        if(this.selected){
+            sql_labels += (sql_labels=='')?this.value:','+this.value;
+        }
     });
     labels+=(labels=='')?sql_labels:((sql_labels=='')?'':","+sql_labels);
     postData['label']=labels;
@@ -447,7 +447,7 @@ var twiceCheck=function(action,idx,desc,status){
                     if(!desc) desc=idx;
                     if(desc) ecsIps=(ecsIps)?','+desc:desc;
                     cache.ecs_del[desc]=idx;
-                    if((status>0&&status<5)||status==7){
+                    if((status>0&&status<5)||status==7 || status == 8){
                         postDel.push(idx);
                         list+='<span class="col-sm-3">'+desc+'</span>';
                     }else{
@@ -911,5 +911,5 @@ var getLabel=function(){
 
 
 var addLabels=function(){
-$("#user_label").parent().attr("hidden",false);
+    $("#user_label").parent().attr("hidden",false);
 }
