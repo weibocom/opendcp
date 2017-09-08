@@ -1,5 +1,22 @@
+/**
+ *    Copyright (C) 2016 Weibo Inc.
+ *
+ *    This file is part of Opendcp.
+ *
+ *    Opendcp is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; version 2 of the License.
+ *
+ *    Opendcp is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with Opendcp; if not, write to the Free Software
+ *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
+ */
 package openstack
-
 
 import (
 	"fmt"
@@ -21,7 +38,8 @@ import (
 	"github.com/rackspace/gophercloud/openstack/blockstorage/v1/volumetypes"
 )
 
-
+//openstack provider的实现引用了OpenStack官方的Go SDK
+//具体API可查看 http://gophercloud.io/docs/compute/
 
 type openstackProvider struct {
 	client *gophercloud.ServiceClient
@@ -29,12 +47,13 @@ type openstackProvider struct {
 }
 
 func init(){
-
 	provider.RegisterProviderDriver("openstack", new)
 }
 
-
+//instanceTypesInOpenStack 用于建立flavor ID到flavor Name之间的映射
 var instanceTypesInOpenStack = map[string]string{}
+
+//本地缓存每个Flavor Id 对应的Vcpu、Ram、Disk、网络
 var VcpuInOpenStack = map[string]string{}
 var RamInOpenStack = map[string]string{}
 var DiskInOpenStack = map[string]string{}
@@ -42,7 +61,6 @@ var networksInOpenStack = map[string]string{}
 
 
 //列出所有server
-
 func (driver openstackProvider) List(regionId string, pageNumber int, pageSize int) (*models.ListInstancesResponse, error) {
 	opts1 := servers.ListOpts{}
 	pager := servers.List(driver.client, opts1)
@@ -55,40 +73,22 @@ func (driver openstackProvider) List(regionId string, pageNumber int, pageSize i
 			instance.TenantId = instanceOP.TenantID
 			instance.UserId = instanceOP.UserID
 			instance.Name = instanceOP.Name
-			//instance.Updated = instanceOP.Updated
-			//instance.Created = instanceOP.Created
-			//instance.HostID = instanceOP.HostID
 			instance.Status = instanceOP.Status
-			//instance.Progress = instanceOP.Progress
-			//instance.AccessIPv4 = instanceOP.AccessIPv4
-			//instance.AccessIPv6 = instanceOP.AccessIPv6
-			//instance.Image = instanceOP.Image
-			//instance.Flavor = instanceOP.Flavor
-			//instance.Addresses = instanceOP.Addresses
-			//instance.Metadata = instanceOP.Metadata
-			//instance.Links = instanceOP.Links
-			//instance.KeyName = instanceOP.KeyName
-			//instance.AdminPass = instanceOP.AdminPass
-			//instance.SecurityGroups = instanceOP.SecurityGroups
 			listInstancesResp.Reservations = append(listInstancesResp.Reservations, instance)
 		}
 		return  true, nil
 	})
-
-
-
 	return &listInstancesResp, err
 }
 
 
-
+//列出可选实例类型
 func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 
 	var instanceTypesList []string
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(driver.client, opts)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
-
 		flavorList, err := flavors.ExtractFlavors(page)
 		for _, flavor := range flavorList {
 			name := flavor.Name
@@ -104,7 +104,7 @@ func (driver openstackProvider) ListInstanceTypes() ([]string, error){
 	})
 	return instanceTypesList, err
 }
-
+//输入flavor ID，返回该flavor ID对应的配置信息
 //返回的格式为"instanceType#cpu#ram"
 func (driver openstackProvider) GetInstanceType(key string) string{
 	instanceType := instanceTypesInOpenStack[key]
@@ -125,6 +125,8 @@ func (driver openstackProvider) ListRegions() (*models.RegionsResp, error){
 	return nil, nil
 }
 
+//列出所有openstack的网络。vpc指代network，其中vpcId对应networkID,vpcState对应networkName
+//由于没有专门为OpenStack提供的方法和结构，故暂时这样处理
 func (driver openstackProvider) ListVpcs(regionId string, pageNumber int, pageSize int) (*models.VpcsResp, error){
 
 	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
@@ -178,25 +180,32 @@ func (driver openstackProvider) ListInternetChargeType() []string{
 	return nil
 }
 
+//获取OpenStack实例对应的ID
 func (driver openstackProvider) AllocatePublicIpAddress(instanceId string) (string, error){
 	server, err := servers.Get(driver.client, instanceId).Extract()
 	for _, address := range server.Addresses {
-		switch address.(type) {
-		case []interface{}:
-			tmp := address.([]interface{})
-			tmp1 := tmp[0].(map[string]interface{})
-			return tmp1["addr"].(string), err
-		default:
+		tmp, ok := address.([]interface{})
+		if !ok {
+			return "", fmt.Errorf("get instance ip address failed!")
 		}
+		tmp1, ok := tmp[0].(map[string]interface{})
+		if !ok {
+			return "", fmt.Errorf("get instance ip address failed!")
+		}
+		ip, ok := tmp1["addr"].(string)
+		if !ok {
+			return "", fmt.Errorf("get instance ip address failed!")
+		}
+		return ip, err
 	}
 	return "", err
-
 
 }
 
 //创建实例，如果有存储节点，则将卷作为启动盘启动实例，否则从nova启动实例
 func (driver openstackProvider) Create(cluster *models.Cluster, number int) ([]string, []error) {
 
+	//该方法列出所有存储节点的卷类型，如果访问成功则表明有存储节点
 	pager := volumetypes.List(driver.client)
 	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		return true, nil
@@ -272,7 +281,7 @@ func (driver openstackProvider) CreateInstanceFromVolumes(cluster *models.Cluste
 
 }
 
-//通过卷创建实例
+//通过镜像创建实例
 func (driver openstackProvider) CreateInstanceFromImages(cluster *models.Cluster, number int) ([]string, []error){
 
 	createdInstances := make(chan string, number)
@@ -328,12 +337,13 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 		return nil, err
 	}
 	var instance models.Instance
-
 	instance.InstanceId = server.ID
 	instance.Provider = "openstack"
 	instance.CreateTime, _ = time.ParseInLocation("2006-01-02 15:04:05", server.Created, time.Local)
-	tmp := server.Image["id"]
-	instance.ImageId = tmp.(string)
+	var ok bool
+	if instance.ImageId, ok = server.Image["id"].(string); !ok {
+		return nil, error("could't get instance ")
+	}
 	//InstanceType
 	//VpcId
 	//subnetId
@@ -345,26 +355,20 @@ func (driver openstackProvider) GetInstance(instanceId string) (*models.Instance
 	return &instance, err
 }
 
-//列出镜像列表
+//列出可选镜像列表
 func (driver openstackProvider) ListImages(regionId string, snapshotId string, pageSize int, pageNumber int) (*models.ImagesResp, error) {
-
-
 	opts1 := images.ListOpts{}
 	pager := images.ListDetail(driver.client, opts1)
 	var imageResp models.ImagesResp
 	timages := make([]models.Image, 0)
-	pager.EachPage(func(page pagination.Page) (bool, error) {
+	err := pager.EachPage(func(page pagination.Page) (bool, error) {
 		imageList, err := images.ExtractImages(page)
 		for _, imageOp := range imageList {
 			image := models.Image{
-
-				//Architecture: imageOp.
 				CreationDate: imageOp.Created,
 				Description: imageOp.Name,
 				ImageId: imageOp.ID,
 				Name: imageOp.Name,
-				//OwnerId: imageOp.
-				//ProductCodes
 				State: imageOp.Status,
 
 			}
@@ -374,7 +378,7 @@ func (driver openstackProvider) ListImages(regionId string, snapshotId string, p
 		return true, err
 	})
 	imageResp.Images = timages
-	return &imageResp, nil
+	return &imageResp, err
 }
 
 func (driver openstackProvider) Start(instanceId string) (bool, error) {
@@ -389,9 +393,9 @@ func (driver openstackProvider) Start(instanceId string) (bool, error) {
 func (driver openstackProvider) Stop(instanceId string) (bool, error) {
 
 
-	err1 := startstop.Stop(driver.client, instanceId).ExtractErr()
+	err := startstop.Stop(driver.client, instanceId).ExtractErr()
 
-	return true, err1
+	return true, err
 }
 
 //删除实例
@@ -418,7 +422,7 @@ func (driver openstackProvider) Delete(instanceId string) (time.Time, error) {
 	result := servers.Delete(driver.client, instanceId)
 
 	if result.Err != nil {
-		return time.Now(), err
+		return time.Now(), result.Err
 	}
 	return time.Now(), nil
 }
@@ -432,8 +436,10 @@ func (driver openstackProvider) WaitForInstanceToStop(instanceId string) bool {
 }
 
 func (driver openstackProvider) WaitToStartInstance(instanceId string) bool {
-	st, _ := driver.GetState(instanceId)
-
+	st, err := driver.GetState(instanceId)
+	if err != nil{
+		return false
+	}
 	return st == models.Running
 }
 
@@ -473,6 +479,7 @@ func new() (provider.ProviderDriver, error){
 
 	return newProvider()
 }
+
 func newProvider() (provider.ProviderDriver, error){
 
 	url := fmt.Sprintf("http://%s:%s/v3",conf.Config.OpIp, conf.Config.OpPort)
