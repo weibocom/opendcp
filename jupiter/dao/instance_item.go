@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"time"
 	"weibo.com/opendcp/jupiter/models"
 )
@@ -63,8 +64,8 @@ func DeleteItem(item models.InstanceItem) error {
 
 func DeleteOldItems(before time.Time) error {
 	o := GetOrmer()
-	sql := "DELETE FROM task_item WHERE create_time < ?"
-	_, err := o.Raw(sql, before).Exec()
+	sql := fmt.Sprintf("DELETE FROM %s WHERE create_time < ?", INSTANCE_ITEM_TABLE)
+	_, err := o.Raw(sql, before.Format("2006-01-02 15:04:05")).Exec()
 	return err
 }
 
