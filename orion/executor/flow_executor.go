@@ -59,6 +59,8 @@ var (
 
 const (
 	retryInterval = 5
+	checkTimeout = 28 //timeout minutes of wait node result
+
 )
 
 // ExecOption contains options to execute a task.
@@ -411,7 +413,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		flowService.ChangeNodeStatusById(nodeState)
 		return err
 	}
-	//update nodesState to init
+	//update nodesState to running
 	if isStopped, _ = exec.isStoppedNode(flow, nodeState); isStopped {
 		exec.UpdateNodeStatus(steps[startStepIndex].Name, startStepIndex, stepRunTimeArray, nodeState, nodeState.Status)
 		return nil
@@ -498,17 +500,29 @@ func (exec *FlowExecutor) RunStep(h handler.Handler, step *models.ActionImpl, st
 		paramsBytes, _   = json.Marshal(stepParams)
 		paramsJson       = string(paramsBytes)
 		fid              = nstates[0].Flow.Id
+		toRun            = make([]*models.NodeState, 0)
 		okNodes          = make([]*models.NodeState, 0)
 		errNodes         = make([]*models.NodeState, 0)
 	)
-
-	logService.Info(fid, fmt.Sprintf("Start running step %s params: %s", step.Name, paramsJson))
 
 	defer func() {
 		logService.Info(fid, fmt.Sprintf("Finish running step %s", step.Name))
 	}()
 
-	toRun := nstates
+	logService.Info(fid, fmt.Sprintf("Start running step %s params: %s", step.Name, paramsJson))
+
+	for _, node := range nstates {
+		if isStopped, _ := exec.isStoppedNode(node.Flow, node); isStopped {
+			okNodes = append(okNodes, node)
+		} else {
+			toRun = append(toRun, node)
+			stepRunTimeArray[stepIndex].RunTime = time.Since(beginRunStepTime).Seconds()
+			err := exec.UpdateNodeStatus(step.Name, stepIndex, stepRunTimeArray, node, models.STATUS_RUNNING)
+			if err != nil {
+				logService.Error(fid, "update runNode Step err: ", err)
+			}
+		}
+	}
 
 	for i := 0; i < retryOption.RetryTimes+1; i++ {
 		// add interval for retry
@@ -903,8 +917,6 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 }
 
 func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
-
-	const checkTimeout = 28 //timeout minutes of wait node result
 
 	for i := 0; i < len(nodes); i++ {
 		select {
