@@ -197,7 +197,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
 		msg, err := utils.Http.Get(url, nil)
 		if err != nil {
-			logService.Warn(fid, "check result err: \n")
+			logService.Warn(fid, "check result msg: %s, err:%v", msg, err)
 			continue
 		}
 
