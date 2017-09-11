@@ -405,6 +405,10 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 
 	if stepRunTimeArray, err = exec.generateRunStepTime(nodeState, steps); err != nil {
 		logService.Error(fid, "Fail to load StepRunTime:", nodeState.StepRunTime, ", err: ", err)
+		nodeState.Status = models.STATUS_FAILED
+		nodeState.UpdatedTime = time.Now()
+		flowService.UpdateNode(nodeState)
+		resultChannel <- nodeState // Send nodeState to channel
 		return err
 	}
 	//update nodesState to init
