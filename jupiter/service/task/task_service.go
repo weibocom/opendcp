@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	WAIT_AGAIN_TIMES = 33 //AWS创建机器时间比较长，此处设置较大的值
-	TIME_INTERVAL    = 6
+	WAIT_AGAIN_TIMES = 70 //AWS创建机器时间比较长，此处设置较大的值
+	TIME_INTERVAL    = 5
 )
 
 type InstanceTaskService struct {
