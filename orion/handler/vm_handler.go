@@ -385,8 +385,8 @@ func (v *VMHandler) callAPI(method string, url string,
 
 	msg, err := utils.Http.Do(method, url, data, header)
 	if err != nil {
-		beego.Error("Fail to ", method, url, ": ", err)
-		return nil, Err("Fail: " + err.Error())
+		beego.Error("Fail to ", method, url, ": ", err, " ErrorMsg: ", msg)
+		return nil, Err("Fail: " + err.Error() + " ErrorMsg: " + msg)
 	}
 
 	resp, err := utils.Json.ToMap(msg)
