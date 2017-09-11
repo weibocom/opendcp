@@ -192,7 +192,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	var failed, done []string
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, fmt.Sprintf("check result for times %d", i+1))
+		//logService.Info(fid, fmt.Sprintf("check result for times %d", i+1))
 
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
 		msg, err := utils.Http.Get(url, nil)
