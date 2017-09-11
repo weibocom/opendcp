@@ -400,6 +400,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 	logService.Info(fid, fmt.Sprintf("Run Node, flow:%s flowId:%d nodeId:%d", flow.Name, flow.Id, nodeState.Id))
 
 	defer func() {
+		resultChannel <- nodeState // Send nodeState to channel
 		logService.Info(fid, fmt.Sprintf("Finish run node, flow:%s flowId:%d", flow.Name, flow.Id))
 	}()
 
@@ -408,13 +409,11 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		nodeState.Status = models.STATUS_FAILED
 		nodeState.UpdatedTime = time.Now()
 		flowService.UpdateNode(nodeState)
-		resultChannel <- nodeState // Send nodeState to channel
 		return err
 	}
 	//update nodesState to init
 	if isStopped, _ = exec.isStoppedNode(flow, nodeState); isStopped {
 		exec.UpdateNodeStatus(steps[startStepIndex].Name, startStepIndex, stepRunTimeArray, nodeState, models.STATUS_FAILED)
-		resultChannel <- nodeState // Send nodeState to channel
 		return nil
 	}
 
@@ -474,13 +473,14 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		err = exec.UpdateNodeStatus(steps[runStepIndex-1].Name, runStepIndex, stepRunTimeArray, nodeState, models.STATUS_SUCCESS)
 	} else {
 		logService.Info(fid, fmt.Sprintf("node %d run at step: %s was terminated", nodeState.Id, steps[runStepIndex].Name))
+		if nodeState.Status == models.STATUS_RUNNING {
+			nodeState.Status = models.STATUS_FAILED
+		}
 		err = exec.UpdateNodeStatus(steps[runStepIndex].Name, runStepIndex, stepRunTimeArray, nodeState, nodeState.Status)
 	}
 	if err != nil {
 		logService.Error(fid, fmt.Sprintf("update node state db error: %s", err.Error()))
 	}
-
-	resultChannel <- nodeState // Send nodeState to channel
 
 	return nil
 }
