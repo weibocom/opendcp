@@ -408,7 +408,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		logService.Error(fid, "Fail to load StepRunTime:", nodeState.StepRunTime, ", err: ", err)
 		nodeState.Status = models.STATUS_FAILED
 		nodeState.UpdatedTime = time.Now()
-		flowService.UpdateNode(nodeState)
+		flowService.ChangeNodeStatusById(nodeState)
 		return err
 	}
 	//update nodesState to init
@@ -467,6 +467,7 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 			}
 		}else {
 			logService.Error(fid, fmt.Sprintf("Lost node %d status %d run at step %s", nodeState.Id, nodeState.Status, step.Name))
+			break
 		}
 	}
 
@@ -903,10 +904,12 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 
 func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
 
+	var checkTimeout = 28 //timeout minutes of wait node result
+
 	for i := 0; i < len(nodes); i++ {
 		select {
 		case <-resultChannel:
-		case <-time.After(25 * time.Minute):
+		case <-time.After(checkTimeout * time.Minute):
 			logService.Error(flow.Id, "Get node run result timeout")
 			if err := exec.handleNodeRunTimeOut(flow); err != nil {
 				logService.Error(flow.Id, "handle node run timeout err : ", err.Error())

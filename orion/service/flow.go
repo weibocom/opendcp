@@ -104,8 +104,7 @@ func (f *FlowService) UpdateNodeMachine(state *models.NodeState) error {
 func (f *FlowService) UpdateNode(state *models.NodeState) error {
 	o := orm.NewOrm()
 	_, err := o.Update(state,
-		"status", "steps", "step_num", "log",
-		"last_op", "step_run_time", "run_time",
+		"status", "steps", "step_num", "step_run_time", "run_time",
 		"updated_time",
 	)
 	return err
@@ -141,6 +140,11 @@ func (f *FlowService) ChangeNodeStatusById(state *models.NodeState) error {
 	return err
 }
 
+func (f *FlowService) ChangeNodeStatusAndLogsById(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state, "log", "status", "updated_time")
+	return err
+}
 func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, error) {
 	o := orm.NewOrm()
 
