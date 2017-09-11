@@ -80,15 +80,13 @@ if [ $? -ne 0 ]; then
 fi
 
 #4、下载octans-agent镜像
-echo "4、下载octans-agent镜像"
-echo "4、下载octans-agent镜像" >> result.out
-docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent:latest >>result.out
+echo "4、下载octans-agent-role镜像"
+echo "4、下载octans-agent-role镜像" >> result.out
+docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest >>result.out
 if [ $? -ne 0 ]; then
     echo "pull docker image failed"
     exit 1
 fi
-
-docker pull registry.cn-beijing.aliyuncs.com/opendcp/octans-agent-role:latest
 
 #5、检查镜像是否下载成功
 echo "5、检查镜像是否下载成功"
