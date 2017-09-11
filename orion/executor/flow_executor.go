@@ -454,11 +454,19 @@ func (exec *FlowExecutor) RunNodeState(flow *models.Flow, nodeState *models.Node
 		logService.Error(fid, fmt.Sprintf("node run result: ok(%d) err(%d)", len(okNodes), len(errNodes)))
 
 		if len(okNodes) == 0 {
-			nodeState = errNodes[0]
+			if len(errNodes) != 0{
+				nodeState = errNodes[0]
+			}else {
+				logService.Error(fid, fmt.Sprintf("node %d status %d run lost at step %s", nodeState.Id, nodeState.Status, step.Name))
+			}
 			logService.Error(fid, fmt.Sprintf("node %d status %d run fail at step %s", nodeState.Id, nodeState.Status, step.Name))
 			break
 		} else {
-			nodeState = okNodes[0]
+			if len(okNodes) != 0{
+				nodeState = okNodes[0]
+			}else {
+				logService.Error(fid, fmt.Sprintf("node %d status %d run lost at step %s", nodeState.Id, nodeState.Status, step.Name))
+			}
 			if nodeState.Status != models.STATUS_RUNNING {
 				logService.Error(fid, fmt.Sprintf("node %d status %d stop at step %s", nodeState.Id, nodeState.Status, step.Name))
 				break
