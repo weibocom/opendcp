@@ -40,7 +40,7 @@ curl -X POST "http://HOST/api/run"  \
 	"nodes":["192.201.11.31",],
 	"user":"root",
 	"name":"192.201.11.31_install_nginx_1501169594802406967",
-	"content":"{具体任务}",
+	"tasks":"{具体任务}",
 	"params":"{任务参数}"
 	"fork_num":5,
 }'

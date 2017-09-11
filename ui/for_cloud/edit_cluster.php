@@ -211,7 +211,7 @@
 
         $('#LoadBalancerId').val($('#fSlb').val());
 
-         getProvider();
+        getProvider();
 
     });
 </script>

@@ -133,3 +133,15 @@ func (b *baseAPI) ReturnFailed(msg string, code int) {
 	b.Ctx.Output.SetStatus(code)
 	b.ServeJSON()
 }
+
+func (b *baseAPI) ReturnFailedWithContent(content interface{}, code int) {
+	if content == nil {
+		content = struct{}{}
+	}
+	b.Data["json"] = apiResponse{
+		Code:    code,
+		Content: content,
+	}
+	b.Ctx.Output.SetStatus(code)
+	b.ServeJSON()
+}

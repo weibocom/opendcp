@@ -24,8 +24,8 @@ import (
 )
 
 type Logs struct {
-	Id  int `json:"id" orm:"pk;auto"`
-	Fid int `json:"fid"`
+	Id      int    `json:"id" orm:"pk;auto"`
+	Fid     int    `json:"fid"`
 	Message string `json:"message"` //日志信息
 	Ctime   int    `json:"ctime"`
 }

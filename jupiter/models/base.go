@@ -34,5 +34,6 @@ func init() {
 		new(Zone),
 		new(Instance),
 		new(Detail),
+		new(InstanceItem),
 	)
 }
