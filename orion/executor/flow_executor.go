@@ -904,12 +904,12 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 
 func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
 
-	var checkTimeout = 28 //timeout minutes of wait node result
+	const checkTimeout = 28 //timeout minutes of wait node result
 
 	for i := 0; i < len(nodes); i++ {
 		select {
 		case <-resultChannel:
-		case <-time.After(checkTimeout * time.Minute):
+		case <-time.After(time.Minute * checkTimeout):
 			logService.Error(flow.Id, "Get node run result timeout")
 			if err := exec.handleNodeRunTimeOut(flow); err != nil {
 				logService.Error(flow.Id, "handle node run timeout err : ", err.Error())
