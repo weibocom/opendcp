@@ -51,7 +51,7 @@ func (iq *InstanceQueue) loop() {
 			count = 0
 		}
 		count++
-		time.Sleep(1 * time.Second)
+		time.Sleep(0.8 * time.Second)
 	}
 }
 
