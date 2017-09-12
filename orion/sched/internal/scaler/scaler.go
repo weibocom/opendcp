@@ -486,7 +486,9 @@ func doEachStep(ctx context.Context, flow *models.Flow, nodes []*models.NodeStat
 	} else if stoppednum == len(nodes) {
 		resultFlowStatus = models.STATUS_STOPPED
 	}
-	executor.Executor.SetFlowStatusWithSpenTime(flow, maxNodeStatesCostTime, resultFlowStatus)
+
+	flow.RunTime = maxNodeStatesCostTime
+	executor.Executor.SetFlowStatus(flow, resultFlowStatus)
 
 	return oknum, failednum, stoppednum
 }

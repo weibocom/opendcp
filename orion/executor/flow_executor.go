@@ -264,16 +264,6 @@ func (exec *FlowExecutor) SetFlowStatus(flow *models.Flow, status int) error {
 	beego.Debug("Set flow", flow.Name, "status =", flow.Status)
 	flow.UpdatedTime = time.Now()
 
-	return flowService.UpdateFlowStatus(flow)
-}
-
-func (exec *FlowExecutor) SetFlowStatusWithSpenTime(flow *models.Flow, spenTime float64, status int) error {
-
-	flow.Status = status
-	flow.RunTime = spenTime
-	beego.Debug("Set flow", flow.Name, "status =", flow.Status)
-	flow.UpdatedTime = time.Now()
-
 	return flowService.UpdateBase(flow)
 }
 
@@ -866,7 +856,7 @@ func (exec *FlowExecutor) terminateFlow(flow *models.Flow) (err error) {
 		flowStatus = models.STATUS_FAILED
 	}
 
-	if err = exec.SetFlowStatusWithSpenTime(flow, flow.RunTime, flowStatus); err != nil {
+	if err = exec.SetFlowStatus(flow, flowStatus); err != nil {
 		return err
 	}
 

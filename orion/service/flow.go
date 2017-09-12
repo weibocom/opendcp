@@ -207,10 +207,3 @@ func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids [
 	return int(num), nil
 }
 
-func (f *FlowService) UpdateFlowStatus(flow *models.Flow) error {
-	o := orm.NewOrm()
-
-	_, err := o.Update(flow, "status", "updated_time")
-
-	return err
-}
