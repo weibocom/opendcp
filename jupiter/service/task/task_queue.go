@@ -15,7 +15,7 @@ import (
 const (
 	MAX_RUNNING_TASK = 1
 	TASK_CACHE       = 5000
-	INTERVAL_TASK    = 0.8  //second to run next expand machine task
+	INTERVAL_TASK    = 1  //second to run next expand machine task
 )
 
 var (
