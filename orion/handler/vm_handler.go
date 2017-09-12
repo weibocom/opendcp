@@ -144,7 +144,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			nodeState.Status = models.STATUS_FAILED
 			nodeState.Log = "[jupiter]: " + hr.Msg + "\n"
 			nodeState.UpdatedTime = time.Now()
-			service.Flow.UpdateNode(nodeState)
+			service.Flow.ChangeNodeStatusAndLogsById(nodeState)
 		}
 		return hr
 	}
@@ -183,7 +183,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 		node := nodes[i+len(vmIds)]
 		node.Status = models.STATUS_FAILED
 		node.UpdatedTime = time.Now()
-		service.Flow.UpdateNode(node)
+		service.Flow.ChangeNodeStatusById(node)
 	}
 
 	// start checking result
@@ -192,12 +192,12 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	var failed, done []string
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, fmt.Sprintf("check result for times %d", i+1))
+		//logService.Info(fid, fmt.Sprintf("check result for times %d", i+1))
 
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
 		msg, err := utils.Http.Get(url, nil)
 		if err != nil {
-			logService.Warn(fid, "check result err: \n")
+			logService.Warn(fid, "check result msg: %s, err:%v", msg, err)
 			continue
 		}
 
@@ -247,10 +247,10 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 			// if failed, remove the node from pool
 			if toDel {
-				logService.Info(fid, fmt.Sprintf("Deleting node [%s] since it failed to create", id))
+				logService.Info(fid, fmt.Sprintf("set node [%s] status fail since it failed to create", id))
 				nodeMap[id].Status = models.STATUS_FAILED
 				nodeMap[id].UpdatedTime = time.Now()
-				service.Flow.UpdateNode(nodeMap[id])
+				service.Flow.ChangeNodeStatusById(nodeMap[id])
 			}
 		}
 
@@ -271,7 +271,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 			n := nodeMap[id]
 			n.Status = models.STATUS_FAILED
 			n.UpdatedTime = time.Now()
-			service.Flow.UpdateNode(n)
+			service.Flow.ChangeNodeStatusById(n)
 
 			logService.Info(fid, fmt.Sprintf("Ajust node [%s] since it failed to create", id))
 		}
