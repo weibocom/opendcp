@@ -44,7 +44,7 @@ func (iq *InstanceQueue) loop() {
 			break
 		}
 
-		go iq.run()
+		iq.run()
 
 		if count%TASK_CACHE == 0 {
 			iq.clearOldTasks()
@@ -69,7 +69,7 @@ func (iq *InstanceQueue) run() {
 	}
 
 	if len(initTask) == 0 {
-		beego.Info("There're no new tasks to run!")
+		//beego.Info("There're no new tasks to run!")
 		return
 	}
 
@@ -85,7 +85,7 @@ func (iq *InstanceQueue) run() {
 	startTime := time.Now().Format("2006-01-02 15:04:05")
 	msg := fmt.Sprintf("--- Begin %d instance tasks at %s, %d left ---", len(tasks), startTime, len(initTask)-len(tasks))
 	beego.Info(msg)
-	iq.createInstances(tasks)
+	go iq.createInstances(tasks)
 }
 
 func (iq *InstanceQueue) setTaskState(tasks []models.InstanceItem, state models.TaskState) {
