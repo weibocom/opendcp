@@ -15,6 +15,7 @@ import (
 const (
 	MAX_RUNNING_TASK = 1
 	TASK_CACHE       = 5000
+	INTERVAL_TASK    = 0.8  //second to run next expand machine task
 )
 
 var (
@@ -51,7 +52,7 @@ func (iq *InstanceQueue) loop() {
 			count = 0
 		}
 		count++
-		time.Sleep(0.8 * time.Second)
+		time.Sleep(INTERVAL_TASK * time.Second)
 	}
 }
 
