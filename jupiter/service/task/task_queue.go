@@ -107,9 +107,9 @@ func (iq *InstanceQueue) createInstances(tasks []models.InstanceItem) {
 			ins, err := iq.createOneInstance(task)
 			if err != nil {
 				beego.Error("Task", task.TaskId, "executes failed,", "id:", task.Id)
-				task.ErrLog = err
+				task.ErrLog = err.Error()
 				task.Status = models.StateFailed
-				taskService.UpdateTask(*task)
+				taskService.UpdateTask(task)
 				//failed <- &task
 				//errs <- err.Error()
 				//return
@@ -117,7 +117,7 @@ func (iq *InstanceQueue) createInstances(tasks []models.InstanceItem) {
 				task.InstanceId = ins.InstanceId
 				beego.Info("Task", task.TaskId, "executes successfully,", "id:", task.Id)
 				task.Status = models.StateSuccess
-				taskService.UpdateTask(*task)
+				taskService.UpdateTask(task)
 			}
 			//success <- &task
 		}(task)
