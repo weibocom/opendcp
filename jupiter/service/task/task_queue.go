@@ -103,7 +103,6 @@ func (iq *InstanceQueue) createInstances(tasks []models.InstanceItem) {
 	//errs := make(chan string, num)
 
 	for _, task := range tasks {
-
 		go func(task models.InstanceItem) {
 			ins, err := iq.createOneInstance(task)
 			if err != nil {
