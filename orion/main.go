@@ -29,7 +29,6 @@ import (
 	"weibo.com/opendcp/orion/executor"
 	. "weibo.com/opendcp/orion/models"
 	_ "weibo.com/opendcp/orion/routers"
-	//"weibo.com/opendcp/orion/sched"
 )
 
 func main() {
@@ -45,10 +44,6 @@ func init() {
 	executor.Initial()
 
 	initOrm()
-
-	//if err := sched.Initial(); err != nil {
-	//	panic(err)
-	//}
 
 	beego.SetLogger("file", `{"filename":"logs/orion.log"}`)
 }
