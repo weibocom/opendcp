@@ -9,7 +9,7 @@ import (
 
 const (
 	WAIT_AGAIN_TIMES = 70 //AWS创建机器时间比较长，此处设置较大的值
-	TIME_INTERVAL    = 5
+	TIME_INTERVAL    = 3
 )
 
 type InstanceTaskService struct {
@@ -66,12 +66,13 @@ func (its *InstanceTaskService) GetTasks(status models.TaskState) ([]models.Inst
 func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) error {
 	num := len(tasks)
 	for i := 0; i < num+WAIT_AGAIN_TIMES; i++ { //等待所有instance获取到instanceId
-		allDone := true
+		//allDone := true
 		beego.Debug("Wait task complete, times:", i+1)
+		instanceCount := 0;
 		for index, task := range tasks {
-			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
-				continue
-			}
+			//if task.Status == models.StateSuccess || task.Status == models.StateFailed {
+			//	continue
+			//}
 
 			taskItem, err := dao.GetItemById(task.Id)
 			if err != nil {
@@ -82,15 +83,22 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 			tasks[index].Status = taskItem.Status
 			tasks[index].InstanceId = taskItem.InstanceId
 
-			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
-				beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
-				continue
+			if len(taskItem.InstanceId) != 0{
+				instanceCount++;
+				//allDone = false
 			}
+			//if task.Status == models.StateSuccess || task.Status == models.StateFailed {
+			//	beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
+			//	continue
+			//}
 
-			allDone = false
+			//if task.Status != models.StateSuccess || task.Status != models.StateFailed {
+			//	allDone = false
+			//}
+
 		}
 
-		if allDone {
+		if instanceCount == len(tasks) {
 			beego.Debug("Tasks have completed")
 			break
 		} else {
