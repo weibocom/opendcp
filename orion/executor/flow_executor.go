@@ -866,7 +866,7 @@ func (exec *FlowExecutor) terminateFlow(flow *models.Flow) (err error) {
 		flowStatus = models.STATUS_FAILED
 	}
 
-	if err = exec.SetFlowStatus(flow, flowStatus); err != nil {
+	if err = exec.SetFlowStatusWithSpenTime(flow, flow.RunTime, flowStatus); err != nil {
 		return err
 	}
 
@@ -918,9 +918,14 @@ func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*mod
 
 func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan *models.NodeState, nodes []*models.NodeState) error {
 
+	var maxTime = flow.RunTime
+
 	for i := 0; i < len(nodes); i++ {
 		select {
-		case <-resultChannel:
+		case ns := <-resultChannel:
+			if ns.RunTime > maxTime {
+				maxTime = ns.RunTime
+			}
 		case <-time.After(time.Minute * checkTimeout):
 			logService.Error(flow.Id, "Get node run result timeout")
 			if err := exec.handleNodeRunTimeOut(flow); err != nil {
@@ -930,6 +935,8 @@ func (exec *FlowExecutor) waitNodesResult(flow *models.Flow, resultChannel chan 
 			}
 		}
 	}
+
+	flow.RunTime = maxTime
 
 	return nil
 }
