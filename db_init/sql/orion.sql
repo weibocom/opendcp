@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS `remote_action_impl` (
 CREATE TABLE IF NOT EXISTS `logs` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `fid` int(10) NOT NULL,
+  `level` varchar(10) NOT NULL DEFAULT '' ,
   `message` text NOT NULL,
   `ctime` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)

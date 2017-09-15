@@ -26,13 +26,15 @@ import (
 type Logs struct {
 	Id      int    `json:"id" orm:"pk;auto"`
 	Fid     int    `json:"fid"`
+	Level   string `json:"level" orm:"size(10)"`
 	Message string `json:"message"` //日志信息
 	Ctime   int    `json:"ctime"`
 }
 
-func NewLogsInit(Fid int, Message string) (result *Logs) {
+func NewLogsInit(Fid int, Level, Message string) (result *Logs) {
 	result = &Logs{}
 	result.Fid = Fid
+	result.Level = Level
 	result.Message = Message
 	result.Ctime = int(time.Now().Unix())
 	return result

@@ -42,7 +42,7 @@ func (store *LogsService) Debug(Fid int, v ...interface{}) {
 		beego.Debug(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, "Debug", v...)
 }
 
 func (store *LogsService) Info(Fid int, v ...interface{}) {
@@ -50,7 +50,7 @@ func (store *LogsService) Info(Fid int, v ...interface{}) {
 		beego.Info(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, "Info", v...)
 }
 
 func (store *LogsService) Warn(Fid int, v ...interface{}) {
@@ -58,7 +58,7 @@ func (store *LogsService) Warn(Fid int, v ...interface{}) {
 		beego.Warn(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, "Warn", v...)
 }
 
 func (store *LogsService) Error(Fid int, v ...interface{}) {
@@ -66,10 +66,10 @@ func (store *LogsService) Error(Fid int, v ...interface{}) {
 		beego.Error(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, "Error", v...)
 }
 
-func (store *LogsService) saveToDb(Fid int, v ...interface{}) {
+func (store *LogsService) saveToDb(Fid int, Level string, v ...interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			beego.Info("saveToDb is error !", r)
@@ -81,7 +81,7 @@ func (store *LogsService) saveToDb(Fid int, v ...interface{}) {
 		msg = fmt.Sprintf(msg, v...)
 	}
 
-	logs := models.NewLogsInit(Fid, msg)
+	logs := models.NewLogsInit(Fid, Level, msg)
 	o := orm.NewOrm()
 	id, err := o.Insert(logs)
 
