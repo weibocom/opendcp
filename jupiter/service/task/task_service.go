@@ -68,11 +68,12 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 	for i := 0; i < num+WAIT_AGAIN_TIMES; i++ { //等待所有instance获取到instanceId
 		//allDone := true
 		beego.Debug("Wait task complete, times:", i+1)
-		instanceCount := 0;
+		instanceCount := 0
 		for index, task := range tasks {
-			//if task.Status == models.StateSuccess || task.Status == models.StateFailed {
-			//	continue
-			//}
+
+			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
+				continue
+			}
 
 			taskItem, err := dao.GetItemById(task.Id)
 			if err != nil {
@@ -82,6 +83,14 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 
 			tasks[index].Status = taskItem.Status
 			tasks[index].InstanceId = taskItem.InstanceId
+
+			if  taskItem.Status == models.StateFailed || taskItem.Status == models.StateFailed {
+				instanceCount++
+				continue
+			}
+			//
+			//tasks[index].Status = taskItem.Status
+			//tasks[index].InstanceId = taskItem.InstanceId
 
 			if len(taskItem.InstanceId) != 0{
 				instanceCount++;
