@@ -29,6 +29,13 @@ import (
 	"weibo.com/opendcp/orion/models"
 )
 
+const (
+	Debug_level = "Debug"
+	Error_level = "Error"
+	Info_level  = "Info"
+	Warn_level  = "Warn"
+)
+
 type LogsService struct {
 	BaseService
 }
@@ -42,7 +49,7 @@ func (store *LogsService) Debug(Fid int, v ...interface{}) {
 		beego.Debug(v...)
 	}
 
-	go store.saveToDb(Fid, "Debug", v...)
+	go store.saveToDb(Fid, Debug_level, v...)
 }
 
 func (store *LogsService) Info(Fid int, v ...interface{}) {
@@ -50,7 +57,7 @@ func (store *LogsService) Info(Fid int, v ...interface{}) {
 		beego.Info(v...)
 	}
 
-	go store.saveToDb(Fid, "Info", v...)
+	go store.saveToDb(Fid, Info_level, v...)
 }
 
 func (store *LogsService) Warn(Fid int, v ...interface{}) {
@@ -58,7 +65,7 @@ func (store *LogsService) Warn(Fid int, v ...interface{}) {
 		beego.Warn(v...)
 	}
 
-	go store.saveToDb(Fid, "Warn", v...)
+	go store.saveToDb(Fid, Warn_level, v...)
 }
 
 func (store *LogsService) Error(Fid int, v ...interface{}) {
@@ -66,7 +73,7 @@ func (store *LogsService) Error(Fid int, v ...interface{}) {
 		beego.Error(v...)
 	}
 
-	go store.saveToDb(Fid, "Error", v...)
+	go store.saveToDb(Fid, Error_level, v...)
 }
 
 func (store *LogsService) saveToDb(Fid int, Level string, v ...interface{}) {
