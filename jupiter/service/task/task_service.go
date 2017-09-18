@@ -87,7 +87,7 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 			if len(taskItem.InstanceId) != 0{
 				instanceCount++
 				//allDone = false
-			}else if taskItem.Status == models.StateFailed || taskItem.Status == models.Success{
+			}else if taskItem.Status == models.StateFailed || taskItem.Status == models.StateSuccess{
 				instanceCount++
 			}
 
