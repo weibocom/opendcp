@@ -8,16 +8,17 @@ import (
 
 type logger struct {
 	fid int
+	nid int
 }
 
 func (l *logger) Infof(format string, v ...interface{}) {
-	service.Logs.Info(l.fid, fmt.Sprintf(format, v...))
+	service.Logs.Info(l.fid, l.nid, fmt.Sprintf(format, v...))
 }
 
 func (l *logger) Errorf(format string, v ...interface{}) {
-	service.Logs.Error(l.fid, fmt.Sprintf(format, v...))
+	service.Logs.Error(l.fid, l.nid, fmt.Sprintf(format, v...))
 }
 
 func (l *logger) Warnf(format string, v ...interface{}) {
-	service.Logs.Warn(l.fid, fmt.Sprintf(format, v...))
+	service.Logs.Warn(l.fid, l.nid, fmt.Sprintf(format, v...))
 }

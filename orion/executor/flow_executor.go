@@ -321,7 +321,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeStat
 
 	// get all steps
 	if steps, stepOps, err = exec.getSteps(flow); err != nil {
-		logService.Error(flow.Id, "Get steps fails: "+err.Error())
+		logService.Error(flow.Id, 0, "Get steps fails: "+err.Error())
 		exec.terminateFlow(flow)
 		return err
 	}
@@ -340,7 +340,7 @@ func (exec *FlowExecutor) RunFlow(flow *models.Flow, runNodes []*models.NodeStat
 		return err
 	}
 	//if none node to do task then return and don't change the flow status
-	logService.Info(flow.Id, "load nodes length: ", len(nodeStateList))
+	logService.Info(flow.Id, 0, "load nodes length: ", len(nodeStateList))
 	if len(nodeStateList) == 0 {
 		logService.Info(flow.Id, 0, "none nodes to run")
 		exec.terminateFlow(flow)
@@ -811,9 +811,9 @@ func (exec *FlowExecutor) terminateFlow(flow *models.Flow) (err error) {
 
 	defer func() {
 		if err != nil {
-			logService.Error(flow.Id, "Terminate Flow is err: ", err.Error())
+			logService.Error(flow.Id, 0, "Terminate Flow is err: ", err.Error())
 		} else {
-			logService.Info(flow.Id, "Terminate Flow status: ", flow.Status)
+			logService.Info(flow.Id, 0, "Terminate Flow status: ", flow.Status)
 		}
 	}()
 
@@ -876,7 +876,7 @@ func (exec *FlowExecutor) getNodeRunTime(stepRunTimeArray []*models.StepRunTime)
 }
 
 func (exec *FlowExecutor) loadStartNodeStates(flow *models.Flow, runNodes []*models.NodeState) (states []*models.NodeState, err error) {
-	logService.Info(flow.Id, "Load nodes & states for flow", flow.Id)
+	logService.Info(flow.Id, 0, "Load nodes & states for flow", flow.Id)
 	defer func() {
 		logService.Info(flow.Id, 0, "Finsh load nodes & states for flow", flow.Id)
 	}()

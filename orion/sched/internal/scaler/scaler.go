@@ -247,7 +247,7 @@ func scalePool(ctx context.Context, pool *models.Pool, expand bool, picked []*mo
 		return
 	}
 
-	lg := &logger{fid: ff.Id}
+	lg := &logger{fid: ff.Id, nid: 0}
 	ctx = context.WithValue(ctx, "lg", lg)
 
 	defer func() {
@@ -503,7 +503,7 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		expand     = ctx.Value("expand").(bool)
 		isdep      = ctx.Value("isdep").(bool)
 		noticeStep = ctx.Value("noticeStep")
-		lg         = ctx.Value("lg").(*logger)
+		nlg        = &logger{fid:ctx.Value("lg").(*logger).fid, nid: nodeState.Id}
 		runSuccess = true
 		hasNotice  = false
 	)
@@ -528,11 +528,11 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		depidx = -1
 	}
 
-	lg.Infof("depend action index is %d", depidx)
+	nlg.Infof("depend action index is %d", depidx)
 
 	stepRunTimeArray, startStepIndex, err := generateRunTimeStep(nodeState, steps)
 	if err != nil {
-		lg.Errorf("Fail to load StepRunTime:", nodeState.StepRunTime, ", err:", err)
+		nlg.Errorf("Fail to load StepRunTime:", nodeState.StepRunTime, ", err:", err)
 	}
 
 	if isdep {
@@ -550,10 +550,10 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 	step := steps[0]
 	for ; i < len(steps); i++ {
 		step = steps[i]
-		lg.Infof("run step %s(%d)", step.Name, i)
+		nlg.Infof("run step %s(%d)", step.Name, i)
 
 		if stopped = checFlowAndNodeStop(ctx, flow, nodeState); stopped {
-			lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
+			nlg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
 			if nodeState.Status != models.STATUS_STOPPED && nodeState.Status != models.STATUS_SUCCESS {
 				nodeState.Status = models.STATUS_STOPPED
 			}
@@ -562,16 +562,16 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		}
 		if i == depidx {
 			if !isdep {
-				should := waitDependNotice(ctx, dependc, lg)
+				should := waitDependNotice(ctx, dependc, nlg)
 				if should == 0 {
-					lg.Errorf("depend node is error!")
+					nlg.Errorf("depend node is error!")
 					nodeState.Status = models.STATUS_FAILED
 					runSuccess = false
 					break
 				}
 				// check flow status again
 				if stopped = checFlowAndNodeStop(ctx, flow, nodeState); stopped {
-					lg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
+					nlg.Infof("flow(%d) stopped at step %s(%d)", flow.Id, step.Name, i)
 					if nodeState.Status != models.STATUS_STOPPED && nodeState.Status != models.STATUS_SUCCESS {
 						nodeState.Status = models.STATUS_STOPPED
 					}
@@ -582,7 +582,7 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		}
 		theHandler := handler.GetHandler(step.Type)
 		if theHandler == nil {
-			lg.Errorf(fmt.Sprintf("Handler not found for type %s", step.Type))
+			nlg.Errorf(fmt.Sprintf("Handler not found for type %s", step.Type))
 			nodeState.Status = models.STATUS_FAILED
 			runSuccess = false
 			break
@@ -600,7 +600,7 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		}
 
 		if step.Name == "create_vm" && executor.Executor.HaveIp(nodeState.Ip){
-			lg.Infof(fmt.Sprintf("node %d already create_vm no neeed to run: %s skip", nodeState.Id, step.Name))
+			nlg.Infof(fmt.Sprintf("node %d already create_vm no neeed to run: %s skip", nodeState.Id, step.Name))
 			nodeState.Status = models.STATUS_RUNNING
 			//send notice
 			if isdep && step.Name == noticeStep && runSuccess && !hasNotice {
@@ -615,7 +615,7 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 		okNodes, _ := executor.Executor.RunStep(theHandler, step, i, needRunStepNodeState, stepParams, retryOption, stepRunTimeArray)
 
 		if len(okNodes) == 0 {
-			lg.Warnf(fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
+			nlg.Warnf(fmt.Sprintf("node %d run fail at step %s", nodeState.Id, step.Name))
 			nodeState.Status = models.STATUS_FAILED
 			runSuccess = false
 			break
@@ -624,10 +624,10 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 			if okNodes[0].Status != models.STATUS_RUNNING {
 				nodeState.Status = okNodes[0].Status
 				runSuccess = false
-				lg.Infof(fmt.Sprintf("node %d status %d run stop at step %s", nodeState.Id, nodeState.Status, step.Name))
+				nlg.Infof(fmt.Sprintf("node %d status %d run stop at step %s", nodeState.Id, nodeState.Status, step.Name))
 				break
 			} else {
-				lg.Infof(fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
+				nlg.Infof(fmt.Sprintf("node %d run success at step %s", nodeState.Id, step.Name))
 				nodeState.Status = models.STATUS_RUNNING
 			}
 		}
@@ -640,10 +640,10 @@ func doNodeEachStep(ctx context.Context, flow *models.Flow, nodeState *models.No
 
 	if runSuccess {
 		nodeState.Status = models.STATUS_SUCCESS
-		lg.Infof(fmt.Sprintf("node %d run success all steps", nodeState.Id))
+		nlg.Infof(fmt.Sprintf("node %d run success all steps", nodeState.Id))
 	}
 	if err := executor.Executor.UpdateNodeStatus(step.Name, i, stepRunTimeArray, nodeState, nodeState.Status); err != nil {
-		lg.Errorf(fmt.Sprintf("update node state db error: %s", err.Error()))
+		nlg.Errorf(fmt.Sprintf("update node state db error: %s", err.Error()))
 	}
 }
 
