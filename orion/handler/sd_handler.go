@@ -134,8 +134,9 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	actionParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
+	nid := nodes[0].Id
 
-	logService.Debug(fid, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
+	logService.Debug(fid, nid, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case REG:
@@ -147,7 +148,7 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	case DELETE:
 		return h.deleteNginxNode(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
+		logService.Error(fid, nid, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
 
 		return Err("Unknown action: " + action.Name)
 	}
