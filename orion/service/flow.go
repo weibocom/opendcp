@@ -79,6 +79,15 @@ func (f *FlowService) GetNodeByIp(ip string) (*models.NodeState, error) {
 	return node, nil
 }
 
+func (f *FlowService) GetNodeByIpWithNone(poolId int, ip string) ([]*models.NodeState, error) {
+	o := orm.NewOrm()
+
+	nodes := make([]*models.NodeState, 0)
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Pool", poolId).Filter("ip", ip).Filter("deleted", false).All(&nodes)
+
+	return nodes, err
+}
+
 func (f *FlowService) GetNodeById(id int) (*models.NodeState, error) {
 	o := orm.NewOrm()
 
