@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	WAIT_AGAIN_TIMES = 70 //AWS创建机器时间比较长，此处设置较大的值
+	WAIT_AGAIN_TIMES = 90 //AWS创建机器时间比较长，此处设置较大的值
 	TIME_INTERVAL    = 5
 )
 
@@ -92,10 +92,10 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 			//tasks[index].Status = taskItem.Status
 			//tasks[index].InstanceId = taskItem.InstanceId
 
-			if len(taskItem.InstanceId) != 0{
-				instanceCount++;
-				//allDone = false
-			}
+			//if len(taskItem.InstanceId) != 0{
+			//	instanceCount++;
+			//	//allDone = false
+			//}
 			//if task.Status == models.StateSuccess || task.Status == models.StateFailed {
 			//	beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
 			//	continue
