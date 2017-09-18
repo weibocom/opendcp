@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	WAIT_AGAIN_TIMES = 90 //AWS创建机器时间比较长，此处设置较大的值
+	WAIT_AGAIN_TIMES = 160 //AWS创建机器时间比较长，此处设置较大的值
 	TIME_INTERVAL    = 5
 )
 
