@@ -83,7 +83,6 @@ func do(action string, ips []string, pool_id int, label string, correlationId st
 	if err != nil {
 		return nil, err
 	}
-	beego.Info("hhhhhhhhhhhh")
 	beego.Info(resp.Content)
 	//beego.Info(resp.Content["errors"])
 	//beego.Info(resp.Content.(AppendPhyDevContent))
