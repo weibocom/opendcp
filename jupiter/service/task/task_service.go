@@ -72,9 +72,9 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 		for index, task := range tasks {
 
 			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
+				instanceCount++
 				continue
 			}
-
 			taskItem, err := dao.GetItemById(task.Id)
 			if err != nil {
 				beego.Error("Get task ", task.TaskId, "failed,id:", task.Id, ", err:", err)
@@ -84,18 +84,22 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 			tasks[index].Status = taskItem.Status
 			tasks[index].InstanceId = taskItem.InstanceId
 
-			if  taskItem.Status == models.StateFailed || taskItem.Status == models.StateFailed {
+			if len(taskItem.InstanceId) != 0{
 				instanceCount++
-				continue
+				//allDone = false
+			}else if taskItem.Status == models.StateFailed || taskItem.Status == models.Success{
+				instanceCount++
 			}
+
+			//if  taskItem.Status == models.StateFailed || taskItem.Status == models.StateFailed {
+			//	instanceCount++
+			//	continue
+			//}
 			//
 			//tasks[index].Status = taskItem.Status
 			//tasks[index].InstanceId = taskItem.InstanceId
 
-			//if len(taskItem.InstanceId) != 0{
-			//	instanceCount++;
-			//	//allDone = false
-			//}
+
 			//if task.Status == models.StateSuccess || task.Status == models.StateFailed {
 			//	beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
 			//	continue
