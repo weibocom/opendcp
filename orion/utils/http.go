@@ -34,7 +34,7 @@ import (
 var (
 	Http   = &httpUtil{}
 	client = &http.Client{
-		Timeout: 9 * 60 * time.Second,
+		Timeout: 10 * 60 * time.Second,
 	}
 )
 
