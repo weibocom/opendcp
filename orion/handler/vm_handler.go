@@ -141,6 +141,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 	if hr != nil {
 		// remove all node since it fails here
 		for _, nodeState := range nodes {
+			logService.Error(fid, "[jupiter]: " + hr.Msg + "\n")
 			nodeState.Status = models.STATUS_FAILED
 			nodeState.Log = "[jupiter]: " + hr.Msg + "\n"
 			nodeState.UpdatedTime = time.Now()
@@ -180,6 +181,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 
 	// for missing vm ids, mark then as failed
 	for i := 0; i < len(nodes)-len(vmIds); i++ {
+		logService.Error(fid, "missing vm ids")
 		node := nodes[i+len(vmIds)]
 		node.Status = models.STATUS_FAILED
 		node.UpdatedTime = time.Now()
@@ -197,7 +199,7 @@ func (v *VMHandler) createVMs(params map[string]interface{},
 		url := fmt.Sprintf(apiCheck, jupiterAddr, strings.Join(list, ","))
 		msg, err := utils.Http.Get(url, nil)
 		if err != nil {
-			logService.Warn(fid, "check result msg: %s, err:%v", msg, err)
+			logService.Warn(fid, fmt.Sprintf("check result msg: %s, err:%v", msg, err))
 			continue
 		}
 
