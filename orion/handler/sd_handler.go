@@ -134,8 +134,9 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	actionParams map[string]interface{}, nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
+	nid := nodes[0].Id
 
-	logService.Debug(fid, corrId, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
+	logService.Debug(fid, nid, fmt.Sprintf("sd handler recieve new action: [%s]", action.Name))
 
 	switch action.Name {
 	case REG:
@@ -147,7 +148,7 @@ func (h *ServiceDiscoveryHandler) Handle(action *models.ActionImpl,
 	case DELETE:
 		return h.deleteNginxNode(actionParams, nodes, corrId)
 	default:
-		logService.Error(fid, corrId, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
+		logService.Error(fid, nid, fmt.Sprintf("Unknown SD action: [%s]", action.Name))
 
 		return Err("Unknown action: " + action.Name)
 	}
@@ -181,12 +182,13 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
+	nid := nodes[0].Id
 
 	svVal := params[SV_ID]
 	sv, err := utils.ToInt(svVal)
 
 	if err != nil {
-		logService.Error(fid, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
+		logService.Error(fid, nid, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
 
 		return Err("Bad servicd_id")
 	}
@@ -194,10 +196,10 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		corrId = fmt.Sprintf("%d-%d-%s", fid, sv, nodes[0].Ip)
 	}
 
-	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
+	logService.Debug(fid, nid, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	// call api
-	logService.Debug(fid, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
+	logService.Debug(fid, nid, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {
@@ -233,17 +235,17 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 
 	// check result if async
 	taskId := resp.Content.TaskId
-	logService.Debug(fid, corrId, fmt.Sprintf("task id = %s", taskId))
+	logService.Debug(fid, nid, fmt.Sprintf("task id = %s", taskId))
 
 	// start checking result
 	for i := 0; i < timeout/5; i++ {
 		time.Sleep(5 * time.Second)
-		logService.Info(fid, corrId, fmt.Sprintf("check result for times %d", i+1))
+		logService.Info(fid, nid, fmt.Sprintf("check result for times %d", i+1))
 
 		url := fmt.Sprintf(SD_CHECK_URL, SD_ADDR) //"task_id", taskId, "appkey", SD_APPKEY)
 		msg, err := utils.Http.Get(url, &header)
 		if err != nil {
-			logService.Warn(fid, corrId, fmt.Sprintf("check result err: \n%v", err))
+			logService.Warn(fid, nid, fmt.Sprintf("check result err: \n%v", err))
 
 			continue
 		}
@@ -251,13 +253,13 @@ func (h *ServiceDiscoveryHandler) do(action string, params map[string]interface{
 		resp := &sdChkResp{}
 		err = json.Unmarshal([]byte(msg), resp)
 		if err != nil {
-			logService.Error(fid, corrId, fmt.Sprintf("bad response: %s", msg))
+			logService.Error(fid, nid, fmt.Sprintf("bad response: %s", msg))
 
 			continue
 		}
 
 		if resp.Code != 0 {
-			logService.Error(fid, corrId, "check result return fail")
+			logService.Error(fid, nid, "check result return fail")
 
 			continue
 		}
@@ -324,20 +326,21 @@ func (h *ServiceDiscoveryHandler) AddOrDelete(action string, params map[string]i
 	nodes []*models.NodeState, corrId string) *HandleResult {
 
 	fid := nodes[0].Flow.Id
+        nid := nodes[0].Id
 
-	logService.Debug(fid, corrId, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
+	logService.Debug(fid, nid, fmt.Sprintf("sd , service_discovery_id =%v,corrId =%s", params[SV_ID], corrId))
 
 	svVal := params[SV_ID]
 	sv, err := utils.ToInt(svVal)
 
 	if err != nil {
-		logService.Error(fid, corrId, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
+		logService.Error(fid, nid, fmt.Sprintf("Bad service_discovery_id :[%v]", svVal))
 
 		return Err("Bad servicd_id")
 	}
 
 	// call api
-	logService.Debug(fid, corrId, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
+	logService.Debug(fid, nid, fmt.Sprintf("SD:%d , nodes = %v", sv, nodes))
 
 	ips := make([]string, len(nodes))
 	for i, node := range nodes {

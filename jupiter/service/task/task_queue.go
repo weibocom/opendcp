@@ -15,6 +15,7 @@ import (
 const (
 	MAX_RUNNING_TASK = 1
 	TASK_CACHE       = 5000
+	INTERVAL_TASK    = 1  //second to run next expand machine task
 )
 
 var (
@@ -51,7 +52,7 @@ func (iq *InstanceQueue) loop() {
 			count = 0
 		}
 		count++
-		time.Sleep(1 * time.Second)
+		time.Sleep(INTERVAL_TASK * time.Second)
 	}
 }
 
@@ -69,7 +70,7 @@ func (iq *InstanceQueue) run() {
 	}
 
 	if len(initTask) == 0 {
-		beego.Info("There're no new tasks to run!")
+		//beego.Info("There're no new tasks to run!")
 		return
 	}
 
@@ -85,7 +86,7 @@ func (iq *InstanceQueue) run() {
 	startTime := time.Now().Format("2006-01-02 15:04:05")
 	msg := fmt.Sprintf("--- Begin %d instance tasks at %s, %d left ---", len(tasks), startTime, len(initTask)-len(tasks))
 	beego.Info(msg)
-	iq.createInstances(tasks)
+	go iq.createInstances(tasks)
 }
 
 func (iq *InstanceQueue) setTaskState(tasks []models.InstanceItem, state models.TaskState) {
@@ -96,48 +97,54 @@ func (iq *InstanceQueue) setTaskState(tasks []models.InstanceItem, state models.
 }
 
 func (iq *InstanceQueue) createInstances(tasks []models.InstanceItem) {
-	num := len(tasks)
-	success := make(chan *models.InstanceItem, num)
-	failed := make(chan *models.InstanceItem, num)
-	errs := make(chan string, num)
+	//num := len(tasks)
+	//success := make(chan *models.InstanceItem, num)
+	//failed := make(chan *models.InstanceItem, num)
+	//errs := make(chan string, num)
 
 	for _, task := range tasks {
 		go func(task models.InstanceItem) {
 			ins, err := iq.createOneInstance(task)
 			if err != nil {
 				beego.Error("Task", task.TaskId, "executes failed,", "id:", task.Id)
-				failed <- &task
-				errs <- err.Error()
-				return
+				task.ErrLog = err.Error()
+				task.Status = models.StateFailed
+				taskService.UpdateTask(task)
+				//failed <- &task
+				//errs <- err.Error()
+				//return
+			}else {
+				task.InstanceId = ins.InstanceId
+				beego.Info("Task", task.TaskId, "executes successfully,", "id:", task.Id)
+				task.Status = models.StateSuccess
+				taskService.UpdateTask(task)
 			}
-			task.InstanceId = ins.InstanceId
-			beego.Info("Task", task.TaskId, "executes successfully,", "id:", task.Id)
-			success <- &task
+			//success <- &task
 		}(task)
 	}
 
-	successCount := 0
-	failedCount := 0
-	for i := 0; i < num; i++ {
-		select {
-		case task := <-success:
-			task.Status = models.StateSuccess
-			taskService.UpdateTask(*task)
-			successCount++
-		case task := <-failed:
-			task.Status = models.StateFailed
-			err := <-errs
-			task.ErrLog = err
-			taskService.UpdateTask(*task)
-			failedCount++
-		}
-	}
+	//successCount := 0
+	//failedCount := 0
+	//for i := 0; i < num; i++ {
+	//	select {
+	//	case task := <-success:
+	//		task.Status = models.StateSuccess
+	//		taskService.UpdateTask(*task)
+	//		successCount++
+	//	case task := <-failed:
+	//		task.Status = models.StateFailed
+	//		err := <-errs
+	//		task.ErrLog = err
+	//		taskService.UpdateTask(*task)
+	//		failedCount++
+	//	}
+	//}
+	//
+	//close(success)
+	//close(failed)
+	//close(errs)
 
-	close(success)
-	close(failed)
-	close(errs)
-
-	beego.Info("Task completed, success:", successCount, "failed:", failedCount)
+	//beego.Info("Task completed, success:", successCount, "failed:", failedCount)
 }
 
 func (iq *InstanceQueue) createOneInstance(task models.InstanceItem) (*models.Instance, error) {
@@ -203,7 +210,7 @@ func createCloudInstance(cluster *models.Cluster, correlationId string) (*models
 	logstore.Info(correlationId, insIds[0], "insert instance into db successfully")
 	logstore.Info(correlationId, insIds[0], "2. Begin start instance in future")
 	startFuture := future.NewStartFuture(insIds[0], cluster.Provider, true, ins.PrivateIpAddress, correlationId)
-	future.Exec.Submit(startFuture)
+	go future.Exec.Submit(startFuture)
 
 	return ins, nil
 }

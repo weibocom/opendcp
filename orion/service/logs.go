@@ -29,6 +29,13 @@ import (
 	"weibo.com/opendcp/orion/models"
 )
 
+const (
+	Debug_level = "Debug"
+	Error_level = "Error"
+	Info_level  = "Info"
+	Warn_level  = "Warn"
+)
+
 type LogsService struct {
 	BaseService
 }
@@ -37,39 +44,39 @@ var (
 	isPrintBeego = true
 )
 
-func (store *LogsService) Debug(Fid int, v ...interface{}) {
+func (store *LogsService) Debug(Fid, Nid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Debug(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, Nid, Debug_level, v...)
 }
 
-func (store *LogsService) Info(Fid int, v ...interface{}) {
+func (store *LogsService) Info(Fid, Nid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Info(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, Nid, Info_level, v...)
 }
 
-func (store *LogsService) Warn(Fid int, v ...interface{}) {
+func (store *LogsService) Warn(Fid, Nid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Warn(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, Nid, Warn_level, v...)
 }
 
-func (store *LogsService) Error(Fid int, v ...interface{}) {
+func (store *LogsService) Error(Fid, Nid int, v ...interface{}) {
 	if isPrintBeego {
 		beego.Error(v...)
 	}
 
-	go store.saveToDb(Fid, v...)
+	go store.saveToDb(Fid, Nid, Error_level, v...)
 }
 
-func (store *LogsService) saveToDb(Fid int, v ...interface{}) {
+func (store *LogsService) saveToDb(Fid, Nid int, Level string, v ...interface{}) {
 	defer func() {
 		if r := recover(); r != nil {
 			beego.Info("saveToDb is error !", r)
@@ -81,7 +88,7 @@ func (store *LogsService) saveToDb(Fid int, v ...interface{}) {
 		msg = fmt.Sprintf(msg, v...)
 	}
 
-	logs := models.NewLogsInit(Fid, msg)
+	logs := models.NewLogsInit(Fid, Nid, Level, msg)
 	o := orm.NewOrm()
 	id, err := o.Insert(logs)
 

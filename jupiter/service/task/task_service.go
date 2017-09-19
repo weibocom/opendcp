@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	WAIT_AGAIN_TIMES = 33 //AWS创建机器时间比较长，此处设置较大的值
-	TIME_INTERVAL    = 6
+	WAIT_AGAIN_TIMES = 160 //AWS创建机器时间比较长，此处设置较大的值
+	TIME_INTERVAL    = 5
 )
 
 type InstanceTaskService struct {
@@ -66,13 +66,15 @@ func (its *InstanceTaskService) GetTasks(status models.TaskState) ([]models.Inst
 func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) error {
 	num := len(tasks)
 	for i := 0; i < num+WAIT_AGAIN_TIMES; i++ { //等待所有instance获取到instanceId
-		allDone := true
+		//allDone := true
 		beego.Debug("Wait task complete, times:", i+1)
+		instanceCount := 0
 		for index, task := range tasks {
+
 			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
+				instanceCount++
 				continue
 			}
-
 			taskItem, err := dao.GetItemById(task.Id)
 			if err != nil {
 				beego.Error("Get task ", task.TaskId, "failed,id:", task.Id, ", err:", err)
@@ -82,15 +84,34 @@ func (its *InstanceTaskService) WaitTasksComplete(tasks []models.InstanceItem) e
 			tasks[index].Status = taskItem.Status
 			tasks[index].InstanceId = taskItem.InstanceId
 
-			if task.Status == models.StateSuccess || task.Status == models.StateFailed {
-				beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
-				continue
+			if len(taskItem.InstanceId) != 0{
+				instanceCount++
+				//allDone = false
+			}else if taskItem.Status == models.StateFailed || taskItem.Status == models.StateSuccess{
+				instanceCount++
 			}
 
-			allDone = false
+			//if  taskItem.Status == models.StateFailed || taskItem.Status == models.StateFailed {
+			//	instanceCount++
+			//	continue
+			//}
+			//
+			//tasks[index].Status = taskItem.Status
+			//tasks[index].InstanceId = taskItem.InstanceId
+
+
+			//if task.Status == models.StateSuccess || task.Status == models.StateFailed {
+			//	beego.Debug("Task", task.TaskId, "finished id:", task.Id, "status:", taskItem.Status)
+			//	continue
+			//}
+
+			//if task.Status != models.StateSuccess || task.Status != models.StateFailed {
+			//	allDone = false
+			//}
+
 		}
 
-		if allDone {
+		if instanceCount == len(tasks) {
 			beego.Debug("Tasks have completed")
 			break
 		} else {

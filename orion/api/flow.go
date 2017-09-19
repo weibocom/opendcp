@@ -455,9 +455,6 @@ func (f *FlowApi) PauseFlow() {
 		return
 	}
 
-
-	f.ReturnSuccess(nil)
-
 	//if all running node is pause then flow is pause
 	if count == len(runningNodes) {
 		err = executor.Executor.Pause(obj)

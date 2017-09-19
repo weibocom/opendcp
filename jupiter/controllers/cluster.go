@@ -213,6 +213,7 @@ func (clusterController *ClusterController) ExpandInstances() {
 	if !bill.CanCreate(theCluster) {
 		err = fmt.Errorf("Sorry, over credit limit.")
 		resp.Msg = err.Error()
+		beego.Error(err.Error())
 		clusterController.ApiResponse = resp
 		clusterController.Status = BAD_REQUEST
 		clusterController.RespJsonWithStatus()

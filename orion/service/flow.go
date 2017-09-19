@@ -79,6 +79,15 @@ func (f *FlowService) GetNodeByIp(ip string) (*models.NodeState, error) {
 	return node, nil
 }
 
+func (f *FlowService) GetNodeByIpWithNone(poolId int, ip string) ([]*models.NodeState, error) {
+	o := orm.NewOrm()
+
+	nodes := make([]*models.NodeState, 0)
+	_, err := o.QueryTable(&models.NodeState{}).Filter("Pool", poolId).Filter("ip", ip).Filter("deleted", false).All(&nodes)
+
+	return nodes, err
+}
+
 func (f *FlowService) GetNodeById(id int) (*models.NodeState, error) {
 	o := orm.NewOrm()
 
@@ -104,9 +113,8 @@ func (f *FlowService) UpdateNodeMachine(state *models.NodeState) error {
 func (f *FlowService) UpdateNode(state *models.NodeState) error {
 	o := orm.NewOrm()
 	_, err := o.Update(state,
-		"status", "steps", "step_num", "log",
-		"last_op", "step_run_time", "run_time",
-		"updated_time",
+		"status", "steps", "step_num", "log", "last_op",
+		"step_run_time", "run_time", "updated_time",
 	)
 	return err
 }
@@ -141,6 +149,11 @@ func (f *FlowService) ChangeNodeStatusById(state *models.NodeState) error {
 	return err
 }
 
+func (f *FlowService) ChangeNodeStatusAndLogsById(state *models.NodeState) error {
+	o := orm.NewOrm()
+	_, err := o.Update(state, "log", "status", "updated_time")
+	return err
+}
 func (f *FlowService) GetNodeStatusByFlowId(flowId int) ([]*models.NodeState, error) {
 	o := orm.NewOrm()
 
@@ -203,10 +216,3 @@ func (f *FlowService) ListNodeRegister(obj interface{}, list interface{}, pids [
 	return int(num), nil
 }
 
-func (f *FlowService) UpdateFlowStatus(flow *models.Flow) error {
-	o := orm.NewOrm()
-
-	_, err := o.Update(flow, "status", "updated_time")
-
-	return err
-}

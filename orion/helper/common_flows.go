@@ -127,7 +127,12 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 	}
 
 	nodes := make([]*models.NodeState, 0)
+	isNodesWithNoneIp := false
 	for _, ip := range nodeIps {
+		if ip == "-"{
+			isNodesWithNoneIp = true
+			continue
+		}
 		n, err := service.Flow.GetNodeByIp(ip)
 		if err != nil || n.Deleted {
 			beego.Error("Node with IP ", ip, " deleted:", n.Deleted, " status: ", n.Status, "err:", err, " ignore")
@@ -135,15 +140,27 @@ func Shrink(poolId int, nodeIps []string, opUser string) error {
 		}
 		n.Deleted = true
 		n.UpdatedTime = time.Now()
-		err = service.Flow.DeleteNodeById(n)
-		if err != nil {
+		if err = service.Flow.DeleteNodeById(n); err != nil{
 			beego.Error("update Node with IP ", ip, " db error:", err)
 			continue
 		}
 		nodes = append(nodes, n)
 	}
+	//clear node which have not ip
+	if isNodesWithNoneIp {
+		nodesWithNoneIp, _ := service.Flow.GetNodeByIpWithNone(poolId, "-");
+		for _, ns := range nodesWithNoneIp {
+			ns.Deleted = true
+			ns.UpdatedTime = time.Now()
+			if err = service.Flow.DeleteNodeById(ns); err != nil{
+				beego.Error("update Node with id ", ns.Id, " db error:", err)
+				continue
+			}
+		}
+	}
 	if len(nodes) == 0 {
-		return errors.New("none nodes is to shrink")
+		beego.Warn("none nodes is to shrink")
+		return nil
 	}
 	override := map[string]interface{}{
 		RETURN_VM:  map[string]interface{}{KEY_VM_TYPE: pool.VmType},
@@ -192,7 +209,8 @@ func Deploy(poolId int, tag string, maxNum int, opUser string) error {
 		deployNodes = append(deployNodes, node)
 	}
 	if len(deployNodes) == 0 {
-		return errors.New("none nodes to deploy! ")
+		beego.Warn("none nodes to deploy! ")
+		return nil
 	}
 
 	override := make(map[string]interface{})
