@@ -1,5 +1,0 @@
----
-- hosts: test
-  remote_user: root
-  roles: 
-    - new

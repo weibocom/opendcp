@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>OpenDCP</title>
+<meta name="description" content="">
+<meta name="author" content="">
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/animate.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/owl.theme.css">
+<link rel="stylesheet" href="css/owl.carousel.css">
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+<body data-spy="scroll" data-offset="50" data-target=".navbar-collapse">
+<!-- 过渡动画 -->
+<div class="preloader">
+	<div class="sk-rotating-plane"></div>
+</div>
+<!-- 导航栏 -->
+<div class="navbar navbar-fixed-top custom-navbar" role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="icon icon-bar"></span>
+				<span class="icon icon-bar"></span>
+				<span class="icon icon-bar"></span>
+			</button>
+			<a href="#" class="navbar-brand">OpenDCP</a>
+		</div>
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="javascript:;" class="anchor" name="home">Home</a></li>
+				<li><a href="javascript:;" class="anchor" name="video">Video</a></li>
+				<li><a href="javascript:;" class="anchor" name="about">About</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+<!-- 首页展示 -->
+<section id="home" class="parallax-section">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 col-sm-12">
+				<h3 class="wow bounceIn" data-wow-delay="0.9s">面向微服务应用的企业级混合云平台</h3>
+				<h1 class="wow fadeInUp" data-wow-delay="1.6s">OpenDCP</h1>
+				<a href="https://github.com/weibocom/opendcp" class="btn btn-lg btn-default wow fadeInUp hidden-xs" data-wow-delay="2.3s" target="_blank">GitHub</a>
+				<a href="javascript:;" class="btn btn-lg btn-danger wow fadeInUp anchor" data-wow-delay="2.3s" name="video">Video</a>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- 简介/视频 -->
+<section id="video" class="parallax-section">
+	<div class="container">
+		<div class="row">
+			<div class="wow fadeInUp col-md-5 col-sm-12" data-wow-delay="0.2s">
+				<h3>OpenDCP混合云入门简介 [Video]</h3>
+				<p>OpenDCP是一个基于Docker的云资源管理与调度平台，集镜像仓库、多云支持、服务编排、服务发现等功能与一身，支持服务池的扩缩容，其技术体系源于微博用于支持节假日及热点峰值流量的弹性调度DCP系统。OpenDCP允许利用公有云服务器搭建起适应互联网应用的IT基础设置，并且将运维的工作量降到最低。</p>
+				<br />
+				<p>◉ 基于Docker容器技术进行封装，不要求使用者掌握Docker</p>
+				<p>◉ 支持阿里云公有云平台，可根据需要随时申请和释放服务器，显著降低运营成本</p>
+				<p>◉ 涵盖虚拟机创建、镜像打包、镜像部署、服务发现各个环节，简单易用，易于组织内推广</p>
+			</div>
+			<div class="wow fadeInUp col-md-7 col-sm-12" id="videoDiv" data-wow-delay="0.2s">
+				<video width="100%" height="auto" controls="controls" poster="./images/opendcp.jpg">
+					<source src="http://p0isr3t3u.bkt.clouddn.com/opendcp.mp4" type="video/mp4" />
+					您的浏览器暂不支持HTML5视频播放，请切换版本较新的浏览器进行浏览!
+				</video>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- 联系关于 -->
+<section id="about" class="parallax-section">
+	<div class="container">
+		<div class="row">
+			<div class="wow fadeInUp col-md-6 col-sm-6" data-wow-delay="0.6s" style="text-align: center">
+				<h3>OpenDCP交流群</h3>
+				<img src="./images/qq.png" class="img-responsive" id="qqImg" alt="Overview">
+			</div>
+			<div class="wow fadeInUp col-md-6 col-sm-6" data-wow-delay="0.7s">
+				<h3>联系我们</h3>
+				<p>2016年下半年成立OpenDCP开源项目组，成员来自微博研发中心的核心研发小组，负责向开源社区输出微博先进的混合云技术和落地经验。可加入开源QQ群（369485460），向我们的团队咨询相关问题和探讨技术，欢迎直接到新浪总部大厦作面对面的交流。</p>
+				<p>地址：北京市海淀区西北旺东路10号院西区8号楼新浪总部大厦</p>
+				<p>联系：微博私信（昵称 @it_fuwen）</p>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- Footer -->
+<footer>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 col-sm-12">
+				<p class="wow fadeInUp" data-wow-delay="0.6s">Copyright &copy; 2017 OpenDCP团队</p>
+			</div>
+			
+		</div>
+	</div>
+</footer>
+<!-- 回到顶部 -->
+<a href="#back-top" class="go-top"><i class="fa fa-angle-up"></i></a>
+
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.parallax.js"></script>
+<script src="js/owl.carousel.min.js"></script>
+<script src="js/wow.min.js"></script>
+<script src="js/custom.js"></script>
+
+</body>
+</html>

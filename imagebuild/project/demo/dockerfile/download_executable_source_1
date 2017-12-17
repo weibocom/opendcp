@@ -1,7 +1,0 @@
-$$plugin: download_executable_source
-checkoutAs: /web
-containerPath: /data1/weibo/webapps/ROOT
-password: opendcpcommonpwd
-source_type: git
-source_url: https://github.com/opendcpcommon/justyou.git
-username: opendcpcommon

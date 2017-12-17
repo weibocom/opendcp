@@ -1,5 +1,0 @@
----
-mysql: mysql://root:12345@db/octans?charset=utf8
-pool_size: 50
-pool_recycle: 900
-get_key_url: http://jupiter:8080/v1/instance/sshkey/

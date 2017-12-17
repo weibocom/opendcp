@@ -1,1 +1,0 @@
-FROM registry.cn-beijing.aliyuncs.com/opendcp/imagebuild-golang

@@ -1,8 +1,0 @@
-[deps]
-github.com/astaxie/beego = 
-github.com/go-sql-driver/mysql = 
-
-
-[res]
-include = views|static|conf
-

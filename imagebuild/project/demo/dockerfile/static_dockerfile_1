@@ -1,7 +1,0 @@
-$$plugin: static_dockerfile
-dockerfile: |-
-  FROM registry.cn-beijing.aliyuncs.com/opendcp/nginx
-  Env PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-  env NGINX_VERSION "1.9.15-1~jessie"
-  Cmd [ "/bin/sh", "-c", "#(nop) CMD [\"nginx\" \"-g\" \"daemon off;\"]"  ]
-  Cmd [ "nginx", "-g", "daemon off;"  ]

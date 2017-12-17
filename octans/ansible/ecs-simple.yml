@@ -1,5 +1,0 @@
----
-- hosts: hongbao_platform
-  remote_user: root
-  roles: 
-    - simple
