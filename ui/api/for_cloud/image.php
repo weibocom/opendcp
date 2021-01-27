@@ -80,6 +80,8 @@ $myPageSize = (isset($_POST['pagesize'])&&intval($_POST['pagesize'])>0)?intval($
 $fProvider=(isset($_POST['fProvider'])&&!empty($_POST['fProvider']))?trim($_POST['fProvider']):((isset($_GET['fProvider'])&&!empty($_GET['fProvider']))?trim($_GET['fProvider']):'aliyun');
 $fIdx=(isset($_POST['fIdx'])&&!empty($_POST['fIdx']))?trim($_POST['fIdx']):((isset($_GET['fIdx'])&&!empty($_GET['fIdx']))?trim($_GET['fIdx']):'');
 
+$fKeyId=(isset($_POST['fKeyId'])&&!empty($_POST['fKeyId']))?trim($_POST['fKeyId']):((isset($_GET['fKeyId'])&&!empty($_GET['fKeyId']))?trim($_GET['fKeyId']):'');
+
 $myJson=(isset($_POST['data'])&&!empty($_POST['data']))?trim($_POST['data']):((isset($_GET['data'])&&!empty($_GET['data']))?trim($_GET['data']):'');
 $arrJson=($myJson)?json_decode($myJson,true):array();
 
@@ -107,6 +109,7 @@ if($hasLimit){
       $arrJson = array(
         'page' => $myPage,
         'pagesize' => $myPageSize,
+        'keyId' => $fKeyId,
       );
       $retArr = $mySelf->getList($myUser, $fProvider, $arrJson, $fIdx);
       $retArr['page'] = $myPage;

@@ -14,6 +14,7 @@ cache = {
     image: [],
     disk: [],
     quota:{},
+    account: []
 }
 
 var getDate = function(t){
@@ -149,7 +150,7 @@ var processPage = function(data,page,pageinfo,paginate,func){
 //生成列表
 var processBody = function(data,page,head,body){
     var td="",tab=$('#tab').val();
-    var title=[ '#', '名称', '云厂商', '配额用量/余量', '创建时间', '#'];
+    var title=[ '#', '名称', '云厂商', '云账号KeyID', '配额用量/余量', '创建时间', '#'];
     if(title){
         var tr = $('<tr></tr>');
         for (var i = 0; i < title.length; i++) {
@@ -172,6 +173,8 @@ var processBody = function(data,page,head,body){
             td = '<td><a class="tooltips" title="查看详情" data-toggle="modal" data-target="#myViewModal" onclick="view(\'cluster\',\''+v.Id+'\')">' + v.Name + '</a></td>';
             tr.append(td);
             td = '<td>' + v.Provider + '</td>';
+            tr.append(td);
+            td = '<td>' + v.Account + '</td>';
             tr.append(td);
             td = '<td><span id="quota_'+ v.Id +'">0</span><a class="text-success pull-right tooltips" title="追加配额" data-toggle="modal" data-target="#myModal" onclick="twiceCheck(\'quota\',\''+v.Id+'\',\''+v.Name+'\')"><i class="fa fa-edit"></i></a></td>';
             tr.append(td);
@@ -558,6 +561,9 @@ var twiceCheck=function(action,idx,desc){
 var updateSelect=function(name,idx){
     var tSelect=$('#'+name),data='';
     switch(name){
+        case 'Account':
+            data=cache.account;
+            break;
         case 'Provider':
             data=cache.provider;
             break;
@@ -600,6 +606,12 @@ var updateSelect=function(name,idx){
     if(data.length>0){
         tSelect.append('<option value="">请选择</option>');
         switch(name){
+            case 'Account':
+                tSelect.removeAttr("disabled");
+                $.each(data,function(k,v){
+                    tSelect.append('<option value="' + v.KeyID + '">' + v.KeyID + '</option>');
+                });
+                break;
             case 'InternetChargeType':
                 tSelect.removeAttr("disabled");
                 $.each(data,function(k,v){
@@ -841,8 +853,11 @@ var getChargeType=function(){
     var actionDesc="网络计费类型",tSelect='InternetChargeType';
     var url='/api/for_cloud/charge.php?action=list';
     var idx=$('#Provider').val();
+
+    var account = $('#Account').val();
+
     if(!idx) return false;
-    var postData={"pagesize":1000,"fIdx":idx};
+    var postData={"pagesize":1000,"fIdx":idx,"fKeyId":account};
     cache.charge = [];
     $.ajax({
         type: "POST",
@@ -935,14 +950,15 @@ var getInstanceType=function(){
     var actionDesc="机器规格";
     var idx=$('#RegionName').val();
     var provider=$('#Provider').val();
+    var keyId = $('#Account').val();
     var tSelect = 'InstanceType';
     if(provider == 'aliyun'){
-        if(!provider||!idx) return false;
+        if(!provider||!idx||!keyId) return false;
     }else if(provider == 'openstack'){
         tSelect = 'DiskType';
     }
     var url='/api/for_cloud/ecs_type.php?action=list';
-    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
+    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx,"fKeyId":keyId};
     cache.ecs_type = [];
     $.ajax({
         type: "POST",
@@ -970,13 +986,14 @@ var getImage=function(){
     var url='/api/for_cloud/image.php?action=list';
     var provider=$('#Provider').val();
     var idx=$('#RegionName').val();
+    var keyId = $('#Account').val();
     if($('#Provider').val()=='aliyun') {
-        if (!provider || !idx) return false;
+        if (!provider || !idx || !keyId) return false;
     }else if($('#Provider').val()=='openstack'){
         //openstack未对idx作要求，此处是象征性地传递
         idx=1;
     }
-    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
+    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx,"fKeyId":keyId};
     cache.image = [];
     $.ajax({
         type: "POST",
@@ -1003,8 +1020,9 @@ var getZoneId=function(){
     var actionDesc="可用区",tSelect='ZoneName';
     var url='/api/for_cloud/zone.php?action=list';
     var idx=$('#RegionName').val();
+    var keyId = $('#Account').val();
     if(!idx) return false;
-    var postData={"pagesize":1000,"fIdx":idx};
+    var postData={"pagesize":1000,"fIdx":idx,"keyId":keyId};
     $.ajax({
         type: "POST",
         url: url,
@@ -1031,7 +1049,11 @@ var getVpcId=function(){
     var actionDesc="可用区";
     var provider=$('#Provider').val();
     var url='/api/for_cloud/vpc.php?action=list';
+    var keyId = $('#Account').val();
     if($('#Provider').val()=="aliyun") {
+        if(!keyId) {
+            return false;
+        }
         tSelect='VpcId';
         var idx = $('#RegionName').val();
         if (!idx) return false;
@@ -1039,7 +1061,7 @@ var getVpcId=function(){
         tSelect='NetworkOP'
         var idx=1;
     }
-    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx};
+    var postData={"pagesize":1000,"fProvider":provider,"fIdx":idx,"fKeyId":keyId};
     $.ajax({
         type: "POST",
         url: url,
@@ -1074,7 +1096,8 @@ var getVSwitchId=function(){
     var zone=$('#ZoneName').val();
     var idx=$('#VpcId').val();
     if(!zone||!idx) return false;
-    var postData={"pagesize":1000,fZone:zone,"fIdx":idx};
+    var keyId = $('#Account').val();
+    var postData={"pagesize":1000,fZone:zone,"fIdx":idx,"fKeyId":keyId};
     $.ajax({
         type: "POST",
         url: url,
@@ -1108,7 +1131,7 @@ var getSecurityGroup=function(){
         if(!idx) return false;
     }
     if(!region) return false;
-    var postData={"pagesize":1000,fRegion:region,"fIdx":idx};
+    var postData={"pagesize":1000,fRegion:region,"fIdx":idx,"fKeyId":$('#Account').val()};
     $.ajax({
         type: "POST",
         url: url,
@@ -1151,15 +1174,52 @@ var isNumberValid=function(o,a,b,d){
     check();
 }
 
+var showCloudAccount = function () {
+    $('#select-cloud-account').css('display', 'block');
+    var actionDesc="云账号",tSelect='Account';
+    var url='/api/for_cloud/cluster.php?action=getaccount&vendor_type=aliyun';
+    var vendorType=$('#Provider').val();
+    var postData={"pagesize":1000};
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: postData,
+        dataType: "json",
+        success: function (data) {
+            cache.account = (typeof data.content != 'undefined') ? data.content : [];
+            updateSelect(tSelect);
+            if(data.code!=0){
+                pageNotify('error','获取'+actionDesc+'失败！','错误信息：'+data.msg);
+            }else{
+                if(data.content.length==0) pageNotify('warning','获取'+actionDesc+'成功！','数据为空!');
+            }
+        },
+        error: function (){
+            cache.account = [];
+            updateSelect(tSelect);
+            pageNotify('error','获取'+actionDesc+'失败！','错误信息：接口不可用');
+        }
+    });
+}
+
+var hideAccount = function () {
+    $('#select-cloud-account').css('display', 'none');
+}
+
 var selectProvider=function () {
     switch ($('#Provider').val()){
         case 'aliyun':
+            showCloudAccount();
             switchToAliyun();
             getDiskAndNetwork();
             break;
         case 'openstack':
             switchToOpenStack();
             getOpenStackAttr();
+            hideAccount();
+            break;
+        default:
+            hideAccount();
             break;
     }
 }

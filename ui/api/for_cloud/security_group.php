@@ -84,6 +84,8 @@ $fIdx=(isset($_POST['fIdx'])&&!empty($_POST['fIdx']))?trim($_POST['fIdx']):((iss
 $myJson=(isset($_POST['data'])&&!empty($_POST['data']))?trim($_POST['data']):((isset($_GET['data'])&&!empty($_GET['data']))?trim($_GET['data']):'');
 $arrJson=($myJson)?json_decode($myJson,true):array();
 
+$fKeyId=(isset($_POST['fKeyId'])&&!empty($_POST['fKeyId']))?trim($_POST['fKeyId']):((isset($_GET['fKeyId'])&&!empty($_GET['fKeyId']))?trim($_GET['fKeyId']):'');
+
 //记录操作日志
 $logFlag = true;
 $logDesc = 'FAILED';
@@ -109,6 +111,7 @@ if($hasLimit){
         'page' => $myPage,
         'pagesize' => $myPageSize,
         'VpcId' => $fIdx,
+        'keyId' => $fKeyId,
       );
       $retArr = $mySelf->getList($myUser, $fProvider, $arrJson , $fRegion);
       $retArr['page'] = $myPage;

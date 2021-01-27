@@ -3,6 +3,7 @@ cache = {
   page_size: 20,
   region_id: '',
   region: [],
+  account: [],
   zone: [],
   vpc: [],
   subnet: [],
@@ -381,7 +382,7 @@ var change=function(step){
   $.ajax({
     type: "POST",
     url: url,
-    data: {"action":action,"fIdx":fIdx,"data":JSON.stringify(postData)},
+    data: {"action":action,"fIdx":fIdx,"data":JSON.stringify(postData),fKeyId:$('#fKeyId').val()},
     dataType: "json",
     success: function (data) {
       //执行结果提示
@@ -420,7 +421,7 @@ var view=function(type,idx){
   var url='',title='',text='',illegal=false,height='',postData={};
   var tStyle='word-break:break-all;word-warp:break-word;';
   url='/api/for_cloud/'+type+'.php';
-  postData={"action":"info","fIdx":idx};
+  postData={"action":"info","fIdx":idx,"fKeyId":$('#fKeyId').val()};
   switch(type){
     case 'slb':
       title='查看详情 - '+idx;
@@ -531,7 +532,7 @@ var check=function(tab){
             if($('#Bandwidth').parent().parent().attr('class').indexOf('hidden')==-1) $('#Bandwidth').parent().parent().addClass('hidden');
           }
           if(AddressType=='internet'&&InternetChargeType=='') disabled=true;
-          if(AddressType=='internet'&&Bandwidth=='') disabled=true;
+          if(AddressType=='internet'&&Bandwidth==''&&InternetChargeType=='paybybandwidth') disabled=true;
           if(VpcId=='') disabled=true;
           if(VSwitchId=='') disabled=true;
           if(SecurityGroup=='') disabled=true;
@@ -840,6 +841,7 @@ var getList=function(type,idx,tab){
       url='/api/for_cloud/slb.php?action=list';
       break;
   }
+
   var postData={'pagesize':1000};
   $('#tab').val(tab);
   var actionDesc='';
@@ -850,6 +852,11 @@ var getList=function(type,idx,tab){
       break;
     case 'slb':
       postData.fRegion=$('#fRegion').val();
+      if(!postData.fRegion) {
+        return false;
+      }
+
+      postData.fKeyId = $('#fKeyId').val();
       actionDesc='AliSLB';
       cache.region_id=postData.fRegion;
       break;
@@ -902,7 +909,7 @@ var getInfo=function(idx){
   url='/api/for_cloud/slb.php';
   if(!idx) idx=$('#fSlb').val();
   if(!idx) return false;
-  postData={"action":"info","fIdx":idx};
+  postData={"action":"info","fIdx":idx,"fKeyId":$('#fKeyId').val()};
   $.ajax({
     type: "POST",
     url: url,
@@ -942,6 +949,12 @@ var getSlbPort=function(idx,j){
   url='/api/for_cloud/slb.php?'+j+'_'+idx;
   if(!idx) return false;
   postData={"action":"info","fIdx":idx};
+
+  fKeyId = $('#fKeyId').val();
+  if(fKeyId) {
+    postData.fKeyId = fKeyId
+  }
+
   $.ajax({
     type: "POST",
     url: url,
@@ -978,10 +991,10 @@ var getDesc=function(type,id,idx,protocol,port){
   url='/api/for_cloud/slb_'+type+'.php';
   switch(type){
     case 'listener':
-      postData={"action":"info","fIdx":idx,"fProtocol":protocol,"fPort":port};
+      postData={"action":"info","fIdx":idx,"fProtocol":protocol,"fPort":port,"fKeyId":$('#fKeyId').val()};
       break;
     case 'backend':
-      postData={"action":"status","fIdx":idx};
+      postData={"action":"status","fIdx":idx,"fKeyId":$('#fKeyId').val()};
       break;
     default:
       return false;
@@ -1128,6 +1141,12 @@ var getZoneId=function(){
     return false;
   }
   var postData={"pagesize":1000,"fIdx":idx};
+
+  fKeyId = $('#fKeyId').val();
+  if(fKeyId) {
+    postData.fKeyId = fKeyId
+  }
+
   $.ajax({
     type: "POST",
     url: url,
@@ -1161,6 +1180,12 @@ var getVpcId=function(){
     return false;
   }
   var postData={"pagesize":1000,"fIdx":idx};
+
+  fKeyId = $('#fKeyId').val();
+  if(fKeyId) {
+    postData.fKeyId = fKeyId
+  }
+
   $.ajax({
     type: "POST",
     url: url,
@@ -1203,6 +1228,10 @@ var getVSwitchId=function(){
     return false;
   }
   var postData={"pagesize":1000,fZone:zone,"fIdx":idx};
+  fKeyId = $('#fKeyId').val();
+  if(fKeyId) {
+    postData.fKeyId = fKeyId
+  }
   $.ajax({
     type: "POST",
     url: url,
@@ -1237,6 +1266,10 @@ var getSecurityGroup=function(){
     return false;
   }
   var postData={"pagesize":1000,fRegion:region,"fIdx":idx};
+  fKeyId = $('#fKeyId').val();
+  if(fKeyId) {
+    postData.fKeyId = fKeyId
+  }
   $.ajax({
     type: "POST",
     url: url,
@@ -1291,6 +1324,9 @@ var updateSelect=function(name,idx,tab){
   if(tab) $('#tab').val(tab);
   var tSelect=$('#'+name),data='';
   switch(name){
+    case 'fKeyId':
+      data=cache.account;
+      break;
     case 'fRegion':
     case 'RegionId':
       data=cache.region;
@@ -1317,6 +1353,11 @@ var updateSelect=function(name,idx,tab){
   tSelect.empty();
   if(data.length>0){
     switch(name){
+      case 'fKeyId':
+        $.each(data,function(k,v){
+          tSelect.append('<option value="' + v.KeyID + '">' + v.KeyID + '</option>');
+        });
+        break;
       case 'fRegion':
         $.each(data,function(k,v){
           tSelect.append('<option value="' + v.RegionName + '">' + v.RegionName + '</option>');
@@ -1400,7 +1441,7 @@ var switchs=function(action,idx,port){
   $.ajax({
     type: "POST",
     url: url,
-    data: {"action":action,"data":JSON.stringify(postData)},
+    data: {"action":action,"data":JSON.stringify(postData),"fKeyId":$('#fKeyId').val()},
     dataType: "json",
     success: function (data) {
       //执行结果提示
@@ -1433,7 +1474,7 @@ var get = function (protocol,port) {
   var idx=$('#LoadBalancerId').val();
   switch (tab){
     default:
-      postData={"action":"info","fIdx":idx,"fProtocol":protocol,"fPort":port};
+      postData={"action":"info","fIdx":idx,"fProtocol":protocol,"fPort":port,"fKeyId":$('#fKeyId').val()};
       break;
   }
   if(idx&&protocol&&port){
@@ -1708,7 +1749,7 @@ var addBackend=function(){
   $.ajax({
     type: "POST",
     url: url,
-    data: {"action":action,"fIdx": $('#fSlb').val(),"data":JSON.stringify(postData)},
+    data: {"fKeyId": $('#fKeyId').val(),"action":action,"fIdx": $('#fSlb').val(),"data":JSON.stringify(postData)},
     dataType: "json",
     success: function (data) {
       //执行结果提示
@@ -1730,6 +1771,33 @@ var addBackend=function(){
     },
     error: function (){
       pageNotify('error','【'+actionDesc+'】操作失败！','错误信息：接口不可用');
+    }
+  });
+}
+
+//载入账号
+var getCloudAccount=function(){
+  var actionDesc="云厂商账号",tSelect='fKeyId';
+  var url='/api/for_cloud/cluster.php?action=getaccount&vendor_type=aliyun';
+  var postData={"pagesize":1000};
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: postData,
+    dataType: "json",
+    success: function (data) {
+      cache.account = (typeof data.content != 'undefined') ? data.content : [];
+      updateSelect(tSelect);
+      if(data.code!=0){
+        pageNotify('error','获取'+actionDesc+'失败！','错误信息：'+data.msg);
+      }else{
+        if(data.content.length==0) pageNotify('warning','获取'+actionDesc+'成功！','数据为空!');
+      }
+    },
+    error: function (){
+      cache.account = [];
+      updateSelect(tSelect);
+      pageNotify('error','获取'+actionDesc+'失败！','错误信息：接口不可用');
     }
   });
 }
