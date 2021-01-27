@@ -66,6 +66,11 @@ var (
 	SuccessResp = ApiResponse{}
 
 	// Error
+	NotEnoughCloudAccountResp = ApiResponse{
+		Code: 13001,
+		Msg:  "Cloud accounts config is missing!",
+	}
+
 	JsonFormatFaildResp = ApiResponse{
 		Code: 12999,
 		Msg:  "Please input the correct json format!",

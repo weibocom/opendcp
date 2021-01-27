@@ -78,10 +78,19 @@ class myself{
     return $ret;
   }
 
-  function getInfo($myUser = '', $idx = ''){
+  function getInfo($myUser = '', $idx = '', $fKeyId = ''){
     global $thisClass;
+
+    if(!empty($fKeyId)) {
+      $data = array(
+          'keyId' => $fKeyId,
+      );
+    } else {
+      $data = '';
+    }
+
     $ret=array('code' => 1, 'msg' => 'Illegal Request', 'ret' => '');
-    if($strList = $thisClass->get($myUser, $this->module.'/'.$this->sub_module, 'GET', '', $idx)){
+    if($strList = $thisClass->get($myUser, $this->module.'/'.$this->sub_module, 'GET', $data, $idx)){
       $arrList = json_decode($strList,true);
       if(isset($arrList['code']) && $arrList['code'] == 0 && isset($arrList['content'])){
         $ret = array(
@@ -183,6 +192,9 @@ $fIdx=(isset($_POST['fIdx'])&&!empty($_POST['fIdx']))?trim($_POST['fIdx']):((iss
 $myJson=(isset($_POST['data'])&&!empty($_POST['data']))?trim($_POST['data']):((isset($_GET['data'])&&!empty($_GET['data']))?trim($_GET['data']):'');
 $arrJson=($myJson)?json_decode($myJson,true):array();
 
+$fKeyId=(isset($_POST['fKeyId'])&&!empty($_POST['fKeyId']))?trim($_POST['fKeyId']):((isset($_GET['fKeyId'])&&!empty($_GET['fKeyId']))?trim($_GET['fKeyId']):'');
+$arrJson['keyId'] = $fKeyId;
+
 //记录操作日志
 $logFlag = true;
 $logDesc = 'FAILED';
@@ -207,6 +219,7 @@ if($hasLimit){
       $arrJson = array(
         'page' => $myPage,
         'pageSize' => $myPageSize,
+        'keyId' => $fKeyId,
       );
       $retArr = $mySelf->getList($myUser, 'list', $arrJson , $fRegion);
       $retArr['page'] = $myPage;
@@ -215,7 +228,7 @@ if($hasLimit){
       break;
     case 'info':
       $logFlag = false;//本操作不记录日志
-      $retArr = $mySelf->getInfo($myUser,$fIdx);
+      $retArr = $mySelf->getInfo($myUser,$fIdx,$fKeyId);
       break;
     case 'insert':
       if($myStatus > 0){ $retArr['msg'] = 'Permission Denied!'; break; }

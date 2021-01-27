@@ -27,7 +27,7 @@ import (
 )
 
 func CreateLoadBalancerHTTPListener(listener models.Listener) (slb.CreateLoadBalancerHTTPListenerResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -60,7 +60,7 @@ func CreateLoadBalancerHTTPListener(listener models.Listener) (slb.CreateLoadBal
 }
 
 func CreateLoadBalancerHTTPSListener(listener models.Listener) (slb.CreateLoadBalancerHTTPSListenerResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -94,7 +94,7 @@ func CreateLoadBalancerHTTPSListener(listener models.Listener) (slb.CreateLoadBa
 }
 
 func CreateLoadBalancerTCPListener(listener models.Listener) (slb.CreateLoadBalancerTCPListenerResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -119,7 +119,7 @@ func CreateLoadBalancerTCPListener(listener models.Listener) (slb.CreateLoadBala
 }
 
 func CreateLoadBalancerUDPListener(listener models.Listener) (slb.CreateLoadBalancerUDPListenerResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -143,32 +143,32 @@ func CreateLoadBalancerUDPListener(listener models.Listener) (slb.CreateLoadBala
 	return cli.Listener.CreateLoadBalancerUDPListener(params)
 }
 
-func DeleteLoadBalancerListener(loadBalancerId string, listenerPort int) (slb.DeleteLoadBalancerListenerResponse, error) {
-	cli := GetSlbClient()
+func DeleteLoadBalancerListener(keyId string, loadBalancerId string, listenerPort int) (slb.DeleteLoadBalancerListenerResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
 	return cli.Listener.DeleteLoadBalancerListener(params)
 }
 
-func StartLoadBalancerListener(loadBalancerId string, listenerPort int) (slb.StartLoadBalancerListenerResponse, error) {
-	cli := GetSlbClient()
+func StartLoadBalancerListener(keyId string, loadBalancerId string, listenerPort int) (slb.StartLoadBalancerListenerResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
 	return cli.Listener.StartLoadBalancerListener(params)
 }
 
-func StopLoadBalancerListener(loadBalancerId string, listenerPort int) (slb.StopLoadBalancerListenerResponse, error) {
-	cli := GetSlbClient()
+func StopLoadBalancerListener(keyId string, loadBalancerId string, listenerPort int) (slb.StopLoadBalancerListenerResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
 	return cli.Listener.StopLoadBalancerListener(params)
 }
 
-func SetListenerAccessControlStatus(loadBalancerId string, listenerPort int, accessControlStatus string) (slb.SetListenerAccessControlStatusResponse, error) {
-	cli := GetSlbClient()
+func SetListenerAccessControlStatus(keyId string, loadBalancerId string, listenerPort int, accessControlStatus string) (slb.SetListenerAccessControlStatusResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
@@ -176,8 +176,8 @@ func SetListenerAccessControlStatus(loadBalancerId string, listenerPort int, acc
 	return cli.Listener.SetListenerAccessControlStatus(params)
 }
 
-func AddListenerWhiteListItem(loadBalancerId string, listenerPort int, sourceItems string) (slb.AddListenerWhiteListItemResponse, error) {
-	cli := GetSlbClient()
+func AddListenerWhiteListItem(keyId string, loadBalancerId string, listenerPort int, sourceItems string) (slb.AddListenerWhiteListItemResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
@@ -185,8 +185,8 @@ func AddListenerWhiteListItem(loadBalancerId string, listenerPort int, sourceIte
 	return cli.Listener.AddListenerWhiteListItem(params)
 }
 
-func RemoveListenerWhiteListItem(loadBalancerId string, listenerPort int, sourceItems string) (slb.RemoveListenerWhiteListItemResponse, error) {
-	cli := GetSlbClient()
+func RemoveListenerWhiteListItem(keyId string, loadBalancerId string, listenerPort int, sourceItems string) (slb.RemoveListenerWhiteListItemResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
@@ -194,8 +194,8 @@ func RemoveListenerWhiteListItem(loadBalancerId string, listenerPort int, source
 	return cli.Listener.RemoveListenerWhiteListItem(params)
 }
 
-func DescribeListenerAccessControlAttribute(loadBalancerId string, listenerPort int) (slb.DescribeListenerAccessControlAttributeResponse, error) {
-	cli := GetSlbClient()
+func DescribeListenerAccessControlAttribute(keyId string, loadBalancerId string, listenerPort int) (slb.DescribeListenerAccessControlAttributeResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
@@ -203,7 +203,7 @@ func DescribeListenerAccessControlAttribute(loadBalancerId string, listenerPort 
 }
 
 func SetLoadBalancerHTTPListenerAttribute(listener models.Listener) (slb.SetLoadBalancerHTTPListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -235,7 +235,7 @@ func SetLoadBalancerHTTPListenerAttribute(listener models.Listener) (slb.SetLoad
 }
 
 func SetLoadBalancerHTTPSListenerAttribute(listener models.Listener) (slb.SetLoadBalancerHTTPSListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -268,7 +268,7 @@ func SetLoadBalancerHTTPSListenerAttribute(listener models.Listener) (slb.SetLoa
 }
 
 func SetLoadBalancerTCPListenerAttribute(listener models.Listener) (slb.SetLoadBalancerTCPListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -292,7 +292,7 @@ func SetLoadBalancerTCPListenerAttribute(listener models.Listener) (slb.SetLoadB
 }
 
 func SetLoadBalancerUDPListenerAttribute(listener models.Listener) (slb.SetLoadBalancerUDPListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(listener.KeyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = listener.LoadBalancerId
 	params["ListenerPort"] = listener.ListenerPort
@@ -315,32 +315,32 @@ func SetLoadBalancerUDPListenerAttribute(listener models.Listener) (slb.SetLoadB
 	return cli.Listener.SetLoadBalancerUDPListenerAttribute(params)
 }
 
-func DescribeLoadBalancerHTTPListenerAttribute(loadBalancerId string, listenerPort int) (slb.DescribeLoadBalancerHTTPListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+func DescribeLoadBalancerHTTPListenerAttribute(loadBalancerId string, listenerPort int, keyId string) (slb.DescribeLoadBalancerHTTPListenerAttributeResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
 	return cli.Listener.DescribeLoadBalancerHTTPListenerAttribute(params)
 }
 
-func DescribeLoadBalancerHTTPSListenerAttribute(loadBalancerId string, listenerPort int) (slb.DescribeLoadBalancerHTTPSListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+func DescribeLoadBalancerHTTPSListenerAttribute(loadBalancerId string, listenerPort int, keyId string) (slb.DescribeLoadBalancerHTTPSListenerAttributeResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
 	return cli.Listener.DescribeLoadBalancerHTTPSListenerAttribute(params)
 }
 
-func DescribeLoadBalancerTCPListenerAttribute(loadBalancerId string, listenerPort int) (slb.DescribeLoadBalancerTCPListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+func DescribeLoadBalancerTCPListenerAttribute(loadBalancerId string, listenerPort int, keyId string) (slb.DescribeLoadBalancerTCPListenerAttributeResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort
 	return cli.Listener.DescribeLoadBalancerTCPListenerAttribute(params)
 }
 
-func DescribeLoadBalancerUDPListenerAttribute(loadBalancerId string, listenerPort int) (slb.DescribeLoadBalancerUDPListenerAttributeResponse, error) {
-	cli := GetSlbClient()
+func DescribeLoadBalancerUDPListenerAttribute(loadBalancerId string, listenerPort int, keyId string) (slb.DescribeLoadBalancerUDPListenerAttributeResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["ListenerPort"] = listenerPort

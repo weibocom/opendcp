@@ -7,6 +7,7 @@ locale_messages = {
     "LastestPartNum": false,
     "PartOfInstances": false,
     "Desc": "描述",
+    "Account": "KeyId",
     "CreateTime": "创建时间",
     "DeleteTime": false,
     "Cpu": "CPU",

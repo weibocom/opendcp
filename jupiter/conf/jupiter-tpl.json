@@ -1,12 +1,22 @@
 {
     "Password": "",
-    "KeyId": "",
-    "KeySecret": "",
     "KeyDir": "./keys",
     "Ansible": {
         "Url": "",
         "GetOctansUrl": "",
         "DefaultRole": "",
         "ForkNum": 5
-    }
+    },
+    "CloudAccounts": [
+        {
+            "KeyId": "your_aliyun_key_id",
+            "KeySecret": "your_aliyun_secret",
+            "VendorType": "aliyun"
+        },
+        {
+            "KeyId": "your_aws_key_id",
+            "KeySecret": "your_aws_secret",
+            "VendorType": "aws"
+        }
+    ]
 }

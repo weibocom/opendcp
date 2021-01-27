@@ -44,7 +44,7 @@ const (
 )
 
 func CreateOne(cluster *models.Cluster) (string, error) {
-	providerDriver, err := provider.New(cluster.Provider)
+	providerDriver, err := provider.New(cluster.Provider, cluster.CloudKeyId)
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +73,8 @@ func StartOne(instanceId string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+
+	providerDriver, err := provider.New(ins.Provider, ins.Cluster.CloudKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -89,7 +90,7 @@ func StopOne(instanceId string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	providerDriver, err := provider.New(ins.Provider)
+	providerDriver, err := provider.New(ins.Provider, ins.Cluster.CloudKeyId)
 	if err != nil {
 		return false, err
 	}
@@ -114,7 +115,7 @@ func DeleteOne(instanceId, correlationId string) error {
 	}
 	logstore.Info(correlationId, instanceId, "2. Delete instance from cloud")
 	if ins.Provider != PhyDev {
-		providerDriver, err := provider.New(ins.Provider)
+		providerDriver, err := provider.New(ins.Provider, ins.Cluster.CloudKeyId)
 		if err != nil {
 			logstore.Error(correlationId, instanceId, err)
 			return err
@@ -211,7 +212,7 @@ func GetProviders() ([]string, error) {
 }
 
 func GetRegions(providerName string) ([]models.Region, error) {
-	providerDriver, err := provider.New(providerName)
+	providerDriver, err := provider.New(providerName, conf.GetDefaultCloudAccount().KeyID)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +224,7 @@ func GetRegions(providerName string) ([]models.Region, error) {
 }
 
 func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, error) {
-	providerDriver, err := provider.New(providerName)
+	providerDriver, err := provider.New(providerName, conf.GetDefaultCloudAccount().KeyID)
 	if err != nil {
 		return nil, err
 	}
@@ -234,8 +235,8 @@ func GetZones(providerName string, regionId string) ([]models.AvailabilityZone, 
 	return ret.AvailabilityZones, nil
 }
 
-func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int) ([]models.Vpc, error) {
-	providerDriver, err := provider.New(providerName)
+func GetVpcs(providerName string, regionId string, keyId string, pageNumber int, pageSize int) ([]models.Vpc, error) {
+	providerDriver, err := provider.New(providerName, keyId)
 	if err != nil {
 		return nil, err
 	}
@@ -246,8 +247,8 @@ func GetVpcs(providerName string, regionId string, pageNumber int, pageSize int)
 	return ret.Vpcs, nil
 }
 
-func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subnet, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSubnets(providerName string, zoneId string, vpcId string, keyId string) ([]models.Subnet, error) {
+	providerDriver, err := provider.New(providerName, keyId)
 	if err != nil {
 		return nil, err
 	}
@@ -258,8 +259,8 @@ func GetSubnets(providerName string, zoneId string, vpcId string) ([]models.Subn
 	return ret.Subnets, nil
 }
 
-func GetImages(providerName string, regionId string) ([]models.Image, error) {
-	providerDriver, err := provider.New(providerName)
+func GetImages(providerName string, regionId string, keyId string) ([]models.Image, error) {
+	providerDriver, err := provider.New(providerName, keyId)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +272,7 @@ func GetImages(providerName string, regionId string) ([]models.Image, error) {
 }
 
 func ListInstanceTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+	providerDriver, err := provider.New(providerName, conf.GetDefaultCloudAccount().KeyID)
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +284,7 @@ func ListInstanceTypes(providerName string) ([]string, error) {
 }
 
 func ListInternetChargeTypes(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+	providerDriver, err := provider.New(providerName, conf.GetDefaultCloudAccount().KeyID)
 	if err != nil {
 		return nil, err
 	}
@@ -291,15 +292,15 @@ func ListInternetChargeTypes(providerName string) ([]string, error) {
 }
 
 func ListDiskCategory(providerName string) ([]string, error) {
-	providerDriver, err := provider.New(providerName)
+	providerDriver, err := provider.New(providerName, conf.GetDefaultCloudAccount().KeyID)
 	if err != nil {
 		return nil, err
 	}
 	return providerDriver.ListDiskCategory(), nil
 }
 
-func GetSecurityGroup(providerName string, regionId string, vpcId string) ([]models.SecurityGroup, error) {
-	providerDriver, err := provider.New(providerName)
+func GetSecurityGroup(providerName string, regionId string, vpcId string, keyId string) ([]models.SecurityGroup, error) {
+	providerDriver, err := provider.New(providerName, keyId)
 	if err != nil {
 		return nil, err
 	}

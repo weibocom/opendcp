@@ -17,8 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package models
 
 type Listener struct {
@@ -57,4 +55,6 @@ type Listener struct {
 
 	AccessControlStatus string //'是否开启访问控制。取值：open_white_list | close'
 	SourceItems         string //'访问控制列表。支持ip地址或ip地址段的输入，多个ip地址或ip地址段间用”,”分割。'
+
+	KeyId string `json:"keyId"` //阿里云keyid
 }

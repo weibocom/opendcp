@@ -26,9 +26,9 @@ import (
 	"github.com/astaxie/beego"
 	"strings"
 	"weibo.com/opendcp/jupiter/models"
+	"weibo.com/opendcp/jupiter/provider"
 	"weibo.com/opendcp/jupiter/service/instance"
 	"weibo.com/opendcp/jupiter/service/slb"
-	"weibo.com/opendcp/jupiter/provider"
 )
 
 const MAX_IP_NUMBER = 20
@@ -104,7 +104,7 @@ func (sc *SlbController) SetLoadBalancerStatus() {
 		return
 	}
 
-	r, err := slb.SetLoadBalancerStatus(loadBalancer.LoadBalancerId, loadBalancer.LoadBalancerStatus)
+	r, err := slb.SetLoadBalancerStatus(loadBalancer.KeyId, loadBalancer.LoadBalancerId, loadBalancer.LoadBalancerStatus)
 	if err != nil {
 		beego.Error("Create loadbalancer failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -133,7 +133,7 @@ func (sc *SlbController) DeleteLoadBalancer() {
 		sc.RespMissingParams("loadBalancer.LoadBalancerId")
 		return
 	}
-	r, err := slb.DeleteLoadBalancer(loadBalancer.LoadBalancerId)
+	r, err := slb.DeleteLoadBalancer(loadBalancer.LoadBalancerId, sc.GetString("keyId"))
 	if err != nil {
 		beego.Error("Remove loadbalancer failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -157,7 +157,8 @@ func (sc *SlbController) GetLoadBalancers() {
 		sc.RespMissingParams("loadBalancer.RegionId")
 		return
 	}
-	r, err := slb.DescribeLoadBalancers(loadBalancer)
+	keyId := sc.GetString("keyId", "")
+	r, err := slb.DescribeLoadBalancers(loadBalancer, keyId)
 	if err != nil {
 		beego.Error("Get loadbalancers failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -175,7 +176,8 @@ func (sc *SlbController) GetLoadBalancers() {
 func (sc *SlbController) GetLoadBalancer() {
 	resp := ApiResponse{}
 	loadBalancerId := sc.GetString(":loadbalancerid")
-	r, err := slb.DescribeLoadBalancerAttribute(loadBalancerId)
+	keyId := sc.GetString("keyId", "")
+	r, err := slb.DescribeLoadBalancerAttribute(loadBalancerId, keyId)
 	if err != nil {
 		beego.Error("Get loadbalancer failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -194,12 +196,13 @@ func (sc *SlbController) AddBackendServers() {
 	resp := ApiResponse{}
 	body := sc.Ctx.Input.RequestBody
 	loadBalancerId := sc.GetString(":loadbalancerid")
+	keyId := sc.GetString("keyId")
 
 	if len(strings.Split(string(body), ",")) > MAX_IP_NUMBER {
 		sc.RespInputOverLimited("BackendServerList", "SLB max number of backendServer is 20.")
 		return
 	}
-	r, err := slb.AddBackendServers(loadBalancerId, string(body))
+	r, err := slb.AddBackendServers(loadBalancerId, string(body), keyId)
 	if err != nil {
 		beego.Error("Add backendservers failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -218,12 +221,13 @@ func (sc *SlbController) RemoveBackendServers() {
 	resp := ApiResponse{}
 	body := sc.Ctx.Input.RequestBody
 	loadBalancerId := sc.GetString(":loadbalancerid")
+	keyId := sc.GetString("keyId")
 
 	if len(strings.Split(string(body), ",")) > MAX_IP_NUMBER {
 		sc.RespInputOverLimited("BackendServerList", "SLB max number of backendServer is 20.")
 		return
 	}
-	r, err := slb.RemoveBackendServers(loadBalancerId, string(body))
+	r, err := slb.RemoveBackendServers(loadBalancerId, string(body), keyId)
 	if err != nil {
 		beego.Error("Remove backendservers failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -242,12 +246,13 @@ func (sc *SlbController) SetBackendServers() {
 	resp := ApiResponse{}
 	body := sc.Ctx.Input.RequestBody
 	loadBalancerId := sc.GetString(":loadbalancerid")
+	keyId := sc.GetString("keyId")
 
 	if len(strings.Split(string(body), ",")) > MAX_IP_NUMBER {
 		sc.RespInputOverLimited("BackendServerList", "SLB max number of backendServer is 20.")
 		return
 	}
-	r, err := slb.SetBackendServers(loadBalancerId, string(body))
+	r, err := slb.SetBackendServers(loadBalancerId, string(body), keyId)
 	if err != nil {
 		beego.Error("Remove backendservers failed: " + err.Error())
 		sc.RespServiceError(err)
@@ -266,16 +271,24 @@ func (sc *SlbController) DescribeHealthStatus() {
 	resp := ApiResponse{}
 	loadBalancerId := sc.GetString(":loadbalancerid")
 
-	r, err := slb.DescribeHealthStatus(loadBalancerId)
+	keyId := sc.GetString("keyId")
+	r, err := slb.DescribeHealthStatus(loadBalancerId, keyId)
 	if err != nil {
 		beego.Error("Remove backendservers failed: " + err.Error())
 		sc.RespServiceError(err)
 		return
 	}
 	servers := make([]models.BackendServer, 0)
-	providerDriver, _ := provider.New("aliyun")
+
+	providerDriver, _ := provider.New("aliyun", keyId)
 	for _, v := range r.BackendServers.BackendServer {
 		ins, _ := providerDriver.GetInstance(v.ServerId)
+
+		if ins == nil {
+			beego.Error("Instance not found error: " + v.ServerId)
+			continue
+		}
+
 		var ip string = ""
 		if len(ins.PrivateIpAddress) > 0 {
 			ip = ins.PrivateIpAddress
@@ -327,7 +340,7 @@ func (sc *SlbController) SetBackendOfLoadBalance() {
 			beego.Error("parse servers error: ", err)
 			return
 		}
-		r, err := slb.SetBackendServers(setServer.LoadBalancerId, string(bytes))
+		r, err := slb.SetBackendServers(setServer.LoadBalancerId, string(bytes), setServer.KeyId)
 		if err != nil {
 			beego.Error("set backendservers failed: " + err.Error())
 			sc.RespServiceError(err)
@@ -378,7 +391,7 @@ func (sc *SlbController) AddToLoadBalance() {
 			beego.Error("parse servers error: ", err)
 			sc.RespInputError()
 		}
-		r, err := slb.AddBackendServers(addServer.LoadBalancerId, string(bytes))
+		r, err := slb.AddBackendServers(addServer.LoadBalancerId, string(bytes), addServer.KeyId)
 		if err != nil {
 			beego.Error("add backendservers failed: " + err.Error())
 			sc.RespServiceError(err)
@@ -427,7 +440,7 @@ func (sc *SlbController) RemoveFromLoadBalance() {
 			sc.RespInputError()
 			return
 		}
-		r, err := slb.RemoveBackendServers(removeServer.LoadBalancerId, string(bytes))
+		r, err := slb.RemoveBackendServers(removeServer.LoadBalancerId, string(bytes), removeServer.KeyId)
 		if err != nil {
 			beego.Error("remove backendservers failed: " + err.Error())
 			sc.RespServiceError(err)
@@ -558,22 +571,23 @@ func (sc *SlbController) DescribeLoadBalancerListenerAttribute() {
 	resp := ApiResponse{}
 	loadBalancerId := sc.GetString("LoadBalancerId")
 	listenerPort, err := sc.GetInt("ListenerPort")
+	keyId := sc.GetString("keyId")
 	if err != nil {
 		sc.RespInputError()
 		return
 	}
 	protocol := sc.GetString("Protocol")
-	beego.Info(loadBalancerId, listenerPort, protocol)
+	beego.Info(loadBalancerId, listenerPort, protocol, keyId)
 	var r interface{}
 	switch protocol {
 	case "HTTP", "http":
-		r, err = slb.DescribeLoadBalancerHTTPListenerAttribute(loadBalancerId, listenerPort)
+		r, err = slb.DescribeLoadBalancerHTTPListenerAttribute(loadBalancerId, listenerPort, keyId)
 	case "HTTPS", "https":
-		r, err = slb.DescribeLoadBalancerHTTPSListenerAttribute(loadBalancerId, listenerPort)
+		r, err = slb.DescribeLoadBalancerHTTPSListenerAttribute(loadBalancerId, listenerPort, keyId)
 	case "TCP", "tcp":
-		r, err = slb.DescribeLoadBalancerTCPListenerAttribute(loadBalancerId, listenerPort)
+		r, err = slb.DescribeLoadBalancerTCPListenerAttribute(loadBalancerId, listenerPort, keyId)
 	case "UDP", "udp":
-		r, err = slb.DescribeLoadBalancerUDPListenerAttribute(loadBalancerId, listenerPort)
+		r, err = slb.DescribeLoadBalancerUDPListenerAttribute(loadBalancerId, listenerPort, keyId)
 
 	}
 	if err != nil {
@@ -600,7 +614,7 @@ func (sc *SlbController) DeleteLoadBalancerListener() {
 		sc.RespInputError()
 		return
 	}
-	r, err := slb.DeleteLoadBalancerListener(listener.LoadBalancerId, listener.ListenerPort)
+	r, err := slb.DeleteLoadBalancerListener(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort)
 
 	if err != nil {
 		beego.Error("Delete listener failed: " + err.Error())
@@ -626,7 +640,7 @@ func (sc *SlbController) StartLoadBalancerListener() {
 		sc.RespInputError()
 		return
 	}
-	r, err := slb.StartLoadBalancerListener(listener.LoadBalancerId, listener.ListenerPort)
+	r, err := slb.StartLoadBalancerListener(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort)
 
 	if err != nil {
 		beego.Error("Start listener failed: " + err.Error())
@@ -652,7 +666,7 @@ func (sc *SlbController) StopLoadBalancerListener() {
 		sc.RespInputError()
 		return
 	}
-	r, err := slb.StopLoadBalancerListener(listener.LoadBalancerId, listener.ListenerPort)
+	r, err := slb.StopLoadBalancerListener(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort)
 
 	if err != nil {
 		beego.Error("Stop listener failed: " + err.Error())
@@ -678,7 +692,7 @@ func (sc *SlbController) SetListenerAccessControlStatus() {
 		sc.RespInputError()
 		return
 	}
-	r, err := slb.SetListenerAccessControlStatus(listener.LoadBalancerId, listener.ListenerPort, listener.AccessControlStatus)
+	r, err := slb.SetListenerAccessControlStatus(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort, listener.AccessControlStatus)
 
 	if err != nil {
 		beego.Error("Set listener_access_control_status failed: " + err.Error())
@@ -704,7 +718,7 @@ func (sc *SlbController) AddListenerWhiteListItem() {
 		sc.RespInputError()
 		return
 	}
-	r, err := slb.AddListenerWhiteListItem(listener.LoadBalancerId, listener.ListenerPort, listener.SourceItems)
+	r, err := slb.AddListenerWhiteListItem(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort, listener.SourceItems)
 
 	if err != nil {
 		beego.Error("Add listener_whitelist_item failed: " + err.Error())
@@ -730,7 +744,7 @@ func (sc *SlbController) RemoveListenerWhiteListItem() {
 		sc.RespInputError()
 		return
 	}
-	r, err := slb.RemoveListenerWhiteListItem(listener.LoadBalancerId, listener.ListenerPort, listener.SourceItems)
+	r, err := slb.RemoveListenerWhiteListItem(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort, listener.SourceItems)
 
 	if err != nil {
 		beego.Error("Set listener_access_control_status failed: " + err.Error())
@@ -755,7 +769,7 @@ func (sc *SlbController) DescribeListenerAccessControlAttribute() {
 		beego.Error("format listener json err: ", err)
 		sc.RespInputError()
 	}
-	r, err := slb.DescribeListenerAccessControlAttribute(listener.LoadBalancerId, listener.ListenerPort)
+	r, err := slb.DescribeListenerAccessControlAttribute(listener.KeyId, listener.LoadBalancerId, listener.ListenerPort)
 
 	if err != nil {
 		beego.Error("Describe listener_access_control_attribute failed: " + err.Error())
