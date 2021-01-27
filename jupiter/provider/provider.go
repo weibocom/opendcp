@@ -26,7 +26,6 @@ import (
 	"sort"
 	"time"
 	"weibo.com/opendcp/jupiter/models"
-
 )
 
 type ProviderDriver interface {
@@ -52,7 +51,7 @@ type ProviderDriver interface {
 
 }
 
-type ProviderDriverFunc func() (ProviderDriver, error)
+type ProviderDriverFunc func(keyId ...string) (ProviderDriver, error)
 
 var registeredPlugins = map[string](ProviderDriverFunc){}
 
@@ -60,13 +59,21 @@ func RegisterProviderDriver(name string, f ProviderDriverFunc) {
 	registeredPlugins[name] = f
 }
 
-func New(name string) (ProviderDriver, error) {
+func New(name string, keyId ...string) (ProviderDriver, error) {
 	if name == "" {
 		return nil, fmt.Errorf("the provider cannot be null.")
 	}
+
 	f, ok := registeredPlugins[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown backend provider driver: %s", name)
+	}
+
+	if name == "aliyun" {
+		//阿里云多帐号支持
+		if len(keyId) > 0 {
+			return f(keyId...)
+		}
 	}
 	return f()
 }

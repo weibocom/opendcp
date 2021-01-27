@@ -40,18 +40,21 @@ var (
 )
 
 type Configuration struct {
-	Password     string
-	KeyId        string
-	KeySecret    string
-	AwsKeyId     string
-	AwsKeySecret string
-	OpIp         string
-	OpPort       string
-	OpUserName   string
-	OpPassWord   string
-	BufferSize   int
-	Ansible      *Ansible
-	KeyDir       string
+	Password      string
+	OpIp          string
+	OpPort        string
+	OpUserName    string
+	OpPassWord    string
+	BufferSize    int
+	Ansible       *Ansible
+	KeyDir        string
+	CloudAccounts []*CloudAccount
+}
+
+type CloudAccount struct {
+	KeyID      string //ak
+	KeySecret  string //sk
+	VendorType string //云厂商类型，支持aliyun, aws
 }
 
 type Ansible struct {
@@ -64,6 +67,45 @@ type Ansible struct {
 func GetConfig() (*Configuration, error) {
 	c, err := getConfigFromFile()
 	return c, err
+}
+
+//获取一个默认账号
+func GetDefaultCloudAccount() *CloudAccount {
+	if len(Config.CloudAccounts) <= 0 {
+		return nil
+	}
+	for _, v := range Config.CloudAccounts {
+		if v.VendorType == "aliyun" {
+			return v
+		}
+	}
+	return &CloudAccount{}
+}
+
+//获取一个aws默认账号
+func GetAWSCloudAccount() *CloudAccount {
+	if len(Config.CloudAccounts) <= 0 {
+		return nil
+	}
+	for _, v := range Config.CloudAccounts {
+		if v.VendorType == "aws" {
+			return v
+		}
+	}
+	return &CloudAccount{}
+}
+
+//根据KeyID获取云账号
+func GetCloudAccountByKeyId(id string) *CloudAccount {
+	if len(Config.CloudAccounts) <= 0 {
+		return nil
+	}
+	for _, v := range Config.CloudAccounts {
+		if v.KeyID == id {
+			return v
+		}
+	}
+	return nil
 }
 
 func getConfigFromFile() (*Configuration, error) {

@@ -27,14 +27,20 @@ import (
 )
 
 func CreateLoadBalancer(loadBalancer models.LoadBalancer) (slb.CreateLoadBalancerResponse, error) {
-	cli := GetSlbClient()
+	cli := GetSlbClientByKeyId(loadBalancer.KeyId)
 	params := make(map[string]interface{})
 	params["RegionId"] = loadBalancer.RegionId
 	params["LoadBalancerName"] = loadBalancer.LoadBalancerName
 	params["AddressType"] = loadBalancer.AddressType
 	params["VSwitchId"] = loadBalancer.VSwitchId
 	params["InternetChargeType"] = loadBalancer.InternetChargeType
-	params["Bandwidth"] = loadBalancer.Bandwidth
+	if loadBalancer.Bandwidth > 0 {
+		params["Bandwidth"] = loadBalancer.Bandwidth
+
+	}
+	if loadBalancer.LoadBalancerSpec != "" {
+		params["LoadBalancerSpec"] = loadBalancer.LoadBalancerSpec
+	}
 
 	return cli.LoadBalancer.CreateLoadBalancer(params)
 }
@@ -52,15 +58,15 @@ func ModifyLoadBalancerInternetSpec(loadBalancerId string, internetChargeType st
 	return cli.LoadBalancer.ModifyLoadBalancerInternetSpec(params)
 }
 
-func DeleteLoadBalancer(loadBalancerId string) (slb.DeleteLoadBalancerResponse, error) {
-	cli := GetSlbClient()
+func DeleteLoadBalancer(loadBalancerId string, keyId string) (slb.DeleteLoadBalancerResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	return cli.LoadBalancer.DeleteLoadBalancer(map[string]interface{}{
 		"LoadBalancerId": loadBalancerId,
 	})
 }
 
-func SetLoadBalancerStatus(loadBalancerId string, loadBalancerStatus string) (slb.SetLoadBalancerStatusResponse, error) {
-	cli := GetSlbClient()
+func SetLoadBalancerStatus(keyId string, loadBalancerId string, loadBalancerStatus string) (slb.SetLoadBalancerStatusResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	return cli.LoadBalancer.SetLoadBalancerStatus(map[string]interface{}{
 		"LoadBalancerId":     loadBalancerId,
 		"LoadBalancerStatus": loadBalancerStatus,
@@ -75,16 +81,21 @@ func SetLoadBalancerName(loadBalancerId string, loadBalancerName string) (slb.Se
 	})
 }
 
-func DescribeLoadBalancers(loadBalancer models.LoadBalancer) (slb.DescribeLoadBalancersResponse, error) {
-	cli := GetSlbClient()
+func DescribeLoadBalancers(loadBalancer models.LoadBalancer, keyId ...string) (slb.DescribeLoadBalancersResponse, error) {
+	cli := getSlbClientFromKeyId(keyId...)
 	params := make(map[string]interface{})
 	params["RegionId"] = loadBalancer.RegionId
 
 	return cli.LoadBalancer.DescribeLoadBalancers(params)
 }
 
-func DescribeLoadBalancerAttribute(loadBalancerId string) (slb.DescribeLoadBalancerAttributeResponse, error) {
-	cli := GetSlbClient()
+func DescribeLoadBalancerAttribute(loadBalancerId string, keyId ...string) (slb.DescribeLoadBalancerAttributeResponse, error) {
+	var cli *slb.SlbClient
+	if len(keyId) > 0 && keyId[0] != "" {
+		cli = GetSlbClientByKeyId(keyId[0])
+	} else {
+		cli = GetSlbClient()
+	}
 	return cli.LoadBalancer.DescribeLoadBalancerAttribute(map[string]interface{}{
 		"LoadBalancerId": loadBalancerId,
 	})
@@ -94,4 +105,14 @@ func DescribeRegions() (slb.DescribeRegionsResponse, error) {
 	cli := GetSlbClient()
 	params := make(map[string]interface{})
 	return cli.LoadBalancer.DescribeRegions(params)
+}
+
+func getSlbClientFromKeyId(keyId ...string) *slb.SlbClient {
+	var cli *slb.SlbClient
+	if len(keyId) > 0 && keyId[0] != "" {
+		cli = GetSlbClientByKeyId(keyId[0])
+	} else {
+		cli = GetSlbClient()
+	}
+	return cli
 }

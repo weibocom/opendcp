@@ -298,8 +298,9 @@ func (ic *InstanceController) GetZones() {
 func (ic *InstanceController) GetVpcs() {
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
+	keyId := ic.GetString("keyId")
 	// pageNumber 起始值为1，pageSize 最大值为50
-	vpcs, err := instance.GetVpcs(provider, regionId, 1, 50)
+	vpcs, err := instance.GetVpcs(provider, regionId, keyId, 1, 50)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -319,7 +320,8 @@ func (ic *InstanceController) GetSubnets() {
 	provider := ic.GetString(":provider")
 	zoneId := ic.GetString(":zoneId")
 	vpcId := ic.GetString(":vpcId")
-	subnets, err := instance.GetSubnets(provider, zoneId, vpcId)
+	keyId := ic.GetString("keyId", "")
+	subnets, err := instance.GetSubnets(provider, zoneId, vpcId, keyId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -388,7 +390,8 @@ func (ic *InstanceController) ListDiskCategory() {
 func (ic *InstanceController) GetImages() {
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
-	images, err := instance.GetImages(provider, regionId)
+	keyId := ic.GetString("keyId")
+	images, err := instance.GetImages(provider, regionId, keyId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)
@@ -408,7 +411,8 @@ func (ic *InstanceController) GetSecurityGroup() {
 	provider := ic.GetString(":provider")
 	regionId := ic.GetString(":regionId")
 	vpcId := ic.GetString("vpcId")
-	securityGroup, err := instance.GetSecurityGroup(provider, regionId, vpcId)
+	keyId := ic.GetString("keyId", "")
+	securityGroup, err := instance.GetSecurityGroup(provider, regionId, vpcId, keyId)
 	if err != nil {
 		beego.Error(err)
 		ic.RespServiceError(err)

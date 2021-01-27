@@ -17,8 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package models
 
 type LoadBalancer struct {
@@ -37,4 +35,6 @@ type LoadBalancer struct {
 	CreateTime         string `json:"CreateTime"`         //'负载均衡实例创建时间'
 	RegionIdAlias      string `json:"RegionIdAlias"`      //'负载均衡实例所属的Region编号别名'
 	Reason             string `json:"Reason"`
+	KeyId              string `json:"keyId"`
+	LoadBalancerSpec   string `json:"LoadBalancerSpec"` //负载均衡规格
 }

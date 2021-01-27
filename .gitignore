@@ -5,10 +5,18 @@ deploy/data/mysql-data/
 deploy/data/project/
 hubble/Application/Runtime
 orion/orion
-jupiter/conf/jupiter.json
 jupiter/conf/zhaowei9.pem
 orion/conf/app.conf
+orion/go_build_orion
 
+#jupiter
+jupiter/.idea/
+jupiter/vendor/
+jupiter/conf/jupiter.json
+
+#orion
+orion/vendor/
+orion/.idea/
 
 # eclipse ignore
 .settings/

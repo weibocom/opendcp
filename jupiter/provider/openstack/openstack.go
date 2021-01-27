@@ -391,7 +391,7 @@ func waitForSpecific(f func() bool, maxAttempts int, waitInterval time.Duration)
 
 
 
-func new() (provider.ProviderDriver, error){
+func new(keyId ...string) (provider.ProviderDriver, error){
 
 	return newProvider()
 }

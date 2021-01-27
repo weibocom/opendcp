@@ -34,7 +34,7 @@ OPENDCP主要由以下几个模块构成:
         - <p>编辑 conf/hubble_conf.php, 修改配置项 'HUBBLE_HOST','HUBBLE_ANSIBLE_HTTP' 和 'HUBBLE_SLB_HTTP' 为本机IP。</p>
         - <p>编辑 docker-compose.yml, 找到配置项 'imagebuild', 修改  'SERVER_IP' 为本机IP, 'HARBOR_ADDRESS'改为Harbor服务器的地址.</p>
         - <p>在conf/octans_roles/init/files/docker里，增加--insecure-registry 'harbor_ip:12380'。</p>
-        - <p>编辑 conf/jupiter.json, 修改`KeyId`和`KeySecret`为您的阿里云账号和密码。</p>
+        - <p>编辑 conf/jupiter.json, 修改CloudAccounts下的内容，CloudAccounts下可配置多个云厂商账户，VendorType为aliyun的账户可配置多个，VendorType为aws的目前只需要配置一个即可，然后修改`KeyId`和`KeySecret`为您的云厂商账号和密码。</p>
         - <p>编辑 conf/web_conf.php, 修改  REPOS_DOMAIN 为 Harbor部署的IP。</p>
         - <span id="auth">关于登录系统和认证</span>
             - 当选择本地认证方式时，用户需要自行维护所有用户的登录账号。缺省只有管理员账号“root”能够登录，密码是“admin”。登录成功后，到导航栏 系统管理 -> 用户管理 可以增加管理用户。

@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
+	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/service/bill"
 	"weibo.com/opendcp/jupiter/service/cluster"
@@ -96,6 +97,12 @@ func (clusterController *ClusterController) CreateCluster() {
 			clusterController.RespInputOverLimited("DataDiskNum", "larger than 0 and less equal 4.")
 			return
 		}
+		//检查是否绑定账号
+		if len(theCluster.CloudKeyId) <= 0 {
+			clusterController.RespInputOverLimited("CloudKeyId", "is illegal.")
+			return
+		}
+
 		switch theCluster.DataDiskCategory {
 		case "cloud":
 			if theCluster.DataDiskSize > 2000 || theCluster.DataDiskSize < 5 {
@@ -313,6 +320,35 @@ func (cc *ClusterController) UpdateInstanceInfo() {
 	}
 	resp := ApiResponse{}
 	resp.Content = true
+	cc.ApiResponse = resp
+	cc.Status = SERVICE_SUCCESS
+	cc.RespJsonWithStatus()
+}
+
+// @Title List account.
+// @Description list all accounts.
+// @router /account_list/:vendorType [get]
+func (cc *ClusterController) ListAccount() {
+	resp := ApiResponse{}
+
+	//如果账号不足
+	if len(conf.Config.CloudAccounts) <= 0 {
+		cc.ApiResponse = NotEnoughCloudAccountResp
+		cc.Status = BAD_REQUEST
+		cc.RespJsonWithStatus()
+		return
+	}
+
+	cas := make([]*conf.CloudAccount, 0, 0)
+	vendorType := cc.GetString(":vendorType")
+	for _, v := range conf.Config.CloudAccounts {
+		if v.VendorType == vendorType {
+			tv := &conf.CloudAccount{KeyID: v.KeyID, VendorType: v.VendorType}
+			cas = append(cas, tv)
+		}
+	}
+
+	resp.Content = cas
 	cc.ApiResponse = resp
 	cc.Status = SERVICE_SUCCESS
 	cc.RespJsonWithStatus()
