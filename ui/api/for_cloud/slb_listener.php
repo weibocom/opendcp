@@ -116,6 +116,9 @@ $fPort=(isset($_POST['fPort'])&&!empty($_POST['fPort']))?trim($_POST['fPort']):(
 $myJson=(isset($_POST['data'])&&!empty($_POST['data']))?trim($_POST['data']):((isset($_GET['data'])&&!empty($_GET['data']))?trim($_GET['data']):'');
 $arrJson=($myJson)?json_decode($myJson,true):array();
 
+$fKeyId=(isset($_POST['fKeyId'])&&!empty($_POST['fKeyId']))?trim($_POST['fKeyId']):((isset($_GET['fKeyId'])&&!empty($_GET['fKeyId']))?trim($_GET['fKeyId']):'');
+$arrJson['keyId'] = $fKeyId;
+
 //记录操作日志
 $logFlag = true;
 $logDesc = 'FAILED';
@@ -141,6 +144,7 @@ if($hasLimit){
         'LoadBalancerId' => $fIdx,
         'ListenerPort' => $fPort,
         'Protocol' => $fProtocol,
+        'keyId' => $fKeyId,
       );
       $retArr = $mySelf->getInfo($myUser,$param);
       break;

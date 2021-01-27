@@ -1,9 +1,5 @@
 {
     "Password": "ASDqwe123",
-    "KeyId": "your_aliyun_key_id",
-    "KeySecret": "your_aliyun_secret",
-    "AwsKeyId":  "your_aws_key_id",
-    "AwsKeySecret": "your_aws_key_secret",
     "OpIp": "your_op_ip",
     "OpPort": "your_op_port",
     "OpUserName": "your_op_username",
@@ -15,5 +11,17 @@
         "GetOctansUrl": "host_ip:8999",
         "DefaultRole": "init",
         "ForkNum": 5
-    }
+    },
+    "CloudAccounts": [
+        {
+            "KeyId": "your_aliyun_key_id",
+            "KeySecret": "your_aliyun_secret",
+            "VendorType": "aliyun"
+        },
+        {
+            "KeyId": "your_aws_key_id",
+            "KeySecret": "your_aws_key_secret",
+            "VendorType": "aws"
+        }
+    ]
 }

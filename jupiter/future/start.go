@@ -48,7 +48,28 @@ func NewStartFuture(instanceId string, providerName string, autoInit bool, ip, c
 }
 
 func (sf *StartFuture) Run() error {
-	providerDriver, err := provider.New(sf.ProviderName)
+
+	//兼容阿里云多帐号
+	var (
+		providerDriver provider.ProviderDriver
+		cluster *models.Cluster
+		err error
+	)
+	if sf.ProviderName == "aliyun" {
+		cluster, err = dao.GetClusterByInstanceId(sf.InstanceId)
+		if err != nil {
+			logstore.Error(sf.CorrelationId, sf.InstanceId, "Cannot find cluster info from database")
+			return err
+		}
+		providerDriver, err = provider.New(sf.ProviderName, cluster.CloudKeyId)
+		if err != nil {
+			logstore.Error(sf.CorrelationId, sf.InstanceId, "Cannot initiate provider")
+			return err
+		}
+	} else {
+		providerDriver, err = provider.New(sf.ProviderName)
+	}
+
 	if err != nil {
 		return err
 	}

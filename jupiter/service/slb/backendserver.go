@@ -25,32 +25,32 @@ import (
 	"github.com/jiangshengwu/aliyun-sdk-for-go/slb"
 )
 
-func AddBackendServers(loadBalancerId string, backendServers string) (slb.AddBackendServersResponse, error) {
-	cli := GetSlbClient()
+func AddBackendServers(loadBalancerId string, backendServers string, keyId string) (slb.AddBackendServersResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["BackendServers"] = backendServers
 	return cli.BackendServer.AddBackendServers(params)
 }
 
-func RemoveBackendServers(loadBalancerId string, backendServers string) (slb.RemoveBackendServersResponse, error) {
-	cli := GetSlbClient()
+func RemoveBackendServers(loadBalancerId string, backendServers string, keyId string) (slb.RemoveBackendServersResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["BackendServers"] = backendServers
 	return cli.BackendServer.RemoveBackendServers(params)
 }
 
-func SetBackendServers(loadBalancerId string, backendServers string) (slb.SetBackendServersResponse, error) {
-	cli := GetSlbClient()
+func SetBackendServers(loadBalancerId string, backendServers string, keyId string) (slb.SetBackendServersResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	params["BackendServers"] = backendServers
 	return cli.BackendServer.SetBackendServers(params)
 }
 
-func DescribeHealthStatus(loadBalancerId string, listenerPort ...int) (slb.DescribeHealthStatusResponse, error) {
-	cli := GetSlbClient()
+func DescribeHealthStatus(loadBalancerId string, keyId string, listenerPort ...int) (slb.DescribeHealthStatusResponse, error) {
+	cli := GetSlbClientByKeyId(keyId)
 	params := make(map[string]interface{})
 	params["LoadBalancerId"] = loadBalancerId
 	if len(listenerPort) == 1 {

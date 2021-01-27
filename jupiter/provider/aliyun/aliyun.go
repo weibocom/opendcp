@@ -17,22 +17,21 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package aliyun
 
 import (
+	"github.com/astaxie/beego"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"errors"
 	"fmt"
 	"github.com/jiangshengwu/aliyun-sdk-for-go/ecs"
 	"weibo.com/opendcp/jupiter/conf"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
-	"errors"
 )
 
 func init() {
@@ -42,11 +41,12 @@ func init() {
 const (
 	CN_BEIJING_C = "cn-beijing-c"
 	IO_OPTIMIZED = "optimized"
-	TIMES_DEL 	 = 2
+	TIMES_DEL    = 2
 )
 
 var instanceTypesInAliyun = map[string]string{
-	"1Core-1GB":    "ecs.n1.tiny",
+	//"1Core-1GB":    "ecs.n1.tiny",
+	"1Core-1GB":    "ecs.s6-c1m1.small",
 	"1Core-2GB":    "ecs.n1.small",
 	"4Cores-8GB":   "ecs.n1.large",
 	"16Cores-16GB": "ecs.c2.medium",
@@ -239,14 +239,14 @@ func (driver aliyunProvider) Delete(instanceId string) (time.Time, error) {
 		}
 	}
 
-	for i:=1; i<=TIMES_DEL; i++ {
+	for i := 1; i <= TIMES_DEL; i++ {
 		_, err = driver.client.Instance.DeleteInstance(map[string]interface{}{
 			"InstanceId": instanceId,
 		})
-		if err == nil {     		//删除成功返回
+		if err == nil { //删除成功返回
 			return time.Now(), nil
 		} else {
-			if i == TIMES_DEL {    //重试删除TIMES_DEL次后失败
+			if i == TIMES_DEL { //重试删除TIMES_DEL次后失败
 				msg := fmt.Sprintf("Retry to delete instance %d times failed, err: %s", TIMES_DEL, err.Error())
 				return time.Now(), errors.New(msg)
 			}
@@ -546,20 +546,28 @@ func (aliyunProvider) AttachGateway(input *models.AttachGateway) (bool, error) {
 	return true, nil
 }
 
-
-
-func new() (provider.ProviderDriver, error) {
-	return newProvider()
+func new(keyId ...string) (provider.ProviderDriver, error) {
+	return newProvider(keyId...)
 }
 
-func newProvider() (provider.ProviderDriver, error) {
-	client := ecs.NewClient(
-		conf.Config.KeyId,
-		conf.Config.KeySecret,
-		"",
-	)
-	ret := aliyunProvider{
-		client: client,
+func newProvider(keyId ...string) (provider.ProviderDriver, error) {
+	//增加多帐号支持
+	if len(keyId) > 0 {
+		accounts := conf.Config.CloudAccounts
+		for _, v := range accounts {
+			if v.KeyID == keyId[0] {
+				client := ecs.NewClient(
+					v.KeyID,
+					v.KeySecret,
+					"",
+				)
+				ret := aliyunProvider{
+					client: client,
+				}
+				return ret, nil
+			}
+		}
 	}
-	return ret, nil
+	beego.Error("init aliyun provider fail")
+	return nil, errors.New("init aliyun provider fail")
 }
