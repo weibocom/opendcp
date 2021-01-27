@@ -164,6 +164,14 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
                         <div class="hidden">
                           <input type="hidden" id="tab" name="tab" value="slb">
                         </div>
+                          <div class="col-sm-5" style="padding-left:0px;">
+                              <div class="input-group">
+                                  <span class="input-group-addon">阿里云KeyId</span>
+                                  <select class="form-control" id="fKeyId" onchange="getList('slb')">
+                                      <option value="">请选择</option>
+                                  </select>
+                              </div>
+                          </div>
                         <div class="col-sm-4" style="padding-left:0px;">
                           <div class="input-group">
                             <span class="input-group-addon">地域</span>
@@ -452,6 +460,7 @@ $myIdx=(isset($_GET['idx'])&&!empty($_GET['idx']))?trim($_GET['idx']):0;
       }
     });
     cache.region_id=<?php echo $myIdx;?>;
+    getCloudAccount();
     window.setTimeout("getList()",200);
   });
   $("#myModal").on("shown.bs.modal", function(){

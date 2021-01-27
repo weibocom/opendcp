@@ -37,6 +37,19 @@
               </select>
             </div>
           </div>
+        <div class="form-group">
+            <label for="LoadBalancerSpec" class="col-sm-2 control-label">规格</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="LoadBalancerSpec" name="LoadBalancerSpec" onchange="check()">
+                    <option value="slb.s1.small">slb.s1.small</option>
+                    <option value="slb.s2.small">slb.s2.small</option>
+                    <option value="slb.s2.medium">slb.s2.medium</option>
+                    <option value="slb.s3.small">slb.s3.small</option>
+                    <option value="slb.s3.medium">slb.s3.medium</option>
+                    <option value="slb.s3.large">slb.s3.large</option>
+                </select>
+            </div>
+        </div>
           <div class="form-group">
             <label for="Bandwidth" class="col-sm-2 control-label">带宽峰值</label>
             <div class="col-sm-10">

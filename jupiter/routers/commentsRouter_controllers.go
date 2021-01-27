@@ -468,4 +468,10 @@ func init() {
 			AllowHTTPMethods: []string{"get"},
 			Params: nil})
 
+	beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"] = append(beego.GlobalControllerRouter["weibo.com/opendcp/jupiter/controllers:ClusterController"],
+		beego.ControllerComments{
+			Method: "ListAccount",
+			Router: `/list_account/:vendorType`,
+			AllowHTTPMethods: []string{"get"},
+			Params: nil})
 }

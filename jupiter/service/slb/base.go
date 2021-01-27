@@ -28,16 +28,36 @@ import (
 )
 
 var globalSlbClient *slb.SlbClient
+var globalSlbClientMap map[string]*slb.SlbClient
 var once sync.Once
+
+func init()  {
+	globalSlbClientMap = make(map[string]*slb.SlbClient)
+}
 
 // GetOrmer :set ormer singleton
 func GetSlbClient() *slb.SlbClient {
 	once.Do(func() {
 		globalSlbClient = slb.NewClient(
-			conf.Config.KeyId,
-			conf.Config.KeySecret,
+			conf.GetDefaultCloudAccount().KeyID,
+			conf.GetDefaultCloudAccount().KeySecret,
 			"",
 		)
 	})
 	return globalSlbClient
+}
+
+// GetOrmer :set ormer singleton
+func GetSlbClientByKeyId(keyId string) *slb.SlbClient {
+	account := conf.GetCloudAccountByKeyId(keyId)
+	if v, ok := globalSlbClientMap[account.KeyID]; ok {
+		return v
+	} else {
+		globalSlbClientMap[account.KeyID] = slb.NewClient(
+			account.KeyID,
+			account.KeySecret,
+			"",
+		)
+		return globalSlbClientMap[account.KeyID]
+	}
 }

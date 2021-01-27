@@ -8,8 +8,8 @@ type Cluster struct {
 	Id   int64 `orm:"pk;auto"`
 	Name string
 	//OrganizationId     int64
-	Provider           string
-	LastestPartNum     int
+	Provider       string
+	LastestPartNum int
 	//PartOfInstances    []*InstancesResp `orm:"-"`
 	Desc               string
 	CreateTime         time.Time
@@ -28,7 +28,8 @@ type Cluster struct {
 	DataDiskNum        int
 	DataDiskCategory   string
 	//OpenStack参数
-	FlavorId	   string
+	FlavorId   string
+	CloudKeyId string `json:"Account"`
 }
 
 type Replication struct {
@@ -41,11 +42,11 @@ type Replication struct {
 }
 
 type Network struct {
-	Id            int64 `orm:"pk;auto"`
-	VpcId         string
-	SubnetId      string
-	SecurityGroup string
-	InternetChargeType string
+	Id                      int64 `orm:"pk;auto"`
+	VpcId                   string
+	SubnetId                string
+	SecurityGroup           string
+	InternetChargeType      string
 	InternetMaxBandwidthOut int
 }
 
@@ -71,14 +72,13 @@ func (u *Zone) TableUnique() [][]string {
 	}
 }
 
-
 type Detail struct {
-	Id             int64      	`orm:"pk;auto"`
-	InstanceNumber string 		`orm:"type(text);null"`
-	RunningTime    time.Time 	`orm:"auto_now_add;type(datetime)"`
+	Id             int64     `orm:"pk;auto"`
+	InstanceNumber string    `orm:"type(text);null"`
+	RunningTime    time.Time `orm:"auto_now_add;type(datetime)"`
 }
 
 type InstanceDetail struct {
-	InstanceNumber   map[string]int	`json:"number"`
-	RunningTime		 string			`json:"time"`
+	InstanceNumber map[string]int `json:"number"`
+	RunningTime    string         `json:"time"`
 }
