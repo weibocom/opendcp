@@ -47,6 +47,14 @@
 
                     </div>
                 </div>
+                <div class="form-group" style="display: none;" id="select-cloud-account">
+                    <label for="Account" class="col-sm-2 control-label">云账号</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="Account" name="Account">
+                            <option value="default">请选择</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div id="step-2" class="content" style="display: none;">

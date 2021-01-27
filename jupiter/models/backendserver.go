@@ -17,8 +17,6 @@
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
-
-
 package models
 
 type BackendServers struct {
@@ -35,5 +33,6 @@ type BackendServer struct {
 
 type BackendServerRequest struct {
 	LoadBalancerId    string
+	KeyId             string
 	BackendServerList []BackendServer
 }

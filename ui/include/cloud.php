@@ -38,9 +38,18 @@ class cloud{
         'Authorization: '.$token,
         'X-CORRELATION-ID: ' . $this->reqid,
       );
+
       $url = $this -> domain . '/v1/' . $module;
       if($id) $url.='/' . $id;
       if($method == 'GET' || $method == 'DELETE') $url.=(is_array($data) && !empty($data)) ? '?'.http_build_query($data) : $data;
+
+      if(isset($_REQUEST['fKeyId']) && !empty($_REQUEST['fKeyId']) && ($method == 'POST' || $method == 'PUT' || $method == 'DELETE')) {
+        if(strpos($url, '?') !== false) {
+          $url .= '&keyId=' . $_REQUEST['fKeyId'];
+        } else {
+          $url .= '?keyId=' . $_REQUEST['fKeyId'];
+        }
+      }
 
       $handle = curl_init();
       curl_setopt($handle, CURLOPT_URL, $url);

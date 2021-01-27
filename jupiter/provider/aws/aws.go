@@ -77,7 +77,7 @@ func (driver awsProvider) ListInternetChargeType() []string {
 }
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
-	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.AwsKeyId, conf.Config.AwsKeySecret, "")
+	driver.client.Config.Credentials = credentials.NewStaticCredentials(conf.GetAWSCloudAccount().KeyID, conf.GetAWSCloudAccount().KeySecret, "")
 
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
@@ -611,7 +611,7 @@ func (driver awsProvider) WaitToStartInstance(instanceId string) bool {
 	return true
 }
 
-func new() (provider.ProviderDriver, error) {
+func new(keyId ...string) (provider.ProviderDriver, error) {
 	return  newProvider()
 }
 
@@ -620,7 +620,8 @@ func newProvider() (provider.ProviderDriver, error) {
 		Region: aws.String("cn-north-1"),
 	}))
 	client := ec2.New(sess)
-	client.Config.Credentials = credentials.NewStaticCredentials(conf.Config.KeyId, conf.Config.KeySecret, "")
+	awsConf := conf.GetAWSCloudAccount()
+	client.Config.Credentials = credentials.NewStaticCredentials(awsConf.KeyID, awsConf.KeySecret, "")
 	ret := awsProvider{
 		client: client,
 	}
