@@ -55,7 +55,7 @@ class UpgradeNoticeBehavior {
             $this->secretkey_ = $skey ? $skey : (defined('SAE_SECRETKEY') ? SAE_SECRETKEY : '');
             $current_version = C('UPGRADE_CURRENT_VERSION',null,0);
             //读取接口
-            $info = $this->send('http://sinaclouds.sinaapp.com/thinkapi/upgrade.php?v=' . $current_version);
+            $info = $this->send('http://sinaclouds.xxxx.com/thinkapi/upgrade.php?v=' . $current_version);
              if ($info['version'] != $current_version) {
                     if($this->send_sms($info['msg']))  trace($info['msg'], '升级通知成功', 'NOTIC', true); //发送升级短信
             }
@@ -64,7 +64,7 @@ class UpgradeNoticeBehavior {
     }
     private function send_sms($msg) {
         $timestamp=time();
-        $url = 'http://sendsms.url'; //发送短信的接口地址
+        $url = 'http://inno.smsinter.xxxx.com/sae_sms_service/sendsms.php'; //发送短信的接口地址
         $content = "FetchUrl" . $url . "TimeStamp" . $timestamp . "AccessKey" . $this->accesskey_;
         $signature = (base64_encode(hash_hmac('sha256', $content, $this->secretkey_, true)));
         $headers = array(
