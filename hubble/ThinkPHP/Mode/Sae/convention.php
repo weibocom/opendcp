@@ -29,7 +29,7 @@ return array(
     'DB_PORT'           =>  SAE_MYSQL_PORT,        // 端口
     //更改模板替换变量，让普通能在所有平台下显示
     'TMPL_PARSE_STRING' =>  array(
-        // __PUBLIC__/upload  -->  /Public/upload -->http://appname-public.stor.sinaapp.com/upload
+        // __PUBLIC__/upload  -->  /Public/upload -->http://appname-public.stor.xxxx.com/upload
         '/Public/upload'    =>  $st->getUrl('public','upload')
     ),
     'LOG_TYPE'          =>  'Sae',
