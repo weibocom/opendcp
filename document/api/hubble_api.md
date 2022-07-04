@@ -149,7 +149,7 @@ curl -X POST "http://HOST/api/for_hubble/balance.php"  \
 示例：
 
 ```json
-{"name":"11212","type":"SLB","id":"","content":"{\"region\":\"cn-qingdao\",\"slb_id\":\"lbm5e7198depwn40w6kz\",\"weight\":\"100\"}"}
+{"name":"11212","type":"SLB","id":"","content":"{\"region\":\"cn-qingdao\",\"slb_id\":\"****\",\"weight\":\"100\"}"}
 ```
 
 | 名称        | 类型   | 是否必须 | 描述                  |
@@ -196,7 +196,7 @@ content 参数中object对象说明
 curl -X POST "http://HOST/api/for_hubble/balance.php"  \
 -H "Content-type: application/json"  \
 -d "action=list" \
--d "data={'name':'11212','type':'SLB','id":'','content':'{\'region\':\'cn-qingdao\',\'slb_id\':\'lbm5e7198depwn40w6kz\',\'weight\':\'100\'}'}"
+-d "data={'name':'11212','type':'SLB','id":'','content':'{\'region\':\'cn-qingdao\',\'slb_id\':\'***\',\'weight\':\'100\'}'}"
 ```
 #### 响应示例
 
@@ -1317,7 +1317,7 @@ content 参数中object对象说明:
 | 名称   | 类型     | 示例值  | 描述   |
 | ---- | ------ | ---- | ---- |
 | i   | int    | 1    | 序号 |
-| LoadBalancerId | string | "lbm5e7198depwn40w6kz"    | id号 |
+| LoadBalancerId | string | ""    | id号 |
 | LoadBalancerName | string | ""    | SLB_Id |
 | LoadBalancerStatus  | string | "active"   | 状态  |
 | Address   | string    | "139.129.85.40"    | IP地址 |
@@ -1363,7 +1363,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
     "content": [
         {
             "i": 1,
-            "LoadBalancerId": "lbm5e7198depwn40w6kz",
+            "LoadBalancerId": "****",
             "LoadBalancerName": "",
             "LoadBalancerStatus": "active",
             "Address": "139.129.85.40",
@@ -1390,8 +1390,9 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 ```json
 {
     "code": 1,
-    "msg": "Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=zFaewKYsce0TpQvv&SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.",
-    "remote": "{\"code\":1,\"http_code\":500,\"url\":\"http://jupiter:8080/v1/slb/list/cn-qingda?page=1&pageSize=20\",\"msg\":\"Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=zFaewKYsce0TpQvv&SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.\"}",
+    "msg": "Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=
+    &SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.",
+    "remote": "{\"code\":1,\"http_code\":500,\"url\":\"http://jupiter:8080/v1/slb/list/cn-qingda?page=1&pageSize=20\",\"msg\":\"Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=&SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.\"}",
     "page": 1,
     "pageSize": 20
 }
