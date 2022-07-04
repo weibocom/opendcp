@@ -1390,7 +1390,7 @@ curl -X POST "http://HOST/api/for_cloud/slb.php"  \
 ```json
 {
     "code": 1,
-    "msg": "Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=zFaewKYsce0TpQvv&SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.",
+    "msg": "Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=&SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.",
     "remote": "{\"code\":1,\"http_code\":500,\"url\":\"http://jupiter:8080/v1/slb/list/cn-qingda?page=1&pageSize=20\",\"msg\":\"Aliyun SDK Request Error: URL: https://slb.aliyuncs.com/?RegionId=cn-qingda&Format=JSON&Version=2014-05-15&Action=DescribeLoadBalancers&Signature=xa4exVwobjtLzTrs%2BtrC3CGfg7A%3D&HttpMethod=GET&AccessKeyId=&SignatureMethod=HMAC-SHA1&SignatureVersion=1.0&TimeStamp=2017-08-03T10:37:57Z&SignatureNonce=5575b9d97c4b2bba97759314df0dba53 RequestId: 48077CA3-2A1B-49E3-9D95-56FE5656CC47 HostId: slb.aliyuncs.com Code: InvalidParameter Message: The specified region is not exist.\"}",
     "page": 1,
     "pageSize": 20
